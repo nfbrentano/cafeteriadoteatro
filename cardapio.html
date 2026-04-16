@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cardápio da Cafeteria do Teatro — Cafés, bebidas geladas, doces artesanais, salgados e combos. Teatro da Univates, Lajeado/RS." />
+  <meta property="og:title" content="Cardápio | Cafeteria do Teatro" />
+  <meta property="og:description" content="Explore nosso cardápio completo: cafés especiais, bebidas geladas, doces artesanais, salgados e opções exclusivas da Cafeteria do Teatro." />
+  <meta property="og:image" content="assets/images/produto-cafe.png" />
+  <meta name="theme-color" content="#1C1008" />
+  <title>Cardápio | Cafeteria do Teatro · Teatro da Univates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/cardapio.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════════ -->
+  <nav class="navbar navbar--transparent" id="navbar" role="navigation" aria-label="Navegação principal">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo" aria-label="Cafeteria do Teatro - Voltar para Home">
+        Cafeteria <span>do Teatro</span>
+      </a>
+
+      <ul class="navbar__links" role="list">
+        <li><a href="index.html#sobre"    class="navbar__link">Sobre</a></li>
+        <li><a href="index.html#galeria"  class="navbar__link">Galeria</a></li>
+        <li><a href="index.html#horarios" class="navbar__link">Horários</a></li>
+        <li><a href="index.html#chegar"   class="navbar__link">Como Chegar</a></li>
+        <li class="navbar__cta">
+          <a href="index.html" class="btn btn--outline" style="border-color:rgba(250,246,238,0.5);color:var(--marfim)">← Voltar</a>
+        </li>
+      </ul>
+
+      <button class="navbar__hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="navbar__mobile-menu" id="mobile-menu" role="dialog" aria-label="Menu mobile">
+    <a href="index.html#sobre"    class="navbar__mobile-link">Sobre</a>
+    <a href="index.html#galeria"  class="navbar__mobile-link">Galeria</a>
+    <a href="index.html#horarios" class="navbar__mobile-link">Horários</a>
+    <a href="index.html#chegar"   class="navbar__mobile-link">Como Chegar</a>
+    <a href="index.html" class="btn btn--outline-dark" style="margin-top:8px">← Página Principal</a>
+  </div>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════
+         HERO CARDÁPIO
+    ══════════════════════════════════════════ -->
+    <header class="cardapio-hero" aria-labelledby="cardapio-title">
+      <div class="cardapio-hero__inner container">
+        <div class="cardapio-hero__tag">Teatro da Univates · Lajeado, RS</div>
+        <h1 class="cardapio-hero__title" id="cardapio-title">Nosso Cardápio</h1>
+        <p class="cardapio-hero__subtitle">
+          Cada item pensado para tornar sua pausa ainda mais especial.
+          Café de qualidade, doces artesanais e muito sabor.
+        </p>
+        <div class="cardapio-hero__cta">
+          <a
+            href="https://heyzine.com/flip-book/aac2c268d4.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn--primary btn--lg"
+            id="hero-cardapio-online"
+          >
+            📖 &nbsp;Ver Cardápio Online (Completo)
+          </a>
+          <a href="#cafes" class="btn btn--outline btn--lg">Explorar aqui ↓</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════
+         NAV CATEGORIAS (STICKY)
+    ══════════════════════════════════════════ -->
+    <nav class="cat-nav" aria-label="Categorias do cardápio">
+      <div class="cat-nav__inner container">
+        <button class="cat-nav__btn active" data-cat="cafes"    id="cat-btn-cafes">
+          <span class="cat-nav__icon">☕</span> Cafés
+        </button>
+        <button class="cat-nav__btn" data-cat="geladas"  id="cat-btn-geladas">
+          <span class="cat-nav__icon">🧊</span> Geladas
+        </button>
+        <button class="cat-nav__btn" data-cat="doces"    id="cat-btn-doces">
+          <span class="cat-nav__icon">🍰</span> Doces
+        </button>
+        <button class="cat-nav__btn" data-cat="salgados" id="cat-btn-salgados">
+          <span class="cat-nav__icon">🥐</span> Salgados
+        </button>
+        <button class="cat-nav__btn" data-cat="combos"   id="cat-btn-combos">
+          <span class="cat-nav__icon">🎁</span> Combos
+        </button>
+        <button class="cat-nav__btn" data-cat="especiais" id="cat-btn-especiais">
+          <span class="cat-nav__icon">✨</span> Especiais
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════
+         CAFÉS
+    ══════════════════════════════════════════ -->
+    <section class="cat-section" id="cafes" aria-labelledby="titulo-cafes">
+      <div class="container">
+        <div class="cat-section__header fade-in">
+          <div class="cat-section__title-group">
+            <div class="cat-section__icon" aria-hidden="true">☕</div>
+            <h2 class="cat-section__title" id="titulo-cafes">Cafés</h2>
+          </div>
+          <p class="cat-section__description">
+            Preparados com cuidado, grão a grão, chícara a xícara.
+          </p>
+        </div>
+
+        <div class="produto-grid">
+
+          <!-- Espresso -->
+          <article class="produto-card fade-in" aria-label="Espresso">
+            <div class="produto-card__image-wrap">
+              <img src="assets/images/produto-cafe.png" alt="Espresso — Cafeteria do Teatro" class="produto-card__image" loading="lazy" />
+              <div class="produto-card__badges">
+                <span class="badge badge--popular">🔥 Mais Pedido</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Espresso</h3>
+              <p class="produto-card__desc">Encorpado, aromático e concentrado. O clássico que nunca falha.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>4,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Cappuccino -->
+          <article class="produto-card fade-in fade-in-delay-1" aria-label="Cappuccino">
+            <div class="produto-card__image-wrap">
+              <img src="assets/images/galeria-latte.png" alt="Cappuccino — Cafeteria do Teatro" class="produto-card__image" loading="lazy" />
+              <div class="produto-card__badges">
+                <span class="badge badge--popular">🔥 Mais Pedido</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Cappuccino</h3>
+              <p class="produto-card__desc">Espresso com leite vaporizado cremoso e leve toque de canela. Quente e reconfortante.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>9,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Café com Leite -->
+          <article class="produto-card fade-in fade-in-delay-2" aria-label="Café com Leite">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">☕</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Café com Leite</h3>
+              <p class="produto-card__desc">O abraço quentinho da tarde. Café coado com leite integral vaporizado.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>7,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Café Coado -->
+          <article class="produto-card fade-in fade-in-delay-1" aria-label="Café Coado">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">☕</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Café Coado</h3>
+              <p class="produto-card__desc">Filtrado lentamente, preservando os melhores aromas do grão. Simples e honesto.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>5,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Latte -->
+          <article class="produto-card fade-in fade-in-delay-2" aria-label="Latte">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">☕</span>
+                <span>Foto em breve</span>
+              </div>
+              <div class="produto-card__badges">
+                <span class="badge badge--novo">🆕 Novidade</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Latte</h3>
+              <p class="produto-card__desc">Espresso suavizado com muito leite vaporizado sedoso. Delicado e equilibrado.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>10,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         BEBIDAS GELADAS
+    ══════════════════════════════════════════ -->
+    <section class="cat-section" id="geladas" aria-labelledby="titulo-geladas">
+      <div class="container">
+        <div class="cat-section__header fade-in">
+          <div class="cat-section__title-group">
+            <div class="cat-section__icon" aria-hidden="true">🧊</div>
+            <h2 class="cat-section__title" id="titulo-geladas">Bebidas Geladas</h2>
+          </div>
+          <p class="cat-section__description">
+            Para os dias que pedem frescor — sem abrir mão do sabor.
+          </p>
+        </div>
+
+        <div class="produto-grid">
+
+          <article class="produto-card fade-in" aria-label="Café Gelado">
+            <div class="produto-card__image-wrap">
+              <img src="assets/images/produto-gelado.png" alt="Café Gelado — Cafeteria do Teatro" class="produto-card__image" loading="lazy" />
+              <div class="produto-card__badges">
+                <span class="badge badge--popular">🔥 Mais Pedido</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Café Gelado</h3>
+              <p class="produto-card__desc">Espresso sobre gelo com leite e espuma cremosa. Refrescante e encorpado ao mesmo tempo.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>10,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-1" aria-label="Chocolate Gelado">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🧊</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Chocolate Gelado</h3>
+              <p class="produto-card__desc">Chocolate premium batido com gelo e leite. Uma indulgência que vale cada gole.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>10,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-2" aria-label="Suco Natural">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🍊</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Suco Natural</h3>
+              <p class="produto-card__desc">Frutas da estação, espremidas na hora. Pergunte a opção do dia.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>9,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-3" aria-label="Limonada">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🍋</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Limonada</h3>
+              <p class="produto-card__desc">Limão espremido na hora com açúcar e menta. Ácida e refrescante — do jeito certo.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>9,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         DOCES
+    ══════════════════════════════════════════ -->
+    <section class="cat-section" id="doces" aria-labelledby="titulo-doces">
+      <div class="container">
+        <div class="cat-section__header fade-in">
+          <div class="cat-section__title-group">
+            <div class="cat-section__icon" aria-hidden="true">🍰</div>
+            <h2 class="cat-section__title" id="titulo-doces">Doces</h2>
+          </div>
+          <p class="cat-section__description">
+            Artesanais, com carinho — companheiros perfeitos do seu café.
+          </p>
+        </div>
+
+        <div class="produto-grid">
+
+          <article class="produto-card fade-in" aria-label="Bolo do Dia">
+            <div class="produto-card__image-wrap">
+              <img src="assets/images/produto-doce.png" alt="Bolo do Dia — Cafeteria do Teatro" class="produto-card__image" loading="lazy" />
+              <div class="produto-card__badges">
+                <span class="badge badge--popular">🔥 Mais Pedido</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Bolo do Dia</h3>
+              <p class="produto-card__desc">Feito diariamente, sempre fresquinho. Consulte a opção disponível hoje com a gente.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>9,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-1" aria-label="Brownie">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🍫</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Brownie</h3>
+              <p class="produto-card__desc">De chocolate intenso, crocante por fora e macio por dentro. O favorito de sempre.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>8,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-2" aria-label="Cheesecake">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🍰</span>
+                <span>Foto em breve</span>
+              </div>
+              <div class="produto-card__badges">
+                <span class="badge badge--novo">🆕 Novidade</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Cheesecake</h3>
+              <p class="produto-card__desc">Cremoso, com base de biscoito e calda de frutas vermelhas. Uma fatia de prazer.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>12,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-3" aria-label="Brigadeiro Gourmet">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🍬</span>
+                <span>Foto em breve</span>
+              </div>
+              <div class="produto-card__badges">
+                <span class="badge badge--promo">🏷️ Promoção</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Brigadeiro Gourmet</h3>
+              <p class="produto-card__desc">Chocolate belga, coberto com granulado artesanal. O clássico elevado à sua melhor versão.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>5,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         SALGADOS
+    ══════════════════════════════════════════ -->
+    <section class="cat-section" id="salgados" aria-labelledby="titulo-salgados">
+      <div class="container">
+        <div class="cat-section__header fade-in">
+          <div class="cat-section__title-group">
+            <div class="cat-section__icon" aria-hidden="true">🥐</div>
+            <h2 class="cat-section__title" id="titulo-salgados">Salgados</h2>
+          </div>
+          <p class="cat-section__description">
+            Para quando a fome bater antes ou depois do espetáculo.
+          </p>
+        </div>
+
+        <div class="produto-grid">
+
+          <article class="produto-card fade-in" aria-label="Croissant de Queijo">
+            <div class="produto-card__image-wrap">
+              <img src="assets/images/produto-salgado.png" alt="Croissant — Cafeteria do Teatro" class="produto-card__image" loading="lazy" />
+              <div class="produto-card__badges">
+                <span class="badge badge--popular">🔥 Mais Pedido</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Croissant de Queijo</h3>
+              <p class="produto-card__desc">Folhado dourado, recheio de queijo derretido. Crocante por fora, macio por dentro.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>8,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-1" aria-label="Pão de Queijo Artesanal">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🧀</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Pão de Queijo Artesanal</h3>
+              <p class="produto-card__desc">Receita caseira, saído quentinho. Aquele cheiro e aquela textura impossíveis de resistir.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>6,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-2" aria-label="Wrap Vegetariano">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🌯</span>
+                <span>Foto em breve</span>
+              </div>
+              <div class="produto-card__badges">
+                <span class="badge badge--novo">🆕 Novidade</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Wrap Vegetariano</h3>
+              <p class="produto-card__desc">Tortilla integral com legumes frescos, cream cheese e temperos especiais. Leve e nutritivo.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>14,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="produto-card fade-in fade-in-delay-3" aria-label="Sanduíche Natural">
+            <div class="produto-card__image-wrap">
+              <div class="produto-card__image-placeholder">
+                <span class="placeholder-icon">🥗</span>
+                <span>Foto em breve</span>
+              </div>
+            </div>
+            <div class="produto-card__body">
+              <h3 class="produto-card__name">Sanduíche Natural</h3>
+              <p class="produto-card__desc">Pão artesanal com recheio fresco do dia. Peça para descobrir a combinação especial.</p>
+              <div class="produto-card__footer">
+                <div class="produto-card__price">
+                  <span class="produto-card__price-label">R$</span>13,00
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         COMBOS
+    ══════════════════════════════════════════ -->
+    <section class="cat-section section--dark" id="combos" aria-labelledby="titulo-combos">
+      <div class="container">
+        <div class="cat-section__header fade-in" style="border-bottom-color:rgba(245,236,215,0.1)">
+          <div class="cat-section__title-group">
+            <div class="cat-section__icon" aria-hidden="true">🎁</div>
+            <h2 class="cat-section__title section-title--light" id="titulo-combos">Combos</h2>
+          </div>
+          <p class="cat-section__description" style="color:rgba(237,224,196,0.6);text-align:right">
+            Feitos para quem quer mais — e pagar menos.
+          </p>
+        </div>
+
+        <div class="combo-grid">
+
+          <article class="combo-card fade-in" aria-label="Combo Pausa">
+            <div class="combo-card__icon" aria-hidden="true">☕🍰</div>
+            <div class="combo-card__content">
+              <h3 class="combo-card__name">Combo Pausa</h3>
+              <div class="combo-card__items">
+                <span class="combo-card__item-tag">Café à escolha</span>
+                <span class="combo-card__item-tag">Doce à escolha</span>
+              </div>
+              <p class="combo-card__desc">A pausa perfeita para recarregar as energias antes ou depois do espetáculo.</p>
+            </div>
+            <div class="combo-card__price-wrap">
+              <div class="combo-card__price">R$ 14,00</div>
+              <div class="combo-card__savings">Economize R$ 4,00</div>
+            </div>
+          </article>
+
+          <article class="combo-card fade-in fade-in-delay-1" aria-label="Combo Cultura">
+            <div class="combo-card__icon" aria-hidden="true">🎭☕</div>
+            <div class="combo-card__content">
+              <h3 class="combo-card__name">Combo Cultura</h3>
+              <div class="combo-card__items">
+                <span class="combo-card__item-tag">Café à escolha</span>
+                <span class="combo-card__item-tag">Salgado à escolha</span>
+              </div>
+              <p class="combo-card__desc">A combinação ideal para quem não quer parar — do estudo ao espetáculo.</p>
+            </div>
+            <div class="combo-card__price-wrap">
+              <div class="combo-card__price">R$ 15,00</div>
+              <div class="combo-card__savings">Economize R$ 3,00</div>
+            </div>
+          </article>
+
+          <article class="combo-card fade-in fade-in-delay-2" aria-label="Combo Estudo">
+            <div class="combo-card__icon" aria-hidden="true">📚☕</div>
+            <div class="combo-card__content">
+              <h3 class="combo-card__name">Combo Estudo</h3>
+              <div class="combo-card__items">
+                <span class="combo-card__item-tag">Café à escolha</span>
+                <span class="combo-card__item-tag">Doce à escolha</span>
+                <span class="combo-card__item-tag">Água mineral</span>
+              </div>
+              <p class="combo-card__desc">Para as sessões longas de estudo — tudo o que você precisa para durar o dia.</p>
+            </div>
+            <div class="combo-card__price-wrap">
+              <div class="combo-card__price">R$ 17,00</div>
+              <div class="combo-card__savings">Economize R$ 6,00</div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         ESPECIAIS
+    ══════════════════════════════════════════ -->
+    <section class="cat-section" id="especiais" aria-labelledby="titulo-especiais">
+      <div class="container">
+        <div class="cat-section__header fade-in">
+          <div class="cat-section__title-group">
+            <div class="cat-section__icon" aria-hidden="true">✨</div>
+            <h2 class="cat-section__title" id="titulo-especiais">Especiais</h2>
+          </div>
+          <p class="cat-section__description">
+            Da nossa cozinha com carinho — criações exclusivas da Casa.
+          </p>
+        </div>
+
+        <div class="produto-grid">
+
+          <article class="especial-card fade-in" aria-label="Affogato">
+            <img src="assets/images/produto-cafe.png" alt="Affogato — Cafeteria do Teatro" class="especial-card__image" loading="lazy" />
+            <div class="especial-card__body">
+              <div class="produto-card__badges" style="position:static; flex-direction:row; margin-bottom: 8px">
+                <span class="badge badge--popular">🔥 Favorito da Casa</span>
+              </div>
+              <h3 class="especial-card__name">Affogato</h3>
+              <p class="especial-card__desc">Espresso duplo derramado sobre sorvete de creme. Quente e frio ao mesmo tempo — uma experiência.</p>
+              <div class="especial-card__footer">
+                <div class="especial-card__price">R$ 14,00</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="especial-card fade-in fade-in-delay-1" aria-label="Chocolate Quente Premium">
+            <img src="assets/images/produto-doce.png" alt="Chocolate Quente Premium — Cafeteria do Teatro" class="especial-card__image" loading="lazy" />
+            <div class="especial-card__body">
+              <h3 class="especial-card__name">Chocolate Quente Premium</h3>
+              <p class="especial-card__desc">Chocolate belga 70% fundido com leite integral. Denso, aveludado e inesquecível nos dias frios.</p>
+              <div class="especial-card__footer">
+                <div class="especial-card__price">R$ 12,00</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="especial-card fade-in fade-in-delay-2" aria-label="Chai Latte">
+            <img src="assets/images/galeria-latte.png" alt="Chai Latte — Cafeteria do Teatro" class="especial-card__image" loading="lazy" />
+            <div class="especial-card__body">
+              <div class="produto-card__badges" style="position:static; flex-direction:row; margin-bottom: 8px">
+                <span class="badge badge--novo">🆕 Novidade</span>
+              </div>
+              <h3 class="especial-card__name">Chai Latte</h3>
+              <p class="especial-card__desc">Blend de especiarias indianas com leite vaporizado. Canela, cardamomo, gengibre e aconchego em cada gole.</p>
+              <div class="especial-card__footer">
+                <div class="especial-card__price">R$ 11,00</div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         CTA FINAL
+    ══════════════════════════════════════════ -->
+    <section class="cardapio-cta" aria-labelledby="cardapio-cta-title">
+      <div class="container">
+        <div class="fade-in">
+          <span class="section-tag">Venha nos visitar</span>
+          <h2 class="section-title text-center" id="cardapio-cta-title">
+            O melhor do cardápio<br>se vive presencialmente.
+          </h2>
+          <p class="section-subtitle" style="margin-inline:auto; text-align:center">
+            Reserve uma tarde e venha desfrutar da Cafeteria do Teatro.
+            Estamos no coração do Teatro da Univates, esperando por você.
+          </p>
+          <div class="cardapio-cta__actions">
+            <a href="index.html#chegar" class="btn btn--primary btn--lg" id="cardapio-cta-chegar">
+              📍 &nbsp;Como Chegar
+            </a>
+            <a
+              href="https://heyzine.com/flip-book/aac2c268d4.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn--outline-dark btn--lg"
+              id="cardapio-cta-online"
+            >
+              📖 &nbsp;Cardápio Completo Online
+            </a>
+            <a
+              href="https://www.instagram.com/cafeteriadoteatro/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn--outline-dark btn--lg"
+              id="cardapio-cta-instagram"
+            >
+              📷 &nbsp;Instagram
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div>
+          <div class="footer__brand">Cafeteria <span>do Teatro</span></div>
+          <p class="footer__tagline">Café, cultura e encontros no coração do Teatro da Univates.</p>
+          <div class="footer__socials">
+            <a href="https://www.instagram.com/cafeteriadoteatro/" target="_blank" rel="noopener" class="footer__social-link" aria-label="Instagram" id="footer-ig">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="https://linktr.ee/cafeteriadoteatro" target="_blank" rel="noopener" class="footer__social-link" aria-label="Linktree">🌳</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer__col-title">Categorias</div>
+          <ul class="footer__links" role="list">
+            <li><a href="#cafes"     class="footer__link">☕ Cafés</a></li>
+            <li><a href="#geladas"   class="footer__link">🧊 Geladas</a></li>
+            <li><a href="#doces"     class="footer__link">🍰 Doces</a></li>
+            <li><a href="#salgados"  class="footer__link">🥐 Salgados</a></li>
+            <li><a href="#combos"    class="footer__link">🎁 Combos</a></li>
+            <li><a href="#especiais" class="footer__link">✨ Especiais</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer__col-title">Navegação</div>
+          <ul class="footer__links" role="list">
+            <li><a href="index.html"         class="footer__link">Página Principal</a></li>
+            <li><a href="index.html#sobre"   class="footer__link">Sobre</a></li>
+            <li><a href="index.html#galeria" class="footer__link">Galeria</a></li>
+            <li><a href="index.html#chegar"  class="footer__link">Como Chegar</a></li>
+            <li><a href="https://heyzine.com/flip-book/aac2c268d4.html" target="_blank" rel="noopener" class="footer__link">Cardápio Online</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer__col-title">Onde Estamos</div>
+          <div class="footer__info">
+            <div class="footer__info-item">
+              <span class="footer__info-icon">📍</span>
+              <span>Teatro da Univates<br>Lajeado, RS</span>
+            </div>
+            <div class="footer__info-item">
+              <span class="footer__info-icon">🕐</span>
+              <span>Seg–Qui: 14h30–22h<br>Sex: 14h30–20h</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">© <span id="current-year"></span> Cafeteria do Teatro · Teatro da Univates · Lajeado, RS</p>
+        <a href="https://www.instagram.com/cafeteriadoteatro/" target="_blank" rel="noopener" class="footer__instagram">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          @cafeteriadoteatro
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/cardapio.js"></script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+/* =========================================================
+   HOME.CSS — Landing Institucional
+   Hero · Sobre · Experiência · Galeria · Horários · Mapa
+   ========================================================= */
+
+/* ─── HERO ───────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: 100svh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/images/hero-bg.png');
+  background-size: cover;
+  background-position: center 30%;
+  transform: scale(1.04);
+  transition: transform 8s ease-out;
+}
+
+.hero__bg.loaded { transform: scale(1); }
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(28, 16, 8, 0.55) 0%,
+    rgba(28, 16, 8, 0.35) 50%,
+    rgba(28, 16, 8, 0.72) 100%
+  );
+}
+
+.hero__content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: var(--nav-height);
+}
+
+.hero__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bege);
+  margin-bottom: var(--space-5);
+  opacity: 0;
+  animation: fadeUp 0.8s 0.3s forwards;
+}
+
+.hero__tag::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--caramelo);
+}
+
+.hero__title {
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 300;
+  color: var(--marfim);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-6);
+  opacity: 0;
+  animation: fadeUp 0.8s 0.5s forwards;
+  max-width: 14ch;
+}
+
+.hero__title em {
+  font-style: italic;
+  color: #D4A96A;
+}
+
+.hero__subtitle {
+  font-size: clamp(var(--size-base), 2vw, var(--size-lg));
+  color: rgba(245, 236, 215, 0.8);
+  max-width: 45ch;
+  line-height: 1.65;
+  margin-bottom: var(--space-10);
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.7s forwards;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.9s forwards;
+}
+
+.hero__scroll {
+  position: absolute;
+  bottom: var(--space-8);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  z-index: 2;
+  color: rgba(245, 236, 215, 0.6);
+  font-size: var(--size-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: bounce 2.5s ease-in-out infinite 1.5s;
+}
+
+.hero__scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(245,236,215,0.5), transparent);
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(20px); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(8px); }
+}
+
+/* ─── SOBRE ──────────────────────────────────────────────── */
+.sobre {
+  background: var(--marfim);
+}
+
+.sobre__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-20);
+  align-items: center;
+}
+
+.sobre__image-wrap {
+  position: relative;
+}
+
+.sobre__image {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 20px 20px 0 var(--bege);
+}
+
+.sobre__image-badge {
+  position: absolute;
+  bottom: -24px;
+  right: -24px;
+  width: 120px;
+  height: 120px;
+  background: var(--caramelo);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--marfim);
+  font-family: var(--font-serif);
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(139, 94, 60, 0.4);
+}
+
+.sobre__image-badge .num {
+  font-size: var(--size-2xl);
+  line-height: 1;
+  font-weight: 300;
+}
+
+.sobre__image-badge .label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: var(--font-sans);
+  opacity: 0.85;
+}
+
+.sobre__text .section-title { margin-bottom: var(--space-5); }
+
+.sobre__body {
+  margin-bottom: var(--space-6);
+}
+
+.sobre__body p + p { margin-top: var(--space-4); }
+
+.sobre__features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--bege);
+}
+
+.sobre__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.sobre__feature-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--creme);
+  border-radius: var(--radius-sm);
+  font-size: var(--size-lg);
+  flex-shrink: 0;
+}
+
+.sobre__feature-text h4 {
+  font-size: var(--size-base);
+  margin-bottom: 2px;
+  color: var(--espresso);
+}
+
+.sobre__feature-text p {
+  font-size: var(--size-sm);
+  margin-bottom: 0;
+  max-width: none;
+}
+
+/* ─── EXPERIÊNCIA ────────────────────────────────────────── */
+.experiencia {
+  background: var(--creme);
+}
+
+.experiencia__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+
+.exp-card {
+  background: var(--marfim);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 2px 16px var(--sombra);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.exp-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px var(--sombra-forte);
+}
+
+.exp-card__image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.exp-card:hover .exp-card__image { transform: scale(1.04); }
+
+.exp-card__body {
+  padding: var(--space-6);
+}
+
+.exp-card__icon {
+  font-size: var(--size-2xl);
+  margin-bottom: var(--space-3);
+}
+
+.exp-card__title {
+  font-size: var(--size-xl);
+  color: var(--espresso);
+  margin-bottom: var(--space-3);
+}
+
+.exp-card__text {
+  font-size: var(--size-sm);
+  color: var(--texto-suave);
+  line-height: 1.7;
+  max-width: none;
+  margin-bottom: 0;
+}
+
+/* ─── GALERIA ────────────────────────────────────────────── */
+.galeria {
+  background: var(--espresso);
+}
+
+.galeria__header { margin-bottom: var(--space-10); }
+
+.galeria__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 260px 260px;
+  gap: var(--space-3);
+}
+
+.galeria__item {
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  position: relative;
+  cursor: pointer;
+}
+
+.galeria__item--tall {
+  grid-row: span 2;
+}
+
+.galeria__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.galeria__item:hover .galeria__img { transform: scale(1.08); }
+
+.galeria__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 16, 8, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-base);
+}
+
+.galeria__item:hover .galeria__overlay {
+  background: rgba(28, 16, 8, 0.35);
+}
+
+.galeria__icon {
+  color: var(--marfim);
+  font-size: var(--size-2xl);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--transition-base);
+}
+
+.galeria__item:hover .galeria__icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.galeria__cta {
+  text-align: center;
+  margin-top: var(--space-10);
+}
+
+/* ─── HORÁRIOS ───────────────────────────────────────────── */
+.horarios {
+  background: var(--marfim);
+}
+
+.horarios__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  max-width: 680px;
+  margin: var(--space-12) auto 0;
+}
+
+.horario-card {
+  background: var(--creme);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-8);
+  border-left: 4px solid var(--caramelo);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.horario-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--sombra);
+}
+
+.horario-card__dia {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--caramelo);
+  margin-bottom: var(--space-2);
+}
+
+.horario-card__hora {
+  font-family: var(--font-serif);
+  font-size: var(--size-2xl);
+  color: var(--espresso);
+  line-height: 1.1;
+}
+
+.horario-card__nota {
+  font-size: var(--size-xs);
+  color: var(--texto-claro);
+  margin-top: var(--space-1);
+  margin-bottom: 0;
+  max-width: none;
+}
+
+.horario-card--verde {
+  border-left-color: var(--verde-cultural);
+}
+
+.horario-card--verde .horario-card__dia {
+  color: var(--verde-cultural);
+}
+
+/* ─── COMO CHEGAR ────────────────────────────────────────── */
+.chegar {
+  background: var(--creme);
+}
+
+.chegar__grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.chegar__info { }
+
+.chegar__address {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-8) 0 var(--space-10);
+  padding: var(--space-6);
+  background: var(--marfim);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--bege-escuro);
+}
+
+.chegar__address-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.chegar__address-icon {
+  font-size: var(--size-xl);
+  flex-shrink: 0;
+}
+
+.chegar__address-text h4 {
+  font-size: var(--size-base);
+  color: var(--espresso);
+  margin-bottom: 2px;
+}
+
+.chegar__address-text p {
+  font-size: var(--size-sm);
+  color: var(--texto-suave);
+  max-width: none;
+  margin-bottom: 0;
+}
+
+.chegar__map {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 8px 32px var(--sombra-forte);
+  height: 420px;
+  background: var(--bege);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-align: center;
+  border: 1px solid var(--bege-escuro);
+}
+
+.chegar__map iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.chegar__map-placeholder {
+  color: var(--texto-claro);
+}
+
+.chegar__map-placeholder p {
+  font-size: var(--size-sm);
+  color: var(--texto-claro);
+  max-width: none;
+  margin-bottom: var(--space-4);
+}
+
+/* ─── CTA CARDÁPIO ───────────────────────────────────────── */
+.cta-cardapio {
+  background: var(--verde-cultural);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-cardapio::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 236, 215, 0.08);
+}
+
+.cta-cardapio::after {
+  content: '';
+  position: absolute;
+  bottom: -120px;
+  left: -60px;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 236, 215, 0.06);
+}
+
+.cta-cardapio__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.cta-cardapio__text .section-title { margin-bottom: var(--space-4); }
+
+.cta-cardapio__actions {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* ─── RESPONSIVIDADE HOME ────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sobre__grid { gap: var(--space-12); }
+  .chegar__grid { grid-template-columns: 1fr; }
+  .chegar__map { height: 300px; }
+  .cta-cardapio__inner { flex-direction: column; text-align: center; }
+  .cta-cardapio__actions { justify-content: center; }
+}
+
+@media (max-width: 768px) {
+  .sobre__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+
+  .sobre__image { height: 360px; }
+
+  .sobre__image-badge {
+    right: var(--space-4);
+    bottom: -20px;
+  }
+
+  .experiencia__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .galeria__grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .galeria__item--tall { grid-row: span 1; }
+
+  .horarios__grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero__actions { flex-direction: column; align-items: flex-start; }
+  .galeria__grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,242 @@
+/* =========================================================
+   BASE.CSS — Design System | Cafeteria do Teatro
+   Tokens · Reset · Tipografia · Utilitários
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap');
+
+/* ─── CSS CUSTOM PROPERTIES ─────────────────────────────── */
+:root {
+  /* Paleta */
+  --espresso:         #1C1008;
+  --cafe:             #3D1F0D;
+  --caramelo:         #8B5E3C;
+  --caramelo-light:   #A97B55;
+  --creme:            #F5ECD7;
+  --bege:             #EDE0C4;
+  --bege-escuro:      #D4C4A0;
+  --marfim:           #FAF6EE;
+  --verde-cultural:   #2D4A3E;
+  --verde-light:      #3D6255;
+  --texto:            #2C1A0E;
+  --texto-suave:      #6B4C35;
+  --texto-claro:      #9C7A60;
+  --branco:           #FFFFFF;
+  --sombra:           rgba(28, 16, 8, 0.12);
+  --sombra-forte:     rgba(28, 16, 8, 0.22);
+
+  /* Tipografia */
+  --font-serif:       'Cormorant Garamond', Georgia, serif;
+  --font-sans:        'Jost', system-ui, sans-serif;
+
+  --size-xs:   0.75rem;   /* 12px */
+  --size-sm:   0.875rem;  /* 14px */
+  --size-base: 1rem;      /* 16px */
+  --size-md:   1.125rem;  /* 18px */
+  --size-lg:   1.25rem;   /* 20px */
+  --size-xl:   1.5rem;    /* 24px */
+  --size-2xl:  2rem;      /* 32px */
+  --size-3xl:  2.75rem;   /* 44px */
+  --size-4xl:  3.75rem;   /* 60px */
+  --size-5xl:  5rem;      /* 80px */
+
+  /* Espaçamentos */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* Layout */
+  --max-width: 1200px;
+  --nav-height: 72px;
+
+  /* Bordas e raios */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transições */
+  --transition-fast: 200ms ease;
+  --transition-base: 350ms ease;
+  --transition-slow: 600ms ease;
+}
+
+/* ─── RESET ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--size-base);
+  color: var(--texto);
+  background-color: var(--marfim);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+/* ─── TIPOGRAFIA ─────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: clamp(var(--size-3xl), 6vw, var(--size-5xl)); }
+h2 { font-size: clamp(var(--size-2xl), 4vw, var(--size-4xl)); }
+h3 { font-size: clamp(var(--size-xl), 2.5vw, var(--size-2xl)); }
+h4 { font-size: var(--size-lg); }
+
+p {
+  font-size: var(--size-base);
+  color: var(--texto-suave);
+  line-height: 1.75;
+  max-width: 65ch;
+}
+
+/* ─── UTILITÁRIOS ────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.section {
+  padding: var(--space-24) 0;
+}
+
+.section--alt {
+  background-color: var(--creme);
+}
+
+.section--dark {
+  background-color: var(--espresso);
+  color: var(--marfim);
+}
+
+.section--verde {
+  background-color: var(--verde-cultural);
+  color: var(--marfim);
+}
+
+.section-tag {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--caramelo);
+  margin-bottom: var(--space-3);
+}
+
+.section-tag--light {
+  color: var(--bege-escuro);
+}
+
+.section-title {
+  margin-bottom: var(--space-5);
+  color: var(--espresso);
+}
+
+.section-title--light {
+  color: var(--marfim);
+}
+
+.section-subtitle {
+  font-size: var(--size-md);
+  color: var(--texto-claro);
+  margin-bottom: var(--space-12);
+  max-width: 55ch;
+  line-height: 1.6;
+}
+
+.section-subtitle--light {
+  color: var(--bege);
+}
+
+.text-center { text-align: center; }
+.text-center p { margin-inline: auto; }
+
+/* ─── FADE-IN ANIMAÇÕES ──────────────────────────────────── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in-delay-1 { transition-delay: 0.1s; }
+.fade-in-delay-2 { transition-delay: 0.2s; }
+.fade-in-delay-3 { transition-delay: 0.3s; }
+.fade-in-delay-4 { transition-delay: 0.4s; }
+
+/* ─── SCROLLBAR ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--marfim); }
+::-webkit-scrollbar-thumb { background: var(--caramelo); border-radius: 3px; }
+
+/* ─── SELEÇÃO ────────────────────────────────────────────── */
+::selection {
+  background-color: var(--caramelo);
+  color: var(--marfim);
+}
+
+/* ─── RESPONSIVIDADE BASE ────────────────────────────────── */
+@media (max-width: 768px) {
+  .container { padding: 0 var(--space-5); }
+  .section   { padding: var(--space-16) 0; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 var(--space-4); }
+  .section   { padding: var(--space-12) 0; }
+}

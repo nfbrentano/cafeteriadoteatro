@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cafeteria do Teatro — Café, cultura e encontros no coração do Teatro da Univates, em Lajeado/RS. Uma pausa especial que vale o ato." />
+  <meta name="keywords" content="cafeteria, teatro, univates, lajeado, café, cultura, coffee shop, RS" />
+  <meta property="og:title" content="Cafeteria do Teatro | Lajeado, RS" />
+  <meta property="og:description" content="No coração do Teatro da Univates, um lugar ideal para pausas, estudos, encontros e momentos antes ou depois de atividades culturais." />
+  <meta property="og:image" content="assets/images/hero-bg.png" />
+  <meta name="theme-color" content="#1C1008" />
+  <title>Cafeteria do Teatro | Teatro da Univates · Lajeado/RS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════════ -->
+  <nav class="navbar navbar--transparent" id="navbar" role="navigation" aria-label="Navegação principal">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo" aria-label="Cafeteria do Teatro - Início">
+        Cafeteria <span>do Teatro</span>
+      </a>
+
+      <ul class="navbar__links" role="list">
+        <li><a href="#sobre"     class="navbar__link">Sobre</a></li>
+        <li><a href="#galeria"   class="navbar__link">Galeria</a></li>
+        <li><a href="#horarios"  class="navbar__link">Horários</a></li>
+        <li><a href="#chegar"    class="navbar__link">Como Chegar</a></li>
+        <li class="navbar__cta">
+          <a href="cardapio.html" class="btn btn--primary">Ver Cardápio</a>
+        </li>
+      </ul>
+
+      <button class="navbar__hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="navbar__mobile-menu" id="mobile-menu" role="dialog" aria-label="Menu mobile">
+    <a href="#sobre"    class="navbar__mobile-link">Sobre</a>
+    <a href="#galeria"  class="navbar__mobile-link">Galeria</a>
+    <a href="#horarios" class="navbar__mobile-link">Horários</a>
+    <a href="#chegar"   class="navbar__mobile-link">Como Chegar</a>
+    <a href="cardapio.html" class="btn btn--primary" style="margin-top:8px">Ver Cardápio</a>
+  </div>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════
+         HERO
+    ══════════════════════════════════════════ -->
+    <section class="hero" id="home" aria-label="Seção principal">
+      <div class="hero__bg" role="img" aria-label="Interior da Cafeteria do Teatro"></div>
+      <div class="hero__overlay"></div>
+
+      <div class="hero__content container">
+        <div class="hero__tag">Teatro da Univates · Lajeado, RS</div>
+
+        <h1 class="hero__title">
+          Onde o café<br>encontra a <em>cultura.</em>
+        </h1>
+
+        <p class="hero__subtitle">
+          No coração do Teatro da Univates, uma pausa que vale o ato.
+          Café de qualidade, ambiente acolhedor e a energia única de um espaço cultural.
+        </p>
+
+        <div class="hero__actions">
+          <a href="cardapio.html" class="btn btn--primary btn--lg" id="hero-cta-cardapio">
+            Ver Cardápio
+          </a>
+          <a href="#chegar" class="btn btn--outline btn--lg" id="hero-cta-chegar">
+            Como Chegar
+          </a>
+        </div>
+      </div>
+
+      <div class="hero__scroll" aria-hidden="true">
+        <div class="hero__scroll-line"></div>
+        <span>Rolar</span>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         SOBRE
+    ══════════════════════════════════════════ -->
+    <section class="section sobre" id="sobre" aria-labelledby="sobre-title">
+      <div class="container">
+        <div class="sobre__grid">
+
+          <div class="sobre__image-wrap fade-in">
+            <img
+              src="assets/images/sobre-cafe.png"
+              alt="Xícara de café com livro aberto — ambiente da Cafeteria do Teatro"
+              class="sobre__image"
+              loading="lazy"
+            />
+            <div class="sobre__image-badge" aria-hidden="true">
+              <span class="num">+2</span>
+              <span class="label">Anos de<br>história</span>
+            </div>
+          </div>
+
+          <div class="sobre__text fade-in fade-in-delay-2">
+            <span class="section-tag">Quem Somos</span>
+            <h2 class="section-title" id="sobre-title">
+              Uma cafeteria dentro de um espaço que respira cultura
+            </h2>
+
+            <div class="sobre__body">
+              <p>
+                A Cafeteria do Teatro nasceu com um propósito simples e bonito: ser o lugar certo
+                para antes do espetáculo, depois da aula, no intervalo do ensaio ou em qualquer
+                momento que peça uma boa xícara de café.
+              </p>
+              <p>
+                Localizada no <strong>Teatro da Univates</strong>, em Lajeado/RS, nossa cafeteria
+                é parte do cenário cultural da cidade. Aqui o tempo desacelera — entre livros,
+                conversas, música e o aroma do café recém-preparado.
+              </p>
+              <p>
+                Seja para estudar em silêncio, reencontrar uma amizade ou simplesmente existir
+                com mais presença, a Cafeteria do Teatro é o seu lugar.
+              </p>
+            </div>
+
+            <div class="sobre__features">
+              <div class="sobre__feature">
+                <div class="sobre__feature-icon" aria-hidden="true">☕</div>
+                <div class="sobre__feature-text">
+                  <h4>Café de verdade</h4>
+                  <p>Grãos selecionados, preparo com cuidado e aquele aroma que muda o humor.</p>
+                </div>
+              </div>
+              <div class="sobre__feature">
+                <div class="sobre__feature-icon" aria-hidden="true">🎭</div>
+                <div class="sobre__feature-text">
+                  <h4>Dentro do Teatro da Univates</h4>
+                  <p>Integrada a um espaço vivo, plural e cheio de criatividade em Lajeado.</p>
+                </div>
+              </div>
+              <div class="sobre__feature">
+                <div class="sobre__feature-icon" aria-hidden="true">🌿</div>
+                <div class="sobre__feature-text">
+                  <h4>Ambiente acolhedor</h4>
+                  <p>Pensado para você ficar à vontade — sozinho ou em boa companhia.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         EXPERIÊNCIA
+    ══════════════════════════════════════════ -->
+    <section class="section experiencia" id="experiencia" aria-labelledby="exp-title">
+      <div class="container">
+        <div class="text-center fade-in">
+          <span class="section-tag">A Experiência</span>
+          <h2 class="section-title" id="exp-title">Três razões para vir nos visitar</h2>
+          <p class="section-subtitle" style="margin-inline:auto">
+            Cada visita à Cafeteria do Teatro é uma pausa com propósito —
+            onde o café importa tanto quanto o espaço ao redor.
+          </p>
+        </div>
+
+        <div class="experiencia__grid">
+
+          <div class="exp-card fade-in fade-in-delay-1">
+            <div style="overflow:hidden; height:220px">
+              <img
+                src="assets/images/galeria-latte.png"
+                alt="Cappuccino com latte art preparado na Cafeteria do Teatro"
+                class="exp-card__image"
+                loading="lazy"
+              />
+            </div>
+            <div class="exp-card__body">
+              <div class="exp-card__icon" aria-hidden="true">☕</div>
+              <h3 class="exp-card__title">Café com cuidado</h3>
+              <p class="exp-card__text">
+                Do espresso clássico ao cappuccino cremoso, cada bebida é preparada
+                com atenção e carinho. Café não é só bebida — é um ritual.
+              </p>
+            </div>
+          </div>
+
+          <div class="exp-card fade-in fade-in-delay-2">
+            <div style="overflow:hidden; height:220px">
+              <img
+                src="assets/images/galeria-ambiente.png"
+                alt="Ambiente interno acolhedor da Cafeteria do Teatro"
+                class="exp-card__image"
+                loading="lazy"
+              />
+            </div>
+            <div class="exp-card__body">
+              <div class="exp-card__icon" aria-hidden="true">🎭</div>
+              <h3 class="exp-card__title">Atmosfera cultural</h3>
+              <p class="exp-card__text">
+                Instalada no Teatro da Univates, respiramos arte e criatividade.
+                O ambiente inspira conversas mais ricas, pausas mais significativas.
+              </p>
+            </div>
+          </div>
+
+          <div class="exp-card fade-in fade-in-delay-3">
+            <div style="overflow:hidden; height:220px">
+              <img
+                src="assets/images/galeria-conversa.png"
+                alt="Pessoas conversando e tomando café na Cafeteria do Teatro"
+                class="exp-card__image"
+                loading="lazy"
+              />
+            </div>
+            <div class="exp-card__body">
+              <div class="exp-card__icon" aria-hidden="true">🤝</div>
+              <h3 class="exp-card__title">Encontros que ficam</h3>
+              <p class="exp-card__text">
+                Seja para estudar, trabalhar, namorar ou simplesmente descansar,
+                a Cafeteria do Teatro é o cenário perfeito para os seus encontros.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         GALERIA
+    ══════════════════════════════════════════ -->
+    <section class="section galeria" id="galeria" aria-labelledby="galeria-title">
+      <div class="container">
+        <div class="galeria__header text-center fade-in">
+          <span class="section-tag section-tag--light">Nosso Espaço</span>
+          <h2 class="section-title section-title--light" id="galeria-title">
+            Cada detalhe tem seu charme
+          </h2>
+          <p class="section-subtitle section-subtitle--light" style="margin-inline:auto">
+            Fotos de ambiente, balcão, café e momentos da nossa cafeteria.
+          </p>
+        </div>
+
+        <div class="galeria__grid" role="list" aria-label="Galeria de fotos da Cafeteria do Teatro">
+
+          <div class="galeria__item galeria__item--tall fade-in" role="listitem">
+            <img src="assets/images/galeria-balcao.png"   alt="Balcão da Cafeteria do Teatro com vitrine de doces e máquina de café" class="galeria__img" loading="lazy" />
+            <div class="galeria__overlay" aria-hidden="true">
+              <span class="galeria__icon">⊕</span>
+            </div>
+          </div>
+
+          <div class="galeria__item fade-in fade-in-delay-1" role="listitem">
+            <img src="assets/images/galeria-mesa.png"     alt="Mesa com cappuccino e bolo de chocolate na Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <div class="galeria__overlay" aria-hidden="true">
+              <span class="galeria__icon">⊕</span>
+            </div>
+          </div>
+
+          <div class="galeria__item fade-in fade-in-delay-2" role="listitem">
+            <img src="assets/images/galeria-doces.png"    alt="Vitrine com doces artesanais da Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <div class="galeria__overlay" aria-hidden="true">
+              <span class="galeria__icon">⊕</span>
+            </div>
+          </div>
+
+          <div class="galeria__item fade-in fade-in-delay-1" role="listitem">
+            <img src="assets/images/galeria-latte.png"    alt="Cappuccino com latte art na Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <div class="galeria__overlay" aria-hidden="true">
+              <span class="galeria__icon">⊕</span>
+            </div>
+          </div>
+
+          <div class="galeria__item fade-in fade-in-delay-2" role="listitem">
+            <img src="assets/images/galeria-conversa.png" alt="Clientes conversando e tomando café na Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <div class="galeria__overlay" aria-hidden="true">
+              <span class="galeria__icon">⊕</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="galeria__cta fade-in">
+          <a
+            href="https://www.instagram.com/cafeteriadoteatro/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn--outline"
+            id="galeria-instagram-btn"
+          >
+            📷 &nbsp;Nos acompanhe no Instagram
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         HORÁRIOS
+    ══════════════════════════════════════════ -->
+    <section class="section horarios" id="horarios" aria-labelledby="horarios-title">
+      <div class="container">
+        <div class="text-center fade-in">
+          <span class="section-tag">Funcionamento</span>
+          <h2 class="section-title" id="horarios-title">Quando estamos aqui para você</h2>
+          <p class="section-subtitle" style="margin-inline:auto">
+            Venha nos visitar! Estamos abertos tarde e noite para acompanhar
+            os espetáculos do Teatro da Univates.
+          </p>
+        </div>
+
+        <div class="horarios__grid">
+          <div class="horario-card fade-in fade-in-delay-1">
+            <div class="horario-card__dia">Segunda → Quinta</div>
+            <div class="horario-card__hora">14h30 – 22h</div>
+            <p class="horario-card__nota">Aberto para tarde e noite</p>
+          </div>
+
+          <div class="horario-card horario-card--verde fade-in fade-in-delay-2">
+            <div class="horario-card__dia">Sexta-feira</div>
+            <div class="horario-card__hora">14h30 – 20h</div>
+            <p class="horario-card__nota">Encerramento mais cedo</p>
+          </div>
+        </div>
+
+        <p style="text-align:center; margin-top:2rem; font-size:0.875rem; color:var(--texto-claro)">
+          ⚠️ Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         COMO CHEGAR
+    ══════════════════════════════════════════ -->
+    <section class="section chegar" id="chegar" aria-labelledby="chegar-title">
+      <div class="container">
+        <div class="chegar__grid">
+
+          <div class="chegar__info fade-in">
+            <span class="section-tag">Localização</span>
+            <h2 class="section-title" id="chegar-title">
+              Dentro do Teatro da Univates
+            </h2>
+            <p>
+              Estamos no coração do campus da Univates, em Lajeado/RS.
+              Fácil de acessar, difícil de querer sair.
+            </p>
+
+            <address class="chegar__address" style="font-style:normal">
+              <div class="chegar__address-item">
+                <span class="chegar__address-icon" aria-hidden="true">📍</span>
+                <div class="chegar__address-text">
+                  <h4>Endereço</h4>
+                  <p>Teatro da Univates<br>Rua Avelino Tallini, 171 — Universitário<br>Lajeado, RS · CEP 95914-014</p>
+                </div>
+              </div>
+              <div class="chegar__address-item">
+                <span class="chegar__address-icon" aria-hidden="true">🕐</span>
+                <div class="chegar__address-text">
+                  <h4>Horário de funcionamento</h4>
+                  <p>Seg–Qui: 14h30 às 22h &nbsp;·&nbsp; Sex: 14h30 às 20h</p>
+                </div>
+              </div>
+              <div class="chegar__address-item">
+                <span class="chegar__address-icon" aria-hidden="true">📱</span>
+                <div class="chegar__address-text">
+                  <h4>Instagram</h4>
+                  <p><a href="https://www.instagram.com/cafeteriadoteatro/" target="_blank" rel="noopener" style="color:var(--caramelo)">@cafeteriadoteatro</a></p>
+                </div>
+              </div>
+            </address>
+
+            <div style="display:flex; gap:1rem; flex-wrap:wrap">
+              <a
+                href="https://maps.google.com/?q=Teatro+da+Univates,+Lajeado,+RS"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn--primary"
+                id="chegar-maps-btn"
+              >
+                📍 &nbsp;Abrir no Google Maps
+              </a>
+              <a
+                href="https://g.page/r/Cbcr-OkxGJmNEBM/review"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn--outline-dark"
+                id="chegar-review-btn"
+              >
+                ⭐ &nbsp;Avaliar no Google
+              </a>
+            </div>
+          </div>
+
+          <div class="chegar__map fade-in fade-in-delay-2">
+            <!-- 
+              SUBSTITUIÇÃO DO MAPA:
+              Substitua o conteúdo abaixo pelo embed do Google Maps.
+              Vá em maps.google.com, procure "Teatro da Univates Lajeado",
+              clique em Compartilhar → Incorporar mapa → copie o iframe.
+            -->
+            <iframe
+              title="Mapa — Teatro da Univates, Lajeado RS"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3476.123456789!2d-51.9756!3d-29.4676!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951c3a6d3c3c3c3d%3A0x123456789abcdef!2sTeatro%20da%20Univates!5e0!3m2!1spt!2sbr!4v1234567890123"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              aria-label="Mapa com localização da Cafeteria do Teatro no Teatro da Univates"
+            ></iframe>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         CTA CARDÁPIO
+    ══════════════════════════════════════════ -->
+    <section class="section cta-cardapio" id="cardapio-cta" aria-labelledby="cta-title">
+      <div class="container">
+        <div class="cta-cardapio__inner fade-in">
+          <div class="cta-cardapio__text">
+            <span class="section-tag section-tag--light">Cardápio Digital</span>
+            <h2 class="section-title section-title--light" id="cta-title">
+              Explore o que preparamos<br><em style="font-style:italic; font-family:var(--font-serif)">para você.</em>
+            </h2>
+            <p class="section-subtitle section-subtitle--light">
+              Cafés, bebidas geladas, doces artesanais, salgados e combos.
+              Tudo pensado para tornar sua visita mais especial.
+            </p>
+          </div>
+
+          <div class="cta-cardapio__actions">
+            <a href="cardapio.html" class="btn btn--primary btn--lg" id="cta-ver-cardapio">
+              Ver Cardápio Completo
+            </a>
+            <a
+              href="https://heyzine.com/flip-book/aac2c268d4.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn--outline btn--lg"
+              id="cta-cardapio-digital"
+            >
+              📖 &nbsp;Cardápio Online
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__grid">
+
+        <!-- Marca -->
+        <div>
+          <div class="footer__brand">Cafeteria <span>do Teatro</span></div>
+          <p class="footer__tagline">
+            Café, cultura e encontros no coração do Teatro da Univates.
+          </p>
+          <div class="footer__socials">
+            <a
+              href="https://www.instagram.com/cafeteriadoteatro/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer__social-link"
+              aria-label="Instagram da Cafeteria do Teatro"
+              id="footer-instagram"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+            <a
+              href="https://linktr.ee/cafeteriadoteatro"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer__social-link"
+              aria-label="Linktree da Cafeteria do Teatro"
+              id="footer-linktree"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M7.953 15.066c-.08.163-.08.325-.08.325L6.4 18.914l4.215-2.55.068-.04v2.544l1.317.788 1.317-.788v-2.544l.068.04 4.215 2.55-1.473-3.523c0 0 0-.162-.08-.325L13.45 13.3l3.937-.01-.788-1.538-3.937.01 2.56-2.56-1.317-.788-2.905 2.904-2.905-2.904-1.317.788 2.56 2.56-3.937-.01-.788 1.538 3.937.01-2.597 1.766z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Navegação rápida -->
+        <div>
+          <div class="footer__col-title">Navegação</div>
+          <ul class="footer__links" role="list">
+            <li><a href="#sobre"     class="footer__link">Sobre nós</a></li>
+            <li><a href="#galeria"   class="footer__link">Galeria</a></li>
+            <li><a href="#horarios"  class="footer__link">Horários</a></li>
+            <li><a href="#chegar"    class="footer__link">Como chegar</a></li>
+            <li><a href="cardapio.html" class="footer__link">Cardápio</a></li>
+          </ul>
+        </div>
+
+        <!-- Links externos -->
+        <div>
+          <div class="footer__col-title">Links Úteis</div>
+          <ul class="footer__links" role="list">
+            <li><a href="https://heyzine.com/flip-book/aac2c268d4.html" target="_blank" rel="noopener" class="footer__link">Cardápio Online</a></li>
+            <li><a href="https://g.page/r/Cbcr-OkxGJmNEBM/review" target="_blank" rel="noopener" class="footer__link">Avalie-nos no Google</a></li>
+            <li><a href="https://open.spotify.com/playlist/5j78OMilPjJid7HTMZLNIu" target="_blank" rel="noopener" class="footer__link">🎵 Playlist Cafeteria</a></li>
+            <li><a href="https://open.spotify.com/playlist/54FqzH5WCR3awucuXDej7n" target="_blank" rel="noopener" class="footer__link">🎷 Blues e Jazz</a></li>
+            <li><a href="https://www.univates.br" target="_blank" rel="noopener" class="footer__link">Univates</a></li>
+          </ul>
+        </div>
+
+        <!-- Informações de contato -->
+        <div>
+          <div class="footer__col-title">Contato & Local</div>
+          <div class="footer__info">
+            <div class="footer__info-item">
+              <span class="footer__info-icon" aria-hidden="true">📍</span>
+              <span>Teatro da Univates, Lajeado/RS<br>Rua Avelino Tallini, 171</span>
+            </div>
+            <div class="footer__info-item">
+              <span class="footer__info-icon" aria-hidden="true">🕐</span>
+              <span>Seg–Qui: 14h30–22h<br>Sex: 14h30–20h</span>
+            </div>
+            <div class="footer__info-item">
+              <span class="footer__info-icon" aria-hidden="true">📱</span>
+              <a href="https://www.instagram.com/cafeteriadoteatro/" target="_blank" rel="noopener" style="color:inherit">@cafeteriadoteatro</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">
+          © <span id="current-year"></span> Cafeteria do Teatro · Teatro da Univates · Lajeado, RS
+        </p>
+        <a
+          href="https://www.instagram.com/cafeteriadoteatro/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer__instagram"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+          @cafeteriadoteatro
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
