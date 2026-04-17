@@ -29,12 +29,78 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileMenu.classList.toggle('open');
   });
 
+    });
+  });
+
   document.querySelectorAll('.navbar__mobile-link').forEach(link => {
     link.addEventListener('click', () => {
       hamburger.classList.remove('active');
       mobileMenu.classList.remove('open');
     });
   });
+
+  /* ── Promoções Dinâmicas ────────────────────────────────── */
+  const loadActivePromos = () => {
+    const PROMO_LS_KEY = 'cafeteria_campanhas';
+    const raw = localStorage.getItem(PROMO_LS_KEY);
+    if (!raw) return;
+
+    try {
+      const campanhas = JSON.parse(raw);
+      const now = new Date();
+      
+      const ativas = campanhas.filter(c => {
+        if (!c.ativo) return false;
+        const start = new Date(c.inicio + 'T00:00:00');
+        const end = new Date(c.fim + 'T23:59:59');
+        return now >= start && now <= end;
+      });
+
+      if (ativas.length === 0) return;
+
+      const promo = ativas.sort((a, b) => new Date(b.updatedAt || b.inicio) - new Date(a.updatedAt || a.inicio))[0];
+
+      const barRoot = document.getElementById('promo-bar-root');
+      if (barRoot) {
+        barRoot.innerHTML = `
+          <div class="promo-bar">
+            <div class="container">
+              ${promo.badge ? `<span class="promo-bar__badge">${promo.badge}</span>` : ''}
+              <span>${promo.titulo}: ${promo.descricao}</span>
+              ${promo.link ? `<a href="${promo.link}">Saiba mais →</a>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      const heroRoot = document.getElementById('promo-hero-root');
+      if (heroRoot) {
+        heroRoot.innerHTML = `
+          <div class="promo-hero">
+            ${promo.imageUrl ? `
+              <div class="promo-hero__img">
+                <img src="${promo.imageUrl}" alt="${promo.titulo}">
+              </div>
+            ` : ''}
+            <div class="promo-hero__content">
+              ${promo.badge ? `<span class="promo-hero__badge">${promo.badge}</span>` : ''}
+              <h2 class="promo-hero__title">${promo.titulo}</h2>
+              <p class="promo-hero__desc">${promo.descricao}</p>
+              ${promo.link ? `
+                <div class="promo-hero__cta">
+                  <a href="${promo.link}" class="btn btn--primary">Aproveitar agora</a>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+    } catch (e) {
+      console.error('Erro ao carregar promoções:', e);
+    }
+  };
+
+  loadActivePromos();
 
   /* ── Navegação sticky de categorias ─────────────────────── */
   const catBtns    = document.querySelectorAll('.cat-nav__btn');

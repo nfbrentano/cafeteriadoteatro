@@ -59,8 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     heroBg.classList.add('loaded');
 
-    heroBg.classList.add('loaded');
-
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY;
       if (scrolled < window.innerHeight) {
@@ -69,7 +67,116 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  /* ── Horários Dinâmicos ─────────────────────────────────── */
+  /* ── Promoções Dinâmicas ────────────────────────────────── */
+  const loadActivePromos = () => {
+    const PROMO_LS_KEY = 'cafeteria_campanhas';
+    const raw = localStorage.getItem(PROMO_LS_KEY);
+    if (!raw) return;
+
+    try {
+      const campanhas = JSON.parse(raw);
+      const now = new Date();
+      
+      // Filtrar campanhas ativas no momento
+      const ativas = campanhas.filter(c => {
+        if (!c.ativo) return false;
+        const start = new Date(c.inicio + 'T00:00:00');
+        const end = new Date(c.fim + 'T23:59:59');
+        return now >= start && now <= end;
+      });
+
+      if (ativas.length === 0) return;
+
+      // Pegar a mais recente
+      const promo = ativas.sort((a, b) => new Date(b.updatedAt || b.inicio) - new Date(a.updatedAt || a.inicio))[0];
+
+      // Renderizar Promo Bar (Topbar discreta)
+      const barRoot = document.getElementById('promo-bar-root');
+      if (barRoot) {
+        barRoot.innerHTML = `
+          <div class="promo-bar">
+            <div class="container">
+              ${promo.badge ? `<span class="promo-bar__badge">${promo.badge}</span>` : ''}
+              <span>${promo.titulo}: ${promo.descricao}</span>
+              ${promo.link ? `<a href="${promo.link}">Saiba mais →</a>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Se estiver no cardápio, renderizar o banner de destaque
+      const heroRoot = document.getElementById('promo-hero-root');
+      if (heroRoot) {
+        heroRoot.innerHTML = `
+          <div class="promo-hero">
+            ${promo.imageUrl ? `
+              <div class="promo-hero__img">
+                <img src="${promo.imageUrl}" alt="${promo.titulo}">
+              </div>
+            ` : ''}
+            <div class="promo-hero__content">
+              ${promo.badge ? `<span class="promo-hero__badge">${promo.badge}</span>` : ''}
+              <h2 class="promo-hero__title">${promo.titulo}</h2>
+              <p class="promo-hero__desc">${promo.descricao}</p>
+              ${promo.link ? `
+                <div class="promo-hero__cta">
+                  <a href="${promo.link}" class="btn btn--primary">Aproveitar agora</a>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+    } catch (e) {
+      console.error('Erro ao carregar promoções:', e);
+    }
+  };
+
+  loadActivePromos();
+
+  /* ── Textos Institucionais ──────────────────────────────── */
+  const applyHomeTexts = () => {
+    const TEXTOS_LS_KEY = 'cafeteria_textos_home';
+    const saved = localStorage.getItem(TEXTOS_LS_KEY);
+    if (!saved) return;
+
+    try {
+      const data = JSON.parse(saved);
+      
+      const elSobreTitulo    = document.getElementById('dyn-sobre-titulo');
+      const elSobreTexto     = document.getElementById('dyn-sobre-texto');
+      const elExpSubtitulo   = document.getElementById('dyn-exp-subtitulo');
+      const elGaleriaSub     = document.getElementById('dyn-galeria-subtitulo');
+
+      if (data.sobre_titulo && elSobreTitulo) {
+        elSobreTitulo.textContent = data.sobre_titulo;
+      }
+
+      if (data.sobre_texto && elSobreTexto) {
+        // Converte quebras de linha em parágrafos <p>
+        const paragraphs = data.sobre_texto
+          .split('\n')
+          .filter(p => p.trim() !== '')
+          .map(p => `<p>${p.trim()}</p>`)
+          .join('');
+        elSobreTexto.innerHTML = paragraphs;
+      }
+
+      if (data.exp_subtitulo && elExpSubtitulo) {
+        elExpSubtitulo.textContent = data.exp_subtitulo;
+      }
+
+      if (data.galeria_subtitulo && elGaleriaSub) {
+        elGaleriaSub.textContent = data.galeria_subtitulo;
+      }
+
+    } catch (e) {
+      console.error('Erro ao carregar textos institucionais:', e);
+    }
+  };
+
+  applyHomeTexts();
   const applyHorarios = () => {
     const HORARIOS_LS_KEY = 'cafeteria_horarios';
     const saved = localStorage.getItem(HORARIOS_LS_KEY);

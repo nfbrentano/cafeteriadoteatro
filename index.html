@@ -15,8 +15,12 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/promocoes.css" />
 </head>
-<body>
+<body id="top">
+
+  <!-- Container para Barra de Promoção Dinâmica -->
+  <div id="promo-bar-root"></div>
 
   <!-- ═══════════════════════════════════════
        NAVBAR
@@ -111,11 +115,11 @@
 
           <div class="sobre__text fade-in fade-in-delay-2">
             <span class="section-tag">Quem Somos</span>
-            <h2 class="section-title" id="sobre-title">
+            <h2 class="section-title" id="dyn-sobre-titulo">
               Uma cafeteria dentro de um espaço que respira cultura
             </h2>
 
-            <div class="sobre__body">
+            <div class="sobre__body" id="dyn-sobre-texto">
               <p>
                 A Cafeteria do Teatro nasceu com um propósito simples e bonito: ser o lugar certo
                 para antes do espetáculo, depois da aula, no intervalo do ensaio ou em qualquer
@@ -169,7 +173,7 @@
         <div class="text-center fade-in">
           <span class="section-tag">A Experiência</span>
           <h2 class="section-title" id="exp-title">Três razões para vir nos visitar</h2>
-          <p class="section-subtitle" style="margin-inline:auto">
+          <p class="section-subtitle" id="dyn-exp-subtitulo" style="margin-inline:auto">
             Cada visita à Cafeteria do Teatro é uma pausa com propósito —
             onde o café importa tanto quanto o espaço ao redor.
           </p>
@@ -248,7 +252,7 @@
           <h2 class="section-title section-title--light" id="galeria-title">
             Cada detalhe tem seu charme
           </h2>
-          <p class="section-subtitle section-subtitle--light" style="margin-inline:auto">
+          <p class="section-subtitle section-subtitle--light" id="dyn-galeria-subtitulo" style="margin-inline:auto">
             Fotos de ambiente, balcão, café e momentos da nossa cafeteria.
           </p>
         </div>

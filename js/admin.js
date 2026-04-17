@@ -166,8 +166,8 @@
   }
 
   // Close on overlay click
-  ['modal-produto-overlay', 'modal-cat-overlay'].forEach(id => {
-    document.getElementById(id).addEventListener('click', e => {
+  ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', e => {
       if (e.target.id === id) closeModal(id);
     });
   });
@@ -193,6 +193,8 @@
       categorias: 'Categorias',
       hero: 'Hero da Home',
       horarios: 'Horários',
+      promocoes: 'Promoções',
+      conteudo: 'Conteúdo Home',
       configuracoes: 'Configurações'
     };
     document.getElementById('topbar-title').textContent = titles[pageId] || '';
@@ -205,7 +207,9 @@
       produtos:  renderProdutos,
       categorias: renderCategorias,
       hero:       renderHero,
-      horarios:   renderHorarios
+      horarios:   renderHorarios,
+      promocoes:  renderPromocoes,
+      conteudo:   renderConteudo
     };
 
     if (renderers[pageId]) renderers[pageId]();
@@ -1408,6 +1412,302 @@
 
     localStorage.setItem(HORARIOS_LS_KEY, JSON.stringify(settings));
     toast('Salvo!', 'Horários atualizados com sucesso.', 'success');
+  });
+
+  /* ════════════════════════════════════════════════════════
+     PROMOÇÕES MANAGEMENT
+  ═══════════════════════════════════════════════════════ */
+  const PROMO_LS_KEY = 'cafeteria_campanhas';
+
+  function renderPromocoes() {
+    const raw = localStorage.getItem(PROMO_LS_KEY);
+    const campanhas = raw ? JSON.parse(raw) : [];
+    const filterStatus = document.getElementById('filter-promo-status').value;
+    const body = document.getElementById('promo-table-body');
+    if (!body) return;
+
+    body.innerHTML = '';
+
+    const sorted = [...campanhas].sort((a, b) => new Date(b.updatedAt || b.inicio) - new Date(a.updatedAt || a.inicio));
+
+    sorted.forEach(c => {
+      // Filtragem simples
+      if (filterStatus === 'ativos' && !isPromoActive(c)) return;
+      if (filterStatus === 'encerrados' && isPromoEnded(c)) return;
+
+      const row = document.createElement('tr');
+      const statusInfo = getPromoStatus(c);
+      
+      row.innerHTML = `
+        <td>
+          <div style="display:flex; align-items:center; gap:12px">
+            ${c.imageUrl ? `<img src="${c.imageUrl}" class="promo-table-image" alt="" />` : '<div class="promo-table-image"></div>'}
+            <div>
+              <div style="font-weight:600">${c.titulo}</div>
+              <div style="font-size:0.75rem; color:var(--texto-claro)">${c.descricao.substring(0, 40)}${c.descricao.length > 40 ? '...' : ''}</div>
+            </div>
+          </div>
+        </td>
+        <td>${c.badge ? `<span class="promo-badge-preview">${c.badge}</span>` : '-'}</td>
+        <td>
+          <div style="font-size:0.813rem">
+            ${formatLocaleDate(c.inicio)} <br/>
+            <span style="color:var(--texto-claro)">até</span> ${formatLocaleDate(c.fim)}
+          </div>
+        </td>
+        <td><span class="promo-status ${statusInfo.class}">${statusInfo.label}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn-action btn-edit" title="Editar" onclick="window._adminObj.editPromo('${c.id}')">✏️</button>
+            <button class="btn-action btn-delete" title="Excluir" onclick="window._adminObj.deletePromo('${c.id}')">🗑️</button>
+          </div>
+        </td>
+      `;
+      body.appendChild(row);
+    });
+
+    if (sorted.length === 0) {
+      body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--texto-claro)">Nenhuma campanha cadastrada.</td></tr>';
+    }
+  }
+
+  function isPromoActive(c) {
+    if (!c.ativo) return false;
+    const now = new Date();
+    const start = new Date(c.inicio + 'T00:00:00');
+    const end = new Date(c.fim + 'T23:59:59');
+    return now >= start && now <= end;
+  }
+
+  function isPromoEnded(c) {
+    const now = new Date();
+    const end = new Date(c.fim + 'T23:59:59');
+    return now > end;
+  }
+
+  function getPromoStatus(c) {
+    if (!c.ativo) return { label: 'Inativo', class: 'promo-status--inactive' };
+    const now = new Date();
+    const start = new Date(c.inicio + 'T00:00:00');
+    const end = new Date(c.fim + 'T23:59:59');
+
+    if (now < start) return { label: 'Agendado', class: 'promo-status--scheduled' };
+    if (now > end) return { label: 'Encerrado', class: 'promo-status--ended' };
+    return { label: 'Ativo', class: 'promo-status--active' };
+  }
+
+  function formatLocaleDate(dateStr) {
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  // BINDING GLOBALS
+  window._adminObj = window._adminObj || {};
+  
+  window._adminObj.editPromo = (id) => {
+    const raw = localStorage.getItem(PROMO_LS_KEY);
+    const campanhas = JSON.parse(raw || '[]');
+    const c = campanhas.find(camp => camp.id === id);
+    if (!c) return;
+
+    clearFormErrors('form-campanha');
+    document.getElementById('modal-promo-title').textContent = 'Editar Campanha';
+    document.getElementById('promo-id').value = c.id;
+    document.getElementById('promo-titulo').value = c.titulo;
+    document.getElementById('promo-desc').value = c.descricao;
+    document.getElementById('promo-badge').value = c.badge || '';
+    document.getElementById('promo-link').value = c.link || '';
+    document.getElementById('promo-inicio').value = c.inicio;
+    document.getElementById('promo-fim').value = c.fim;
+    document.getElementById('promo-ativo').checked = c.ativo;
+
+    if (c.imageUrl) {
+      document.getElementById('promo-image-data').value = c.imageUrl;
+      document.getElementById('promo-upload-preview-img').src = c.imageUrl;
+      document.getElementById('promo-upload-preview-wrap').classList.remove('hidden');
+      document.getElementById('promo-upload-idle').classList.add('hidden');
+    } else {
+      resetPromoUpload();
+    }
+
+    openModal('modal-promo-overlay');
+  };
+
+  window._adminObj.deletePromo = async (id) => {
+    const ok = await confirm({
+      title: 'Excluir Campanha?',
+      msg: 'Esta campanha será removida permanentemente.',
+      okLabel: 'Excluir'
+    });
+    if (!ok) return;
+
+    const raw = localStorage.getItem(PROMO_LS_KEY);
+    let campanhas = JSON.parse(raw || '[]');
+    campanhas = campanhas.filter(c => c.id !== id);
+    localStorage.setItem(PROMO_LS_KEY, JSON.stringify(campanhas));
+    toast('Excluído', 'Campanha removida com sucesso.', 'info');
+    renderPromocoes();
+  };
+
+  function resetPromoUpload() {
+    document.getElementById('promo-image-data').value = '';
+    document.getElementById('promo-upload-preview-img').src = '';
+    document.getElementById('promo-upload-preview-wrap').classList.add('hidden');
+    document.getElementById('promo-upload-idle').classList.remove('hidden');
+    document.getElementById('promo-image-file').value = '';
+  }
+
+  // EVENT LISTENERS PROMOS
+  document.getElementById('btn-nova-campanha')?.addEventListener('click', () => {
+    clearFormErrors('form-campanha');
+    document.getElementById('modal-promo-title').textContent = 'Nova Campanha';
+    document.getElementById('promo-id').value = '';
+    document.getElementById('form-campanha').reset();
+    resetPromoUpload();
+    
+    // Set default dates (today to +7 days)
+    const today = new Date().toISOString().split('T')[0];
+    const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+    document.getElementById('promo-inicio').value = today;
+    document.getElementById('promo-fim').value = nextWeek;
+    
+    openModal('modal-promo-overlay');
+  });
+
+  document.getElementById('modal-promo-close')?.addEventListener('click', () => closeModal('modal-promo-overlay'));
+  document.getElementById('modal-promo-cancel')?.addEventListener('click', () => closeModal('modal-promo-overlay'));
+
+  document.getElementById('filter-promo-status')?.addEventListener('change', renderPromocoes);
+
+  // UPLOAD LOGIC FOR PROMOS
+  const promoZone = document.getElementById('promo-upload-zone');
+  const promoFileIn = document.getElementById('promo-image-file');
+
+  promoZone?.addEventListener('click', () => promoFileIn.click());
+  
+  promoFileIn?.addEventListener('change', async e => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const dataUrl = await processPromoFile(file);
+      if (dataUrl) {
+        document.getElementById('promo-image-data').value = dataUrl;
+        document.getElementById('promo-upload-preview-img').src = dataUrl;
+        document.getElementById('promo-upload-preview-wrap').classList.remove('hidden');
+        document.getElementById('promo-upload-idle').classList.add('hidden');
+      }
+    }
+  });
+
+  async function processPromoFile(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_W = 1200;
+          let w = img.width;
+          let h = img.height;
+          if (w > MAX_W) {
+            h = (MAX_W * h) / w;
+            w = MAX_W;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/webp', 0.85));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById('btn-promo-remove-img')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetPromoUpload();
+  });
+
+  document.getElementById('btn-salvar-promo')?.addEventListener('click', () => {
+    const id = document.getElementById('promo-id').value;
+    const titulo = document.getElementById('promo-titulo').value.trim();
+    const desc = document.getElementById('promo-desc').value.trim();
+    const inicio = document.getElementById('promo-inicio').value;
+    const fim = document.getElementById('promo-fim').value;
+
+    let valid = true;
+    if (!titulo) { showFieldError('promo-titulo', 'err-promo-titulo', 'Obrigatório'); valid = false; }
+    if (!desc) { showFieldError('promo-desc', 'err-promo-desc', 'Obrigatório'); valid = false; }
+    if (!inicio || !fim) { toast('Erro', 'Datas são obrigatórias.', 'error'); valid = false; }
+
+    if (!valid) return;
+
+    const raw = localStorage.getItem(PROMO_LS_KEY);
+    let campanhas = JSON.parse(raw || '[]');
+
+    const campData = {
+      id: id || generateId(),
+      titulo,
+      descricao: desc,
+      badge: document.getElementById('promo-badge').value.trim(),
+      link: document.getElementById('promo-link').value.trim(),
+      inicio,
+      fim,
+      ativo: document.getElementById('promo-ativo').checked,
+      imageUrl: document.getElementById('promo-image-data').value,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (id) {
+      campanhas = campanhas.map(c => c.id === id ? campData : c);
+    } else {
+      campanhas.push(campData);
+    }
+
+    localStorage.setItem(PROMO_LS_KEY, JSON.stringify(campanhas));
+    toast('Sucesso!', 'Campanha salva com sucesso.');
+    closeModal('modal-promo-overlay');
+    renderPromocoes();
+  });
+
+  /* ════════════════════════════════════════════════════════
+     CONTEÚDO HOME MANAGEMENT
+  ═══════════════════════════════════════════════════════ */
+  const TEXTOS_LS_KEY = 'cafeteria_textos_home';
+
+  function renderConteudo() {
+    const saved = localStorage.getItem(TEXTOS_LS_KEY);
+    let data = {
+      sobre_titulo: '',
+      sobre_texto: '',
+      exp_subtitulo: '',
+      galeria_subtitulo: ''
+    };
+
+    if (saved) {
+      try { data = JSON.parse(saved); } catch (e) {}
+    }
+
+    document.getElementById('c-sobre-titulo').value = data.sobre_titulo || '';
+    document.getElementById('c-sobre-texto').value = data.sobre_texto || '';
+    document.getElementById('c-exp-subtitulo').value = data.exp_subtitulo || '';
+    document.getElementById('c-galeria-subtitulo').value = data.galeria_subtitulo || '';
+  }
+
+  document.getElementById('form-conteudo')?.addEventListener('submit', e => {
+    e.preventDefault();
+    
+    const settings = {
+      sobre_titulo: document.getElementById('c-sobre-titulo').value.trim(),
+      sobre_texto: document.getElementById('c-sobre-texto').value.trim(),
+      exp_subtitulo: document.getElementById('c-exp-subtitulo').value.trim(),
+      galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value.trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(TEXTOS_LS_KEY, JSON.stringify(settings));
+    toast('Salvo!', 'Textos institucionais atualizados com sucesso.', 'success');
   });
 
   /* ════════════════════════════════════════════════════════

@@ -85,6 +85,9 @@
       <button class="sidebar__link" data-page="promocoes" id="nav-promocoes">
         <span class="sidebar__link-icon">📣</span> Promoções
       </button>
+      <button class="sidebar__link" data-page="conteudo" id="nav-conteudo">
+        <span class="sidebar__link-icon">📝</span> Conteúdo Home
+      </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Site</div>
 
@@ -345,6 +348,72 @@
             O status <b>"Aberto Agora"</b> no site é calculado automaticamente com base nestes horários e no relógio do dispositivo do visitante.
           </div>
         </div>
+      </section>
+
+      <!-- ── CONTEÚDO HOME ─────────────────────────────────── -->
+      <section class="page" id="page-conteudo">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Conteúdo Institucional</div>
+            <div class="page-header__sub">Altere os textos de apresentação da cafeteria na página inicial</div>
+          </div>
+        </div>
+
+        <form id="form-conteudo" novalidate>
+          <!-- SOBRE -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Sobre a Cafeteria</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="field__label" for="c-sobre-titulo">Título da Seção</label>
+                <input class="field__input" type="text" id="c-sobre-titulo" 
+                       placeholder="Uma cafeteria dentro de um espaço..." />
+              </div>
+              <div class="field">
+                <label class="field__label" for="c-sobre-texto">Texto Principal</label>
+                <textarea class="field__textarea" id="c-sobre-texto" rows="8" 
+                          placeholder="Fale sobre a história e propósito da cafeteria..."></textarea>
+                <div class="hint">Use quebras de linha para separar parágrafos.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXPERIÊNCIA / AMBIENTE -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Ambiente (Experiência)</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="field__label" for="c-exp-subtitulo">Subtítulo de Convite</label>
+                <input class="field__input" type="text" id="c-exp-subtitulo" 
+                       placeholder="Cada visita à Cafeteria do Teatro é uma pausa..." />
+              </div>
+            </div>
+          </div>
+
+          <!-- GALERIA / CONVITE -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Galeria</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="field__label" for="c-galeria-subtitulo">Mensagem da Galeria</label>
+                <input class="field__input" type="text" id="c-galeria-subtitulo" 
+                       placeholder="Fotos de ambiente, balcão, café e momentos..." />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions" style="margin-top: 32px; padding-bottom: 40px;">
+            <button type="submit" class="btn btn--primary" id="btn-save-conteudo">
+              💾 Salvar Textos
+            </button>
+          </div>
+        </form>
       </section>
 
       <!-- ── PROMOÇÕES ────────────────────────────────────── -->
@@ -799,7 +868,7 @@
     </div>
     <div class="modal__footer">
       <button class="btn btn--ghost" id="modal-cat-cancel">Cancelar</button>
-      <button class="btn btn--primary" id="btn-salvar-cat">
+      <button class="btn btn--primary" id="btn-salvar-categoria">
         Salvar Categoria
       </button>
     </div>
