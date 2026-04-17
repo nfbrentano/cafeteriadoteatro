@@ -430,15 +430,236 @@
   document.getElementById('modal-produto-close').addEventListener('click', () => closeModal('modal-produto-overlay'));
   document.getElementById('modal-produto-cancel').addEventListener('click', () => closeModal('modal-produto-overlay'));
 
+  /* ════════════════════════════════════════════════════════
+     IMAGE UPLOAD — Canvas → WebP
+  ═══════════════════════════════════════════════════════ */
+  const MAX_SIDE   = 900;    // px max dimension
+  const WEBP_QUAL  = 0.85;   // WebP quality 0–1
+
+  // Elements (lazy-referenced so they're available after DOM parse)
+  function uploadEls() {
+    return {
+      zone:        document.getElementById('upload-zone'),
+      fileInput:   document.getElementById('produto-imagem-file'),
+      idle:        document.getElementById('upload-idle'),
+      previewWrap: document.getElementById('upload-preview-wrap'),
+      previewImg:  document.getElementById('upload-preview-img'),
+      info:        document.getElementById('upload-info'),
+      infoDims:    document.getElementById('upload-info-dims'),
+      infoSize:    document.getElementById('upload-info-size'),
+      infoSaving:  document.getElementById('upload-info-saving'),
+      dataInput:   document.getElementById('produto-imagem-data'),
+      urlInput:    document.getElementById('produto-imagem'),
+      btnChange:   document.getElementById('btn-change-img'),
+      btnRemove:   document.getElementById('btn-remove-img'),
+    };
+  }
+
+  function resetUploadUI() {
+    const el = uploadEls();
+    el.idle.classList.remove('hidden');
+    el.previewWrap.classList.add('hidden');
+    el.info.style.display = 'none';
+    el.dataInput.value = '';
+    el.urlInput.value  = '';
+    el.fileInput.value = '';
+    // Remove any progress overlay
+    const prog = el.zone.querySelector('.upload-progress');
+    if (prog) prog.remove();
+  }
+
+  function setUploadPreview(dataUrl, dims, origBytes, webpBytes) {
+    const el = uploadEls();
+    el.previewImg.src = dataUrl;
+    el.idle.classList.add('hidden');
+    el.previewWrap.classList.remove('hidden');
+    el.dataInput.value = dataUrl;
+    el.urlInput.value  = '';               // clear URL field — upload takes priority
+
+    // Info bar
+    const saved = origBytes > 0 ? Math.round((1 - webpBytes / origBytes) * 100) : 0;
+    el.infoDims.textContent  = `${dims.w} × ${dims.h}px`;
+    el.infoSize.textContent  = `${(webpBytes / 1024).toFixed(1)} KB`;
+    el.infoSaving.textContent = origBytes > 0 && saved > 0
+      ? `↓ ${saved}% menor que o original`
+      : '';
+    el.info.style.display = 'flex';
+  }
+
+  function showUploadProgress(zone) {
+    const existing = zone.querySelector('.upload-progress');
+    if (existing) return existing.querySelector('.upload-progress__bar');
+    const div = document.createElement('div');
+    div.className = 'upload-progress';
+    div.innerHTML = `
+      <div class="upload-progress__label">Convertendo para WebP...</div>
+      <div class="upload-progress__bar-wrap">
+        <div class="upload-progress__bar" id="upload-prog-bar"></div>
+      </div>`;
+    zone.appendChild(div);
+    return div.querySelector('.upload-progress__bar');
+  }
+
+  function processImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      toast('Arquivo inválido', 'Selecione uma imagem (PNG, JPG, WEBP, GIF).', 'error');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast('Arquivo muito grande', 'O limite é de 20 MB.', 'error');
+      return;
+    }
+
+    const el      = uploadEls();
+    const origSize = file.size;
+    const bar     = showUploadProgress(el.zone);
+
+    // Animate progress bar while reading
+    let pct = 0;
+    const ticker = setInterval(() => {
+      pct = Math.min(pct + 8, 85);
+      if (bar) bar.style.width = pct + '%';
+    }, 60);
+
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const img = new Image();
+      img.onload = () => {
+        clearInterval(ticker);
+        if (bar) bar.style.width = '90%';
+
+        // --- Compute target dimensions (keep aspect ratio) ---
+        let { naturalWidth: w, naturalHeight: h } = img;
+        if (w > MAX_SIDE || h > MAX_SIDE) {
+          const ratio = Math.min(MAX_SIDE / w, MAX_SIDE / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+
+        // --- Draw on canvas ---
+        const canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h);
+
+        if (bar) bar.style.width = '95%';
+
+        // --- Convert to WebP (fallback to JPEG if unsupported) ---
+        const mime = 'image/webp';
+        canvas.toBlob(blob => {
+          if (bar) bar.style.width = '100%';
+
+          const reader2 = new FileReader();
+          reader2.onload = e2 => {
+            const dataUrl = e2.target.result;
+
+            // Cleanup progress overlay
+            setTimeout(() => {
+              const prog = el.zone.querySelector('.upload-progress');
+              if (prog) prog.remove();
+            }, 300);
+
+            // Check localStorage budget (keep under 4 MB per image)
+            if (blob.size > 4 * 1024 * 1024) {
+              toast('Imagem muito grande após conversão',
+                'Tente uma imagem com menos detalhes ou menor resolução.', 'warn', 5000);
+            }
+
+            setUploadPreview(dataUrl, { w, h }, origSize, blob.size);
+          };
+          reader2.readAsDataURL(blob);
+        }, mime, WEBP_QUAL);
+      };
+      img.onerror = () => {
+        clearInterval(ticker);
+        const prog = el.zone.querySelector('.upload-progress');
+        if (prog) prog.remove();
+        toast('Erro', 'Não foi possível ler a imagem.', 'error');
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Wire up upload zone interactions (once — they persist across modal opens)
+  (function wireUploadZone() {
+    const el = uploadEls();
+
+    // Click zone → open file picker
+    el.zone.addEventListener('click', e => {
+      if (e.target.closest('.upload-zone__change') ||
+          e.target.closest('.upload-zone__remove')) return;
+      el.fileInput.click();
+    });
+
+    // Keyboard: Enter / Space
+    el.zone.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.fileInput.click();
+      }
+    });
+
+    // File input change
+    el.fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) processImageFile(file);
+      e.target.value = '';  // reset so same file can be re-selected
+    });
+
+    // Drag & drop
+    el.zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      el.zone.classList.add('drag-over');
+    });
+    el.zone.addEventListener('dragleave', () => el.zone.classList.remove('drag-over'));
+    el.zone.addEventListener('drop', e => {
+      e.preventDefault();
+      el.zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) processImageFile(file);
+    });
+
+    // Trocar imagem
+    el.btnChange.addEventListener('click', e => {
+      e.stopPropagation();
+      el.fileInput.click();
+    });
+
+    // Remover imagem
+    el.btnRemove.addEventListener('click', e => {
+      e.stopPropagation();
+      resetUploadUI();
+    });
+
+    // URL input typed → clear upload data, show as URL
+    el.urlInput.addEventListener('input', () => {
+      const url = el.urlInput.value.trim();
+      // If user is typing a URL, clear uploaded image
+      if (url) {
+        el.dataInput.value = url;
+        el.idle.classList.remove('hidden');
+        el.previewWrap.classList.add('hidden');
+        el.info.style.display = 'none';
+      } else {
+        el.dataInput.value = '';
+      }
+    });
+  })();
+
+  /* ─── Open / populate modal ──────────────────────────────── */
   function openProdutoModal(id) {
     const isEdit = !!id;
     document.getElementById('modal-produto-title').textContent = isEdit ? 'Editar Produto' : 'Novo Produto';
     document.getElementById('produto-id').value = id || '';
 
-    // Reset form
+    // Reset form + upload UI
     document.getElementById('form-produto').reset();
     clearFormErrors('form-produto');
-    updateImgPreview('');
+    resetUploadUI();
     populateCategorySelect('produto-categoria');
 
     if (isEdit) {
@@ -449,7 +670,6 @@
       document.getElementById('produto-categoria').value = p.categoriaId;
       document.getElementById('produto-preco').value     = p.preco;
       document.getElementById('produto-descricao').value = p.descricao || '';
-      document.getElementById('produto-imagem').value    = p.imagemUrl || '';
       document.getElementById('produto-ativo').checked   = !!p.ativo;
 
       // Badges
@@ -458,28 +678,30 @@
         if (cb) cb.checked = p.badges && p.badges.includes(b);
       });
 
-      updateImgPreview(p.imagemUrl || '');
+      // Restore image — detect base64 vs URL
+      const img = p.imagemUrl || '';
+      if (img) {
+        if (img.startsWith('data:')) {
+          // Stored base64 — restore preview (no size info available)
+          const el = uploadEls();
+          el.previewImg.src = img;
+          el.idle.classList.add('hidden');
+          el.previewWrap.classList.remove('hidden');
+          el.dataInput.value = img;
+          el.info.style.display = 'none';
+        } else {
+          // External URL
+          document.getElementById('produto-imagem').value    = img;
+          document.getElementById('produto-imagem-data').value = img;
+        }
+      }
     }
 
     openModal('modal-produto-overlay');
     setTimeout(() => document.getElementById('produto-nome').focus(), 100);
   }
 
-  // Image preview
-  document.getElementById('produto-imagem').addEventListener('input', e => {
-    updateImgPreview(e.target.value.trim());
-  });
-
-  function updateImgPreview(url) {
-    const box = document.getElementById('img-preview');
-    if (url) {
-      box.innerHTML = `<img src="${url}" alt="preview" onerror="this.parentElement.innerHTML='🖼️'" />`;
-    } else {
-      box.innerHTML = '🖼️';
-    }
-  }
-
-  // Save produto
+  /* ─── Save produto ───────────────────────────────────────── */
   document.getElementById('btn-salvar-produto').addEventListener('click', saveProduto);
   document.getElementById('form-produto').addEventListener('submit', e => { e.preventDefault(); saveProduto(); });
 
@@ -487,13 +709,17 @@
     clearFormErrors('form-produto');
     let valid = true;
 
-    const nome      = document.getElementById('produto-nome').value.trim();
+    const nome        = document.getElementById('produto-nome').value.trim();
     const categoriaId = document.getElementById('produto-categoria').value;
-    const precoRaw  = document.getElementById('produto-preco').value;
-    const descricao = document.getElementById('produto-descricao').value.trim();
-    const imagemUrl = document.getElementById('produto-imagem').value.trim();
-    const ativo     = document.getElementById('produto-ativo').checked;
-    const editId    = document.getElementById('produto-id').value;
+    const precoRaw    = document.getElementById('produto-preco').value;
+    const descricao   = document.getElementById('produto-descricao').value.trim();
+    const ativo       = document.getElementById('produto-ativo').checked;
+    const editId      = document.getElementById('produto-id').value;
+
+    // Image: prefer uploaded base64, then URL field
+    const dataVal = document.getElementById('produto-imagem-data').value.trim();
+    const urlVal  = document.getElementById('produto-imagem').value.trim();
+    const imagemUrl = dataVal || urlVal;
 
     if (!nome) {
       showFieldError('produto-nome', 'err-produto-nome', 'Nome é obrigatório.');
@@ -518,7 +744,6 @@
     });
 
     if (editId) {
-      // Edit
       const idx = appData.produtos.findIndex(p => p.id === editId);
       if (idx !== -1) {
         appData.produtos[idx] = {
@@ -527,7 +752,6 @@
         toast('Produto atualizado', `"${nome}" foi salvo com sucesso.`, 'success');
       }
     } else {
-      // New
       const maxOrdem = appData.produtos
         .filter(p => p.categoriaId === categoriaId)
         .reduce((max, p) => Math.max(max, p.ordem || 0), 0);
@@ -545,6 +769,7 @@
     renderProdutosTable();
     if (currentPage.id === 'dashboard') renderDashboard();
   }
+
 
   async function deleteProduto(id) {
     const p = appData.produtos.find(x => x.id === id);

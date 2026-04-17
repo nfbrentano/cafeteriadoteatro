@@ -343,16 +343,44 @@
         </div>
 
         <div class="field">
-          <label class="field__label" for="produto-imagem">URL da Imagem</label>
-          <input class="field__input" type="text" id="produto-imagem"
-                 placeholder="assets/images/produto-cafe.png ou URL externa" />
-          <div class="img-preview-row">
-            <div class="img-preview-box" id="img-preview">🖼️</div>
-            <div style="flex:1">
-              <p class="hint">Cole a URL da imagem acima para ver o preview. Deixe vazio para usar placeholder.</p>
+          <div class="field__label">Imagem do Produto</div>
+
+          <!-- Upload zone -->
+          <div class="upload-zone" id="upload-zone" tabindex="0" role="button"
+               aria-label="Clique ou arraste uma imagem aqui">
+            <div class="upload-zone__idle" id="upload-idle">
+              <div class="upload-zone__icon">🖼️</div>
+              <div class="upload-zone__title">Arraste uma imagem ou clique para selecionar</div>
+              <div class="upload-zone__sub">PNG, JPG, WEBP, GIF &middot; Convertida para WebP</div>
             </div>
+            <div class="upload-zone__preview hidden" id="upload-preview-wrap">
+              <img id="upload-preview-img" alt="preview" />
+              <div class="upload-zone__overlay">
+                <button type="button" class="upload-zone__change" id="btn-change-img">&#x1F504; Trocar</button>
+                <button type="button" class="upload-zone__remove" id="btn-remove-img">&#x1F5D1;&#xFE0F;</button>
+              </div>
+            </div>
+            <input type="file" id="produto-imagem-file" accept="image/*"
+                   style="display:none" aria-hidden="true" />
           </div>
+
+          <!-- Info bar -->
+          <div class="upload-info" id="upload-info" style="display:none">
+            <span class="upload-info__badge">WebP</span>
+            <span id="upload-info-dims" class="upload-info__text"></span>
+            <span id="upload-info-size" class="upload-info__text"></span>
+            <span id="upload-info-saving" class="upload-info__saving"></span>
+          </div>
+
+          <!-- Or URL -->
+          <div class="upload-or"><span>ou cole uma URL</span></div>
+          <input class="field__input" type="text" id="produto-imagem"
+                 placeholder="https://... ou assets/images/produto-cafe.png" />
+
+          <!-- hidden: base64 ou URL final -->
+          <input type="hidden" id="produto-imagem-data" />
         </div>
+
 
         <div class="field">
           <div class="field__label">Badges</div>
