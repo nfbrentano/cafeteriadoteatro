@@ -97,9 +97,9 @@
           .from('hero_home')
           .select('*')
           .eq('id', 1)
-          .maybeSingle(); // returns null if no rows, instead of error 406
+          .limit(1); // Standard select instead of single() to avoid console noise (406)
         if (error) throw error;
-        return data;
+        return (data && data.length > 0) ? data[0] : null;
       },
       async update(imageBlob = null, alt = '') {
         let imageUrl = null;
@@ -137,9 +137,9 @@
           .from('business_hours')
           .select('*')
           .eq('id', 1)
-          .maybeSingle(); // returns null if no rows, instead of error 406
+          .limit(1); // Standard select instead of single() to avoid console noise (406)
         if (error) throw error;
-        return data;
+        return (data && data.length > 0) ? data[0] : null;
       },
       async update(data) {
         const payload = { ...data, id: 1, updated_at: new Date().toISOString() };

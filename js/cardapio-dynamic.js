@@ -59,11 +59,18 @@
         window.cafeteriaDB.products.all()
       ]);
       
-      const appData = { categorias: cats, produtos: prods };
+      // Normalização de dados (garantir que categoriaId exista independente do banco)
+      const normalizedProds = prods.map(p => ({
+        ...p,
+        categoriaId: p.categoria_id || p.categoriaId,
+        imagemUrl: p.imagem_url || p.imagemUrl
+      }));
+
+      const appData = { categorias: cats, produtos: normalizedProds };
       window.cafeteriaDB.cache.set('cafeteria_cardapio_cache', appData);
       renderCardapio(appData);
     } catch (err) {
-      console.error('Erro ao carregar cardápio do Supabase:', err);
+      console.warn('Usando dados de cache/fallback devido a erro no Supabase:', err.message);
       const cached = window.cafeteriaDB.cache.get('cafeteria_cardapio_cache');
       if (cached) renderCardapio(cached);
       else renderCardapio(DEFAULT_DATA);
