@@ -187,10 +187,10 @@
     const navBtn = document.getElementById('nav-' + pageId);
     if (navBtn) navBtn.classList.add('active');
 
-    const titles = {
       dashboard: 'Dashboard',
       produtos: 'Produtos',
       categorias: 'Categorias',
+      hero: 'Hero da Home',
       configuracoes: 'Configurações'
     };
     document.getElementById('topbar-title').textContent = titles[pageId] || '';
@@ -201,7 +201,8 @@
     const renderers = {
       dashboard: renderDashboard,
       produtos:  renderProdutos,
-      categorias: renderCategorias
+      categorias: renderCategorias,
+      hero:       renderHero
     };
 
     if (renderers[pageId]) renderers[pageId]();
@@ -1141,6 +1142,199 @@
     toast('Reset concluído', 'Dados restaurados para o padrão original.', 'warn');
     navigateTo('dashboard');
   });
+
+
+  /* ════════════════════════════════════════════════════════
+     HERO MANAGEMENT
+  ═══════════════════════════════════════════════════════ */
+  const HERO_LS_KEY = 'cafeteria_hero_home';
+  const HERO_MAX_W  = 1920;
+  const HERO_QUAL   = 0.82;
+
+  function heroEls() {
+    return {
+      zone:        document.getElementById('hero-upload-zone'),
+      fileInput:   document.getElementById('hero-image-file'),
+      idle:        document.getElementById('hero-upload-idle'),
+      previewWrap: document.getElementById('hero-upload-preview-wrap'),
+      previewImg:  document.getElementById('hero-upload-preview-img'),
+      info:        document.getElementById('hero-upload-info'),
+      infoDims:    document.getElementById('hero-info-dims'),
+      infoSize:    document.getElementById('hero-info-size'),
+      infoSaving:  document.getElementById('hero-info-saving'),
+      dataInput:   document.getElementById('hero-image-data'),
+      altInput:    document.getElementById('hero-alt'),
+      livePreviewBg: document.getElementById('hero-preview-bg'),
+      livePreviewBadge: document.getElementById('hero-preview-badge'),
+      btnSave:     document.getElementById('btn-save-hero'),
+      btnReset:    document.getElementById('btn-reset-hero'),
+      btnChange:   document.getElementById('btn-hero-change-img'),
+      btnRemove:   document.getElementById('btn-hero-remove-img'),
+    };
+  }
+
+  function renderHero() {
+    const el = heroEls();
+    const saved = localStorage.getItem(HERO_LS_KEY);
+    
+    // Reset internal state
+    el.dataInput.value = '';
+    el.fileInput.value = '';
+    el.idle.classList.remove('hidden');
+    el.previewWrap.classList.add('hidden');
+    el.info.style.display = 'none';
+
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        el.livePreviewBg.style.backgroundImage = `url(${data.imageDataUrl})`;
+        el.livePreviewBadge.textContent = 'Personalizado';
+        el.livePreviewBadge.classList.add('custom');
+        el.altInput.value = data.alt || '';
+      } catch (_) {
+        resetHeroUI();
+      }
+    } else {
+      resetHeroUI();
+    }
+  }
+
+  function resetHeroUI() {
+    const el = heroEls();
+    el.livePreviewBg.style.backgroundImage = "url('../assets/images/hero-bg.png')";
+    el.livePreviewBadge.textContent = 'Padrão';
+    el.livePreviewBadge.classList.remove('custom');
+    el.altInput.value = '';
+  }
+
+  function processHeroFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      toast('Formato inválido', 'Por favor, selecione uma imagem.', 'error');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast('Arquivo muito grande', 'O limite é 10MB.', 'warn');
+      return;
+    }
+
+    const el = heroEls();
+    const reader = new FileReader();
+
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+
+        if (w < 1200) {
+          toast('Resolução baixa', 'Uma imagem com menos de 1200px pode ficar borrada no Hero.', 'warn');
+        }
+
+        // Resize
+        if (w > HERO_MAX_W) {
+          const ratio = HERO_MAX_W / w;
+          w = HERO_MAX_W;
+          h = Math.round(h * ratio);
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        // Try WebP then JPEG
+        let mime = 'image/webp';
+        let dataUrl = canvas.toDataURL(mime, HERO_QUAL);
+        
+        // If WebP is not supported or larger than expected, we could fallback, 
+        // but dataURL with quality is usually enough.
+        
+        // Size estimation
+        const head = dataUrl.split(',')[0];
+        const bytes = Math.round((dataUrl.length - head.length) * 3 / 4);
+        const originalSize = file.size;
+        const saving = Math.round((1 - (bytes / originalSize)) * 100);
+
+        // Show preview in widget
+        el.previewImg.src = dataUrl;
+        el.dataInput.value = dataUrl;
+        el.idle.classList.add('hidden');
+        el.previewWrap.classList.remove('hidden');
+
+        // Show info
+        el.infoDims.textContent = `${w} × ${h}px`;
+        el.infoSize.textContent = `${(bytes / 1024).toFixed(0)} KB`;
+        el.infoSaving.textContent = saving > 0 ? `↓ ${saving}% menor` : '';
+        el.info.style.display = 'flex';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Event Listeners for Hero Page
+  (function initHeroEvents() {
+    const el = heroEls();
+    if (!el.zone) return; // Not loaded yet
+
+    el.zone.addEventListener('click', e => {
+      if (e.target.closest('.upload-zone__overlay')) return;
+      el.fileInput.click();
+    });
+
+    el.fileInput.addEventListener('change', e => {
+      if (e.target.files[0]) processHeroFile(e.target.files[0]);
+    });
+
+    el.btnChange.addEventListener('click', () => el.fileInput.click());
+    el.btnRemove.addEventListener('click', () => {
+      el.dataInput.value = '';
+      el.previewWrap.classList.add('hidden');
+      el.idle.classList.remove('hidden');
+      el.info.style.display = 'none';
+    });
+
+    el.btnSave.addEventListener('click', () => {
+      const dataUrl = el.dataInput.value;
+      const alt = el.altInput.value.trim();
+
+      if (!dataUrl) {
+          toast('Nada para salvar', 'Selecione uma nova imagem primeiro.', 'info');
+          return;
+      }
+
+      const settings = {
+        imageDataUrl: dataUrl,
+        alt: alt || 'Interior da Cafeteria do Teatro',
+        updatedAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(HERO_LS_KEY, JSON.stringify(settings));
+        toast('Salvo!', 'Imagem do Hero atualizada com sucesso.', 'success');
+        renderHero(); // Update preview
+      } catch (e) {
+        toast('Erro de Armazenamento', 'A imagem é muito grande para o navegador. Tente outra.', 'error');
+      }
+    });
+
+    el.btnReset.addEventListener('click', async () => {
+      const ok = await confirm({
+        icon: '🗑️',
+        title: 'Remover imagem?',
+        msg: 'A home voltará a usar a imagem padrão original.',
+        okLabel: 'Remover',
+        okClass: 'btn--danger'
+      });
+      if (ok) {
+        localStorage.removeItem(HERO_LS_KEY);
+        toast('Removido', 'Hero restaurado para o padrão.', 'info');
+        renderHero();
+      }
+    });
+
+  })();
 
   /* ════════════════════════════════════════════════════════
      FORM HELPERS

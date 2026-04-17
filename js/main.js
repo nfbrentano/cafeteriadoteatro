@@ -41,6 +41,22 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Hero parallax leve ─────────────────────────────────── */
   const heroBg = document.querySelector('.hero__bg');
   if (heroBg) {
+    // Aplicar Hero dinâmico se configurado no Admin
+    const HERO_LS_KEY = 'cafeteria_hero_home';
+    const savedHero = localStorage.getItem(HERO_LS_KEY);
+    
+    if (savedHero) {
+      try {
+        const data = JSON.parse(savedHero);
+        if (data.imageDataUrl) {
+          heroBg.style.backgroundImage = `url(${data.imageDataUrl})`;
+          if (data.alt) heroBg.setAttribute('aria-label', data.alt);
+        }
+      } catch (e) {
+        console.error('Erro ao carregar Hero dinâmico:', e);
+      }
+    }
+
     heroBg.classList.add('loaded');
 
     window.addEventListener('scroll', () => {

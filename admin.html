@@ -74,6 +74,12 @@
         <span class="sidebar__link-icon">⚙️</span> Configurações
       </button>
 
+      <div class="sidebar__section-title" style="margin-top:12px">Aparência</div>
+
+      <button class="sidebar__link" data-page="hero" id="nav-hero">
+        <span class="sidebar__link-icon">🖼️</span> Hero da Home
+      </button>
+
       <div class="sidebar__section-title" style="margin-top:12px">Site</div>
 
       <a class="sidebar__link" href="cardapio.html" target="_blank" id="nav-ver-cardapio">
@@ -288,6 +294,90 @@
           <p class="hint" style="margin-top:12px">
             Esta ação irá apagar todas as alterações e restaurar os dados originais do cardápio. Irreversível.
           </p>
+        </div>
+      </section>
+
+      <!-- ── HERO DA HOME ─────────────────────────────────── -->
+      <section class="page" id="page-hero">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Hero da Home</div>
+            <div class="page-header__sub">Gerencie a imagem principal de boas-vindas do site</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card__header">
+            <span class="section-card__title">Imagem Atual do Hero</span>
+          </div>
+          <div class="section-card__body">
+            
+            <!-- Hero Preview Card -->
+            <div class="hero-manage-preview" id="hero-preview-container">
+              <div class="hero-manage-preview__bg" id="hero-preview-bg"></div>
+              <div class="hero-manage-preview__overlay"></div>
+              <div class="hero-manage-preview__content">
+                <div class="hero-manage-preview__tag">Teatro da Univates · Lajeado, RS</div>
+                <div class="hero-manage-preview__title">Onde o café encontra a <em>cultura.</em></div>
+              </div>
+              <div class="hero-manage-preview__badge" id="hero-preview-badge">Padrão</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+              <label class="field__label">Upload de Nova Imagem</label>
+              <div class="upload-zone" id="hero-upload-zone" tabindex="0">
+                <div class="upload-zone__idle" id="hero-upload-idle">
+                  <div class="upload-zone__icon">📸</div>
+                  <div class="upload-zone__title">Arraste uma nova imagem para o Hero</div>
+                  <div class="upload-zone__sub">PNG, JPG, WEBP · Recomendado: 1920x1080px</div>
+                </div>
+                
+                <div class="upload-zone__preview hidden" id="hero-upload-preview-wrap">
+                  <img src="" id="hero-upload-preview-img" alt="Novo hero" />
+                  <div class="upload-zone__overlay">
+                    <button class="upload-zone__change" id="btn-hero-change-img" type="button">Trocar Imagem</button>
+                    <button class="upload-zone__remove" id="btn-hero-remove-img" type="button">Remover</button>
+                  </div>
+                </div>
+                <input type="file" id="hero-image-file" accept="image/*" class="hidden" />
+                <input type="hidden" id="hero-image-data" />
+              </div>
+
+              <!-- Info bar for stats -->
+              <div class="upload-info" id="hero-upload-info" style="display: none;">
+                <span class="upload-info__badge">Otimizada</span>
+                <span class="upload-info__text" id="hero-info-dims">1920 × 1080px</span>
+                <span class="upload-info__text" id="hero-info-size">245 KB</span>
+                <span class="upload-info__saving" id="hero-info-saving">↓ 82%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="hero-alt">Descrição da Imagem (Acessibilidade)</label>
+              <input class="field__input" type="text" id="hero-alt" 
+                     placeholder="Ex: Interior da Cafeteria do Teatro com luz natural" />
+              <div class="hint">Usado como aria-label para leitores de tela.</div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 24px;">
+              <button class="btn btn--primary" id="btn-save-hero" type="button">
+                💾 Salvar Alterações do Hero
+              </button>
+              <button class="btn btn--ghost" id="btn-reset-hero" type="button">
+                🗑️ Remover Personalização
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="alert alert--info" style="margin-top: 20px;">
+          <div class="alert__icon">💡</div>
+          <div class="alert__content">
+            A imagem é processada e comprimida automaticamente para o formato <strong>WebP</strong> (ou JPEG como fallback) antes de ser salva, garantindo que o carregamento da página inicial continue extremamente rápido.
+          </div>
         </div>
       </section>
 
