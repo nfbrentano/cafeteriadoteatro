@@ -51,19 +51,23 @@
 
   const LS_KEY = 'cafeteria_cardapio';
 
-  /* ── Carregar dados ─────────────────────────────────────── */
-  function loadData() {
+  /* ── Carregar dados (Supabase) ──────────────────────────── */
+  async function loadDataAndRender() {
     try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.produtos && parsed.categorias) return parsed;
-      }
-    } catch (e) { /* ignore */ }
-
-    // Salva defaults no localStorage para uso futuro
-    try { localStorage.setItem(LS_KEY, JSON.stringify(DEFAULT_DATA)); } catch (e) {}
-    return DEFAULT_DATA;
+      const [cats, prods] = await Promise.all([
+        window.cafeteriaDB.categories.all(),
+        window.cafeteriaDB.products.all()
+      ]);
+      
+      const appData = { categorias: cats, produtos: prods };
+      window.cafeteriaDB.cache.set('cafeteria_cardapio_cache', appData);
+      renderCardapio(appData);
+    } catch (err) {
+      console.error('Erro ao carregar cardápio do Supabase:', err);
+      const cached = window.cafeteriaDB.cache.get('cafeteria_cardapio_cache');
+      if (cached) renderCardapio(cached);
+      else renderCardapio(DEFAULT_DATA);
+    }
   }
 
   /* ── Utilitários de formatação ──────────────────────────── */
@@ -86,8 +90,8 @@
 
   /* ── Gerar imagem/placeholder ───────────────────────────── */
   function imageHTML(produto, catIcone) {
-    if (produto.imagemUrl) {
-      return `<img src="${produto.imagemUrl}" alt="${produto.nome} — Cafeteria do Teatro"
+    if (produto.imagem_url) {
+      return `<img src="${produto.imagem_url}" alt="${produto.nome} — Cafeteria do Teatro"
                class="produto-card__image" loading="lazy" />`;
     }
     return `<div class="produto-card__image-placeholder">
@@ -144,7 +148,7 @@
 
   /* ── Render: especial-card ──────────────────────────────── */
   function renderEspecialCard(produto) {
-    const imgSrc = produto.imagemUrl || '';
+    const imgSrc = produto.image_url || produto.imagem_url || '';
     const imgEl  = imgSrc
       ? `<img src="${imgSrc}" alt="${produto.nome} — Cafeteria do Teatro" class="especial-card__image" loading="lazy" />`
       : `<div class="especial-card__image" style="background:var(--cafe);display:flex;align-items:center;justify-content:center;font-size:4rem">✨</div>`;
@@ -260,7 +264,7 @@
     const tempDiv  = document.createElement('div');
 
     categorias.forEach(cat => {
-      const prods = produtos.filter(p => p.categoriaId === cat.id);
+      const prods = produtos.filter(p => (p.categoria_id || p.categoriaId) === cat.id);
       if (prods.length === 0) return;
       tempDiv.innerHTML = renderSection(cat, prods);
       while (tempDiv.firstChild) fragment.appendChild(tempDiv.firstChild);
@@ -287,22 +291,17 @@
 
   /* ── Init ───────────────────────────────────────────────── */
   function init() {
-    const data = loadData();
+    // 1. Render immediately from cache if available
+    const cached = window.cafeteriaDB.cache.get('cafeteria_cardapio_cache');
+    if (cached) renderCardapio(cached);
+    else renderCardapio(DEFAULT_DATA);
 
-    // Só renderiza dinamicamente se houver dados no localStorage
-    // (se forem os defaults recém-salvos, a página estática já está OK,
-    //  mas renderizamos mesmo assim para consistência)
-    renderCardapio(data);
+    // 2. Load fresh from Supabase
+    loadDataAndRender();
 
-    // Listener para atualizações feitas no admin (mesmo tab via storage event não dispara,
-    // mas fica disponível para cross-tab)
-    window.addEventListener('storage', e => {
-      if (e.key === LS_KEY) {
-        try {
-          const newData = JSON.parse(e.newValue);
-          if (newData) renderCardapio(newData);
-        } catch (_) {}
-      }
+    // 3. Realtime updates
+    window.cafeteriaDB.subscribeToChanges(() => {
+      loadDataAndRender();
     });
   }
 

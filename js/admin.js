@@ -65,27 +65,45 @@
   ═══════════════════════════════════════════════════════ */
   let appData = { categorias: [], produtos: [] };
 
-  function loadData() {
+  async function loadData() {
     try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.produtos && parsed.categorias) {
-          appData = parsed;
-          return;
-        }
+      const [cats, prods] = await Promise.all([
+        window.cafeteriaDB.categories.all(),
+        window.cafeteriaDB.products.all()
+      ]);
+      
+      appData.categorias = cats;
+      appData.produtos = prods;
+
+      // Update local cache for offline fallback
+      window.cafeteriaDB.cache.set('cafeteria_cardapio_cache', appData);
+      
+      // If we are currently viewing a page that needs rendering, call it
+      if (typeof renderDashboard === 'function') renderDashboard();
+      if (typeof renderProdutos === 'function') renderProdutos();
+      if (typeof renderCategorias === 'function') renderCategorias();
+
+    } catch (err) {
+      console.error('Erro ao carregar dados do Supabase:', err);
+      // Fallback to cache
+      const cached = window.cafeteriaDB.cache.get('cafeteria_cardapio_cache');
+      if (cached) {
+        appData = cached;
+      } else {
+        appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
-    } catch (_) {}
-    appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-    saveData();
+      toast('Aviso', 'Carregado do cache local (offline).', 'warn');
+    }
   }
 
+  // Pre-load from cache for faster startup
+  const cachedInitial = window.cafeteriaDB.cache.get('cafeteria_cardapio_cache');
+  if (cachedInitial) appData = cachedInitial;
+
   function saveData() {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(appData));
-    } catch (e) {
-      toast('Erro', 'Falha ao salvar dados.', 'error');
-    }
+    // This is now handled per-action, but we keep this as a no-op 
+    // or sync to local cache
+    window.cafeteriaDB.cache.set('cafeteria_cardapio_cache', appData);
   }
 
   function generateId() {
@@ -97,6 +115,17 @@
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
+  }
+
+  function dataURLtoBlob(dataurl) {
+    if (!dataurl || !dataurl.startsWith('data:')) return null;
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+    return new Blob([u8arr], {type:mime});
   }
 
   /* ════════════════════════════════════════════════════════
@@ -227,57 +256,59 @@
   const loginForm   = document.getElementById('login-form');
   const loginError  = document.getElementById('login-error');
 
-  loginForm.addEventListener('submit', e => {
+  loginForm.addEventListener('submit', async e => {
     e.preventDefault();
-    const user = document.getElementById('login-user').value.trim();
-    const pass = document.getElementById('login-pass').value;
+    const email = document.getElementById('login-user').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    const btn   = document.getElementById('login-btn');
     let valid = true;
 
-    if (!user) {
-      document.getElementById('err-login-user').classList.add('visible');
-      document.getElementById('login-user').classList.add('error');
+    if (!email) {
+      showFieldError('login-user', 'err-login-user', 'Digite seu e-mail.');
       valid = false;
-    } else {
-      document.getElementById('err-login-user').classList.remove('visible');
-      document.getElementById('login-user').classList.remove('error');
     }
-
     if (!pass) {
-      document.getElementById('err-login-pass').classList.add('visible');
-      document.getElementById('login-pass').classList.add('error');
+      showFieldError('login-pass', 'err-login-pass', 'Digite sua senha.');
       valid = false;
-    } else {
-      document.getElementById('err-login-pass').classList.remove('visible');
-      document.getElementById('login-pass').classList.remove('error');
     }
 
     if (!valid) return;
 
-    if (user === 'admin' && pass === getPassword()) {
-      session.isLoggedIn = true;
-      session.username   = user;
-      session.password   = pass;
+    btn.disabled = true;
+    btn.textContent = 'Autenticando...';
 
-      loginError.classList.remove('visible');
-      loginScreen.classList.add('hidden');
-      adminApp.classList.remove('hidden');
+    const { data, error } = await window.cafeteriaSupabase.auth.signInWithPassword({
+      email,
+      password: pass
+    });
 
-      document.getElementById('user-name-display').textContent = user;
-      document.getElementById('user-avatar').textContent = user[0].toUpperCase();
-
-      loadData();
-      navigateTo('dashboard');
-    } else {
+    if (error) {
+      toast('Erro de Login', error.message, 'error');
+      loginError.textContent = error.message;
       loginError.classList.add('visible');
-      document.getElementById('login-pass').value = '';
-      document.getElementById('login-pass').focus();
-
+      btn.disabled = false;
+      btn.textContent = 'Entrar no Painel';
+      
       // Shake animation
-      document.querySelector('.login-card').style.animation = 'none';
-      setTimeout(() => {
-        document.querySelector('.login-card').style.animation = 'shake 0.4s ease';
-      }, 10);
+      const card = document.querySelector('.login-card');
+      card.style.animation = 'none';
+      setTimeout(() => card.style.animation = 'shake 0.4s ease', 10);
+      return;
     }
+
+    // Success
+    session.isLoggedIn = true;
+    session.user = data.user;
+
+    loginError.classList.remove('visible');
+    loginScreen.classList.add('hidden');
+    adminApp.classList.remove('hidden');
+
+    document.getElementById('user-name-display').textContent = data.user.email.split('@')[0];
+    document.getElementById('user-avatar').textContent = data.user.email[0].toUpperCase();
+
+    await loadData();
+    navigateTo('dashboard');
   });
 
   // Add shake animation
@@ -285,15 +316,39 @@
   style.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}`;
   document.head.appendChild(style);
 
-  function logout() {
+  async function logout() {
+    await window.cafeteriaSupabase.auth.signOut();
     session.isLoggedIn = false;
-    session.username = '';
     adminApp.classList.add('hidden');
     loginScreen.classList.remove('hidden');
-    document.getElementById('login-user').value = '';
     document.getElementById('login-pass').value = '';
     loginError.classList.remove('visible');
+    navigateTo('dashboard'); // reset state
   }
+
+  // Check for session on load
+  (async function checkSession() {
+    const { data } = await window.cafeteriaSupabase.auth.getSession();
+    if (data.session) {
+      session.isLoggedIn = true;
+      session.user = data.session.user;
+
+      loginScreen.classList.add('hidden');
+      adminApp.classList.remove('hidden');
+
+      const user = data.session.user;
+      document.getElementById('user-name-display').textContent = user.email.split('@')[0];
+      document.getElementById('user-avatar').textContent = user.email[0].toUpperCase();
+
+      await loadData();
+      navigateTo('dashboard');
+      
+      // Setup Realtime subscription
+      window.cafeteriaDB.subscribeToChanges(() => {
+        loadData(); // Re-fetch on any change
+      });
+    }
+  })();
 
   document.getElementById('btn-logout').addEventListener('click', logout);
   document.getElementById('btn-logout-topbar').addEventListener('click', logout);
@@ -713,7 +768,7 @@
   document.getElementById('btn-salvar-produto').addEventListener('click', saveProduto);
   document.getElementById('form-produto').addEventListener('submit', e => { e.preventDefault(); saveProduto(); });
 
-  function saveProduto() {
+  async function saveProduto() {
     clearFormErrors('form-produto');
     let valid = true;
 
@@ -724,10 +779,13 @@
     const ativo       = document.getElementById('produto-ativo').checked;
     const editId      = document.getElementById('produto-id').value;
 
-    // Image: prefer uploaded base64, then URL field
     const dataVal = document.getElementById('produto-imagem-data').value.trim();
     const urlVal  = document.getElementById('produto-imagem').value.trim();
-    const imagemUrl = dataVal || urlVal;
+    
+    // Check if it's a new upload (base64)
+    const isNewUpload = dataVal.startsWith('data:');
+    const imageBlob = isNewUpload ? dataURLtoBlob(dataVal) : null;
+    let imagemUrl = isNewUpload ? '' : (dataVal || urlVal);
 
     if (!nome) {
       showFieldError('produto-nome', 'err-produto-nome', 'Nome é obrigatório.');
@@ -746,38 +804,53 @@
 
     if (!valid) return;
 
+    const btn = document.getElementById('btn-salvar-produto');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
     const badges = ['popular','novo','promo'].filter(b => {
       const cb = document.getElementById('badge-' + b);
       return cb && cb.checked;
     });
 
-    if (editId) {
-      const idx = appData.produtos.findIndex(p => p.id === editId);
-      if (idx !== -1) {
-        appData.produtos[idx] = {
-          ...appData.produtos[idx], nome, categoriaId, preco, descricao, imagemUrl, badges, ativo
-        };
-        toast('Produto atualizado', `"${nome}" foi salvo com sucesso.`, 'success');
+    try {
+      const id = editId || generateId();
+      let ordem = 0;
+
+      if (!editId) {
+        ordem = appData.produtos
+          .filter(p => p.categoria_id === categoriaId)
+          .reduce((max, p) => Math.max(max, p.ordem || 0), 0) + 1;
+      } else {
+        const p = appData.produtos.find(x => x.id === editId);
+        ordem = p ? (p.ordem || 0) : 0;
       }
-    } else {
-      const maxOrdem = appData.produtos
-        .filter(p => p.categoriaId === categoriaId)
-        .reduce((max, p) => Math.max(max, p.ordem || 0), 0);
 
-      appData.produtos.push({
-        id: generateId(),
-        categoriaId, nome, descricao, preco, imagemUrl,
-        badges, ativo, ordem: maxOrdem + 1
-      });
-      toast('Produto criado', `"${nome}" foi adicionado ao cardápio.`, 'success');
+      await window.cafeteriaDB.products.upsert({
+        id,
+        nome,
+        categoria_id: categoriaId,
+        preco,
+        descricao,
+        imagem_url: imagemUrl,
+        badges,
+        ativo,
+        ordem
+      }, imageBlob);
+
+      toast(editId ? 'Produto atualizado' : 'Produto criado', `"${nome}" foi salvo com sucesso.`, 'success');
+      
+      closeModal('modal-produto-overlay');
+      await loadData();
+      renderProdutosTable();
+    } catch (err) {
+      console.error(err);
+      toast('Erro ao salvar', 'Não foi possível salvar os dados no servidor.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = editId ? 'Salvar Alterações' : 'Adicionar Produto';
     }
-
-    saveData();
-    closeModal('modal-produto-overlay');
-    renderProdutosTable();
-    if (currentPage.id === 'dashboard') renderDashboard();
   }
-
 
   async function deleteProduto(id) {
     const p = appData.produtos.find(x => x.id === id);
@@ -793,11 +866,15 @@
 
     if (!ok) return;
 
-    appData.produtos = appData.produtos.filter(x => x.id !== id);
-    saveData();
-    renderProdutosTable();
-    toast('Produto excluído', `"${p.nome}" foi removido.`, 'warn');
-    if (currentPage.id === 'dashboard') renderDashboard();
+    try {
+      await window.cafeteriaDB.products.delete(id);
+      toast('Produto excluído', `"${p.nome}" foi removido.`, 'warn');
+      await loadData();
+      renderProdutosTable();
+    } catch (err) {
+      console.error(err);
+      toast('Erro ao excluir', 'Ocorreu um problema ao remover o produto.', 'error');
+    }
   }
 
   /* ════════════════════════════════════════════════════════
@@ -904,11 +981,22 @@
         const [moved] = arr.splice(dragIdx, 1);
         arr.splice(dropIdx, 0, moved);
 
-        saveData();
-        renderCategorias();
+        // Update orders in Supabase
+        (async () => {
+          try {
+            await Promise.all(appData.categorias.map((c, i) => {
+              return window.cafeteriaDB.categories.upsert({ ...c, ordem: i });
+            }));
+            toast('Ordem salva', `"${moved.nome}" movida para a posição ${dropIdx + 1}.`, 'success', 2000);
+            await loadData();
+          } catch (err) {
+            console.error(err);
+            toast('Erro ao ordenar', 'Não foi possível salvar a nova ordem.', 'error');
+          }
+        })();
 
+        renderCategorias();
         if (currentPage.id === 'dashboard') renderDashboard();
-        toast('Ordem salva', `"${moved.nome}" movida para a posição ${dropIdx + 1}.`, 'success', 2000);
       });
     });
   }
@@ -976,12 +1064,11 @@
   document.getElementById('btn-salvar-categoria').addEventListener('click', saveCategoria);
   document.getElementById('form-categoria').addEventListener('submit', e => { e.preventDefault(); saveCategoria(); });
 
-  function saveCategoria() {
+  async function saveCategoria() {
     clearFormErrors('form-categoria');
     let valid = true;
 
     const nome      = document.getElementById('cat-nome').value.trim();
-    // Lê do hidden input (sempre sincronizado pela grade ou campo custom)
     const icone     = document.getElementById('cat-icone').value.trim() || '📦';
     const descricao = document.getElementById('cat-descricao').value.trim();
     const ativo     = document.getElementById('cat-ativo').checked;
@@ -994,25 +1081,36 @@
 
     if (!valid) return;
 
-    if (editId) {
-      const idx = appData.categorias.findIndex(c => c.id === editId);
-      if (idx !== -1) {
-        appData.categorias[idx] = { ...appData.categorias[idx], nome, icone, descricao, ativo };
-        toast('Categoria atualizada', `"${nome}" foi salva.`, 'success');
-      }
-    } else {
-      const id = slugify(nome) || generateId();
-      // Ensure unique id
-      const exists = appData.categorias.some(c => c.id === id);
-      const finalId = exists ? id + '-' + Date.now().toString(36) : id;
-      appData.categorias.push({ id: finalId, nome, icone, descricao, ativo });
-      toast('Categoria criada', `"${nome}" foi adicionada.`, 'success');
-    }
+    const btn = document.getElementById('btn-salvar-categoria');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
 
-    saveData();
-    closeModal('modal-cat-overlay');
-    renderCategorias();
-    if (currentPage.id === 'dashboard') renderDashboard();
+    try {
+      const id = editId || (slugify(nome) || generateId());
+      let ordem = 0;
+      
+      if (!editId) {
+        ordem = appData.categorias.length;
+      } else {
+        const c = appData.categorias.find(x => x.id === editId);
+        ordem = c ? (c.ordem || 0) : 0;
+      }
+
+      await window.cafeteriaDB.categories.upsert({
+        id, nome, icone, descricao, ativo, ordem
+      });
+
+      toast(editId ? 'Categoria atualizada' : 'Categoria criada', `"${nome}" foi salva.`, 'success');
+      closeModal('modal-cat-overlay');
+      await loadData();
+      renderCategorias();
+    } catch (err) {
+      console.error(err);
+      toast('Erro ao salvar', 'Não foi possível salvar a categoria no servidor.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = editId ? 'Salvar Alterações' : 'Adicionar Categoria';
+    }
   }
 
   async function deleteCategoria(id) {
@@ -1302,7 +1400,7 @@
       el.info.style.display = 'none';
     });
 
-    el.btnSave.addEventListener('click', () => {
+    el.btnSave.addEventListener('click', async () => {
       const dataUrl = el.dataInput.value;
       const alt = el.altInput.value.trim();
 
@@ -1311,18 +1409,21 @@
           return;
       }
 
-      const settings = {
-        imageDataUrl: dataUrl,
-        alt: alt || 'Interior da Cafeteria do Teatro',
-        updatedAt: new Date().toISOString()
-      };
+      el.btnSave.disabled = true;
+      el.btnSave.textContent = 'Enviando...';
 
       try {
-        localStorage.setItem(HERO_LS_KEY, JSON.stringify(settings));
+        const imageBlob = dataURLtoBlob(dataUrl);
+        await window.cafeteriaDB.hero.update(imageBlob, alt || 'Interior da Cafeteria do Teatro');
         toast('Salvo!', 'Imagem do Hero atualizada com sucesso.', 'success');
-        renderHero(); // Update preview
+        await loadData();
+        renderHero();
       } catch (e) {
-        toast('Erro de Armazenamento', 'A imagem é muito grande para o navegador. Tente outra.', 'error');
+        console.error(e);
+        toast('Erro ao salvar', 'Não foi possível enviar a imagem para o servidor.', 'error');
+      } finally {
+        el.btnSave.disabled = false;
+        el.btnSave.textContent = '💾 Salvar Alterações';
       }
     });
 
@@ -1335,9 +1436,15 @@
         okClass: 'btn--danger'
       });
       if (ok) {
-        localStorage.removeItem(HERO_LS_KEY);
-        toast('Removido', 'Hero restaurado para o padrão.', 'info');
-        renderHero();
+        try {
+          await window.cafeteriaDB.hero.update(null, '');
+          toast('Removido', 'Hero restaurado para o padrão.', 'info');
+          await loadData();
+          renderHero();
+        } catch (e) {
+          console.error(e);
+          toast('Erro', 'Não foi possível restaurar o Hero.', 'error');
+        }
       }
     });
 
@@ -1348,17 +1455,24 @@
   ═══════════════════════════════════════════════════════ */
   const HORARIOS_LS_KEY = 'cafeteria_horarios';
 
-  function renderHorarios() {
-    const saved = localStorage.getItem(HORARIOS_LS_KEY);
-    let data = {
-      seg_qui: { abre: '14:30', fecha: '22:00' },
-      sex:     { abre: '14:30', fecha: '20:00' },
-      sab_dom: { abre: '14:30', fecha: '20:00', ativo: false },
-      aviso:   'Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.'
-    };
+  async function renderHorarios() {
+    let data;
+    try {
+      data = await window.cafeteriaDB.hours.get();
+      if (data) {
+        window.cafeteriaDB.cache.set('cafeteria_horarios_cache', data);
+      }
+    } catch (err) {
+      data = window.cafeteriaDB.cache.get('cafeteria_horarios_cache');
+    }
 
-    if (saved) {
-      try { data = JSON.parse(saved); } catch (e) {}
+    if (!data) {
+      data = {
+        seg_qui: { abre: '14:30', fecha: '22:00' },
+        sex:     { abre: '14:30', fecha: '20:00' },
+        sab_dom: { abre: '14:30', fecha: '20:00', ativo: false },
+        aviso:   'Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.'
+      };
     }
 
     // Fill form
@@ -1389,7 +1503,7 @@
     toggleSabDomFields(e.target.checked);
   });
 
-  document.getElementById('form-horarios')?.addEventListener('submit', e => {
+  document.getElementById('form-horarios')?.addEventListener('submit', async e => {
     e.preventDefault();
     
     const settings = {
@@ -1406,12 +1520,24 @@
         fecha: document.getElementById('h-sab-dom-fecha').value,
         ativo: document.getElementById('h-sab-dom-ativo').checked
       },
-      aviso: document.getElementById('h-aviso').value.trim(),
-      updatedAt: new Date().toISOString()
+      aviso: document.getElementById('h-aviso').value.trim()
     };
 
-    localStorage.setItem(HORARIOS_LS_KEY, JSON.stringify(settings));
-    toast('Salvo!', 'Horários atualizados com sucesso.', 'success');
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    try {
+      await window.cafeteriaDB.hours.update(settings);
+      toast('Salvo!', 'Horários atualizados com sucesso.', 'success');
+      window.cafeteriaDB.cache.set('cafeteria_horarios_cache', settings);
+    } catch (err) {
+      console.error(err);
+      toast('Erro', 'Não foi possível salvar os horários no servidor.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar Horários';
+    }
   });
 
   /* ════════════════════════════════════════════════════════
@@ -1419,16 +1545,22 @@
   ═══════════════════════════════════════════════════════ */
   const PROMO_LS_KEY = 'cafeteria_campanhas';
 
-  function renderPromocoes() {
-    const raw = localStorage.getItem(PROMO_LS_KEY);
-    const campanhas = raw ? JSON.parse(raw) : [];
+  async function renderPromocoes() {
+    let campanhas;
+    try {
+      campanhas = await window.cafeteriaDB.promotions.all();
+      window.cafeteriaDB.cache.set('cafeteria_promos_cache', campanhas);
+    } catch (err) {
+      campanhas = window.cafeteriaDB.cache.get('cafeteria_promos_cache') || [];
+    }
+
     const filterStatus = document.getElementById('filter-promo-status').value;
     const body = document.getElementById('promo-table-body');
     if (!body) return;
 
     body.innerHTML = '';
 
-    const sorted = [...campanhas].sort((a, b) => new Date(b.updatedAt || b.inicio) - new Date(a.updatedAt || a.inicio));
+    const sorted = [...campanhas];
 
     sorted.forEach(c => {
       // Filtragem simples
@@ -1504,9 +1636,8 @@
   // BINDING GLOBALS
   window._adminObj = window._adminObj || {};
   
-  window._adminObj.editPromo = (id) => {
-    const raw = localStorage.getItem(PROMO_LS_KEY);
-    const campanhas = JSON.parse(raw || '[]');
+  window._adminObj.editPromo = async (id) => {
+    let campanhas = window.cafeteriaDB.cache.get('cafeteria_promos_cache') || [];
     const c = campanhas.find(camp => camp.id === id);
     if (!c) return;
 
@@ -1541,12 +1672,14 @@
     });
     if (!ok) return;
 
-    const raw = localStorage.getItem(PROMO_LS_KEY);
-    let campanhas = JSON.parse(raw || '[]');
-    campanhas = campanhas.filter(c => c.id !== id);
-    localStorage.setItem(PROMO_LS_KEY, JSON.stringify(campanhas));
-    toast('Excluído', 'Campanha removida com sucesso.', 'info');
-    renderPromocoes();
+    try {
+      await window.cafeteriaDB.promotions.delete(id);
+      toast('Excluído', 'Campanha removida com sucesso.', 'info');
+      await renderPromocoes();
+    } catch (err) {
+      console.error(err);
+      toast('Erro', 'Não foi possível remover a campanha.', 'error');
+    }
   };
 
   function resetPromoUpload() {
@@ -1629,7 +1762,7 @@
     resetPromoUpload();
   });
 
-  document.getElementById('btn-salvar-promo')?.addEventListener('click', () => {
+  document.getElementById('btn-salvar-promo')?.addEventListener('click', async () => {
     const id = document.getElementById('promo-id').value;
     const titulo = document.getElementById('promo-titulo').value.trim();
     const desc = document.getElementById('promo-desc').value.trim();
@@ -1643,11 +1776,17 @@
 
     if (!valid) return;
 
-    const raw = localStorage.getItem(PROMO_LS_KEY);
-    let campanhas = JSON.parse(raw || '[]');
+    const btn = document.getElementById('btn-salvar-promo');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    const dataVal = document.getElementById('promo-image-data').value.trim();
+    const isNewUpload = dataVal.startsWith('data:');
+    const imageBlob = isNewUpload ? dataURLtoBlob(dataVal) : null;
+    let imageUrl = isNewUpload ? '' : dataVal;
 
     const campData = {
-      id: id || generateId(),
+      id: id || undefined, // undefined for new (let serial/uuid handle it if needed, but our helper uses upsert)
       titulo,
       descricao: desc,
       badge: document.getElementById('promo-badge').value.trim(),
@@ -1655,20 +1794,22 @@
       inicio,
       fim,
       ativo: document.getElementById('promo-ativo').checked,
-      imageUrl: document.getElementById('promo-image-data').value,
-      updatedAt: new Date().toISOString()
+      image_url: imageUrl,
+      updated_at: new Date().toISOString()
     };
 
-    if (id) {
-      campanhas = campanhas.map(c => c.id === id ? campData : c);
-    } else {
-      campanhas.push(campData);
+    try {
+      await window.cafeteriaDB.promotions.upsert(campData, imageBlob);
+      toast('Sucesso!', 'Campanha salva com sucesso.');
+      closeModal('modal-promo-overlay');
+      await renderPromocoes();
+    } catch (err) {
+      console.error(err);
+      toast('Erro', 'Ocorreu um problema ao salvar no servidor.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar Campanha';
     }
-
-    localStorage.setItem(PROMO_LS_KEY, JSON.stringify(campanhas));
-    toast('Sucesso!', 'Campanha salva com sucesso.');
-    closeModal('modal-promo-overlay');
-    renderPromocoes();
   });
 
   /* ════════════════════════════════════════════════════════
@@ -1676,17 +1817,13 @@
   ═══════════════════════════════════════════════════════ */
   const TEXTOS_LS_KEY = 'cafeteria_textos_home';
 
-  function renderConteudo() {
-    const saved = localStorage.getItem(TEXTOS_LS_KEY);
-    let data = {
-      sobre_titulo: '',
-      sobre_texto: '',
-      exp_subtitulo: '',
-      galeria_subtitulo: ''
-    };
-
-    if (saved) {
-      try { data = JSON.parse(saved); } catch (e) {}
+  async function renderConteudo() {
+    let data;
+    try {
+      data = await window.cafeteriaDB.settings.all();
+      window.cafeteriaDB.cache.set('cafeteria_settings_cache', data);
+    } catch (err) {
+      data = window.cafeteriaDB.cache.get('cafeteria_settings_cache') || {};
     }
 
     document.getElementById('c-sobre-titulo').value = data.sobre_titulo || '';
@@ -1695,19 +1832,33 @@
     document.getElementById('c-galeria-subtitulo').value = data.galeria_subtitulo || '';
   }
 
-  document.getElementById('form-conteudo')?.addEventListener('submit', e => {
+  document.getElementById('form-conteudo')?.addEventListener('submit', async e => {
     e.preventDefault();
     
     const settings = {
       sobre_titulo: document.getElementById('c-sobre-titulo').value.trim(),
       sobre_texto: document.getElementById('c-sobre-texto').value.trim(),
       exp_subtitulo: document.getElementById('c-exp-subtitulo').value.trim(),
-      galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value.trim(),
-      updatedAt: new Date().toISOString()
+      galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value.trim()
     };
 
-    localStorage.setItem(TEXTOS_LS_KEY, JSON.stringify(settings));
-    toast('Salvo!', 'Textos institucionais atualizados com sucesso.', 'success');
+    const btn = document.getElementById('btn-save-conteudo');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    try {
+      await Promise.all(Object.entries(settings).map(([key, val]) => {
+        return window.cafeteriaDB.settings.update(key, val);
+      }));
+      toast('Salvo!', 'Textos institucionais atualizados com sucesso.', 'success');
+      window.cafeteriaDB.cache.set('cafeteria_settings_cache', settings);
+    } catch (err) {
+      console.error(err);
+      toast('Erro', 'Não foi possível salvar os textos no servidor.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar Textos';
+    }
   });
 
   /* ════════════════════════════════════════════════════════

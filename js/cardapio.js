@@ -29,78 +29,85 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileMenu.classList.toggle('open');
   });
 
-    });
-  });
-
   document.querySelectorAll('.navbar__mobile-link').forEach(link => {
     link.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      mobileMenu.classList.remove('open');
+      hamburger?.classList.remove('active');
+      mobileMenu?.classList.remove('open');
     });
   });
 
-  /* ── Promoções Dinâmicas ────────────────────────────────── */
-  const loadActivePromos = () => {
-    const PROMO_LS_KEY = 'cafeteria_campanhas';
-    const raw = localStorage.getItem(PROMO_LS_KEY);
-    if (!raw) return;
-
+  /* ── Promoções Dinâmicas (Supabase) ─────────────────────── */
+  const loadActivePromos = async () => {
     try {
-      const campanhas = JSON.parse(raw);
-      const now = new Date();
-      
-      const ativas = campanhas.filter(c => {
-        if (!c.ativo) return false;
-        const start = new Date(c.inicio + 'T00:00:00');
-        const end = new Date(c.fim + 'T23:59:59');
-        return now >= start && now <= end;
-      });
+      const campanhas = await window.cafeteriaDB.promotions.all();
+      window.cafeteriaDB.cache.set('cafeteria_promos_cache', campanhas);
+      renderPromos(campanhas);
+    } catch (err) {
+      console.error('Erro ao carregar promoções no cardápio:', err);
+      const cached = window.cafeteriaDB.cache.get('cafeteria_promos_cache') || [];
+      renderPromos(cached);
+    }
+  };
 
-      if (ativas.length === 0) return;
+  const renderPromos = (campanhas) => {
+    const now = new Date();
+    const ativas = campanhas.filter(c => {
+      if (!c.ativo) return false;
+      const start = new Date(c.inicio + 'T00:00:00');
+      const end = new Date(c.fim + 'T23:59:59');
+      return now >= start && now <= end;
+    });
 
-      const promo = ativas.sort((a, b) => new Date(b.updatedAt || b.inicio) - new Date(a.updatedAt || a.inicio))[0];
+    const barRoot = document.getElementById('promo-bar-root');
+    const heroRoot = document.getElementById('promo-hero-root');
 
-      const barRoot = document.getElementById('promo-bar-root');
-      if (barRoot) {
-        barRoot.innerHTML = `
-          <div class="promo-bar">
-            <div class="container">
-              ${promo.badge ? `<span class="promo-bar__badge">${promo.badge}</span>` : ''}
-              <span>${promo.titulo}: ${promo.descricao}</span>
-              ${promo.link ? `<a href="${promo.link}">Saiba mais →</a>` : ''}
-            </div>
+    if (ativas.length === 0) {
+      if (barRoot) barRoot.innerHTML = '';
+      if (heroRoot) heroRoot.innerHTML = '';
+      return;
+    }
+
+    const promo = ativas.sort((a, b) => new Date(b.updated_at || b.inicio) - new Date(a.updated_at || a.inicio))[0];
+
+    // Renderizar Promo Bar
+    if (barRoot) {
+      barRoot.innerHTML = `
+        <div class="promo-bar">
+          <div class="container" style="display:flex;align-items:center;justify-content:center;gap:12px;width:100%">
+            ${promo.badge ? `<span class="promo-bar__badge" style="background:var(--primaria);color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase">${promo.badge}</span>` : ''}
+            <span>${promo.titulo}: ${promo.descricao}</span>
+            ${promo.link ? `<a href="${promo.link}" class="promo-bar__link" style="color:#fff;text-decoration:underline;font-weight:600">Confira</a>` : ''}
           </div>
-        `;
-      }
-      
-      const heroRoot = document.getElementById('promo-hero-root');
-      if (heroRoot) {
-        heroRoot.innerHTML = `
-          <div class="promo-hero">
-            ${promo.imageUrl ? `
-              <div class="promo-hero__img">
-                <img src="${promo.imageUrl}" alt="${promo.titulo}">
-              </div>
-            ` : ''}
-            <div class="promo-hero__content">
-              ${promo.badge ? `<span class="promo-hero__badge">${promo.badge}</span>` : ''}
-              <h2 class="promo-hero__title">${promo.titulo}</h2>
-              <p class="promo-hero__desc">${promo.descricao}</p>
-              ${promo.link ? `
-                <div class="promo-hero__cta">
-                  <a href="${promo.link}" class="btn btn--primary">Aproveitar agora</a>
-                </div>
-              ` : ''}
-            </div>
+        </div>
+      `;
+    }
+
+    // Renderizar Promo Hero (Banner no cardápio)
+    if (heroRoot) {
+      heroRoot.innerHTML = `
+        <div class="promo-hero fade-in">
+          <div class="promo-hero__content">
+            ${promo.badge ? `<span class="promo-hero__badge">${promo.badge}</span>` : ''}
+            <h2 class="promo-hero__title">${promo.titulo}</h2>
+            <p class="promo-hero__desc">${promo.descricao}</p>
+            ${promo.link ? `<a href="${promo.link}" class="btn btn--primary">Aproveitar Agora</a>` : ''}
           </div>
-        `;
-      }
-    } catch (e) {
-      console.error('Erro ao carregar promoções:', e);
+          ${promo.image_url ? `
+            <div class="promo-hero__image">
+              <img src="${promo.image_url}" alt="${promo.titulo}" />
+            </div>
+          ` : ''}
+        </div>
+      `;
     }
   };
 
   loadActivePromos();
+
+  /* ── Sincronização em Tempo Real ────────────────────────── */
+  window.cafeteriaDB.subscribeToChanges(() => {
+    loadActivePromos();
+  });
 
   /* ── Navegação sticky de categorias ─────────────────────── */
   const catBtns    = document.querySelectorAll('.cat-nav__btn');

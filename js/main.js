@@ -38,27 +38,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ── Hero parallax leve ─────────────────────────────────── */
+  /* ── Hero dinâmico do Supabase ─────────────────────────── */
   const heroBg = document.querySelector('.hero__bg');
-  if (heroBg) {
-    // Aplicar Hero dinâmico se configurado no Admin
-    const HERO_LS_KEY = 'cafeteria_hero_home';
-    const savedHero = localStorage.getItem(HERO_LS_KEY);
-    
-    if (savedHero) {
-      try {
-        const data = JSON.parse(savedHero);
-        if (data.imageDataUrl) {
-          heroBg.style.backgroundImage = `url(${data.imageDataUrl})`;
-          if (data.alt) heroBg.setAttribute('aria-label', data.alt);
-        }
-      } catch (e) {
-        console.error('Erro ao carregar Hero dinâmico:', e);
+  const loadHero = async () => {
+    if (!heroBg) return;
+    try {
+      const data = await window.cafeteriaDB.hero.get();
+      if (data && data.image_url) {
+        heroBg.style.backgroundImage = `url(${data.image_url})`;
+        if (data.image_alt) heroBg.setAttribute('aria-label', data.image_alt);
+        window.cafeteriaDB.cache.set('cafeteria_hero_cache', data);
+      }
+    } catch (err) {
+      const cached = window.cafeteriaDB.cache.get('cafeteria_hero_cache');
+      if (cached && cached.image_url) {
+        heroBg.style.backgroundImage = `url(${cached.image_url})`;
       }
     }
-
     heroBg.classList.add('loaded');
+  };
 
+  if (heroBg) {
+    loadHero();
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY;
       if (scrolled < window.innerHeight) {
@@ -67,130 +68,114 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  /* ── Promoções Dinâmicas ────────────────────────────────── */
-  const loadActivePromos = () => {
-    const PROMO_LS_KEY = 'cafeteria_campanhas';
-    const raw = localStorage.getItem(PROMO_LS_KEY);
-    if (!raw) return;
-
+  /* ── Promoções Dinâmicas (Supabase) ─────────────────────── */
+  const loadActivePromos = async () => {
     try {
-      const campanhas = JSON.parse(raw);
-      const now = new Date();
-      
-      // Filtrar campanhas ativas no momento
-      const ativas = campanhas.filter(c => {
-        if (!c.ativo) return false;
-        const start = new Date(c.inicio + 'T00:00:00');
-        const end = new Date(c.fim + 'T23:59:59');
-        return now >= start && now <= end;
-      });
+      const campanhas = await window.cafeteriaDB.promotions.all();
+      window.cafeteriaDB.cache.set('cafeteria_promos_cache', campanhas);
+      renderPromos(campanhas);
+    } catch (err) {
+      console.error('Erro ao carregar promoções:', err);
+      const cached = window.cafeteriaDB.cache.get('cafeteria_promos_cache') || [];
+      renderPromos(cached);
+    }
+  };
 
-      if (ativas.length === 0) return;
+  const renderPromos = (campanhas) => {
+    const now = new Date();
+    const ativas = campanhas.filter(c => {
+      if (!c.ativo) return false;
+      const start = new Date(c.inicio + 'T00:00:00');
+      const end = new Date(c.fim + 'T23:59:59');
+      return now >= start && now <= end;
+    });
 
-      // Pegar a mais recente
-      const promo = ativas.sort((a, b) => new Date(b.updatedAt || b.inicio) - new Date(a.updatedAt || a.inicio))[0];
+    const barRoot = document.getElementById('promo-bar-root');
+    const heroRoot = document.getElementById('promo-hero-root');
 
-      // Renderizar Promo Bar (Topbar discreta)
-      const barRoot = document.getElementById('promo-bar-root');
-      if (barRoot) {
-        barRoot.innerHTML = `
-          <div class="promo-bar">
-            <div class="container">
-              ${promo.badge ? `<span class="promo-bar__badge">${promo.badge}</span>` : ''}
-              <span>${promo.titulo}: ${promo.descricao}</span>
-              ${promo.link ? `<a href="${promo.link}">Saiba mais →</a>` : ''}
-            </div>
+    if (ativas.length === 0) {
+      if (barRoot) barRoot.innerHTML = '';
+      if (heroRoot) heroRoot.innerHTML = '';
+      return;
+    }
+
+    const promo = ativas.sort((a, b) => new Date(b.updated_at || b.inicio) - new Date(a.updated_at || a.inicio))[0];
+
+    if (barRoot) {
+      barRoot.innerHTML = `
+        <div class="promo-bar">
+          <div class="container" style="display:flex;align-items:center;justify-content:center;gap:12px;width:100%">
+            ${promo.badge ? `<span class="promo-bar__badge" style="background:var(--primaria);color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase">${promo.badge}</span>` : ''}
+            <span>${promo.titulo}: ${promo.descricao}</span>
+            ${promo.link ? `<a href="${promo.link}" class="promo-bar__link" style="color:#fff;text-decoration:underline;font-weight:600">Confira</a>` : ''}
           </div>
-        `;
-      }
-      
-      // Se estiver no cardápio, renderizar o banner de destaque
-      const heroRoot = document.getElementById('promo-hero-root');
-      if (heroRoot) {
-        heroRoot.innerHTML = `
-          <div class="promo-hero">
-            ${promo.imageUrl ? `
-              <div class="promo-hero__img">
-                <img src="${promo.imageUrl}" alt="${promo.titulo}">
-              </div>
-            ` : ''}
-            <div class="promo-hero__content">
-              ${promo.badge ? `<span class="promo-hero__badge">${promo.badge}</span>` : ''}
-              <h2 class="promo-hero__title">${promo.titulo}</h2>
-              <p class="promo-hero__desc">${promo.descricao}</p>
-              ${promo.link ? `
-                <div class="promo-hero__cta">
-                  <a href="${promo.link}" class="btn btn--primary">Aproveitar agora</a>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-        `;
-      }
+        </div>
+      `;
+    }
 
-    } catch (e) {
-      console.error('Erro ao carregar promoções:', e);
+    if (heroRoot) {
+      heroRoot.innerHTML = `
+        <div class="promo-hero fade-in">
+          <div class="promo-hero__content">
+            ${promo.badge ? `<span class="promo-hero__badge">${promo.badge}</span>` : ''}
+            <h2 class="promo-hero__title">${promo.titulo}</h2>
+            <p class="promo-hero__desc">${promo.descricao}</p>
+            ${promo.link ? `<a href="${promo.link}" class="btn btn--primary">Aproveitar Agora</a>` : ''}
+          </div>
+          ${promo.image_url ? `
+            <div class="promo-hero__image">
+              <img src="${promo.image_url}" alt="${promo.titulo}" />
+            </div>
+          ` : ''}
+        </div>
+      `;
     }
   };
 
   loadActivePromos();
 
-  /* ── Textos Institucionais ──────────────────────────────── */
-  const applyHomeTexts = () => {
-    const TEXTOS_LS_KEY = 'cafeteria_textos_home';
-    const saved = localStorage.getItem(TEXTOS_LS_KEY);
-    if (!saved) return;
-
+  /* ── Textos Institucionais (Supabase) ───────────────────── */
+  const applyHomeTexts = async () => {
+    let data;
     try {
-      const data = JSON.parse(saved);
-      
-      const elSobreTitulo    = document.getElementById('dyn-sobre-titulo');
-      const elSobreTexto     = document.getElementById('dyn-sobre-texto');
-      const elExpSubtitulo   = document.getElementById('dyn-exp-subtitulo');
-      const elGaleriaSub     = document.getElementById('dyn-galeria-subtitulo');
-
-      if (data.sobre_titulo && elSobreTitulo) {
-        elSobreTitulo.textContent = data.sobre_titulo;
-      }
-
-      if (data.sobre_texto && elSobreTexto) {
-        // Converte quebras de linha em parágrafos <p>
-        const paragraphs = data.sobre_texto
-          .split('\n')
-          .filter(p => p.trim() !== '')
-          .map(p => `<p>${p.trim()}</p>`)
-          .join('');
-        elSobreTexto.innerHTML = paragraphs;
-      }
-
-      if (data.exp_subtitulo && elExpSubtitulo) {
-        elExpSubtitulo.textContent = data.exp_subtitulo;
-      }
-
-      if (data.galeria_subtitulo && elGaleriaSub) {
-        elGaleriaSub.textContent = data.galeria_subtitulo;
-      }
-
-    } catch (e) {
-      console.error('Erro ao carregar textos institucionais:', e);
+      data = await window.cafeteriaDB.settings.all();
+      window.cafeteriaDB.cache.set('cafeteria_settings_cache', data);
+    } catch (err) {
+      data = window.cafeteriaDB.cache.get('cafeteria_settings_cache') || {};
     }
+    
+    const elSobreTitulo    = document.getElementById('dyn-sobre-titulo');
+    const elSobreTexto     = document.getElementById('dyn-sobre-texto');
+    const elExpSubtitulo   = document.getElementById('dyn-exp-subtitulo');
+    const elGaleriaSub     = document.getElementById('dyn-galeria-subtitulo');
+
+    if (data.sobre_titulo && elSobreTitulo) elSobreTitulo.textContent = data.sobre_titulo;
+    if (data.sobre_texto && elSobreTexto) {
+      elSobreTexto.innerHTML = data.sobre_texto.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p.trim()}</p>`).join('');
+    }
+    if (data.exp_subtitulo && elExpSubtitulo) elExpSubtitulo.textContent = data.exp_subtitulo;
+    if (data.galeria_subtitulo && elGaleriaSub) elGaleriaSub.textContent = data.galeria_subtitulo;
   };
 
   applyHomeTexts();
-  const applyHorarios = () => {
-    const HORARIOS_LS_KEY = 'cafeteria_horarios';
-    const saved = localStorage.getItem(HORARIOS_LS_KEY);
-    
-    // Default se não houver no LS
-    let data = {
-      seg_qui: { abre: '14:30', fecha: '22:00' },
-      sex:     { abre: '14:30', fecha: '20:00' },
-      sab_dom: { abre: '14:30', fecha: '20:00', ativo: false },
-      aviso:   'Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.'
-    };
 
-    if (saved) {
-      try { data = JSON.parse(saved); } catch (e) {}
+  /* ── Horários Dinâmicos (Supabase) ───────────────────────── */
+  const applyHorarios = async () => {
+    let data;
+    try {
+      data = await window.cafeteriaDB.hours.get();
+      if (data) window.cafeteriaDB.cache.set('cafeteria_horarios_cache', data);
+    } catch (err) {
+      data = window.cafeteriaDB.cache.get('cafeteria_horarios_cache');
+    }
+
+    if (!data) {
+      data = {
+        seg_qui: { abre: '14:30', fecha: '22:00' },
+        sex:     { abre: '14:30', fecha: '20:00' },
+        sab_dom: { abre: '14:30', fecha: '20:00', ativo: false },
+        aviso:   'Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.'
+      };
     }
 
     // Atualizar textos na seção Horários
