@@ -811,7 +811,8 @@
     container.innerHTML = appData.categorias.map(c => {
       const count = appData.produtos.filter(p => p.categoriaId === c.id).length;
       return `
-        <div class="cat-item" data-id="${c.id}">
+        <div class="cat-item" data-id="${c.id}" draggable="true">
+          <div class="cat-item__drag" title="Arrastar para reordenar" aria-hidden="true">⠿</div>
           <div class="cat-item__icon">${c.icone}</div>
           <div class="cat-item__info">
             <div class="cat-item__name">${c.nome}</div>
@@ -828,13 +829,82 @@
         </div>`;
     }).join('');
 
+    // Bind button events
     container.querySelectorAll('.btn-edit-cat').forEach(btn => {
       btn.addEventListener('click', () => openCatModal(btn.dataset.id));
     });
     container.querySelectorAll('.btn-del-cat').forEach(btn => {
       btn.addEventListener('click', () => deleteCategoria(btn.dataset.id));
     });
+
+    // ── Drag & Drop ──────────────────────────────────────────
+    let dragSrc = null;   // the item being dragged
+    let dragIdx = -1;     // its original index
+
+    container.querySelectorAll('.cat-item').forEach(item => {
+
+      item.addEventListener('dragstart', e => {
+        dragSrc = item;
+        dragIdx = [...container.querySelectorAll('.cat-item')].indexOf(item);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset.id);
+        // Slight delay so the ghost image renders before we dim the item
+        requestAnimationFrame(() => item.classList.add('dragging'));
+      });
+
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        container.querySelectorAll('.cat-item').forEach(i => i.classList.remove('drag-over-top', 'drag-over-bottom'));
+        dragSrc = null;
+        dragIdx = -1;
+      });
+
+      item.addEventListener('dragover', e => {
+        if (!dragSrc || dragSrc === item) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        // Determine if cursor is on the top or bottom half
+        const rect   = item.getBoundingClientRect();
+        const midY   = rect.top + rect.height / 2;
+        const isTop  = e.clientY < midY;
+
+        item.classList.toggle('drag-over-top',    isTop);
+        item.classList.toggle('drag-over-bottom', !isTop);
+      });
+
+      item.addEventListener('dragleave', () => {
+        item.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+
+      item.addEventListener('drop', e => {
+        e.preventDefault();
+        if (!dragSrc || dragSrc === item) return;
+
+        item.classList.remove('drag-over-top', 'drag-over-bottom');
+
+        // Determine insertion position
+        const rect   = item.getBoundingClientRect();
+        const isTop  = e.clientY < rect.top + rect.height / 2;
+        const items  = [...container.querySelectorAll('.cat-item')];
+        let dropIdx  = items.indexOf(item);
+        if (!isTop) dropIdx += 1;          // insert after
+        if (dropIdx > dragIdx) dropIdx -= 1; // compensate for removed element
+
+        // Reorder in-memory array
+        const arr   = appData.categorias;
+        const [moved] = arr.splice(dragIdx, 1);
+        arr.splice(dropIdx, 0, moved);
+
+        saveData();
+        renderCategorias();
+
+        if (currentPage.id === 'dashboard') renderDashboard();
+        toast('Ordem salva', `"${moved.nome}" movida para a posição ${dropIdx + 1}.`, 'success', 2000);
+      });
+    });
   }
+
 
   /* ─── CATEGORIA MODAL ────────────────────────────────────── */
   document.getElementById('btn-nova-categoria').addEventListener('click', () => openCatModal());

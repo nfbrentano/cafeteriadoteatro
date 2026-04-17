@@ -1191,6 +1191,46 @@ tbody tr:hover { background: var(--admin-hover); }
   align-items: center;
 }
 
+/* ── Drag handle ─────────────────────────────────────────── */
+.cat-item__drag {
+  font-size: 20px;
+  color: var(--admin-text-sub);
+  cursor: grab;
+  padding: 4px 2px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  opacity: 0.3;
+  transition: opacity var(--transition-fast);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.cat-item:hover .cat-item__drag {
+  opacity: 0.75;
+}
+
+.cat-item__drag:active {
+  cursor: grabbing;
+}
+
+/* ── Dragging state ──────────────────────────────────────── */
+.cat-item.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+  background: var(--admin-hover);
+}
+
+/* ── Drop target indicator ───────────────────────────────── */
+.cat-item.drag-over-top {
+  border-top: 2px solid var(--caramelo);
+  margin-top: -2px;
+}
+
+.cat-item.drag-over-bottom {
+  border-bottom: 2px solid var(--caramelo);
+  margin-bottom: -2px;
+}
+
 /* ═══════════════════════════════════════════════════════════
    CONFIGURAÇÕES PAGE
 ══════════════════════════════════════════════════════════ */
