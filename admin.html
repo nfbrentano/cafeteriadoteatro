@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Painel Admin | Cafeteria do Teatro</title>
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════════════════════ -->
+<div id="login-screen" role="main" aria-label="Tela de login">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="login-logo__icon">☕</span>
+      <div class="login-logo__title">Cafeteria <span>do Teatro</span></div>
+      <div class="login-logo__sub">Área Administrativa</div>
+    </div>
+
+    <div class="login-error" id="login-error" role="alert">
+      Usuário ou senha incorretos. Tente novamente.
+    </div>
+
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label class="field__label" for="login-user">Usuário</label>
+        <input class="field__input" type="text" id="login-user"
+               placeholder="admin" autocomplete="username" required />
+        <div class="field__error-msg" id="err-login-user">Digite seu usuário.</div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="login-pass">Senha</label>
+        <input class="field__input" type="password" id="login-pass"
+               placeholder="••••••••" autocomplete="current-password" required />
+        <div class="field__error-msg" id="err-login-pass">Digite sua senha.</div>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--full" id="login-btn" style="margin-top:8px">
+        Entrar no Painel
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN APP
+════════════════════════════════════════════════════════════ -->
+<div id="admin-app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu administrativo">
+    <div class="sidebar__logo">
+      <div class="sidebar__logo-title">Cafeteria <span>do Teatro</span></div>
+      <div class="sidebar__logo-badge">Admin</div>
+    </div>
+
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Menu</div>
+
+      <button class="sidebar__link active" data-page="dashboard" id="nav-dashboard">
+        <span class="sidebar__link-icon">📊</span> Dashboard
+      </button>
+      <button class="sidebar__link" data-page="produtos" id="nav-produtos">
+        <span class="sidebar__link-icon">🍽️</span> Produtos
+      </button>
+      <button class="sidebar__link" data-page="categorias" id="nav-categorias">
+        <span class="sidebar__link-icon">🏷️</span> Categorias
+      </button>
+      <button class="sidebar__link" data-page="configuracoes" id="nav-configuracoes">
+        <span class="sidebar__link-icon">⚙️</span> Configurações
+      </button>
+
+      <div class="sidebar__section-title" style="margin-top:12px">Site</div>
+
+      <a class="sidebar__link" href="cardapio.html" target="_blank" id="nav-ver-cardapio">
+        <span class="sidebar__link-icon">📖</span> Ver Cardápio
+      </a>
+      <a class="sidebar__link" href="index.html" target="_blank" id="nav-ver-site">
+        <span class="sidebar__link-icon">🏠</span> Ver Site
+      </a>
+    </nav>
+
+    <div class="sidebar__bottom">
+      <button class="btn btn--ghost btn--full" id="btn-logout">
+        🚪 Sair do Painel
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAP -->
+  <div class="main-wrap">
+
+    <!-- TOPBAR -->
+    <header class="topbar" role="banner">
+      <div class="topbar__left">
+        <span class="topbar__title" id="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar__right">
+        <div class="topbar__user">
+          <div class="topbar__user-avatar" id="user-avatar">A</div>
+          <span class="topbar__user-name" id="user-name-display">admin</span>
+        </div>
+        <button class="btn btn--ghost btn--sm" id="btn-logout-topbar">Sair</button>
+      </div>
+    </header>
+
+    <!-- PAGES -->
+    <main class="page-content" id="page-content">
+
+      <!-- ── DASHBOARD ────────────────────────────────────── -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Dashboard</div>
+            <div class="page-header__sub">Visão geral do cardápio</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card__icon">🍽️</div>
+            <div class="stat-card__value" id="stat-total-produtos">0</div>
+            <div class="stat-card__label">Total de Produtos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">✅</div>
+            <div class="stat-card__value" id="stat-ativos">0</div>
+            <div class="stat-card__label">Produtos Ativos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🏷️</div>
+            <div class="stat-card__value" id="stat-categorias">0</div>
+            <div class="stat-card__label">Categorias</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🔥</div>
+            <div class="stat-card__value" id="stat-populares">0</div>
+            <div class="stat-card__label">Mais Pedidos</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card__header">
+            <span class="section-card__title">Produtos por Categoria</span>
+          </div>
+          <div style="padding:8px 4px">
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoria</th>
+                  <th>Ícone</th>
+                  <th>Produtos</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dash-cat-table">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PRODUTOS ─────────────────────────────────────── -->
+      <section class="page" id="page-produtos">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Produtos</div>
+            <div class="page-header__sub">Gerencie todos os itens do cardápio</div>
+          </div>
+          <button class="btn btn--primary" id="btn-novo-produto">
+            + Novo Produto
+          </button>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters">
+            <select class="filter-select" id="filter-categoria" aria-label="Filtrar por categoria">
+              <option value="">Todas as categorias</option>
+            </select>
+            <select class="filter-select" id="filter-status" aria-label="Filtrar por status">
+              <option value="">Todos</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+          </div>
+          <input type="search" class="search-input" id="search-produto"
+                 placeholder="🔍  Buscar produto..." aria-label="Buscar produto" />
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Badges</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="produtos-table-body">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── CATEGORIAS ───────────────────────────────────── -->
+      <section class="page" id="page-categorias">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Categorias</div>
+            <div class="page-header__sub">Organize as seções do cardápio</div>
+          </div>
+          <button class="btn btn--primary" id="btn-nova-categoria">
+            + Nova Categoria
+          </button>
+        </div>
+
+        <div class="cat-list" id="cat-list-container">
+        </div>
+      </section>
+
+      <!-- ── CONFIGURAÇÕES ────────────────────────────────── -->
+      <section class="page" id="page-configuracoes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Configurações</div>
+            <div class="page-header__sub">Segurança e gerenciamento de dados</div>
+          </div>
+        </div>
+
+        <!-- Alterar senha -->
+        <div class="config-section">
+          <div class="config-section__title">🔒 Alterar Senha</div>
+          <form id="form-alterar-senha" novalidate>
+            <div class="field">
+              <label class="field__label" for="senha-atual">Senha Atual</label>
+              <input class="field__input" type="password" id="senha-atual"
+                     placeholder="Senha atual" autocomplete="current-password" />
+              <div class="field__error-msg" id="err-senha-atual"></div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="senha-nova">Nova Senha</label>
+              <input class="field__input" type="password" id="senha-nova"
+                     placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+              <div class="field__error-msg" id="err-senha-nova"></div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="senha-confirmar">Confirmar Nova Senha</label>
+              <input class="field__input" type="password" id="senha-confirmar"
+                     placeholder="Repita a nova senha" autocomplete="new-password" />
+              <div class="field__error-msg" id="err-senha-confirmar"></div>
+            </div>
+            <button type="submit" class="btn btn--primary" id="btn-salvar-senha">
+              Salvar Nova Senha
+            </button>
+          </form>
+        </div>
+
+        <!-- Dados -->
+        <div class="config-section">
+          <div class="config-section__title">💾 Dados do Cardápio</div>
+          <div class="config-actions">
+            <button class="btn btn--ghost" id="btn-exportar">
+              ⬇️ Exportar JSON
+            </button>
+            <label class="btn btn--ghost" style="cursor:pointer" for="import-file-input">
+              ⬆️ Importar JSON
+            </label>
+            <input type="file" id="import-file-input" accept=".json" style="display:none" />
+          </div>
+          <p class="hint" style="margin-top:14px">
+            Exporte para fazer backup dos dados. Importe para restaurar de um backup anterior.
+          </p>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="config-section danger-zone">
+          <div class="config-section__title">⚠️ Zona de Perigo</div>
+          <button class="btn btn--danger" id="btn-resetar">
+            🔄 Resetar para Padrão
+          </button>
+          <p class="hint" style="margin-top:12px">
+            Esta ação irá apagar todas as alterações e restaurar os dados originais do cardápio. Irreversível.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- /main-wrap -->
+</div><!-- /admin-app -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: PRODUTO
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-produto-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-produto-title">
+  <div class="modal" id="modal-produto">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-produto-title">Novo Produto</span>
+      <button class="modal__close" id="modal-produto-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-produto" novalidate>
+        <input type="hidden" id="produto-id" />
+
+        <div class="field">
+          <label class="field__label" for="produto-nome">Nome do Produto *</label>
+          <input class="field__input" type="text" id="produto-nome"
+                 placeholder="Ex: Cappuccino" required />
+          <div class="field__error-msg" id="err-produto-nome">Nome é obrigatório.</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field">
+            <label class="field__label" for="produto-categoria">Categoria *</label>
+            <select class="field__select" id="produto-categoria" required>
+              <option value="">Selecione...</option>
+            </select>
+            <div class="field__error-msg" id="err-produto-categoria">Selecione uma categoria.</div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="produto-preco">Preço *</label>
+            <div class="field__price-wrap">
+              <span class="field__price-prefix">R$</span>
+              <input class="field__price-input" type="number" id="produto-preco"
+                     placeholder="0,00" min="0" step="0.01" required />
+            </div>
+            <div class="field__error-msg" id="err-produto-preco">Informe um preço válido.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="produto-descricao">Descrição</label>
+          <textarea class="field__textarea" id="produto-descricao"
+                    placeholder="Descreva o produto de forma apetitosa..." rows="3"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="produto-imagem">URL da Imagem</label>
+          <input class="field__input" type="text" id="produto-imagem"
+                 placeholder="assets/images/produto-cafe.png ou URL externa" />
+          <div class="img-preview-row">
+            <div class="img-preview-box" id="img-preview">🖼️</div>
+            <div style="flex:1">
+              <p class="hint">Cole a URL da imagem acima para ver o preview. Deixe vazio para usar placeholder.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field__label">Badges</div>
+          <div class="badges-wrap">
+            <label class="badge-check" for="badge-popular">
+              <input type="checkbox" id="badge-popular" name="badges" value="popular" />
+              🔥 Mais Pedido
+            </label>
+            <label class="badge-check" for="badge-novo">
+              <input type="checkbox" id="badge-novo" name="badges" value="novo" />
+              🆕 Novidade
+            </label>
+            <label class="badge-check" for="badge-promo">
+              <input type="checkbox" id="badge-promo" name="badges" value="promo" />
+              🏷️ Promoção
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="produto-ativo">
+              <input type="checkbox" id="produto-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Produto ativo no cardápio</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-produto-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-produto">
+        Salvar Produto
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CATEGORIA
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-cat-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-cat-title">
+  <div class="modal" id="modal-cat">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-cat-title">Nova Categoria</span>
+      <button class="modal__close" id="modal-cat-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-categoria" novalidate>
+        <input type="hidden" id="cat-id" />
+
+        <!-- Preview + Nome -->
+        <div style="display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:start">
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label">Ícone</div>
+            <div id="cat-icone-preview" style="
+              width:64px;height:64px;display:flex;align-items:center;justify-content:center;
+              font-size:32px;background:rgba(201,162,39,0.08);border:2px solid var(--caramelo);
+              border-radius:12px;cursor:default;user-select:none;
+            ">☕</div>
+            <!-- hidden field que guarda o valor -->
+            <input type="hidden" id="cat-icone" value="☕" />
+            <div class="field__error-msg" id="err-cat-icone">Escolha um ícone.</div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field__label" for="cat-nome">Nome *</label>
+            <input class="field__input" type="text" id="cat-nome"
+                   placeholder="Ex: Cafés" required />
+            <div class="field__error-msg" id="err-cat-nome">Nome é obrigatório.</div>
+          </div>
+        </div>
+
+        <!-- Emoji picker -->
+        <div class="field" style="margin-top:16px">
+          <div class="field__label">Escolha um ícone</div>
+
+          <div class="emoji-picker">
+            <div class="emoji-picker__group-label">☕ Bebidas</div>
+            <div class="emoji-picker__grid" id="emoji-grid">
+              <button type="button" class="emoji-btn" data-emoji="☕">☕</button>
+              <button type="button" class="emoji-btn" data-emoji="🧋">🧋</button>
+              <button type="button" class="emoji-btn" data-emoji="🍵">🍵</button>
+              <button type="button" class="emoji-btn" data-emoji="🥤">🥤</button>
+              <button type="button" class="emoji-btn" data-emoji="🧃">🧃</button>
+              <button type="button" class="emoji-btn" data-emoji="🍺">🍺</button>
+              <button type="button" class="emoji-btn" data-emoji="🍷">🍷</button>
+              <button type="button" class="emoji-btn" data-emoji="🥛">🥛</button>
+              <button type="button" class="emoji-btn" data-emoji="🧊">🧊</button>
+              <button type="button" class="emoji-btn" data-emoji="💧">💧</button>
+              <button type="button" class="emoji-btn" data-emoji="🫖">🫖</button>
+              <button type="button" class="emoji-btn" data-emoji="🍶">🍶</button>
+            </div>
+
+            <div class="emoji-picker__group-label" style="margin-top:10px">🍰 Doces &amp; Sobremesas</div>
+            <div class="emoji-picker__grid">
+              <button type="button" class="emoji-btn" data-emoji="🍰">🍰</button>
+              <button type="button" class="emoji-btn" data-emoji="🎂">🎂</button>
+              <button type="button" class="emoji-btn" data-emoji="🍫">🍫</button>
+              <button type="button" class="emoji-btn" data-emoji="🍬">🍬</button>
+              <button type="button" class="emoji-btn" data-emoji="🍭">🍭</button>
+              <button type="button" class="emoji-btn" data-emoji="🍩">🍩</button>
+              <button type="button" class="emoji-btn" data-emoji="🧁">🧁</button>
+              <button type="button" class="emoji-btn" data-emoji="🍪">🍪</button>
+              <button type="button" class="emoji-btn" data-emoji="🍮">🍮</button>
+              <button type="button" class="emoji-btn" data-emoji="🍦">🍦</button>
+              <button type="button" class="emoji-btn" data-emoji="🍧">🍧</button>
+              <button type="button" class="emoji-btn" data-emoji="🥐">🥐</button>
+            </div>
+
+            <div class="emoji-picker__group-label" style="margin-top:10px">🥗 Lanches &amp; Refeições</div>
+            <div class="emoji-picker__grid">
+              <button type="button" class="emoji-btn" data-emoji="🥗">🥗</button>
+              <button type="button" class="emoji-btn" data-emoji="🥪">🥪</button>
+              <button type="button" class="emoji-btn" data-emoji="🌯">🌯</button>
+              <button type="button" class="emoji-btn" data-emoji="🧀">🧀</button>
+              <button type="button" class="emoji-btn" data-emoji="🥚">🥚</button>
+              <button type="button" class="emoji-btn" data-emoji="🍳">🍳</button>
+              <button type="button" class="emoji-btn" data-emoji="🥞">🥞</button>
+              <button type="button" class="emoji-btn" data-emoji="🍞">🍞</button>
+              <button type="button" class="emoji-btn" data-emoji="🥨">🥨</button>
+              <button type="button" class="emoji-btn" data-emoji="🧆">🧆</button>
+              <button type="button" class="emoji-btn" data-emoji="🫔">🫔</button>
+              <button type="button" class="emoji-btn" data-emoji="🥓">🥓</button>
+            </div>
+
+            <div class="emoji-picker__group-label" style="margin-top:10px">🎁 Especiais &amp; Extras</div>
+            <div class="emoji-picker__grid">
+              <button type="button" class="emoji-btn" data-emoji="🎁">🎁</button>
+              <button type="button" class="emoji-btn" data-emoji="✨">✨</button>
+              <button type="button" class="emoji-btn" data-emoji="⭐">⭐</button>
+              <button type="button" class="emoji-btn" data-emoji="🌟">🌟</button>
+              <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
+              <button type="button" class="emoji-btn" data-emoji="💎">💎</button>
+              <button type="button" class="emoji-btn" data-emoji="🎭">🎭</button>
+              <button type="button" class="emoji-btn" data-emoji="🎶">🎶</button>
+              <button type="button" class="emoji-btn" data-emoji="📚">📚</button>
+              <button type="button" class="emoji-btn" data-emoji="🌿">🌿</button>
+              <button type="button" class="emoji-btn" data-emoji="🌸">🌸</button>
+              <button type="button" class="emoji-btn" data-emoji="🍃">🍃</button>
+            </div>
+          </div>
+
+          <p class="hint" style="margin-top:8px">Ou digite um emoji diretamente no campo acima.</p>
+          <input class="field__input" type="text" id="cat-icone-custom"
+                 placeholder="Digite outro emoji..." maxlength="4"
+                 style="margin-top:6px;max-width:160px;text-align:center;font-size:18px" />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cat-descricao">Descrição</label>
+          <input class="field__input" type="text" id="cat-descricao"
+                 placeholder="Breve descrição da categoria..." />
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="cat-ativo">
+              <input type="checkbox" id="cat-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Categoria ativa no cardápio</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-cat-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-categoria">
+        Salvar Categoria
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
+  <div class="confirm-box">
+    <span class="confirm-box__icon" id="confirm-icon">⚠️</span>
+    <div class="confirm-box__title" id="confirm-title">Confirmar ação</div>
+    <div class="confirm-box__msg" id="confirm-msg">Tem certeza que deseja continuar?</div>
+    <div class="confirm-box__actions">
+      <button class="btn btn--ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn--danger" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container" aria-live="polite"></div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
