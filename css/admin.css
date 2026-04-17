@@ -49,6 +49,54 @@
   --transition-base: 300ms ease;
 }
 
+/* ── PÁGINA: PROMOÇÕES ──────────────────────────────── */
+.promo-status {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.promo-status--active {
+  background: rgba(46, 204, 113, 0.1);
+  color: #27ae60;
+}
+.promo-status--scheduled {
+  background: rgba(52, 152, 219, 0.1);
+  color: #2980b9;
+}
+.promo-status--ended {
+  background: rgba(149, 165, 166, 0.1);
+  color: #7f8c8d;
+}
+.promo-status--inactive {
+  background: rgba(231, 76, 60, 0.1);
+  color: #c0392b;
+}
+
+.promo-badge-preview {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--caramelo);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.promo-table-image {
+  width: 60px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #eee;
+}
+
+/* Modal specific for promo dates */
+.field__input[type="date"] {
+  cursor: pointer;
+}
+
 /* ─── RESET ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1272,6 +1320,72 @@ tbody tr:hover { background: var(--admin-hover); }
   height: 1px;
   background: var(--admin-border2);
   margin: 20px 0;
+}
+
+/* ── PÁGINA: HORÁRIOS ───────────────────────────────── */
+.horarios-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 0;
+}
+
+.horarios-row__info {
+  flex: 1;
+}
+
+.horarios-row__label {
+  font-weight: 600;
+  color: var(--admin-texto);
+  font-size: 1rem;
+}
+
+.horarios-row__sub {
+  font-size: 0.813rem;
+  color: var(--texto-claro);
+  margin-top: 2px;
+}
+
+.horarios-row__fields {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.field-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-inline label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--texto-claro);
+  letter-spacing: 0.02em;
+}
+
+.field-inline .field__input {
+  width: 120px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .horarios-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .horarios-row__fields {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .field-inline .field__input {
+    width: 100%;
+  }
 }
 
 /* ─── HINT TEXT ──────────────────────────────────────────── */

@@ -314,6 +314,7 @@
         <div class="text-center fade-in">
           <span class="section-tag">Funcionamento</span>
           <h2 class="section-title" id="horarios-title">Quando estamos aqui para você</h2>
+          <div id="status-funcionamento" style="margin-top: -0.5rem; margin-bottom: 2rem;"></div>
           <p class="section-subtitle" style="margin-inline:auto">
             Venha nos visitar! Estamos abertos tarde e noite para acompanhar
             os espetáculos do Teatro da Univates.
@@ -321,20 +322,26 @@
         </div>
 
         <div class="horarios__grid">
-          <div class="horario-card fade-in fade-in-delay-1">
+          <div class="horario-card fade-in fade-in-delay-1" id="box-seg-qui">
             <div class="horario-card__dia">Segunda → Quinta</div>
-            <div class="horario-card__hora">14h30 – 22h</div>
+            <div class="horario-card__hora" id="txt-seg-qui">14h30 – 22h</div>
             <p class="horario-card__nota">Aberto para tarde e noite</p>
           </div>
 
-          <div class="horario-card horario-card--verde fade-in fade-in-delay-2">
+          <div class="horario-card horario-card--verde fade-in fade-in-delay-2" id="box-sex">
             <div class="horario-card__dia">Sexta-feira</div>
-            <div class="horario-card__hora">14h30 – 20h</div>
+            <div class="horario-card__hora" id="txt-sex">14h30 – 20h</div>
             <p class="horario-card__nota">Encerramento mais cedo</p>
+          </div>
+
+          <div class="horario-card fade-in fade-in-delay-3 hidden" id="box-sab-dom">
+            <div class="horario-card__dia">Sábado e Domingo</div>
+            <div class="horario-card__hora" id="txt-sab-dom">14h30 – 20h</div>
+            <p class="horario-card__nota">Eventos e plantões</p>
           </div>
         </div>
 
-        <p style="text-align:center; margin-top:2rem; font-size:0.875rem; color:var(--texto-claro)">
+        <p id="txt-aviso-horario" style="text-align:center; margin-top:2rem; font-size:0.875rem; color:var(--texto-claro)">
           ⚠️ Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.
         </p>
       </div>
@@ -369,7 +376,7 @@
                 <span class="chegar__address-icon" aria-hidden="true">🕐</span>
                 <div class="chegar__address-text">
                   <h4>Horário de funcionamento</h4>
-                  <p>Seg–Qui: 14h30 às 22h &nbsp;·&nbsp; Sex: 14h30 às 20h</p>
+                  <p id="txt-footer-horarios">Seg–Qui: 14h30 às 22h &nbsp;·&nbsp; Sex: 14h30 às 20h</p>
                 </div>
               </div>
               <div class="chegar__address-item">

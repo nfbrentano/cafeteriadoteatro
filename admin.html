@@ -79,6 +79,12 @@
       <button class="sidebar__link" data-page="hero" id="nav-hero">
         <span class="sidebar__link-icon">🖼️</span> Hero da Home
       </button>
+      <button class="sidebar__link" data-page="horarios" id="nav-horarios">
+        <span class="sidebar__link-icon">🕐</span> Horários
+      </button>
+      <button class="sidebar__link" data-page="promocoes" id="nav-promocoes">
+        <span class="sidebar__link-icon">📣</span> Promoções
+      </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Site</div>
 
@@ -228,6 +234,159 @@
         </div>
 
         <div class="cat-list" id="cat-list-container">
+        </div>
+      </section>
+
+      <!-- ── HORÁRIOS ─────────────────────────────────────── -->
+      <section class="page" id="page-horarios">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Horários de Funcionamento</div>
+            <div class="page-header__sub">Gerencie os horários exibidos no site e o status "Aberto Agora"</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card__header">
+            <span class="section-card__title">Configuração Semanal</span>
+          </div>
+          <div class="section-card__body">
+            <form id="form-horarios" novalidate>
+              
+              <!-- Seg a Qui -->
+              <div class="horarios-row">
+                <div class="horarios-row__info">
+                  <div class="horarios-row__label">Segunda a Quinta</div>
+                  <div class="horarios-row__sub">Horário padrão de dias úteis</div>
+                </div>
+                <div class="horarios-row__fields">
+                  <div class="field-inline">
+                    <label>Abertura</label>
+                    <input type="time" id="h-seg-qui-abre" class="field__input" />
+                  </div>
+                  <div class="field-inline">
+                    <label>Fechamento</label>
+                    <input type="time" id="h-seg-qui-fecha" class="field__input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Sexta -->
+              <div class="horarios-row">
+                <div class="horarios-row__info">
+                  <div class="horarios-row__label">Sexta-feira</div>
+                  <div class="horarios-row__sub">Horário diferenciado de encerramento</div>
+                </div>
+                <div class="horarios-row__fields">
+                  <div class="field-inline">
+                    <label>Abertura</label>
+                    <input type="time" id="h-sex-abre" class="field__input" />
+                  </div>
+                  <div class="field-inline">
+                    <label>Fechamento</label>
+                    <input type="time" id="h-sex-fecha" class="field__input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Sáb e Dom -->
+              <div class="horarios-row">
+                <div class="horarios-row__info">
+                  <div class="horarios-row__label">Sábado e Domingo</div>
+                  <div class="horarios-row__sub">Opcional para eventos ou finais de semana</div>
+                </div>
+                <div class="horarios-row__fields-wrap">
+                  <div class="toggle-wrap" style="margin-bottom: 12px;">
+                    <label class="toggle" for="h-sab-dom-ativo">
+                      <input type="checkbox" id="h-sab-dom-ativo" />
+                      <span class="toggle__slider"></span>
+                    </label>
+                    <span class="toggle-wrap__label">Ativar horário de fim de semana</span>
+                  </div>
+                  <div class="horarios-row__fields" id="wrap-sab-dom" style="opacity: 0.5; pointer-events: none;">
+                    <div class="field-inline">
+                      <label>Abertura</label>
+                      <input type="time" id="h-sab-dom-abre" class="field__input" />
+                    </div>
+                    <div class="field-inline">
+                      <label>Fechamento</label>
+                      <input type="time" id="h-sab-dom-fecha" class="field__input" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Aviso Especial -->
+              <div class="field" style="margin-top: 20px;">
+                <label class="field__label" for="h-aviso">Aviso Especial (opcional)</label>
+                <input class="field__input" type="text" id="h-aviso" 
+                       placeholder="Ex: Horários sujeitos à programação do Teatro." />
+                <div class="hint">Aparecerá como uma nota abaixo dos horários no site.</div>
+              </div>
+
+              <div class="form-actions" style="margin-top: 32px;">
+                <button type="submit" class="btn btn--primary" id="btn-save-horarios">
+                  💾 Salvar Horários
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="alert alert--info" style="margin-top: 24px;">
+          <div class="alert__icon">💡</div>
+          <div class="alert__content">
+            O status <b>"Aberto Agora"</b> no site é calculado automaticamente com base nestes horários e no relógio do dispositivo do visitante.
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PROMOÇÕES ────────────────────────────────────── -->
+      <section class="page" id="page-promocoes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Promoções e Banners</div>
+            <div class="page-header__sub">Gerencie campanhas sazonais e ofertas temporárias</div>
+          </div>
+          <button class="btn btn--primary" id="btn-nova-campanha">
+            + Nova Campanha
+          </button>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters">
+            <select class="filter-select" id="filter-promo-status">
+              <option value="">Todos os status</option>
+              <option value="ativos">Agendados/Ativos</option>
+              <option value="encerrados">Encerrados</option>
+            </select>
+          </div>
+          <p class="hint" style="margin-left:auto">
+            Campanhas aparecem automaticamente nas datas configuradas.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campanha</th>
+                <th>Selo</th>
+                <th>Período</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="promo-table-body">
+              <!-- Gerado via JS -->
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -640,8 +799,100 @@
     </div>
     <div class="modal__footer">
       <button class="btn btn--ghost" id="modal-cat-cancel">Cancelar</button>
-      <button class="btn btn--primary" id="btn-salvar-categoria">
+      <button class="btn btn--primary" id="btn-salvar-cat">
         Salvar Categoria
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CAMPANHA / PROMOÇÃO
+     ════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-promo-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-promo-title">
+  <div class="modal" id="modal-promo">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-promo-title">Nova Campanha</span>
+      <button class="modal__close" id="modal-promo-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-campanha" novalidate>
+        <input type="hidden" id="promo-id" />
+
+        <div class="field">
+          <label class="field__label" for="promo-titulo">Título da Campanha *</label>
+          <input class="field__input" type="text" id="promo-titulo"
+                 placeholder="Ex: Festival de Inverno" required />
+          <div class="field__error-msg" id="err-promo-titulo">Título é obrigatório.</div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="promo-desc">Descrição Curta *</label>
+          <textarea class="field__textarea" id="promo-desc"
+                    placeholder="Ex: Aproveite nossos cafés especiais com 20% OFF." rows="2" required></textarea>
+          <div class="field__error-msg" id="err-promo-desc">Descrição é obrigatória.</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field">
+            <label class="field__label" for="promo-badge">Selo / Badge (Opcional)</label>
+            <input class="field__input" type="text" id="promo-badge"
+                   placeholder="Ex: Oferta, Sazonal, Novo" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="promo-link">Link Destino (Opcional)</label>
+            <input class="field__input" type="text" id="promo-link"
+                   placeholder="https://... ou #secao" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field">
+            <label class="field__label" for="promo-inicio">Data Início *</label>
+            <input class="field__input" type="date" id="promo-inicio" required />
+          </div>
+          <div class="field">
+            <label class="field__label" for="promo-fim">Data Fim *</label>
+            <input class="field__input" type="date" id="promo-fim" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field__label">Imagem / Banner (Opcional)</div>
+          <div class="upload-zone" id="promo-upload-zone" tabindex="0">
+            <div class="upload-zone__idle" id="promo-upload-idle">
+              <div class="upload-zone__icon">🖼️</div>
+              <div class="upload-zone__title">Arraste ou clique para o banner</div>
+              <div class="upload-zone__sub">Recomendado: 1200x400px</div>
+            </div>
+            <div class="upload-zone__preview hidden" id="promo-upload-preview-wrap">
+              <img id="promo-upload-preview-img" alt="preview" />
+              <div class="upload-zone__overlay">
+                <button type="button" class="upload-zone__change" id="btn-promo-change-img">Trocar</button>
+                <button type="button" class="upload-zone__remove" id="btn-promo-remove-img">✕</button>
+              </div>
+            </div>
+            <input type="file" id="promo-image-file" accept="image/*" style="display:none" />
+          </div>
+          <input type="hidden" id="promo-image-data" />
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="promo-ativo">
+              <input type="checkbox" id="promo-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Campanha ativa e visível no site</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-promo-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-promo">
+        Salvar Campanha
       </button>
     </div>
   </div>

@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     heroBg.classList.add('loaded');
 
+    heroBg.classList.add('loaded');
+
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY;
       if (scrolled < window.innerHeight) {
@@ -66,6 +68,92 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, { passive: true });
   }
+
+  /* ── Horários Dinâmicos ─────────────────────────────────── */
+  const applyHorarios = () => {
+    const HORARIOS_LS_KEY = 'cafeteria_horarios';
+    const saved = localStorage.getItem(HORARIOS_LS_KEY);
+    
+    // Default se não houver no LS
+    let data = {
+      seg_qui: { abre: '14:30', fecha: '22:00' },
+      sex:     { abre: '14:30', fecha: '20:00' },
+      sab_dom: { abre: '14:30', fecha: '20:00', ativo: false },
+      aviso:   'Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.'
+    };
+
+    if (saved) {
+      try { data = JSON.parse(saved); } catch (e) {}
+    }
+
+    // Atualizar textos na seção Horários
+    const txtSegQui = document.getElementById('txt-seg-qui');
+    const txtSex    = document.getElementById('txt-sex');
+    const txtSabDom = document.getElementById('txt-sab-dom');
+    const boxSabDom = document.getElementById('box-sab-dom');
+    const txtAviso  = document.getElementById('txt-aviso-horario');
+
+    if (txtSegQui) txtSegQui.textContent = `${data.seg_qui.abre.replace(':','h')} – ${data.seg_qui.fecha.replace(':','h')}`;
+    if (txtSex)    txtSex.textContent    = `${data.sex.abre.replace(':','h')} – ${data.sex.fecha.replace(':','h')}`;
+    
+    if (boxSabDom) {
+      if (data.sab_dom.ativo) {
+        boxSabDom.classList.remove('hidden');
+        if (txtSabDom) txtSabDom.textContent = `${data.sab_dom.abre.replace(':','h')} – ${data.sab_dom.fecha.replace(':','h')}`;
+      } else {
+        boxSabDom.classList.add('hidden');
+      }
+    }
+
+    if (txtAviso) txtAviso.textContent = data.aviso ? `⚠️ ${data.aviso}` : '';
+
+    // Atualizar rodapé/contato
+    const txtFooter = document.getElementById('txt-footer-horarios');
+    if (txtFooter) {
+      let footerText = `Seg–Qui: ${data.seg_qui.abre.replace(':','h')} às ${data.seg_qui.fecha.replace(':','h')} · Sex: ${data.sex.abre.replace(':','h')} às ${data.sex.fecha.replace(':','h')}`;
+      if (data.sab_dom.ativo) {
+        footerText += ` · Sáb/Dom: ${data.sab_dom.abre.replace(':','h')} às ${data.sab_dom.fecha.replace(':','h')}`;
+      }
+      txtFooter.textContent = footerText;
+    }
+
+    // Calcular status "Aberto Agora"
+    updateOpenStatus(data);
+  };
+
+  const updateOpenStatus = (data) => {
+    const statusContainer = document.getElementById('status-funcionamento');
+    if (!statusContainer) return;
+
+    const now = new Date();
+    const day = now.getDay(); // 0=Dom, 1=Seg...
+    const currentTime = now.getHours() * 100 + now.getMinutes();
+
+    let openRange = null;
+
+    if (day >= 1 && day <= 4) { // Seg a Qui
+      openRange = data.seg_qui;
+    } else if (day === 5) { // Sex
+      openRange = data.sex;
+    } else if (data.sab_dom.ativo) { // Sab ou Dom (se ativo)
+      openRange = data.sab_dom;
+    }
+
+    let isOpen = false;
+    if (openRange) {
+      const start = parseInt(openRange.abre.replace(':', ''));
+      const end   = parseInt(openRange.fecha.replace(':', ''));
+      if (currentTime >= start && currentTime < end) {
+        isOpen = true;
+      }
+    }
+
+    statusContainer.innerHTML = isOpen 
+      ? `<span class="badge-status badge-status--open">🟢 Aberto agora</span>`
+      : `<span class="badge-status badge-status--closed">🔴 Fechado no momento</span>`;
+  };
+
+  applyHorarios();
 
   /* ── Fade-in no scroll ──────────────────────────────────── */
   const fadeEls = document.querySelectorAll('.fade-in');

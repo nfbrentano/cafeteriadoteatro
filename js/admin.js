@@ -192,6 +192,7 @@
       produtos: 'Produtos',
       categorias: 'Categorias',
       hero: 'Hero da Home',
+      horarios: 'Horários',
       configuracoes: 'Configurações'
     };
     document.getElementById('topbar-title').textContent = titles[pageId] || '';
@@ -203,7 +204,8 @@
       dashboard: renderDashboard,
       produtos:  renderProdutos,
       categorias: renderCategorias,
-      hero:       renderHero
+      hero:       renderHero,
+      horarios:   renderHorarios
     };
 
     if (renderers[pageId]) renderers[pageId]();
@@ -1336,6 +1338,77 @@
     });
 
   })();
+
+  /* ════════════════════════════════════════════════════════
+     HORÁRIOS MANAGEMENT
+  ═══════════════════════════════════════════════════════ */
+  const HORARIOS_LS_KEY = 'cafeteria_horarios';
+
+  function renderHorarios() {
+    const saved = localStorage.getItem(HORARIOS_LS_KEY);
+    let data = {
+      seg_qui: { abre: '14:30', fecha: '22:00' },
+      sex:     { abre: '14:30', fecha: '20:00' },
+      sab_dom: { abre: '14:30', fecha: '20:00', ativo: false },
+      aviso:   'Horários sujeitos à programação do Teatro. Acompanhe nossas redes para atualizações.'
+    };
+
+    if (saved) {
+      try { data = JSON.parse(saved); } catch (e) {}
+    }
+
+    // Fill form
+    document.getElementById('h-seg-qui-abre').value = data.seg_qui.abre;
+    document.getElementById('h-seg-qui-fecha').value = data.seg_qui.fecha;
+    document.getElementById('h-sex-abre').value = data.sex.abre;
+    document.getElementById('h-sex-fecha').value = data.sex.fecha;
+    
+    const sdAtivo = !!data.sab_dom.ativo;
+    const sdCheck = document.getElementById('h-sab-dom-ativo');
+    if (sdCheck) sdCheck.checked = sdAtivo;
+    
+    document.getElementById('h-sab-dom-abre').value = data.sab_dom.abre;
+    document.getElementById('h-sab-dom-fecha').value = data.sab_dom.fecha;
+    toggleSabDomFields(sdAtivo);
+
+    document.getElementById('h-aviso').value = data.aviso || '';
+  }
+
+  function toggleSabDomFields(active) {
+    const wrap = document.getElementById('wrap-sab-dom');
+    if (!wrap) return;
+    wrap.style.opacity = active ? '1' : '0.5';
+    wrap.style.pointerEvents = active ? 'auto' : 'none';
+  }
+
+  document.getElementById('h-sab-dom-ativo')?.addEventListener('change', e => {
+    toggleSabDomFields(e.target.checked);
+  });
+
+  document.getElementById('form-horarios')?.addEventListener('submit', e => {
+    e.preventDefault();
+    
+    const settings = {
+      seg_qui: {
+        abre: document.getElementById('h-seg-qui-abre').value,
+        fecha: document.getElementById('h-seg-qui-fecha').value
+      },
+      sex: {
+        abre: document.getElementById('h-sex-abre').value,
+        fecha: document.getElementById('h-sex-fecha').value
+      },
+      sab_dom: {
+        abre: document.getElementById('h-sab-dom-abre').value,
+        fecha: document.getElementById('h-sab-dom-fecha').value,
+        ativo: document.getElementById('h-sab-dom-ativo').checked
+      },
+      aviso: document.getElementById('h-aviso').value.trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(HORARIOS_LS_KEY, JSON.stringify(settings));
+    toast('Salvo!', 'Horários atualizados com sucesso.', 'success');
+  });
 
   /* ════════════════════════════════════════════════════════
      FORM HELPERS
