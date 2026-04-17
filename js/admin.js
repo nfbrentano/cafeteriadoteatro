@@ -187,6 +187,7 @@
     const navBtn = document.getElementById('nav-' + pageId);
     if (navBtn) navBtn.classList.add('active');
 
+    const titles = {
       dashboard: 'Dashboard',
       produtos: 'Produtos',
       categorias: 'Categorias',
