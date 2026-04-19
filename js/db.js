@@ -57,23 +57,21 @@
         return data;
       },
       async upsert(product, imageBlob = null) {
-        // Se houver blob de imagem, faz o upload no Storage primeiro
         if (imageBlob) {
-          const fileName = `produtos/${product.id}.webp`;
+          const fileName = `${product.id}.webp`;
           const { data: uploadData, error: uploadError } = await window.cafeteriaSupabase
             .storage
-            .from('cafeteria-assets')
+            .from('products')
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
           if (uploadError) throw uploadError;
           
-          // Obter URL pública
           const { data: { publicUrl } } = window.cafeteriaSupabase
             .storage
-            .from('cafeteria-assets')
+            .from('products')
             .getPublicUrl(fileName);
           
-          product.imagem_url = publicUrl + '?t=' + Date.now(); // Cache busting
+          product.imagem_url = publicUrl + '?t=' + Date.now();
         }
 
         const { error } = await window.cafeteriaSupabase
@@ -97,17 +95,17 @@
           .from('hero_home')
           .select('*')
           .eq('id', 1)
-          .limit(1); // Standard select instead of single() to avoid console noise (406)
+          .limit(1);
         if (error) throw error;
         return (data && data.length > 0) ? data[0] : null;
       },
       async update(imageBlob = null, alt = '') {
         let imageUrl = null;
         if (imageBlob) {
-          const fileName = `hero/home.webp`;
+          const fileName = `hero-home.webp`;
           const { error: uploadError } = await window.cafeteriaSupabase
             .storage
-            .from('cafeteria-assets')
+            .from('site-assets')
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
           if (uploadError) {
@@ -117,7 +115,7 @@
           
           const { data: { publicUrl } } = window.cafeteriaSupabase
             .storage
-            .from('cafeteria-assets')
+            .from('site-assets')
             .getPublicUrl(fileName);
           
           imageUrl = publicUrl + '?t=' + Date.now();
@@ -143,7 +141,7 @@
           .from('business_hours')
           .select('*')
           .eq('id', 1)
-          .limit(1); // Standard select instead of single() to avoid console noise (406)
+          .limit(1);
         if (error) throw error;
         return (data && data.length > 0) ? data[0] : null;
       },
@@ -168,17 +166,17 @@
       },
       async upsert(promo, imageBlob = null) {
         if (imageBlob) {
-          const fileName = `banners/${Date.now()}.webp`;
+          const fileName = `banner-${Date.now()}.webp`;
           const { error: uploadError } = await window.cafeteriaSupabase
             .storage
-            .from('cafeteria-assets')
+            .from('site-assets')
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
           if (uploadError) throw uploadError;
           
           const { data: { publicUrl } } = window.cafeteriaSupabase
             .storage
-            .from('cafeteria-assets')
+            .from('site-assets')
             .getPublicUrl(fileName);
           
           promo.image_url = publicUrl;
@@ -223,7 +221,6 @@
       return window.cafeteriaSupabase
         .channel('schema-db-changes')
         .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-          console.log('Realtime update received:', payload);
           onUpdate(payload);
         })
         .subscribe();
