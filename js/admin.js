@@ -67,13 +67,17 @@
 
   async function loadData() {
     try {
-      const [cats, prods] = await Promise.all([
+      const [cats, prods, hero, hours] = await Promise.all([
         window.cafeteriaDB.categories.all(),
-        window.cafeteriaDB.products.all()
+        window.cafeteriaDB.products.all(),
+        window.cafeteriaDB.hero.get(),
+        window.cafeteriaDB.hours.get()
       ]);
       
       appData.categorias = cats;
-      appData.produtos = prods;
+      appData.produtos   = prods;
+      appData.hero       = hero;
+      appData.horarios   = hours;
 
       // Update local cache for offline fallback
       window.cafeteriaDB.cache.set('cafeteria_cardapio_cache', appData);
@@ -82,6 +86,7 @@
       if (typeof renderDashboard === 'function') renderDashboard();
       if (typeof renderProdutos === 'function') renderProdutos();
       if (typeof renderCategorias === 'function') renderCategorias();
+      if (typeof renderHero === 'function') renderHero();
 
     } catch (err) {
       console.error('Erro ao carregar dados do Supabase:', err);
@@ -283,8 +288,13 @@
     });
 
     if (error) {
-      toast('Erro de Login', error.message, 'error');
-      loginError.textContent = error.message;
+      console.error('Erro de autenticação:', error);
+      const msg = error.message === 'Invalid login credentials' 
+        ? 'E-mail ou senha incorretos. Verifique seus dados.' 
+        : error.message;
+
+      toast('Erro de Login', msg, 'error');
+      loginError.textContent = msg;
       loginError.classList.add('visible');
       btn.disabled = false;
       btn.textContent = 'Entrar no Painel';
@@ -1280,33 +1290,41 @@
 
   function renderHero() {
     const el = heroEls();
-    const saved = localStorage.getItem(HERO_LS_KEY);
-    
-    // Reset internal state
-    el.dataInput.value = '';
-    el.fileInput.value = '';
-    el.idle.classList.remove('hidden');
-    el.previewWrap.classList.add('hidden');
-    el.info.style.display = 'none';
+    if (!el.zone) return;
 
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        el.livePreviewBg.style.backgroundImage = `url(${data.imageDataUrl})`;
-        el.livePreviewBadge.textContent = 'Personalizado';
-        el.livePreviewBadge.classList.add('custom');
-        el.altInput.value = data.alt || '';
-      } catch (_) {
-        resetHeroUI();
-      }
+    const data = appData.hero;
+    
+    // 1. Atualizar Mini-Preview (Upload Zone)
+    if (data && data.image_url) {
+      el.previewImg.src = data.image_url;
+      el.previewWrap.classList.remove('hidden');
+      el.idle.classList.add('hidden');
+      el.altInput.value = data.image_alt || '';
+      el.info.style.display = 'block';
+
+      // 2. Atualizar Mockup/Live Preview
+      el.livePreviewBg.style.backgroundImage = `url(${data.image_url})`;
+      el.livePreviewBadge.textContent = 'Personalizado';
+      el.livePreviewBadge.classList.add('custom');
     } else {
+      el.previewImg.src = '';
+      el.previewWrap.classList.add('hidden');
+      el.idle.classList.remove('hidden');
+      el.altInput.value = '';
+      el.info.style.display = 'none';
+
+      // Reset Mockup
       resetHeroUI();
     }
+    
+    // Limpar estados internos de upload não-salvos
+    el.dataInput.value = '';
+    el.fileInput.value = '';
   }
 
   function resetHeroUI() {
     const el = heroEls();
-    el.livePreviewBg.style.backgroundImage = "url('../assets/images/hero-bg.png')";
+    el.livePreviewBg.style.backgroundImage = "url('assets/images/hero-bg.png')";
     el.livePreviewBadge.textContent = 'Padrão';
     el.livePreviewBadge.classList.remove('custom');
     el.altInput.value = '';
@@ -1372,6 +1390,11 @@
         el.infoSize.textContent = `${(bytes / 1024).toFixed(0)} KB`;
         el.infoSaving.textContent = saving > 0 ? `↓ ${saving}% menor` : '';
         el.info.style.display = 'flex';
+
+        // Show in mockup/live preview too
+        el.livePreviewBg.style.backgroundImage = `url(${dataUrl})`;
+        el.livePreviewBadge.textContent = 'Preview';
+        el.livePreviewBadge.classList.add('custom');
       };
       img.src = e.target.result;
     };
@@ -1401,11 +1424,16 @@
     });
 
     el.btnSave.addEventListener('click', async () => {
-      const dataUrl = el.dataInput.value;
+      const dataUrl = el.dataInput.value; // Nova imagem (DataURL)
       const alt = el.altInput.value.trim();
+      const currentHero = appData.hero;
 
-      if (!dataUrl) {
-          toast('Nada para salvar', 'Selecione uma nova imagem primeiro.', 'info');
+      // Só salva se houver nova imagem OU se o texto Alt mudou
+      const hasNewImage = !!dataUrl;
+      const altChanged = (currentHero?.image_alt || '') !== alt;
+
+      if (!hasNewImage && !altChanged) {
+          toast('Sem alterações', 'Nada foi modificado para salvar.', 'info');
           return;
       }
 
@@ -1413,14 +1441,24 @@
       el.btnSave.textContent = 'Enviando...';
 
       try {
-        const imageBlob = dataURLtoBlob(dataUrl);
+        let imageBlob = null;
+        if (hasNewImage) {
+          imageBlob = dataURLtoBlob(dataUrl);
+        }
+
+        // Se não tem nova imagem, passa null para o blob mas mantém o Alt
         await window.cafeteriaDB.hero.update(imageBlob, alt || 'Interior da Cafeteria do Teatro');
-        toast('Salvo!', 'Imagem do Hero atualizada com sucesso.', 'success');
+        
+        toast('Salvo!', 'Configurações de Hero atualizadas.', 'success');
+        
+        // Limpar input de dados após salvar com sucesso
+        el.dataInput.value = '';
+        
         await loadData();
         renderHero();
       } catch (e) {
-        console.error(e);
-        toast('Erro ao salvar', 'Não foi possível enviar a imagem para o servidor.', 'error');
+        console.error('Erro ao salvar Hero:', e);
+        toast('Erro ao salvar', e.message || 'Não foi possível atualizar o Hero no servidor.', 'error');
       } finally {
         el.btnSave.disabled = false;
         el.btnSave.textContent = '💾 Salvar Alterações';

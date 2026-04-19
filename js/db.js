@@ -110,7 +110,10 @@
             .from('cafeteria-assets')
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Supabase Storage Error (Hero):', uploadError);
+            throw new Error(`Erro no upload da imagem: ${uploadError.message}`);
+          }
           
           const { data: { publicUrl } } = window.cafeteriaSupabase
             .storage
@@ -126,7 +129,10 @@
         const { error } = await window.cafeteriaSupabase
           .from('hero_home')
           .upsert(payload);
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase Table Error (hero_home):', error);
+          throw new Error(`Erro ao salvar dados do Hero: ${error.message}`);
+        }
       }
     },
 
