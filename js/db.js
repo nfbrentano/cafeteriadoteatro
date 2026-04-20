@@ -91,13 +91,25 @@
     // --- Hero Home ---
     hero: {
       async get() {
-        const { data, error } = await window.cafeteriaSupabase
+        // Tenta retornar cache imediatamente
+        const cached = db.cache.get(CACHE_KEYS.HERO);
+        
+        // Dispara busca no Supabase em paralelo
+        const fetchPromise = window.cafeteriaSupabase
           .from('hero_home')
           .select('*')
           .eq('id', 1)
-          .limit(1);
-        if (error) throw error;
-        return (data && data.length > 0) ? data[0] : null;
+          .single()
+          .then(({ data, error }) => {
+            if (!error && data) {
+              db.cache.set(CACHE_KEYS.HERO, data);
+              return data;
+            }
+            return null;
+          });
+
+        // Se tem cache, retorna ele. Se não, espera o fetch.
+        return cached || await fetchPromise;
       },
       async update(imageBlob = null, alt = '') {
         let imageUrl = null;
@@ -199,14 +211,25 @@
     // --- Settings / Textos ---
     settings: {
       async all() {
-        const { data, error } = await window.cafeteriaSupabase
+        // Cache imediato
+        const cached = db.cache.get(CACHE_KEYS.SETTINGS);
+
+        const fetchPromise = window.cafeteriaSupabase
           .from('site_settings')
-          .select('*');
-        if (error) throw error;
-        return data.reduce((acc, curr) => {
-          acc[curr.key] = curr.value;
-          return acc;
-        }, {});
+          .select('*')
+          .then(({ data, error }) => {
+            if (!error && data) {
+              const mapped = data.reduce((acc, curr) => {
+                acc[curr.key] = curr.value;
+                return acc;
+              }, {});
+              db.cache.set(CACHE_KEYS.SETTINGS, mapped);
+              return mapped;
+            }
+            return null;
+          });
+
+        return cached || await fetchPromise;
       },
       async update(key, value) {
         const { error } = await window.cafeteriaSupabase

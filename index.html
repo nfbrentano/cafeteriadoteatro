@@ -9,6 +9,32 @@
   <meta property="og:description" content="No coração do Teatro da Univates, um lugar ideal para pausas, estudos, encontros e momentos antes ou depois de atividades culturais." />
   <meta property="og:image" content="assets/images/hero-bg.png" />
   <meta name="theme-color" content="#1C1008" />
+  <!-- Pre-render Hero cache instant-load -->
+  <script>
+    (function() {
+      // 1. Hero
+      const heroCache = localStorage.getItem('cafeteria_hero_cache');
+      if (heroCache) {
+        try {
+          const hero = JSON.parse(heroCache);
+          if (hero && hero.image_url) {
+            document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
+          }
+        } catch(e) {}
+      }
+      // 2. Sobre Image
+      const settingsCache = localStorage.getItem('cafeteria_settings_cache');
+      if (settingsCache) {
+        try {
+          const s = JSON.parse(settingsCache);
+          if (s && s.sobre_imagem_url) {
+            document.documentElement.style.setProperty('--dynamic-sobre-bg', 'url(' + s.sobre_imagem_url + ')');
+          }
+        } catch(e) {}
+      }
+    })();
+  </script>
+
   <title>Cafeteria do Teatro | Teatro da Univates · Lajeado/RS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -100,9 +126,9 @@
       <div class="container">
         <div class="sobre__grid">
 
-          <div class="sobre__image-wrap fade-in">
+          <div class="sobre__image-wrap fade-in visible">
             <img
-              src="assets/images/sobre-cafe.png"
+              src="https://nyretgvzbnbtiyeioeju.supabase.co/storage/v1/object/public/site-assets/sobre-1776647372895.webp?t=1776647375147"
               alt="Xícara de café com livro aberto — ambiente da Cafeteria do Teatro"
               class="sobre__image"
               id="dyn-sobre-img"

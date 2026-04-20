@@ -30,7 +30,7 @@
     const subtitle = document.querySelector('.hero__subtitle');
 
     if (hero.image_url) {
-      bg.style.backgroundImage = `url(${hero.image_url})`;
+      document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
       bg.setAttribute('aria-label', hero.image_alt || 'Interior da Cafeteria do Teatro');
     }
     
@@ -52,7 +52,9 @@
 
     if (s.sobre_imagem_url) {
       const sobreImg = document.getElementById('dyn-sobre-img');
-      if (sobreImg) sobreImg.src = s.sobre_imagem_url;
+      if (sobreImg) {
+        document.documentElement.style.setProperty('--dynamic-sobre-bg', `url(${s.sobre_imagem_url})`);
+      }
     }
   }
 
