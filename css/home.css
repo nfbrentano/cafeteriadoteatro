@@ -143,24 +143,30 @@
 
 .sobre__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.9fr 1.1fr;
   gap: var(--space-20);
   align-items: center;
 }
 
 .sobre__image-wrap {
   position: relative;
+  max-width: 480px;
+  margin-right: auto;
 }
 
 .sobre__image {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  height: auto;
+  display: block;
   object-position: center;
   border-radius: var(--radius-md);
-  box-shadow: 20px 20px 0 var(--bege);
+  box-shadow: 15px 15px 0 var(--bege);
   content: var(--dynamic-sobre-bg);
-  transition: content 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
+}
+
+.sobre__image-wrap:hover .sobre__image {
+  transform: translate(5px, 5px);
 }
 
 .sobre__image-badge {
@@ -195,13 +201,19 @@
   opacity: 0.85;
 }
 
-.sobre__text .section-title { margin-bottom: var(--space-5); }
-
-.sobre__body {
-  margin-bottom: var(--space-6);
+.sobre__text .section-title { 
+  margin-bottom: var(--space-8); 
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  line-height: 1.1;
 }
 
-.sobre__body p + p { margin-top: var(--space-4); }
+.sobre__body {
+  margin-bottom: var(--space-10);
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.sobre__body p + p { margin-top: var(--space-6); }
 
 .sobre__features {
   display: flex;
@@ -565,17 +577,23 @@
 @media (max-width: 768px) {
   .sobre__grid {
     grid-template-columns: 1fr;
-    gap: var(--space-10);
+    gap: var(--space-12);
+    text-align: center;
+  }
+
+  .sobre__image-wrap {
+    max-width: 100%;
+    margin: 0 auto var(--space-8);
   }
 
   .sobre__image { 
-    aspect-ratio: 16 / 9;
     height: auto;
   }
 
   .sobre__image-badge {
-    right: var(--space-4);
-    bottom: -20px;
+    right: -10px;
+    bottom: -15px;
+    transform: scale(0.85);
   }
 
   .experiencia__grid {
