@@ -118,6 +118,14 @@
     document.getElementById('c-sobre-texto').value = s.sobre_texto || '';
     document.getElementById('c-exp-subtitulo').value = s.exp_subtitulo || '';
     document.getElementById('c-galeria-subtitulo').value = s.galeria_subtitulo || '';
+
+    // Preview do Sobre
+    const sobreImg = s.sobre_imagem_url;
+    if (sobreImg) {
+      document.getElementById('sobre-upload-preview-img').src = sobreImg;
+      document.getElementById('sobre-upload-preview-wrap').classList.remove('hidden');
+      document.getElementById('sobre-upload-idle').classList.add('hidden');
+    }
   };
 
   async function saveConteudo(e) {
@@ -130,16 +138,32 @@
       galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value
     };
 
+    const sobreDataUrl = document.getElementById('sobre-image-data').value;
+
     btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
     try {
+      // Se houver nova imagem para o Sobre
+      if (sobreDataUrl) {
+        const blob = admin.dataURLtoBlob(sobreDataUrl);
+        const fileName = `sobre-${Date.now()}.webp`;
+        const publicUrl = await window.cafeteriaDB.assets.upload(fileName, blob);
+        settings.sobre_imagem_url = publicUrl;
+      }
+
       await Promise.all(Object.entries(settings).map(([key, val]) => window.cafeteriaDB.settings.update(key, val)));
-      admin.toast('Sucesso', 'Textos salvos.', 'success');
+      admin.toast('Sucesso', 'Conteúdo atualizado.', 'success');
       await admin.loadData();
+      
+      // Limpa cache de upload
+      document.getElementById('sobre-image-data').value = '';
     } catch (err) {
       console.error(err);
-      admin.toast('Erro', 'Falha ao salvar textos.', 'error');
+      admin.toast('Erro', 'Falha ao salvar conteúdo.', 'error');
     } finally {
       btn.disabled = false;
+      btn.textContent = '💾 Salvar Textos';
     }
   }
 
@@ -163,6 +187,23 @@
         document.getElementById('hero-upload-preview-wrap').classList.remove('hidden');
         document.getElementById('hero-upload-idle').classList.add('hidden');
         document.getElementById('hero-preview-bg').style.backgroundImage = `url(${ev.target.result})`;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Upload Sobre
+    const sobreZone = document.getElementById('sobre-upload-zone');
+    const sobreFile = document.getElementById('sobre-image-file');
+    sobreZone?.addEventListener('click', () => sobreFile.click());
+    sobreFile?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('sobre-image-data').value = ev.target.result;
+        document.getElementById('sobre-upload-preview-img').src = ev.target.result;
+        document.getElementById('sobre-upload-preview-wrap').classList.remove('hidden');
+        document.getElementById('sobre-upload-idle').classList.add('hidden');
       };
       reader.readAsDataURL(file);
     });

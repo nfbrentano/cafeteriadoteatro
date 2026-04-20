@@ -49,6 +49,11 @@
     if (s.sobre_texto)  sobreX.innerHTML   = s.sobre_texto.replace(/\n/g, '<br>');
     if (s.exp_subtitulo) expS.textContent   = s.exp_subtitulo;
     if (s.galeria_subtitulo) galS.textContent = s.galeria_subtitulo;
+
+    if (s.sobre_imagem_url) {
+      const sobreImg = document.getElementById('dyn-sobre-img');
+      if (sobreImg) sobreImg.src = s.sobre_imagem_url;
+    }
   }
 
   function renderHours(h) {

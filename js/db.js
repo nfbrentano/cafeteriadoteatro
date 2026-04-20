@@ -215,6 +215,25 @@
         if (error) throw error;
       }
     },
+    
+    // --- Assets / Storage ---
+    assets: {
+      async upload(fileName, blob, bucket = 'site-assets') {
+        const { error } = await window.cafeteriaSupabase
+          .storage
+          .from(bucket)
+          .upload(fileName, blob, { upsert: true, contentType: 'image/webp' });
+        
+        if (error) throw error;
+        
+        const { data: { publicUrl } } = window.cafeteriaSupabase
+          .storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+        
+        return publicUrl + '?t=' + Date.now();
+      }
+    },
 
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
