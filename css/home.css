@@ -17,7 +17,7 @@
   position: absolute;
   inset: 0;
   background-color: #2a1a14; /* Tom escuro de marrom da cafeteria */
-  background-image: var(--dynamic-hero-bg, none);
+  background-image: var(--dynamic-hero-bg, url('../assets/images/hero-bg.jpg'));
   background-size: cover;
   background-position: center 30%;
   background-repeat: no-repeat;
