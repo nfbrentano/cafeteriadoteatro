@@ -12,6 +12,12 @@
   };
 
   async function loadAndRender() {
+    // Se o PDF estiver ativo, não faz nada
+    if (window.cafeteriaPdfActive) {
+      console.log('[dynamic] PDF ativo detectado. Abortando carga de itens individuais.');
+      return;
+    }
+
     const root = document.getElementById('cardapio-root');
     const nav = document.getElementById('dyn-cat-nav');
 

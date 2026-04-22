@@ -336,19 +336,34 @@
 
   async function init() {
     const section = sel.section();
-    if (!section || !window.cafeteriaDB) return;
+    if (!section || !window.cafeteriaDB) {
+      console.warn('[pdf-viewer] Seção ou DB não encontrados.');
+      return;
+    }
 
     showState('loading');
+    console.log('[pdf-viewer] Iniciando busca de metadados...');
+
     try {
       const meta = await window.cafeteriaDB.menuPdf.get();
+      console.log('[pdf-viewer] Metadados recebidos:', meta);
+
+      const rootMenu = document.getElementById('cardapio-root');
+      const catNav   = document.getElementById('cat-nav-container');
+
       if (!meta || !meta.active || !meta.pdfUrl) {
+        console.log('[pdf-viewer] PDF inativo ou inexistente. Exibindo cardápio padrão.');
         section.style.display = 'none';
-        const root = document.getElementById('cardapio-root');
-        if (root) root.style.display = 'block';
+        if (rootMenu) rootMenu.style.display = 'block';
+        if (catNav)   catNav.style.display = 'block';
         return;
       }
-      const rootMenu = document.getElementById('cardapio-root');
+
+      // PDF ativo — Ocultar tudo o que for do cardápio individual
+      console.log('[pdf-viewer] PDF ativo detectado. Ocultando itens individuais...');
+      window.cafeteriaPdfActive = true;
       if (rootMenu) rootMenu.style.display = 'none';
+      if (catNav)   catNav.style.display   = 'none';
       
       const setAttr = (el, attr, val) => el?.setAttribute(attr, val);
       [
