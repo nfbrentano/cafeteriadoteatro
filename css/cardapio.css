@@ -478,15 +478,83 @@
   overflow: hidden;
 }
 
-.pdf-viewer-section::before {
-  content: '';
-  position: absolute;
+/* ─── CONTAINER DO MODAL / FULLSCREEN ────────────────────── */
+.pdf-viewer-modal {
+  transition: all 0.3s ease;
+  position: relative;
+  width: 100%;
+}
+
+/* Estado Fullscreen / Modal Ativo */
+.pdf-viewer-modal.is-fullscreen {
+  position: fixed;
   inset: 0;
-  background-image: url('../assets/images/hero-bg.png');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.06;
-  pointer-events: none;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 9999;
+  background: #0a0704;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+}
+
+.pdf-viewer-modal.is-fullscreen .pdf-modal-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-4);
+  overflow: hidden;
+}
+
+/* Bloqueio de scroll no body */
+body.pdf-fs-open {
+  overflow: hidden !important;
+}
+
+/* ─── CABEÇALHO DO MODAL ─────────────────────────────────── */
+.pdf-modal-header {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  z-index: 10;
+}
+
+.pdf-modal-title {
+  font-family: var(--font-serif);
+  font-size: var(--size-lg);
+  color: var(--marfim);
+  margin: 0;
+}
+
+.pdf-page-indicator-modal {
+  font-size: var(--size-xs);
+  color: rgba(250,246,238,0.5);
+  margin-left: var(--space-3);
+}
+
+.pdf-modal-close {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: var(--marfim);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pdf-modal-close:hover {
+  background: rgba(192,57,43,0.3);
 }
 
 /* ─── CABEÇALHO ──────────────────────────────────────────── */
@@ -609,6 +677,7 @@
   transition: all var(--transition-fast);
   white-space: nowrap;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .pdf-ctrl-btn:hover {
@@ -631,6 +700,7 @@
 /* ─── FLIPBOOK STAGE ─────────────────────────────────────── */
 .pdf-flipbook-wrap {
   position: relative;
+  width: 100%;
 }
 
 .pdf-book-stage {
@@ -722,26 +792,6 @@
   border-radius: var(--radius-md);
 }
 
-/* ─── BOTÕES NO CONTEXTO ESCURO (override) ───────────────── */
-.pdf-viewer-section .btn--primary {
-  background: var(--caramelo);
-  color: var(--espresso);
-  border: none;
-}
-
-.pdf-viewer-section .btn--primary:hover {
-  background: var(--caramelo-light);
-}
-
-.pdf-viewer-section .btn--outline-dark {
-  border-color: rgba(250,246,238,0.25);
-  color: var(--marfim);
-}
-
-.pdf-viewer-section .btn--outline-dark:hover {
-  background: rgba(250,246,238,0.08);
-}
-
 /* ─── RESPONSIVIDADE FLIPBOOK ────────────────────────────── */
 @media (max-width: 768px) {
   .pdf-viewer-section {
@@ -753,31 +803,27 @@
   }
 
   .pdf-nav-arrow {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     font-size: 1.4rem;
   }
 }
 
 @media (max-width: 480px) {
-  .pdf-viewer-header {
-    margin-bottom: var(--space-8);
-  }
-
   .pdf-controls {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);
   }
 
-  .pdf-fallback-stage {
-    gap: var(--space-2);
-  }
-
   .pdf-nav-arrow {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     font-size: 1.2rem;
+  }
+  
+  .pdf-viewer-modal.is-fullscreen .pdf-book-stage {
+    gap: var(--space-1);
   }
 }
 
