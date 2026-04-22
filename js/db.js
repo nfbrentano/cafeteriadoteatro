@@ -361,8 +361,9 @@
 
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
+      const channelId = `db-changes-${Math.random().toString(36).slice(2, 9)}`;
       return window.cafeteriaSupabase
-        .channel('schema-db-changes')
+        .channel(channelId)
         .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
           onUpdate(payload);
         })
