@@ -488,7 +488,7 @@
   width: 100vw;
   height: 100dvh;
   z-index: 9999;
-  background: rgba(8,6,3,0.96);
+  background: #080603;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   display: flex;
@@ -526,11 +526,14 @@
 body.pdf-fs-open {
   overflow: hidden !important;
   touch-action: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
 }
 
 /* ─── CABEÇALHO DO MODAL (FS) ────────────────────────────── */
 .pdf-modal-header {
-  background: rgba(8,6,3,0.7);
+  background: rgba(8,6,3,0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 10px 16px;
@@ -541,12 +544,13 @@ body.pdf-fs-open {
   z-index: 20;
   flex-shrink: 0;
   border-bottom: 1px solid rgba(250,246,238,0.06);
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .pdf-modal-header.auto-hidden {
   opacity: 0;
   pointer-events: none;
+  transform: translateY(-100%);
 }
 
 .pdf-modal-header__center {
@@ -604,6 +608,7 @@ body.pdf-fs-open {
   flex-shrink: 0;
   line-height: 1;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pdf-nav-btn:hover {
@@ -629,6 +634,8 @@ body.pdf-fs-open {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: relative;
 }
 
 /* ─── CABEÇALHO DA SEÇÃO ─────────────────────────────────── */
@@ -803,13 +810,159 @@ body.pdf-fs-open {
 .pdf-fallback-canvas-wrap canvas { display: block; max-width: 100%; height: auto; border-radius: var(--radius-md); }
 .pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap canvas { border-radius: 0; }
 
+/* ─── BARRA DE NAVEGAÇÃO INFERIOR (FS MOBILE) ────────────── */
+.pdf-fs-bottom-bar {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  background: linear-gradient(0deg, rgba(8,6,3,0.92) 0%, rgba(8,6,3,0.7) 70%, transparent 100%);
+  padding: 32px 20px 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.pdf-viewer-modal.is-fullscreen .pdf-fs-bottom-bar {
+  display: flex;
+}
+
+.pdf-fs-bottom-bar.auto-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(100%);
+}
+
+.pdf-fs-bottom-bar .pdf-nav-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 1.6rem;
+  background: rgba(250,246,238,0.1);
+  border: 1px solid rgba(250,246,238,0.18);
+}
+
+.pdf-fs-bottom-bar .pdf-nav-btn:active {
+  background: rgba(201,162,39,0.25);
+  transform: scale(0.92);
+}
+
+.pdf-fs-bottom-bar .pdf-page-indicator-bottom {
+  font-size: var(--size-base);
+  color: rgba(250,246,238,0.7);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* ─── PROGRESSO VISUAL (mini dots) ───────────────────────── */
+.pdf-fs-progress {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.pdf-fs-progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(250,246,238,0.2);
+  transition: all 0.25s ease;
+}
+
+.pdf-fs-progress-dot.active {
+  background: var(--caramelo);
+  width: 18px;
+  border-radius: 3px;
+}
+
+/* ─── SWIPE HINT (FS MOBILE) ────────────────────────────── */
+.pdf-swipe-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: rgba(250,246,238,0.5);
+  font-size: var(--size-sm);
+  pointer-events: none;
+  opacity: 0;
+  animation: swipeHintIn 0.5s 1.2s ease forwards;
+  z-index: 30;
+}
+
+.pdf-swipe-hint__icon {
+  font-size: 2rem;
+  animation: swipeAnim 2s ease-in-out infinite;
+}
+
+@keyframes swipeHintIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes swipeAnim {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-12px); }
+  75%      { transform: translateX(12px); }
+}
+
 /* ─── RESPONSIVIDADE ─────────────────────────────────────── */
 @media (max-width: 768px) {
   .pdf-viewer-section { padding: var(--space-16) 0 var(--space-20); }
+
+  /* No FS mobile, hide top header nav buttons — use bottom bar */
+  .pdf-viewer-modal.is-fullscreen .pdf-modal-header .pdf-nav-btn {
+    display: none;
+  }
+
+  .pdf-viewer-modal.is-fullscreen .pdf-modal-header {
+    justify-content: center;
+    padding: 8px 16px;
+    min-height: auto;
+  }
+
+  .pdf-viewer-modal.is-fullscreen .pdf-modal-header__center {
+    display: none;
+  }
+
+  .pdf-viewer-modal.is-fullscreen .pdf-modal-header__right {
+    margin-left: auto;
+  }
+
+  /* Fullscreen fallback canvas fills screen better */
+  .pdf-viewer-modal.is-fullscreen .pdf-fallback-stage {
+    height: 100%;
+    width: 100%;
+  }
+
+  .pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
   .pdf-controls { flex-wrap: wrap; gap: var(--space-3); }
   .pdf-nav-btn { width: 36px; height: 36px; font-size: 1.2rem; }
   .pdf-modal-header { padding: 8px 12px; }
+
+  .pdf-fs-bottom-bar .pdf-nav-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
 }

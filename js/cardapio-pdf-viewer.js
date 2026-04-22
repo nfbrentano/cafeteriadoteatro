@@ -10,7 +10,9 @@
     RENDER_SCALE: 2.0,
     INITIAL_PAGES: 4,
     FLIP_DURATION: 600,
-    MOBILE_BREAKPOINT: 768
+    MOBILE_BREAKPOINT: 768,
+    AUTO_HIDE_DELAY: 3000,
+    SWIPE_THRESHOLD: 40
   };
 
   let pdfDoc       = null;
@@ -22,6 +24,13 @@
   let pdfUrl       = null;
   let rendering    = false;
   let autoHideTimer = null;
+  let swipeHintShown = false;
+
+  // Touch tracking for swipe gestures
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let isSwiping = false;
 
   /* ── Seletores ─────────────────────────────────────────── */
   const $ = (id) => document.getElementById(id);
@@ -42,23 +51,47 @@
     if (target) target.style.display = '';
   }
 
+  /* ── Progress Dots ──────────────────────────────────────── */
+  function buildProgressDots() {
+    const container = $('pdf-fs-progress');
+    if (!container) return;
+    container.innerHTML = '';
+    // Show dots only for reasonable page counts (≤ 30)
+    if (totalPages > 30 || totalPages <= 1) return;
+    for (let i = 1; i <= totalPages; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'pdf-fs-progress-dot' + (i === currentPage ? ' active' : '');
+      container.appendChild(dot);
+    }
+  }
+
+  function updateProgressDots() {
+    const container = $('pdf-fs-progress');
+    if (!container) return;
+    const dots = container.querySelectorAll('.pdf-fs-progress-dot');
+    dots.forEach((d, idx) => {
+      d.classList.toggle('active', idx + 1 === currentPage);
+    });
+  }
+
   function updateUI() {
     const text = `${currentPage} / ${totalPages}`;
     // Todos os indicadores
-    ['pdf-page-indicator', 'pdf-page-indicator-fb', 'pdf-page-indicator-modal'].forEach(id => {
+    ['pdf-page-indicator', 'pdf-page-indicator-fb', 'pdf-page-indicator-modal', 'pdf-page-indicator-bottom'].forEach(id => {
       const el = $(id);
       if (el) el.textContent = text;
     });
     // Todos os botões prev
-    ['pdf-btn-prev', 'pdf-btn-prev-fb', 'pdf-fs-prev'].forEach(id => {
+    ['pdf-btn-prev', 'pdf-btn-prev-fb', 'pdf-fs-prev', 'pdf-fs-prev-bottom'].forEach(id => {
       const el = $(id);
       if (el) el.disabled = currentPage <= 1;
     });
     // Todos os botões next
-    ['pdf-btn-next', 'pdf-btn-next-fb', 'pdf-fs-next'].forEach(id => {
+    ['pdf-btn-next', 'pdf-btn-next-fb', 'pdf-fs-next', 'pdf-fs-next-bottom'].forEach(id => {
       const el = $(id);
       if (el) el.disabled = currentPage >= totalPages;
     });
+    updateProgressDots();
   }
 
   /* ── Navegação ─────────────────────────────────────────── */
@@ -93,15 +126,81 @@
     container.appendChild(hint);
   }
 
-  /* ── Auto-hide header FS ────────────────────────────────── */
+  /* ── Swipe Hint (FS mobile, first time only) ───────────── */
+  function showSwipeHint() {
+    if (swipeHintShown || !isMobile || !isFullscreen) return;
+    swipeHintShown = true;
+    const modal = $('pdf-viewer-modal');
+    if (!modal) return;
+    // Remove any existing hint
+    const existing = modal.querySelector('.pdf-swipe-hint');
+    if (existing) existing.remove();
+    const hint = document.createElement('div');
+    hint.className = 'pdf-swipe-hint';
+    hint.innerHTML = '<span class="pdf-swipe-hint__icon">👈 👉</span>Deslize para navegar';
+    modal.appendChild(hint);
+    // Auto-remove after 3s
+    setTimeout(() => {
+      hint.style.transition = 'opacity 0.4s ease';
+      hint.style.opacity = '0';
+      setTimeout(() => hint.remove(), 400);
+    }, 3000);
+  }
+
+  /* ── Auto-hide header & bottom bar FS ──────────────────── */
   function resetAutoHide() {
     const header = $('pdf-modal-header');
-    if (!header || !isFullscreen) return;
-    header.classList.remove('auto-hidden');
+    const bottomBar = $('pdf-fs-bottom-bar');
+    if (!isFullscreen) return;
+    if (header) header.classList.remove('auto-hidden');
+    if (bottomBar) bottomBar.classList.remove('auto-hidden');
     clearTimeout(autoHideTimer);
     autoHideTimer = setTimeout(() => {
-      if (isFullscreen) header.classList.add('auto-hidden');
-    }, 3500);
+      if (isFullscreen) {
+        if (header) header.classList.add('auto-hidden');
+        if (bottomBar) bottomBar.classList.add('auto-hidden');
+      }
+    }, CFG.AUTO_HIDE_DELAY);
+  }
+
+  /* ── Swipe gestures (FS mobile) ────────────────────────── */
+  function setupSwipeGestures() {
+    const modal = $('pdf-viewer-modal');
+    if (!modal) return;
+
+    modal.addEventListener('touchstart', (e) => {
+      if (!isFullscreen || !isMobile) return;
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartTime = Date.now();
+      isSwiping = false;
+    }, { passive: true });
+
+    modal.addEventListener('touchmove', (e) => {
+      if (!isFullscreen || !isMobile) return;
+      const touch = e.touches[0];
+      const dx = Math.abs(touch.clientX - touchStartX);
+      const dy = Math.abs(touch.clientY - touchStartY);
+      // Horizontal swipe detected
+      if (dx > 10 && dx > dy) {
+        isSwiping = true;
+      }
+    }, { passive: true });
+
+    modal.addEventListener('touchend', (e) => {
+      if (!isFullscreen || !isMobile || !isSwiping) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const elapsed = Date.now() - touchStartTime;
+      // Must be a quick swipe (< 400ms) or long enough distance
+      if (Math.abs(dx) >= CFG.SWIPE_THRESHOLD && (elapsed < 400 || Math.abs(dx) > 80)) {
+        if (dx < 0) goNext();
+        else goPrev();
+        resetAutoHide();
+      }
+      isSwiping = false;
+    }, { passive: true });
   }
 
   /* ── Fullscreen ────────────────────────────────────────── */
@@ -114,12 +213,16 @@
     document.body.classList.add('pdf-fs-open');
     const header = $('pdf-modal-header');
     if (header) header.style.display = 'flex';
+    buildProgressDots();
     resetAutoHide();
     try {
       if (modal.requestFullscreen) await modal.requestFullscreen();
       else if (modal.webkitRequestFullscreen) await modal.webkitRequestFullscreen();
     } catch (e) {}
-    setTimeout(() => refreshViewer(), 300);
+    setTimeout(() => {
+      refreshViewer();
+      showSwipeHint();
+    }, 300);
   }
 
   function closeFullscreen() {
@@ -133,9 +236,14 @@
       document.body.classList.remove('pdf-fs-open');
       const header = $('pdf-modal-header');
       if (header) { header.style.display = 'none'; header.classList.remove('auto-hidden'); }
+      const bottomBar = $('pdf-fs-bottom-bar');
+      if (bottomBar) bottomBar.classList.remove('auto-hidden');
       if (document.fullscreenElement || document.webkitFullscreenElement) {
         (document.exitFullscreen || document.webkitExitFullscreen).call(document);
       }
+      // Remove swipe hint if present
+      const hint = modal.querySelector('.pdf-swipe-hint');
+      if (hint) hint.remove();
       refreshViewer();
     }, 200);
   }
@@ -179,8 +287,12 @@
     const ratio = vp.width / vp.height;
     let maxW, maxH;
     if (isFullscreen) {
-      maxW = window.innerWidth - 32;
-      maxH = window.innerHeight - 80;
+      // Mobile FS: Use virtually all available space
+      // Account for safe areas and a small padding
+      const safeTop = 12;
+      const safeBottom = 12;
+      maxW = window.innerWidth - 8;    // Nearly edge-to-edge
+      maxH = window.innerHeight - safeTop - safeBottom;
     } else {
       maxW = container.clientWidth || 360;
       maxH = window.innerHeight * 0.7;
@@ -316,13 +428,13 @@
     if (btnRetry) btnRetry.onclick = () => pdfUrl ? loadPDF(pdfUrl) : init();
 
     // Navegação — todos os botões prev/next
-    ['pdf-btn-prev', 'pdf-btn-prev-fb', 'pdf-fs-prev'].forEach(id => {
+    ['pdf-btn-prev', 'pdf-btn-prev-fb', 'pdf-fs-prev', 'pdf-fs-prev-bottom'].forEach(id => {
       const el = $(id);
-      if (el) el.onclick = (e) => { e.stopPropagation(); goPrev(); };
+      if (el) el.onclick = (e) => { e.stopPropagation(); goPrev(); if (isFullscreen) resetAutoHide(); };
     });
-    ['pdf-btn-next', 'pdf-btn-next-fb', 'pdf-fs-next'].forEach(id => {
+    ['pdf-btn-next', 'pdf-btn-next-fb', 'pdf-fs-next', 'pdf-fs-next-bottom'].forEach(id => {
       const el = $(id);
-      if (el) el.onclick = (e) => { e.stopPropagation(); goNext(); };
+      if (el) el.onclick = (e) => { e.stopPropagation(); goNext(); if (isFullscreen) resetAutoHide(); };
     });
 
     // Fullscreen toggles
@@ -356,6 +468,9 @@
     // Auto-hide no FS
     document.addEventListener('mousemove', () => { if (isFullscreen) resetAutoHide(); });
     document.addEventListener('touchstart', () => { if (isFullscreen) resetAutoHide(); }, { passive: true });
+
+    // Setup swipe gestures for mobile FS
+    setupSwipeGestures();
 
     // Bootstrap
     let attempts = 0;
