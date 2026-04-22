@@ -87,7 +87,8 @@
         horarios: 'Horários',
         promocoes: 'Promoções',
         conteudo: 'Conteúdo Home',
-        configuracoes: 'Configurações'
+        configuracoes: 'Configurações',
+        'menu-pdf': 'Cardápio PDF'
       };
       document.getElementById('topbar-title').textContent = titles[pageId] || '';
       
@@ -99,7 +100,8 @@
         hero:       'renderHero',
         horarios:   'renderHorarios',
         promocoes:  'renderPromocoes',
-        conteudo:   'renderConteudo'
+        conteudo:   'renderConteudo',
+        'menu-pdf': 'renderMenuPdf'
       };
       if (renderers[pageId] && typeof window[renderers[pageId]] === 'function') {
         window[renderers[pageId]]();

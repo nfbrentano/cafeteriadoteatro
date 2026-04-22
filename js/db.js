@@ -258,6 +258,107 @@
       }
     },
 
+    // --- Cardápio PDF / Menu Digital ---
+    menuPdf: {
+      META_KEY: 'menu_pdf_meta',
+      BUCKET:   'menu-pdf',
+      FILE_NAME: 'cardapio-atual.pdf',
+
+      /** Retorna os metadados do PDF ativo ou null */
+      async get() {
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'menu_pdf_meta')
+            .single();
+          if (error || !data) return null;
+          return typeof data.value === 'string'
+            ? JSON.parse(data.value)
+            : data.value;
+        } catch {
+          return null;
+        }
+      },
+
+      /**
+       * Faz upload do PDF para o Supabase Storage e salva os metadados.
+       * @param {File} file — objeto File do input
+       * @param {function} onProgress — callback(percent: number)
+       */
+      async upload(file, onProgress) {
+        if (!file || file.type !== 'application/pdf') {
+          throw new Error('Arquivo inválido. Envie um arquivo PDF.');
+        }
+        const MAX_MB = 20;
+        if (file.size > MAX_MB * 1024 * 1024) {
+          throw new Error(`O arquivo excede o tamanho máximo de ${MAX_MB} MB.`);
+        }
+
+        // Simula progresso inicial
+        if (onProgress) onProgress(10);
+
+        const { error: uploadError } = await window.cafeteriaSupabase
+          .storage
+          .from(db.menuPdf.BUCKET)
+          .upload(db.menuPdf.FILE_NAME, file, {
+            upsert: true,
+            contentType: 'application/pdf'
+          });
+
+        if (uploadError) {
+          throw new Error(`Erro no upload: ${uploadError.message}`);
+        }
+
+        if (onProgress) onProgress(70);
+
+        const { data: { publicUrl } } = window.cafeteriaSupabase
+          .storage
+          .from(db.menuPdf.BUCKET)
+          .getPublicUrl(db.menuPdf.FILE_NAME);
+
+        if (onProgress) onProgress(85);
+
+        const meta = {
+          fileName: file.name,
+          pdfUrl:   publicUrl + '?t=' + Date.now(),
+          active:   true,
+          updatedAt: new Date().toISOString()
+        };
+
+        const { error: settingsError } = await window.cafeteriaSupabase
+          .from('site_settings')
+          .upsert({
+            key:        'menu_pdf_meta',
+            value:      JSON.stringify(meta),
+            updated_at: new Date().toISOString()
+          });
+
+        if (settingsError) {
+          throw new Error(`Erro ao salvar metadados: ${settingsError.message}`);
+        }
+
+        if (onProgress) onProgress(100);
+        return meta;
+      },
+
+      /** Marca o PDF como inativo (não remove o arquivo do Storage) */
+      async remove() {
+        const current = await db.menuPdf.get();
+        if (!current) return;
+        const meta = { ...current, active: false, updatedAt: new Date().toISOString() };
+        const { error } = await window.cafeteriaSupabase
+          .from('site_settings')
+          .upsert({
+            key:        'menu_pdf_meta',
+            value:      JSON.stringify(meta),
+            updated_at: new Date().toISOString()
+          });
+        if (error) throw new Error(`Erro ao remover PDF: ${error.message}`);
+        return meta;
+      }
+    },
+
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
       return window.cafeteriaSupabase

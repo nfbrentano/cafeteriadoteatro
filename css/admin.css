@@ -1812,3 +1812,186 @@ tbody tr:hover { background: var(--admin-hover); }
     align-items: stretch;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CARDÁPIO PDF — Seção Admin
+══════════════════════════════════════════════════════════ */
+
+/* ── Upload Zone ─────────────────────────────────────────── */
+.pdf-upload-zone {
+  border: 2px dashed var(--admin-border);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  position: relative;
+  user-select: none;
+}
+
+.pdf-upload-zone:hover,
+.pdf-upload-zone:focus {
+  border-color: var(--caramelo);
+  background: rgba(201,162,39,0.04);
+  outline: none;
+}
+
+.pdf-upload-zone.drag-over {
+  border-color: var(--caramelo);
+  background: rgba(201,162,39,0.08);
+  transform: scale(1.01);
+}
+
+.pdf-upload-zone__idle  { display: block; }
+.pdf-upload-zone__has-file { display: none; }
+
+.pdf-upload-zone.has-file .pdf-upload-zone__idle    { display: none; }
+.pdf-upload-zone.has-file .pdf-upload-zone__has-file { display: block; }
+
+.pdf-upload-zone__icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.pdf-upload-zone__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin-bottom: 6px;
+}
+
+.pdf-upload-zone__sub {
+  font-size: 12px;
+  color: var(--admin-text-dim);
+}
+
+/* ── Progress Bar ────────────────────────────────────────── */
+.pdf-progress-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.pdf-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--caramelo-dark), var(--caramelo-light));
+  border-radius: var(--radius-full);
+  transition: width 0.25s ease;
+}
+
+.pdf-progress-text {
+  font-size: 12px;
+  color: var(--admin-text-dim);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ── Spinner inline no botão ─────────────────────────────── */
+.pdf-btn-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(28,16,8,0.3);
+  border-top-color: var(--espresso);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Status badge ────────────────────────────────────────── */
+.pdf-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.pdf-status-badge--active {
+  background: rgba(46,204,113,0.12);
+  color: #2ecc71;
+  border: 1px solid rgba(46,204,113,0.25);
+}
+
+/* ── PDF Info Grid (estado ativo) ────────────────────────── */
+.pdf-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pdf-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pdf-info-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-text-sub);
+}
+
+.pdf-info-value {
+  font-size: 14px;
+  color: var(--admin-text);
+  word-break: break-all;
+}
+
+.pdf-info-link {
+  font-size: 13px;
+  color: var(--caramelo);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+
+.pdf-info-link:hover { color: var(--caramelo-light); }
+
+.pdf-active-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--admin-border2);
+  flex-wrap: wrap;
+}
+
+/* ── Estado vazio ─────────────────────────────────────────── */
+.pdf-empty-state {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.pdf-empty-state__icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.pdf-empty-state__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--admin-text-dim);
+  margin-bottom: 6px;
+}
+
+.pdf-empty-state__sub {
+  font-size: 13px;
+  color: var(--admin-text-sub);
+}
+
+/* ── Alerta info (reutiliza o existente) ─────────────────── */
+.alert code {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--admin-border2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+  font-family: monospace;
+}
+

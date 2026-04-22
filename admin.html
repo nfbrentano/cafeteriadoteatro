@@ -88,6 +88,9 @@
       <button class="sidebar__link" data-page="conteudo" id="nav-conteudo">
         <span class="sidebar__link-icon">📝</span> Conteúdo Home
       </button>
+      <button class="sidebar__link" data-page="menu-pdf" id="nav-menu-pdf">
+        <span class="sidebar__link-icon">📄</span> Cardápio PDF
+      </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Site</div>
 
@@ -623,6 +626,115 @@
         </div>
       </section>
 
+      <!-- ── CARDÁPIO PDF / LIVRO DIGITAL ──────────────────── -->
+      <section class="page" id="page-menu-pdf">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Cardápio PDF</div>
+            <div class="page-header__sub">Envie o PDF do cardápio para exibição como livro digital interativo</div>
+          </div>
+          <a href="cardapio.html" target="_blank" class="btn btn--ghost" id="btn-preview-cardapio-pdf">
+            👁️ Ver no site
+          </a>
+        </div>
+
+        <!-- STATUS DO PDF ATUAL -->
+        <div class="section-card" id="pdf-current-status">
+          <div class="section-card__header">
+            <span class="section-card__title">📄 PDF Atual</span>
+            <span id="pdf-active-badge" class="pdf-status-badge pdf-status-badge--active" style="display:none">● Ativo</span>
+          </div>
+          <div class="section-card__body">
+
+            <!-- Estado: sem PDF -->
+            <div id="pdf-empty-state" class="pdf-empty-state">
+              <div class="pdf-empty-state__icon">📂</div>
+              <div class="pdf-empty-state__title">Nenhum cardápio digital enviado</div>
+              <div class="pdf-empty-state__sub">Faça o upload abaixo para ativar o cardápio interativo no site.</div>
+            </div>
+
+            <!-- Estado: PDF ativo -->
+            <div id="pdf-active-state" class="pdf-active-state hidden">
+              <div class="pdf-info-grid">
+                <div class="pdf-info-item">
+                  <span class="pdf-info-label">📄 Arquivo</span>
+                  <span class="pdf-info-value" id="pdf-current-name">—</span>
+                </div>
+                <div class="pdf-info-item">
+                  <span class="pdf-info-label">🕐 Última atualização</span>
+                  <span class="pdf-info-value" id="pdf-current-date">—</span>
+                </div>
+                <div class="pdf-info-item">
+                  <span class="pdf-info-label">🔗 Link público</span>
+                  <a class="pdf-info-link" id="pdf-current-link" href="#" target="_blank" rel="noopener">Abrir PDF ↗</a>
+                </div>
+              </div>
+              <div class="pdf-active-actions">
+                <button class="btn btn--ghost" id="btn-replace-pdf">🔄 Substituir PDF</button>
+                <button class="btn btn--danger" id="btn-remove-pdf">🗑️ Remover PDF</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- UPLOAD DE NOVO PDF -->
+        <div class="section-card" style="margin-top: 24px;">
+          <div class="section-card__header">
+            <span class="section-card__title">📤 Enviar Novo PDF</span>
+          </div>
+          <div class="section-card__body">
+
+            <!-- Upload zone -->
+            <div class="pdf-upload-zone" id="pdf-upload-zone" tabindex="0" role="button"
+                 aria-label="Clique ou arraste um PDF aqui">
+              <div class="pdf-upload-zone__idle">
+                <div class="pdf-upload-zone__icon">📄</div>
+                <div class="pdf-upload-zone__title">Arraste o PDF aqui ou clique para selecionar</div>
+                <div class="pdf-upload-zone__sub">Somente .PDF · Máximo 20 MB</div>
+              </div>
+              <div class="pdf-upload-zone__has-file">
+                <div class="pdf-upload-zone__icon">✅</div>
+                <div class="pdf-upload-zone__title" id="pdf-selected-name">Nenhum arquivo selecionado</div>
+                <div class="pdf-upload-zone__sub" id="pdf-selected-size"></div>
+              </div>
+              <input type="file" id="pdf-file-input" accept="application/pdf,.pdf"
+                     class="hidden" aria-hidden="true" />
+            </div>
+
+            <!-- Barra de progresso -->
+            <div id="pdf-progress-wrap" style="display:none; margin-top: 16px;">
+              <div class="pdf-progress-bar-track">
+                <div class="pdf-progress-bar" id="pdf-progress-bar" style="width:0%"></div>
+              </div>
+              <div class="pdf-progress-text" id="pdf-progress-text">Enviando…</div>
+            </div>
+
+            <!-- Ações -->
+            <div class="form-actions" style="margin-top: 20px;">
+              <button class="btn btn--primary" id="btn-upload-pdf" disabled>
+                📤 Enviar PDF
+              </button>
+              <button class="btn btn--ghost" id="btn-cancel-pdf">
+                Cancelar
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Alerta informativo -->
+        <div class="alert alert--info" style="margin-top: 24px;">
+          <div class="alert__icon">💡</div>
+          <div class="alert__content">
+            O PDF enviado será exibido na página do cardápio como um <strong>livro interativo</strong> com efeito de virada de página, usando <strong>PDF.js</strong> e <strong>StPageFlip</strong>. Qualquer visitante poderá ver e baixar o PDF diretamente no site.
+            <br><br>
+            <strong>Pré-requisito:</strong> o bucket <code>menu-pdf</code> deve estar criado no Supabase Storage com <strong>leitura pública</strong>.
+          </div>
+        </div>
+
+      </section>
+
     </main>
   </div><!-- /main-wrap -->
 </div><!-- /admin-app -->
@@ -1010,5 +1122,6 @@
 <script src="js/admin/products.js"></script>
 <script src="js/admin/categories.js"></script>
 <script src="js/admin/settings.js"></script>
+<script src="js/admin/menu-pdf.js"></script>
 </body>
 </html>

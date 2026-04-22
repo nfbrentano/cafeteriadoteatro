@@ -465,3 +465,319 @@
 @media (max-width: 480px) {
   .produto-grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   PDF FLIPBOOK — Seção Pública do Cardápio Interativo
+   ========================================================= */
+
+/* ─── SEÇÃO CONTAINER ────────────────────────────────────── */
+.pdf-viewer-section {
+  background: linear-gradient(180deg, var(--espresso) 0%, var(--cafe) 100%);
+  padding: var(--space-20) 0 var(--space-24);
+  position: relative;
+  overflow: hidden;
+}
+
+.pdf-viewer-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/images/hero-bg.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+/* ─── CABEÇALHO ──────────────────────────────────────────── */
+.pdf-viewer-header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.pdf-viewer-title {
+  font-family: var(--font-serif);
+  font-size: clamp(var(--size-2xl), 4vw, var(--size-4xl));
+  font-weight: 300;
+  color: var(--marfim);
+  margin-bottom: var(--space-3);
+  line-height: 1.1;
+}
+
+.pdf-viewer-subtitle {
+  font-size: var(--size-md);
+  color: rgba(250,246,238,0.55);
+  max-width: 44ch;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ─── ESTADOS (loading, error, empty) ────────────────────── */
+.pdf-state {
+  text-align: center;
+  padding: var(--space-20) var(--space-6);
+  color: var(--marfim);
+}
+
+.pdf-state--loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.pdf-state--loading p {
+  color: rgba(250,246,238,0.55);
+  font-size: var(--size-sm);
+  max-width: none;
+}
+
+.pdf-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(201,162,39,0.2);
+  border-top-color: var(--caramelo);
+  border-radius: 50%;
+  animation: pdfSpin 0.8s linear infinite;
+}
+
+@keyframes pdfSpin { to { transform: rotate(360deg); } }
+
+.pdf-state__icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  opacity: 0.7;
+}
+
+.pdf-state__title {
+  font-family: var(--font-serif);
+  font-size: var(--size-xl);
+  color: var(--marfim);
+  margin-bottom: var(--space-2);
+}
+
+.pdf-state__sub {
+  font-size: var(--size-sm);
+  color: rgba(250,246,238,0.5);
+  margin-bottom: var(--space-8);
+  max-width: none;
+}
+
+.pdf-state__actions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ─── CONTROLES SUPERIORES ───────────────────────────────── */
+.pdf-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.pdf-controls__right {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.pdf-page-indicator {
+  font-size: var(--size-sm);
+  font-weight: 500;
+  color: rgba(250,246,238,0.6);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+.pdf-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: var(--size-sm);
+  font-weight: 500;
+  color: rgba(250,246,238,0.75);
+  border: 1px solid rgba(250,246,238,0.15);
+  border-radius: var(--radius-full);
+  background: rgba(250,246,238,0.05);
+  backdrop-filter: blur(8px);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.pdf-ctrl-btn:hover {
+  background: rgba(250,246,238,0.12);
+  border-color: rgba(250,246,238,0.3);
+  color: var(--marfim);
+}
+
+.pdf-ctrl-btn--download {
+  color: rgba(201,162,39,0.85);
+  border-color: rgba(201,162,39,0.25);
+  background: rgba(201,162,39,0.06);
+}
+
+.pdf-ctrl-btn--download:hover {
+  background: rgba(201,162,39,0.14);
+  color: var(--caramelo-light);
+}
+
+/* ─── FLIPBOOK STAGE ─────────────────────────────────────── */
+.pdf-flipbook-wrap {
+  position: relative;
+}
+
+.pdf-book-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  position: relative;
+}
+
+.pdf-flipbook-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  /* Sombra elegante tipo livro */
+  filter: drop-shadow(0 32px 64px rgba(0,0,0,0.5)) drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+}
+
+/* Páginas individuais geradas pelo JS */
+.pdf-page-leaf {
+  overflow: hidden;
+  background: var(--marfim);
+}
+
+.pdf-page-leaf img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ─── SETAS DE NAVEGAÇÃO ─────────────────────────────────── */
+.pdf-nav-arrow {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(250,246,238,0.2);
+  background: rgba(250,246,238,0.08);
+  backdrop-filter: blur(8px);
+  color: var(--marfim);
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+
+.pdf-nav-arrow:hover {
+  background: rgba(201,162,39,0.18);
+  border-color: var(--caramelo);
+  color: var(--caramelo-light);
+  transform: scale(1.08);
+}
+
+.pdf-nav-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── FALLBACK (mobile / canvas simples) ─────────────────── */
+.pdf-fallback-wrap { width: 100%; }
+
+.pdf-fallback-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.pdf-fallback-canvas-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 480px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 24px 56px rgba(0,0,0,0.45);
+}
+
+.pdf-fallback-canvas-wrap canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+/* ─── BOTÕES NO CONTEXTO ESCURO (override) ───────────────── */
+.pdf-viewer-section .btn--primary {
+  background: var(--caramelo);
+  color: var(--espresso);
+  border: none;
+}
+
+.pdf-viewer-section .btn--primary:hover {
+  background: var(--caramelo-light);
+}
+
+.pdf-viewer-section .btn--outline-dark {
+  border-color: rgba(250,246,238,0.25);
+  color: var(--marfim);
+}
+
+.pdf-viewer-section .btn--outline-dark:hover {
+  background: rgba(250,246,238,0.08);
+}
+
+/* ─── RESPONSIVIDADE FLIPBOOK ────────────────────────────── */
+@media (max-width: 768px) {
+  .pdf-viewer-section {
+    padding: var(--space-16) 0 var(--space-20);
+  }
+
+  .pdf-book-stage {
+    gap: var(--space-2);
+  }
+
+  .pdf-nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pdf-viewer-header {
+    margin-bottom: var(--space-8);
+  }
+
+  .pdf-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .pdf-fallback-stage {
+    gap: var(--space-2);
+  }
+
+  .pdf-nav-arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+  }
+}
+
