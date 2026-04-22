@@ -103,10 +103,25 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   loadActivePromos();
+  
+  /* ── Hero Dinâmico (Supabase) ───────────────────────────── */
+  const loadDynamicHero = async () => {
+    try {
+      const hero = await window.cafeteriaDB.hero.get();
+      if (hero && hero.image_url) {
+        document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar hero no cardápio:', err);
+    }
+  };
+
+  loadDynamicHero();
 
   /* ── Sincronização em Tempo Real ────────────────────────── */
   window.cafeteriaDB.subscribeToChanges(() => {
     loadActivePromos();
+    loadDynamicHero();
   });
 
   /* ── Navegação sticky de categorias ─────────────────────── */

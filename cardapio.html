@@ -9,6 +9,21 @@
   <meta property="og:image" content="assets/images/produto-cafe.jpg" />
   <meta name="theme-color" content="#1C1008" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☕</text></svg>">
+  
+  <!-- Pre-render Hero cache instant-load -->
+  <script>
+    (function() {
+      const heroCache = localStorage.getItem('cafeteria_hero_cache');
+      if (heroCache) {
+        try {
+          const hero = JSON.parse(heroCache);
+          if (hero && hero.image_url) {
+            document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
+          }
+        } catch(e) {}
+      }
+    })();
+  </script>
   <title>Cardápio | Cafeteria do Teatro · Teatro da Univates</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
