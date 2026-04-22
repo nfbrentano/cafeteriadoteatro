@@ -518,6 +518,8 @@
   align-items: center;
   padding: 0;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 
 /* Esconder controles inline no FS */
@@ -541,10 +543,16 @@ body.pdf-fs-open {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  z-index: 20;
-  flex-shrink: 0;
+  z-index: 30;
   border-bottom: 1px solid rgba(250,246,238,0.06);
   transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.pdf-viewer-modal.is-fullscreen .pdf-modal-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .pdf-modal-header.auto-hidden {
@@ -792,6 +800,11 @@ body.pdf-fs-open {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+}
+
+.pdf-viewer-modal.is-fullscreen .pdf-fallback-stage {
+  height: 100%;
 }
 
 .pdf-fallback-canvas-wrap {
@@ -941,11 +954,6 @@ body.pdf-fs-open {
   }
 
   /* Fullscreen fallback canvas fills screen better */
-  .pdf-viewer-modal.is-fullscreen .pdf-fallback-stage {
-    height: 100%;
-    width: 100%;
-  }
-
   .pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap {
     width: 100%;
     height: 100%;

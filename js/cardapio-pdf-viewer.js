@@ -288,10 +288,10 @@
     let maxW, maxH;
     if (isFullscreen) {
       // Mobile FS: Use virtually all available space
-      // Account for safe areas and a small padding
-      const safeTop = 12;
-      const safeBottom = 12;
-      maxW = window.innerWidth - 8;    // Nearly edge-to-edge
+      // Account for safe areas and a slightly larger padding to ensure no clipping
+      const safeTop = 16;
+      const safeBottom = 16;
+      maxW = window.innerWidth - 12;
       maxH = window.innerHeight - safeTop - safeBottom;
     } else {
       maxW = container.clientWidth || 360;
