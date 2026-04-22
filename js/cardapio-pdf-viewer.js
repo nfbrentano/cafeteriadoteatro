@@ -339,12 +339,17 @@
 
     try {
       const meta = await window.cafeteriaDB.menuPdf.get();
+      const rootMenu = document.getElementById('cardapio-root');
 
       if (!meta || !meta.active || !meta.pdfUrl) {
-        // Nenhum PDF ativo — ocultar a seção inteira
+        // Nenhum PDF ativo — ocultar a seção do livro e garantir que o cardápio normal apareça
         section.style.display = 'none';
+        if (rootMenu) rootMenu.style.display = 'block';
         return;
       }
+
+      // PDF ativo — Ocultar o cardápio de itens individuais
+      if (rootMenu) rootMenu.style.display = 'none';
 
       // Configurar botões de link/download
       sel.btnOpen()?.setAttribute('href', meta.pdfUrl);
