@@ -110,6 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const hero = await window.cafeteriaDB.hero.get();
       if (hero && hero.image_url) {
         document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
+        // Atualiza cache para próxima carga instantânea
+        window.cafeteriaDB.cache.set('cafeteria_hero_cache', hero);
       }
     } catch (err) {
       console.error('Erro ao carregar hero no cardápio:', err);
