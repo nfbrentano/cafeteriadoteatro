@@ -639,7 +639,7 @@ body.pdf-fs-open {
 .pdf-viewer-modal.is-fullscreen .pdf-flipbook-wrap {
   width: 100%;
   height: 100%;
-  display: flex !important;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
