@@ -300,8 +300,8 @@
 
         const { error: uploadError } = await window.cafeteriaSupabase
           .storage
-          .from(db.menuPdf.BUCKET)
-          .upload(db.menuPdf.FILE_NAME, file, {
+          .from(this.BUCKET)
+          .upload(this.FILE_NAME, file, {
             upsert: true,
             contentType: 'application/pdf'
           });
@@ -314,8 +314,8 @@
 
         const { data: { publicUrl } } = window.cafeteriaSupabase
           .storage
-          .from(db.menuPdf.BUCKET)
-          .getPublicUrl(db.menuPdf.FILE_NAME);
+          .from(this.BUCKET)
+          .getPublicUrl(this.FILE_NAME);
 
         if (onProgress) onProgress(85);
 
@@ -371,4 +371,5 @@
   };
 
   window.cafeteriaDB = db;
+  console.log('CafeteriaDB inicializado com sucesso. Módulos:', Object.keys(db));
 })();

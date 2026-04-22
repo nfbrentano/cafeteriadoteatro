@@ -71,6 +71,12 @@
 
     if (!statusCard) return;
 
+    // Verificação de segurança
+    if (!window.cafeteriaDB || !window.cafeteriaDB.menuPdf) {
+      console.error('[menu-pdf] cafeteriaDB.menuPdf não encontrado!');
+      return;
+    }
+
     // Loading state
     statusCard.classList.add('loading');
 
