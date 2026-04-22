@@ -466,6 +466,7 @@
   .produto-grid { grid-template-columns: 1fr; }
 }
 
+
 /* =========================================================
    PDF FLIPBOOK — Seção Pública do Cardápio Interativo
    ========================================================= */
@@ -480,23 +481,38 @@
 
 /* ─── CONTAINER DO MODAL / FULLSCREEN ────────────────────── */
 .pdf-viewer-modal {
-  transition: all 0.3s ease;
   position: relative;
   width: 100%;
 }
 
-/* Estado Fullscreen / Modal Ativo */
 .pdf-viewer-modal.is-fullscreen {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100dvh;
   z-index: 9999;
-  background: #0a0704;
+  background: rgba(8,6,3,0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   display: flex;
   flex-direction: column;
   padding: 0;
   margin: 0;
+  animation: fsModalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pdf-viewer-modal.is-fullscreen.is-closing {
+  animation: fsModalOut 0.25s ease-in forwards;
+}
+
+@keyframes fsModalIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fsModalOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.95); }
 }
 
 .pdf-viewer-modal.is-fullscreen .pdf-modal-content {
@@ -504,60 +520,120 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--space-4);
+  align-items: center;
+  padding: 0;
   overflow: hidden;
+  position: relative;
 }
 
-/* Bloqueio de scroll no body */
+.pdf-viewer-modal.is-fullscreen .pdf-controls--top {
+  display: none;
+}
+
 body.pdf-fs-open {
   overflow: hidden !important;
+  touch-action: none;
 }
 
 /* ─── CABEÇALHO DO MODAL ─────────────────────────────────── */
 .pdf-modal-header {
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(10px);
-  padding: var(--space-4) var(--space-6);
+  background: linear-gradient(180deg, rgba(8,6,3,0.85) 0%, rgba(8,6,3,0.4) 70%, transparent 100%);
+  padding: var(--space-4) var(--space-6) var(--space-8);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.pdf-modal-header.auto-hidden {
+  opacity: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
+.pdf-modal-header__left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  z-index: 10;
+  gap: var(--space-3);
 }
 
 .pdf-modal-title {
   font-family: var(--font-serif);
-  font-size: var(--size-lg);
+  font-size: var(--size-md);
   color: var(--marfim);
   margin: 0;
+  font-weight: 400;
+  letter-spacing: 0.02em;
 }
 
 .pdf-page-indicator-modal {
   font-size: var(--size-xs);
-  color: rgba(250,246,238,0.5);
-  margin-left: var(--space-3);
+  color: rgba(250,246,238,0.45);
+  background: rgba(250,246,238,0.08);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-variant-numeric: tabular-nums;
 }
 
 .pdf-modal-close {
-  background: rgba(255,255,255,0.1);
-  border: none;
+  background: rgba(250,246,238,0.1);
+  border: 1px solid rgba(250,246,238,0.12);
   color: var(--marfim);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .pdf-modal-close:hover {
-  background: rgba(192,57,43,0.3);
+  background: rgba(192,57,43,0.25);
+  border-color: rgba(192,57,43,0.4);
 }
 
-/* ─── CABEÇALHO ──────────────────────────────────────────── */
+.pdf-modal-close:active {
+  transform: scale(0.92);
+}
+
+/* ─── FULLSCREEN OVERRIDES ───────────────────────────────── */
+.pdf-viewer-modal.is-fullscreen .pdf-fallback-wrap,
+.pdf-viewer-modal.is-fullscreen .pdf-flipbook-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-fs-page-badge {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8,6,3,0.7);
+  backdrop-filter: blur(12px);
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(250,246,238,0.1);
+  font-size: var(--size-sm);
+  color: rgba(250,246,238,0.7);
+  font-variant-numeric: tabular-nums;
+  z-index: 15;
+  pointer-events: none;
+}
+
+/* ─── CABEÇALHO DA SEÇÃO ─────────────────────────────────── */
 .pdf-viewer-header {
   text-align: center;
   margin-bottom: var(--space-12);
@@ -580,7 +656,7 @@ body.pdf-fs-open {
   line-height: 1.6;
 }
 
-/* ─── ESTADOS (loading, error, empty) ────────────────────── */
+/* ─── ESTADOS ────────────────────────────────────────────── */
 .pdf-state {
   text-align: center;
   padding: var(--space-20) var(--space-6);
@@ -611,34 +687,12 @@ body.pdf-fs-open {
 
 @keyframes pdfSpin { to { transform: rotate(360deg); } }
 
-.pdf-state__icon {
-  font-size: 3rem;
-  margin-bottom: var(--space-4);
-  opacity: 0.7;
-}
+.pdf-state__icon { font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.7; }
+.pdf-state__title { font-family: var(--font-serif); font-size: var(--size-xl); color: var(--marfim); margin-bottom: var(--space-2); }
+.pdf-state__sub { font-size: var(--size-sm); color: rgba(250,246,238,0.5); margin-bottom: var(--space-8); max-width: none; }
+.pdf-state__actions { display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; }
 
-.pdf-state__title {
-  font-family: var(--font-serif);
-  font-size: var(--size-xl);
-  color: var(--marfim);
-  margin-bottom: var(--space-2);
-}
-
-.pdf-state__sub {
-  font-size: var(--size-sm);
-  color: rgba(250,246,238,0.5);
-  margin-bottom: var(--space-8);
-  max-width: none;
-}
-
-.pdf-state__actions {
-  display: flex;
-  gap: var(--space-4);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* ─── CONTROLES SUPERIORES ───────────────────────────────── */
+/* ─── CONTROLES SUPERIORES (inline) ──────────────────────── */
 .pdf-controls {
   display: flex;
   align-items: center;
@@ -648,11 +702,7 @@ body.pdf-fs-open {
   flex-wrap: wrap;
 }
 
-.pdf-controls__right {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-}
+.pdf-controls__right { display: flex; gap: var(--space-3); align-items: center; }
 
 .pdf-page-indicator {
   font-size: var(--size-sm);
@@ -686,22 +736,45 @@ body.pdf-fs-open {
   color: var(--marfim);
 }
 
-.pdf-ctrl-btn--download {
-  color: rgba(201,162,39,0.85);
-  border-color: rgba(201,162,39,0.25);
-  background: rgba(201,162,39,0.06);
+/* ─── HINT "TOQUE PARA EXPANDIR" ─────────────────────────── */
+.pdf-tap-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8,6,3,0.75);
+  backdrop-filter: blur(8px);
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(201,162,39,0.2);
+  color: rgba(250,246,238,0.7);
+  font-size: var(--size-xs);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  opacity: 0;
+  animation: hintFadeIn 0.6s 1.5s ease forwards;
+  z-index: 5;
+  white-space: nowrap;
 }
 
-.pdf-ctrl-btn--download:hover {
-  background: rgba(201,162,39,0.14);
-  color: var(--caramelo-light);
+.pdf-tap-hint__icon { font-size: 1rem; animation: hintPulse 2s ease-in-out infinite; }
+
+@keyframes hintFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+
+@keyframes hintPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
+
+.pdf-viewer-modal.is-fullscreen .pdf-tap-hint { display: none; }
 
 /* ─── FLIPBOOK STAGE ─────────────────────────────────────── */
-.pdf-flipbook-wrap {
-  position: relative;
-  width: 100%;
-}
+.pdf-flipbook-wrap { position: relative; width: 100%; }
 
 .pdf-book-stage {
   display: flex;
@@ -715,22 +788,27 @@ body.pdf-fs-open {
   flex: 1;
   display: flex;
   justify-content: center;
-  /* Sombra elegante tipo livro */
   filter: drop-shadow(0 32px 64px rgba(0,0,0,0.5)) drop-shadow(0 8px 24px rgba(0,0,0,0.3));
 }
 
-/* Páginas individuais geradas pelo JS */
-.pdf-page-leaf {
-  overflow: hidden;
-  background: var(--marfim);
+.pdf-viewer-modal.is-fullscreen .pdf-book-stage { gap: 0; width: 100%; height: 100%; }
+.pdf-viewer-modal.is-fullscreen .pdf-flipbook-container { flex: none; }
+
+.pdf-viewer-modal.is-fullscreen .pdf-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  background: rgba(8,6,3,0.6);
+  border-color: rgba(250,246,238,0.15);
 }
 
-.pdf-page-leaf img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
+.pdf-viewer-modal.is-fullscreen .pdf-nav-arrow--prev { left: 12px; }
+.pdf-viewer-modal.is-fullscreen .pdf-nav-arrow--next { right: 12px; }
+.pdf-viewer-modal.is-fullscreen .pdf-nav-arrow:hover { background: rgba(201,162,39,0.25); }
+
+.pdf-page-leaf { overflow: hidden; background: var(--marfim); }
+.pdf-page-leaf img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 /* ─── SETAS DE NAVEGAÇÃO ─────────────────────────────────── */
 .pdf-nav-arrow {
@@ -759,20 +837,17 @@ body.pdf-fs-open {
   transform: scale(1.08);
 }
 
-.pdf-nav-arrow:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-  transform: none;
-}
+.pdf-nav-arrow:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
 
-/* ─── FALLBACK (mobile / canvas simples) ─────────────────── */
-.pdf-fallback-wrap { width: 100%; }
+/* ─── FALLBACK ───────────────────────────────────────────── */
+.pdf-fallback-wrap { width: 100%; position: relative; }
 
 .pdf-fallback-stage {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-4);
+  position: relative;
 }
 
 .pdf-fallback-canvas-wrap {
@@ -785,45 +860,22 @@ body.pdf-fs-open {
   box-shadow: 0 24px 56px rgba(0,0,0,0.45);
 }
 
-.pdf-fallback-canvas-wrap canvas {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  border-radius: var(--radius-md);
-}
+.pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap { max-width: none; box-shadow: none; border-radius: 0; }
+.pdf-viewer-modal.is-fullscreen .pdf-fallback-stage { gap: 0; width: 100%; height: 100%; }
+.pdf-fallback-canvas-wrap canvas { display: block; max-width: 100%; height: auto; border-radius: var(--radius-md); }
+.pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap canvas { border-radius: 0; }
 
-/* ─── RESPONSIVIDADE FLIPBOOK ────────────────────────────── */
+/* ─── RESPONSIVIDADE ─────────────────────────────────────── */
 @media (max-width: 768px) {
-  .pdf-viewer-section {
-    padding: var(--space-16) 0 var(--space-20);
-  }
-
-  .pdf-book-stage {
-    gap: var(--space-2);
-  }
-
-  .pdf-nav-arrow {
-    width: 48px;
-    height: 48px;
-    font-size: 1.4rem;
-  }
+  .pdf-viewer-section { padding: var(--space-16) 0 var(--space-20); }
+  .pdf-book-stage { gap: var(--space-2); }
+  .pdf-nav-arrow { width: 48px; height: 48px; font-size: 1.4rem; }
 }
 
 @media (max-width: 480px) {
-  .pdf-controls {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
-  .pdf-nav-arrow {
-    width: 44px;
-    height: 44px;
-    font-size: 1.2rem;
-  }
-  
-  .pdf-viewer-modal.is-fullscreen .pdf-book-stage {
-    gap: var(--space-1);
-  }
+  .pdf-controls { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+  .pdf-nav-arrow { width: 44px; height: 44px; font-size: 1.2rem; }
+  .pdf-viewer-modal.is-fullscreen .pdf-nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+  .pdf-viewer-modal.is-fullscreen .pdf-nav-arrow--prev { left: 6px; }
+  .pdf-viewer-modal.is-fullscreen .pdf-nav-arrow--next { right: 6px; }
 }
-
