@@ -209,6 +209,10 @@
     if (!modal) return;
     isFullscreen = true;
     modal.classList.remove('is-closing');
+    
+    const navbarH = document.getElementById('navbar')?.offsetHeight || 0;
+    modal.style.setProperty('--fs-top-offset', navbarH + 'px');
+    
     modal.classList.add('is-fullscreen');
     document.body.classList.add('pdf-fs-open');
     const header = $('pdf-modal-header');
@@ -289,10 +293,10 @@
     if (isFullscreen) {
       // Mobile FS: Use virtually all available space
       // Account for safe areas and a slightly larger padding to ensure no clipping
-      const safeTop = 16;
-      const safeBottom = 16;
+      const headerH = document.getElementById('pdf-modal-header')?.offsetHeight || 56;
+      const bottomBarH = document.getElementById('pdf-fs-bottom-bar')?.offsetHeight || 64;
       maxW = window.innerWidth - 12;
-      maxH = window.innerHeight - safeTop - safeBottom;
+      maxH = window.innerHeight - headerH - bottomBarH - 16; // 16px de margem de segurança
     } else {
       maxW = container.clientWidth || 360;
       maxH = window.innerHeight * 0.7;
@@ -337,8 +341,10 @@
 
     let pageW, pageH;
     if (isFullscreen) {
+      const headerH = document.getElementById('pdf-modal-header')?.offsetHeight || 56;
+      const bottomBarH = document.getElementById('pdf-fs-bottom-bar')?.offsetHeight || 64;
       pageW = Math.min(Math.floor(window.innerWidth / 2) - 40, 600);
-      pageH = Math.min(Math.round(pageW * 1.414), window.innerHeight - 100);
+      pageH = Math.min(Math.round(pageW * 1.414), window.innerHeight - headerH - bottomBarH - 32);
     } else {
       const cw = $('pdf-flipbook-wrap')?.clientWidth || window.innerWidth;
       pageW = Math.min(Math.floor(cw / 2) - 20, 500);

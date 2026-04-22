@@ -485,8 +485,9 @@
 .pdf-viewer-modal.is-fullscreen {
   position: fixed;
   inset: 0;
+  top: var(--fs-top-offset, 0);
   width: 100vw;
-  height: 100dvh;
+  height: calc(100dvh - var(--fs-top-offset, 0));
   z-index: 9999;
   background: #080603;
   backdrop-filter: blur(24px);
