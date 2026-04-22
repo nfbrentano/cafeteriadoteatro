@@ -387,13 +387,16 @@
 
   /* ── Eventos ────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', () => {
-    sel.btnRetry()?.onclick = () => pdfUrl ? loadPDF(pdfUrl) : init();
+    const btnRetry = sel.btnRetry();
+    if (btnRetry) btnRetry.onclick = () => pdfUrl ? loadPDF(pdfUrl) : init();
     
     // Fullscreen Toggles
     [sel.btnExpand(), sel.btnExpandFb()].forEach(btn => {
       if (btn) btn.onclick = openFullscreen;
     });
-    sel.btnCloseFs()?.onclick = closeFullscreen;
+    
+    const btnCloseFs = sel.btnCloseFs();
+    if (btnCloseFs) btnCloseFs.onclick = closeFullscreen;
 
     // Tecla ESC
     document.addEventListener('keydown', (e) => {
@@ -409,13 +412,16 @@
     document.addEventListener('webkitfullscreenchange', onFsChange);
 
     // Nav Fallback
-    document.getElementById('pdf-btn-prev-fb')?.onclick = () => {
+    const btnPrevFb = document.getElementById('pdf-btn-prev-fb');
+    const btnNextFb = document.getElementById('pdf-btn-next-fb');
+    
+    if (btnPrevFb) btnPrevFb.onclick = () => {
       if (currentPage > 1) {
         currentPage--;
         refreshViewer();
       }
     };
-    document.getElementById('pdf-btn-next-fb')?.onclick = () => {
+    if (btnNextFb) btnNextFb.onclick = () => {
       if (currentPage < totalPages) {
         currentPage++;
         refreshViewer();
