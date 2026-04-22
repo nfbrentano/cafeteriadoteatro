@@ -47,8 +47,6 @@
     btnPrevFb:    () => document.getElementById('pdf-btn-prev-fb'),
     btnNextFb:    () => document.getElementById('pdf-btn-next-fb'),
     
-    btnOpen:      () => document.getElementById('pdf-btn-open'),
-    btnDownload:  () => document.getElementById('pdf-btn-download'),
     btnExpand:    () => document.getElementById('pdf-btn-expand'),
     btnExpandFb:  () => document.getElementById('pdf-btn-expand-fb'),
     btnCloseFs:   () => document.getElementById('pdf-btn-close-fs'),
@@ -81,7 +79,6 @@
     if (elNormal) elNormal.textContent = text;
     if (elModal)  elModal.textContent  = text;
     
-    // Fallback indicator
     const elFb = document.getElementById('pdf-page-indicator-fb');
     if (elFb) elFb.textContent = text;
   }
@@ -102,55 +99,37 @@
   async function openFullscreen() {
     const modal = sel.modal();
     if (!modal) return;
-
     isFullscreen = true;
     modal.classList.add('is-fullscreen');
     document.body.classList.add('pdf-fs-open');
     sel.modalHeader().style.display = 'flex';
-
-    // Tentar API nativa (Camada 1)
     try {
       if (modal.requestFullscreen) await modal.requestFullscreen();
       else if (modal.webkitRequestFullscreen) await modal.webkitRequestFullscreen();
-      else if (modal.msRequestFullscreen) await modal.msRequestFullscreen();
-    } catch (e) {
-      console.warn('[pdf-viewer] Fullscreen API não suportada ou bloqueada.');
-    }
-
-    // Reinicializar viewer para ajustar proporções
+    } catch (e) {}
     refreshViewer();
   }
 
   function closeFullscreen() {
     const modal = sel.modal();
     if (!modal) return;
-
     isFullscreen = false;
     modal.classList.remove('is-fullscreen');
     document.body.classList.remove('pdf-fs-open');
     sel.modalHeader().style.display = 'none';
-
     if (document.fullscreenElement || document.webkitFullscreenElement) {
       if (document.exitFullscreen) document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
     }
-
     refreshViewer();
   }
 
   function refreshViewer() {
     if (!pdfUrl) return;
-    
-    // Forçar recalculação de isMobile baseado no contexto FS
-    // No mobile, mesmo em FS, preferimos single-page se a tela for estreita
     const width = isFullscreen ? window.innerWidth : (sel.section()?.clientWidth || window.innerWidth);
     isMobile = width <= CFG.MOBILE_BREAKPOINT;
-
-    if (isMobile) {
-      initFallbackMode();
-    } else {
-      initFlipbook();
-    }
+    if (isMobile) initFallbackMode();
+    else initFlipbook();
   }
 
   /* ── Renderização ────────────────────────────────────────── */
@@ -185,41 +164,28 @@
       currentPage = num;
       updateIndicator(num, totalPages);
       updateNavButtons();
-
       const page = await pdfDoc.getPage(num);
       const vp   = page.getViewport({ scale: CFG.RENDER_SCALE });
-
       const container = canvas.parentElement;
       const ratio = vp.width / vp.height;
-      
-      // No modo FS, usar altura disponível menos cabeçalho
       let maxH = window.innerHeight - 120;
       let maxW = container.clientWidth || 360;
-      
-      if (isFullscreen) {
-        maxW = window.innerWidth - 40;
-      }
-
+      if (isFullscreen) maxW = window.innerWidth - 40;
       let finalW = maxW;
       let finalH = finalW / ratio;
-
       if (finalH > maxH) {
         finalH = maxH;
         finalW = finalH * ratio;
       }
-
       canvas.style.width  = finalW + 'px';
       canvas.style.height = finalH + 'px';
       canvas.width  = vp.width;
       canvas.height = vp.height;
-
       const ctx = canvas.getContext('2d');
       await page.render({ canvasContext: ctx, viewport: vp }).promise;
     }
 
     await renderFallbackPage(currentPage);
-    
-    // Click no canvas abre FS
     canvas.onclick = () => { if(!isFullscreen) openFullscreen(); };
   }
 
@@ -228,37 +194,26 @@
       await initFallbackMode();
       return;
     }
-
     const container = sel.flipContainer();
     if (!container) { await initFallbackMode(); return; }
-
     showState('loading');
-
     const firstBatch = Math.min(CFG.INITIAL_PAGES, totalPages);
     const pages = [];
     for (let i = 1; i <= firstBatch; i++) {
       try {
         const canvas = await renderPageToCanvas(i);
         pages.push(buildPageElement(canvas, i));
-      } catch (err) { console.error(err); }
+      } catch (err) {}
     }
-
     container.innerHTML = '';
     pages.forEach(p => container.appendChild(p));
-
-    // Dimensões dinâmicas
     const winW = isFullscreen ? window.innerWidth : (sel.flipWrap()?.clientWidth || window.innerWidth);
     const winH = isFullscreen ? window.innerHeight - 100 : 600;
-    
     const pageW = Math.min(Math.floor(winW / 2) - 40, 500);
     const pageH = Math.min(Math.round(pageW * 1.414), winH - 40);
 
     try {
-      if (pageFlip) {
-        try { pageFlip.destroy(); } catch {}
-        pageFlip = null;
-      }
-
+      if (pageFlip) { try { pageFlip.destroy(); } catch {} pageFlip = null; }
       pageFlip = new PageFlip(container, {
         width: pageW, height: pageH, size: 'fixed',
         drawShadow: true, flippingTime: CFG.FLIP_DURATION,
@@ -267,33 +222,19 @@
         clickEventForward: true, useMouseEvents: true,
         swipeDistance: 30, showPageCorners: true
       });
-
       pageFlip.loadFromHTML(container.querySelectorAll('.pdf-page-leaf'));
-
       pageFlip.on('flip', (e) => {
         currentPage = e.data + 1;
         updateIndicator(currentPage, totalPages);
         updateNavButtons();
-        if (currentPage + 4 <= totalPages) {
-          renderRemainingPages(currentPage + 2, Math.min(currentPage + 6, totalPages));
-        }
+        if (currentPage + 4 <= totalPages) renderRemainingPages(currentPage + 2, Math.min(currentPage + 6, totalPages));
       });
-
       showState('flipbook');
       updateIndicator(currentPage, totalPages);
       updateNavButtons();
-
-      if (totalPages > firstBatch) {
-        setTimeout(() => renderRemainingPages(firstBatch + 1, totalPages), 500);
-      }
-      
-      // Click no container abre FS
+      if (totalPages > firstBatch) setTimeout(() => renderRemainingPages(firstBatch + 1, totalPages), 500);
       container.onclick = () => { if(!isFullscreen) openFullscreen(); };
-
-    } catch (err) {
-      console.error(err);
-      await initFallbackMode();
-    }
+    } catch (err) { await initFallbackMode(); }
   }
 
   async function renderRemainingPages(from, to) {
@@ -301,16 +242,13 @@
     rendering = true;
     const container = sel.flipContainer();
     if (!container) { rendering = false; return; }
-
     for (let i = from; i <= to; i++) {
       if (container.querySelector(`[data-page="${i}"]`)) continue;
       try {
         const canvas = await renderPageToCanvas(i);
         const pageEl = buildPageElement(canvas, i);
         container.appendChild(pageEl);
-        if (pageFlip) {
-          try { pageFlip.loadFromHTML(container.querySelectorAll('.pdf-page-leaf')); } catch {}
-        }
+        if (pageFlip) { try { pageFlip.loadFromHTML(container.querySelectorAll('.pdf-page-leaf')); } catch {} }
         await new Promise(r => setTimeout(r, 100));
       } catch (err) {}
     }
@@ -329,81 +267,37 @@
         totalPages = pdfDoc.numPages;
         refreshViewer();
       }
-    } catch (err) {
-      showState('error');
-    }
+    } catch (err) { showState('error'); }
   }
 
   async function init() {
     const section = sel.section();
-    if (!section || !window.cafeteriaDB) {
-      console.warn('[pdf-viewer] Seção ou DB não encontrados.');
-      return;
-    }
-
+    if (!section || !window.cafeteriaDB) return;
     showState('loading');
-    console.log('[pdf-viewer] Iniciando busca de metadados...');
-
     try {
       const meta = await window.cafeteriaDB.menuPdf.get();
-      console.log('[pdf-viewer] Metadados recebidos:', meta);
-
       const rootMenu = document.getElementById('cardapio-root');
       const catNav   = document.getElementById('cat-nav-container');
-
       if (!meta || !meta.active || !meta.pdfUrl) {
-        console.log('[pdf-viewer] PDF inativo ou inexistente. Exibindo cardápio padrão.');
         section.style.display = 'none';
         if (rootMenu) rootMenu.style.display = 'block';
         if (catNav)   catNav.style.display = 'block';
         return;
       }
-
-      // PDF ativo — Ocultar tudo o que for do cardápio individual
-      console.log('[pdf-viewer] PDF ativo detectado. Ocultando itens individuais...');
       window.cafeteriaPdfActive = true;
       if (rootMenu) rootMenu.style.display = 'none';
       if (catNav)   catNav.style.display   = 'none';
-      
-      const setAttr = (el, attr, val) => el?.setAttribute(attr, val);
-      [
-        sel.btnOpen(), 
-        document.getElementById('pdf-btn-open-fb'),
-        document.getElementById('pdf-btn-open-modal')
-      ].forEach(el => setAttr(el, 'href', meta.pdfUrl));
-
-      [
-        sel.btnDownload(), 
-        document.getElementById('pdf-btn-download-fb'),
-        document.getElementById('pdf-btn-download-modal')
-      ].forEach(el => {
-        setAttr(el, 'href', meta.pdfUrl);
-        setAttr(el, 'download', meta.fileName || 'cardapio.pdf');
-      });
-
       await loadPDF(meta.pdfUrl);
     } catch (err) { showState('error'); }
   }
 
-  /* ── Eventos ────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', () => {
     const btnRetry = sel.btnRetry();
     if (btnRetry) btnRetry.onclick = () => pdfUrl ? loadPDF(pdfUrl) : init();
-    
-    // Fullscreen Toggles
-    [sel.btnExpand(), sel.btnExpandFb()].forEach(btn => {
-      if (btn) btn.onclick = openFullscreen;
-    });
-    
+    [sel.btnExpand(), sel.btnExpandFb()].forEach(btn => { if (btn) btn.onclick = openFullscreen; });
     const btnCloseFs = sel.btnCloseFs();
     if (btnCloseFs) btnCloseFs.onclick = closeFullscreen;
-
-    // Tecla ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isFullscreen) closeFullscreen();
-    });
-
-    // Mudança nativa de Fullscreen
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isFullscreen) closeFullscreen(); });
     const onFsChange = () => {
       const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       if (!isNativeFs && isFullscreen) closeFullscreen();
@@ -411,37 +305,19 @@
     document.addEventListener('fullscreenchange', onFsChange);
     document.addEventListener('webkitfullscreenchange', onFsChange);
 
-    // Nav Fallback
     const btnPrevFb = document.getElementById('pdf-btn-prev-fb');
     const btnNextFb = document.getElementById('pdf-btn-next-fb');
+    if (btnPrevFb) btnPrevFb.onclick = () => { if (currentPage > 1) { currentPage--; refreshViewer(); } };
+    if (btnNextFb) btnNextFb.onclick = () => { if (currentPage < totalPages) { currentPage++; refreshViewer(); } };
     
-    if (btnPrevFb) btnPrevFb.onclick = () => {
-      if (currentPage > 1) {
-        currentPage--;
-        refreshViewer();
-      }
-    };
-    if (btnNextFb) btnNextFb.onclick = () => {
-      if (currentPage < totalPages) {
-        currentPage++;
-        refreshViewer();
-      }
-    };
-    
-    // Bootstrap
     let attempts = 0;
     const tryInit = () => {
       if (window.pdfjsLib || attempts++ > 20) init();
       else setTimeout(tryInit, 300);
     };
     tryInit();
-
-    // Resize
     let timer;
-    window.onresize = () => {
-      clearTimeout(timer);
-      timer = setTimeout(refreshViewer, 400);
-    };
+    window.onresize = () => { clearTimeout(timer); timer = setTimeout(refreshViewer, 400); };
   });
 
 })();
