@@ -129,12 +129,13 @@
           
           <!-- Cabeçalho do Modal (visível apenas em FS) -->
           <div class="pdf-modal-header" id="pdf-modal-header" style="display:none">
-            <div class="pdf-modal-header__left">
-              <h3 class="pdf-modal-title">Cardápio Interativo</h3>
+            <button class="pdf-nav-btn" id="pdf-fs-prev" aria-label="Anterior">‹</button>
+            <div class="pdf-modal-header__center">
               <span class="pdf-page-indicator-modal" id="pdf-page-indicator-modal">1 / 1</span>
             </div>
-            <div class="pdf-modal-header__actions">
-              <button class="pdf-modal-close" id="pdf-btn-close-fs" aria-label="Fechar tela cheia">✕</button>
+            <div class="pdf-modal-header__right">
+              <button class="pdf-nav-btn" id="pdf-fs-next" aria-label="Próxima">›</button>
+              <button class="pdf-modal-close" id="pdf-btn-close-fs" aria-label="Fechar">✕</button>
             </div>
           </div>
 
@@ -143,29 +144,21 @@
             <!-- ── FLIPBOOK (modo desktop) ────────────────────── -->
             <div id="pdf-flipbook-wrap" class="pdf-flipbook-wrap" style="display:none">
 
-              <!-- Controles superiores -->
+              <!-- Controles superiores com navegação integrada -->
               <div class="pdf-controls pdf-controls--top">
-                <span class="pdf-page-indicator" id="pdf-page-indicator">1 / 1</span>
-                <div class="pdf-controls__right">
-                  <button class="pdf-ctrl-btn" id="pdf-btn-expand" title="Ver em tela cheia">
-                    ⛶ Expandir
-                  </button>
+                <div class="pdf-controls__nav">
+                  <button class="pdf-nav-btn" id="pdf-btn-prev" aria-label="Anterior" disabled>‹</button>
+                  <span class="pdf-page-indicator" id="pdf-page-indicator">1 / 1</span>
+                  <button class="pdf-nav-btn" id="pdf-btn-next" aria-label="Próxima">›</button>
                 </div>
+                <button class="pdf-ctrl-btn" id="pdf-btn-expand" title="Ver em tela cheia">⛶ Expandir</button>
               </div>
 
-              <!-- Livro -->
+              <!-- Livro (sem setas laterais) -->
               <div class="pdf-book-stage">
-                <button class="pdf-nav-arrow pdf-nav-arrow--prev" id="pdf-btn-prev" aria-label="Página anterior" disabled>
-                  ‹
-                </button>
-
                 <div class="pdf-flipbook-container">
                   <div id="pdf-flipbook"></div>
                 </div>
-
-                <button class="pdf-nav-arrow pdf-nav-arrow--next" id="pdf-btn-next" aria-label="Próxima página">
-                  ›
-                </button>
               </div>
 
             </div>
@@ -173,25 +166,21 @@
             <!-- ── FALLBACK (mobile / sem StPageFlip) ─────────── -->
             <div id="pdf-fallback-wrap" class="pdf-fallback-wrap" style="display:none">
 
+              <!-- Controles superiores com navegação integrada -->
               <div class="pdf-controls pdf-controls--top">
-                <span class="pdf-page-indicator" id="pdf-page-indicator-fb">1 / 1</span>
-                <div class="pdf-controls__right">
-                  <button class="pdf-ctrl-btn" id="pdf-btn-expand-fb" title="Ver em tela cheia">
-                    ⛶ Expandir
-                  </button>
+                <div class="pdf-controls__nav">
+                  <button class="pdf-nav-btn" id="pdf-btn-prev-fb" aria-label="Anterior" disabled>‹</button>
+                  <span class="pdf-page-indicator" id="pdf-page-indicator-fb">1 / 1</span>
+                  <button class="pdf-nav-btn" id="pdf-btn-next-fb" aria-label="Próxima">›</button>
                 </div>
+                <button class="pdf-ctrl-btn" id="pdf-btn-expand-fb" title="Ver em tela cheia">⛶ Expandir</button>
               </div>
 
+              <!-- Canvas (sem setas laterais) -->
               <div class="pdf-fallback-stage">
-                <button class="pdf-nav-arrow pdf-nav-arrow--prev" id="pdf-btn-prev-fb" aria-label="Página anterior" disabled>
-                  ‹
-                </button>
                 <div class="pdf-fallback-canvas-wrap">
                   <canvas id="pdf-fallback-canvas"></canvas>
                 </div>
-                <button class="pdf-nav-arrow pdf-nav-arrow--next" id="pdf-btn-next-fb" aria-label="Próxima página">
-                  ›
-                </button>
               </div>
 
             </div>
