@@ -809,19 +809,26 @@ body.pdf-fs-open {
 
 .pdf-fallback-canvas-wrap {
   display: flex;
+  align-items: center;
   justify-content: center;
   max-width: 480px;
+  margin: 0 auto;
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: 0 24px 56px rgba(0,0,0,0.45);
 }
 
 .pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap {
-  max-width: none; box-shadow: none; border-radius: 0;
+  max-width: none; 
+  box-shadow: none; 
+  border-radius: 0;
+  margin: auto;
+  height: 100%;
+  width: 100%;
 }
 
-.pdf-fallback-canvas-wrap canvas { display: block; max-width: 100%; height: auto; border-radius: var(--radius-md); }
-.pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap canvas { border-radius: 0; }
+.pdf-fallback-canvas-wrap canvas { display: block; max-width: 100%; height: auto; border-radius: var(--radius-md); margin: auto; }
+.pdf-viewer-modal.is-fullscreen .pdf-fallback-canvas-wrap canvas { border-radius: 0; margin: auto; object-fit: contain; }
 
 /* ─── BARRA DE NAVEGAÇÃO INFERIOR (FS MOBILE) ────────────── */
 .pdf-fs-bottom-bar {
