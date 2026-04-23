@@ -26,16 +26,23 @@
   function renderHero(hero) {
     if (!hero) return;
     const bg = document.querySelector('.hero__bg');
-    const title = document.querySelector('.hero__title');
-    const subtitle = document.querySelector('.hero__subtitle');
+    
+    // 1. Aplica o blur placeholder imediatamente (se existir no objeto vindo do DB/cache)
+    if (hero.blur_data_url) {
+      document.documentElement.style.setProperty('--hero-blur-bg', `url(${hero.blur_data_url})`);
+    }
 
     if (hero.image_url) {
-      document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
+      // 2. Precarrega a imagem HD em background
+      const imgHD = new Image();
+      imgHD.onload = () => {
+        // 3. Quando carregar, troca a variável que o CSS usa
+        document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
+      };
+      imgHD.src = hero.image_url;
+      
       bg.setAttribute('aria-label', hero.image_alt || 'Interior da Cafeteria do Teatro');
     }
-    
-    // Se o usuário configurar textos específicos no Hero (opcional, expandindo schema depois)
-    // aqui poderíamos atualizar title.innerHTML e subtitle.textContent
   }
 
   function renderSettings(s) {

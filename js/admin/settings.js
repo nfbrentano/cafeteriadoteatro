@@ -26,6 +26,24 @@
     }
   };
 
+  /** Gera uma miniatura ultra-low-res para efeito de blur */
+  async function generateBlurPlaceholder(dataUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        // Tamanho minúsculo para performance e cache
+        canvas.width = 40;
+        canvas.height = 25;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Qualidade baixa (30%) para manter o base64 curto (~2-5KB)
+        resolve(canvas.toDataURL('image/jpeg', 0.3));
+      };
+      img.src = dataUrl;
+    });
+  }
+
   async function saveHero() {
     const btn = document.getElementById('btn-save-hero');
     const dataUrl = document.getElementById('hero-image-data').value;
@@ -35,8 +53,13 @@
     btn.textContent = 'Enviando...';
 
     try {
+      let blurDataUrl = null;
+      if (dataUrl.startsWith('data:')) {
+        blurDataUrl = await generateBlurPlaceholder(dataUrl);
+      }
+
       const blob = dataUrl.startsWith('data:') ? admin.dataURLtoBlob(dataUrl) : null;
-      await window.cafeteriaDB.hero.update(blob, alt);
+      await window.cafeteriaDB.hero.update(blob, alt, blurDataUrl);
       admin.toast('Sucesso', 'Hero atualizado.', 'success');
       await admin.loadData();
     } catch (err) {

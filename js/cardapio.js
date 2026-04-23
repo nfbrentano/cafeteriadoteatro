@@ -108,8 +108,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadDynamicHero = async () => {
     try {
       const hero = await window.cafeteriaDB.hero.get();
-      if (hero && hero.image_url) {
-        document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
+      if (!hero) return;
+
+      // 1. Aplica o blur placeholder imediatamente
+      if (hero.blur_data_url) {
+        document.documentElement.style.setProperty('--hero-blur-bg', `url(${hero.blur_data_url})`);
+      }
+
+      if (hero.image_url) {
+        // 2. Precarrega a imagem HD
+        const imgHD = new Image();
+        imgHD.onload = () => {
+          // 3. Aplica a HD
+          document.documentElement.style.setProperty('--dynamic-hero-bg', `url(${hero.image_url})`);
+        };
+        imgHD.src = hero.image_url;
+
         // Atualiza cache para próxima carga instantânea
         window.cafeteriaDB.cache.set('cafeteria_hero_cache', hero);
       }

@@ -111,7 +111,7 @@
         // Se tem cache, retorna ele. Se não, espera o fetch.
         return cached || await fetchPromise;
       },
-      async update(imageBlob = null, alt = '') {
+      async update(imageBlob = null, alt = '', blurDataUrl = null) {
         let imageUrl = null;
         if (imageBlob) {
           const fileName = `hero-home.webp`;
@@ -135,6 +135,7 @@
 
         const payload = { id: 1, image_alt: alt, updated_at: new Date().toISOString() };
         if (imageUrl) payload.image_url = imageUrl;
+        if (blurDataUrl) payload.blur_data_url = blurDataUrl;
 
         const { error } = await window.cafeteriaSupabase
           .from('hero_home')

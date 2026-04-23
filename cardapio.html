@@ -20,6 +20,9 @@
           if (hero && hero.image_url) {
             document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
           }
+          if (hero && hero.blur_data_url) {
+            document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + hero.blur_data_url + ')');
+          }
         } catch(e) {}
       }
     })();

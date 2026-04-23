@@ -17,11 +17,11 @@
   position: absolute;
   inset: 0;
   background-color: #2a1a14; /* Tom escuro de marrom da cafeteria */
-  background-image: var(--dynamic-hero-bg, url('../assets/images/hero-bg.jpg'));
+  background-image: var(--dynamic-hero-bg, var(--hero-blur-bg, none));
   background-size: cover;
   background-position: center 30%;
   background-repeat: no-repeat;
-  transition: background-image 0.8s ease-in-out;
+  transition: background-image 0.6s ease-in-out;
 }
 
 .hero__bg.loaded { transform: scale(1); }
@@ -448,7 +448,7 @@
   align-items: center;
 }
 
-.chegar__info { }
+
 
 .chegar__address {
   display: flex;
