@@ -46,8 +46,19 @@
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/home.css" />
   <link rel="stylesheet" href="css/promocoes.css" />
+  <link rel="stylesheet" href="css/curtain.css" />
 </head>
 <body id="top">
+
+  <!-- Curtain Entrance -->
+  <div class="curtain-wrapper" aria-hidden="true">
+    <div class="curtain-panel curtain-left">
+      <div class="curtain-rope"></div>
+    </div>
+    <div class="curtain-panel curtain-right">
+      <div class="curtain-rope"></div>
+    </div>
+  </div>
 
   <!-- Container para Barra de Promoção Dinâmica -->
   <div id="promo-bar-root"></div>
@@ -611,6 +622,7 @@
   <script src="js/db.js"></script>
   
   <script src="js/home-dynamic.js"></script>
+  <script src="js/curtain.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
