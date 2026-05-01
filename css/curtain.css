@@ -16,7 +16,7 @@
   position: relative;
   width: 50%;
   height: 100%;
-  background-color: #522B14; /* Lightened rich brown */
+  background-color: #6B3D23; /* Further lightened rich brown */
   background-image: 
     repeating-linear-gradient(
       90deg,
@@ -61,7 +61,7 @@
   top: 60%;
   width: 100px;
   height: 20px;
-  background: radial-gradient(circle, #D4A96A 0%, #8B5E3C 100%);
+  background: radial-gradient(circle, #E5C08A 0%, #A07554 100%);
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.4);
   z-index: 10001;
