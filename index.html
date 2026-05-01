@@ -7,8 +7,57 @@
   <meta name="keywords" content="cafeteria, teatro, univates, lajeado, café, cultura, coffee shop, RS" />
   <meta property="og:title" content="Cafeteria do Teatro | Lajeado, RS" />
   <meta property="og:description" content="No coração do Teatro da Univates, um lugar ideal para pausas, estudos, encontros e momentos antes ou depois de atividades culturais." />
-  <meta property="og:image" content="assets/images/galeria-ambiente.jpg" />
+  <meta property="og:url" content="https://[DOMINIO-PRODUCAO]/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:image" content="https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.jpg" />
   <meta name="theme-color" content="#1C1008" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CafeOrCoffeeShop",
+    "name": "Cafeteria do Teatro",
+    "description": "Café, cultura e encontros no coração do Teatro da Univates, em Lajeado/RS.",
+    "url": "https://[DOMINIO-PRODUCAO]",
+    "telephone": "",
+    "image": "https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Rua Avelino Tallini, 171",
+      "addressLocality": "Lajeado",
+      "addressRegion": "RS",
+      "postalCode": "95914-014",
+      "addressCountry": "BR"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -29.4455235,
+      "longitude": -51.9534421
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday"],
+        "opens": "14:30",
+        "closes": "22:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Friday"],
+        "opens": "14:30",
+        "closes": "20:00"
+      }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/cafeteriadoteatro/",
+      "https://linktr.ee/cafeteriadoteatro"
+    ]
+  }
+  </script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☕</text></svg>">
   <!-- Pre-render Hero cache instant-load -->
   <script>
@@ -302,35 +351,35 @@
         <div class="galeria__grid" role="list" aria-label="Galeria de fotos da Cafeteria do Teatro">
 
           <div class="galeria__item galeria__item--tall fade-in" role="listitem">
-            <img src="assets/images/galeria-taca.jpg"   alt="Taça de sobremesa especial da Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <img src="assets/images/galeria-taca.jpg"   alt="Taça de sobremesa gelada com calda de chocolate e frutas vermelhas servida na Cafeteria do Teatro" class="galeria__img" loading="lazy" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-1" role="listitem">
-            <img src="assets/images/galeria-tacas.jpg"     alt="Taças de sobremesas especiais da Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <img src="assets/images/galeria-tacas.jpg"     alt="Três taças de sobremesas artesanais dispostas no balcão da Cafeteria do Teatro" class="galeria__img" loading="lazy" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-2" role="listitem">
-            <img src="assets/images/galeria-doces.jpg"    alt="Vitrine com doces artesanais da Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <img src="assets/images/galeria-doces.jpg"    alt="Vitrine refrigerada com brigadeiros, bolos e doces artesanais em exposição" class="galeria__img" loading="lazy" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-1" role="listitem">
-            <img src="assets/images/galeria-cafes.jpg"    alt="Diferentes tipos de cafés servidos na Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <img src="assets/images/galeria-cafes.jpg"    alt="Cinco tipos de café servidos lado a lado: espresso, cappuccino, latte e café coado" class="galeria__img" loading="lazy" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-2" role="listitem">
-            <img src="assets/images/galeria-local.jpg" alt="Espaço interno da Cafeteria do Teatro" class="galeria__img" loading="lazy" />
+            <img src="assets/images/galeria-local.jpg" alt="Vista interna da Cafeteria do Teatro com mesas de madeira, iluminação quente e ambiente acolhedor" class="galeria__img" loading="lazy" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
@@ -465,11 +514,13 @@
             -->
             <iframe
               title="Mapa — Teatro da Univates, Lajeado RS"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3476.123456789!2d-51.9756!3d-29.4676!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951c3a6d3c3c3c3d%3A0x123456789abcdef!2sTeatro%20da%20Univates!5e0!3m2!1spt!2sbr!4v1234567890123"
+              role="application"
+              tabindex="0"
+              aria-label="Mapa interativo com a localização da Cafeteria do Teatro no Teatro da Univates, Lajeado RS"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3474.4275380205204!2d-51.9534421!3d-29.445523500000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951c61412f6b9c4d%3A0x8d991831e9f82bb7!2sCafeteria%20do%20Teatro!5e0!3m2!1spt-BR!2sbr!4v1777667704382!5m2!1spt-BR!2sbr"
               allowfullscreen=""
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
-              aria-label="Mapa com localização da Cafeteria do Teatro no Teatro da Univates"
             ></iframe>
           </div>
 
