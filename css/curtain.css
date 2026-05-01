@@ -16,7 +16,7 @@
   position: relative;
   width: 50%;
   height: 100%;
-  background-color: #3D1F0D; /* Base rich brown */
+  background-color: #522B14; /* Lightened rich brown */
   background-image: 
     repeating-linear-gradient(
       90deg,
@@ -27,10 +27,10 @@
     ),
     linear-gradient(
       to bottom,
-      rgba(0,0,0,0.3) 0%,
+      rgba(0,0,0,0.2) 0%,
       transparent 10%,
       transparent 90%,
-      rgba(0,0,0,0.4) 100%
+      rgba(0,0,0,0.3) 100%
     );
   transition: transform 1.8s cubic-bezier(0.77, 0, 0.175, 1);
   pointer-events: all;
@@ -46,9 +46,9 @@
     repeating-linear-gradient(
       to right,
       transparent 0%,
-      rgba(0,0,0,0.2) 5%,
-      rgba(0,0,0,0.4) 10%,
-      rgba(0,0,0,0.2) 15%,
+      rgba(0,0,0,0.15) 5%,
+      rgba(0,0,0,0.3) 10%,
+      rgba(0,0,0,0.15) 15%,
       transparent 20%
     );
   background-size: 200px 100%;
