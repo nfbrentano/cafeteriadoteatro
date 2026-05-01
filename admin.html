@@ -383,7 +383,7 @@
                       <div class="upload-zone__title" style="font-size: 0.875rem;">Clique para alterar a imagem do Sobre</div>
                     </div>
                     <div class="upload-zone__preview hidden" id="sobre-upload-preview-wrap">
-                      <img src="" id="sobre-upload-preview-img" style="width: 100%; height: auto; display: block;" />
+                      <img src="" id="sobre-upload-preview-img" width="800" height="400" style="width: 100%; height: auto; display: block;" />
                     </div>
                     <input type="file" id="sobre-image-file" accept="image/*" class="hidden" />
                     <input type="hidden" id="sobre-image-data" />
@@ -587,7 +587,7 @@
                 </div>
                 
                 <div class="upload-zone__preview hidden" id="hero-upload-preview-wrap">
-                  <img src="" id="hero-upload-preview-img" alt="Novo hero" />
+                  <img src="" id="hero-upload-preview-img" alt="Novo hero" width="1200" height="400" />
                   <div class="upload-zone__overlay">
                     <button class="upload-zone__change" id="btn-hero-change-img" type="button">Trocar Imagem</button>
                     <button class="upload-zone__remove" id="btn-hero-remove-img" type="button">Remover</button>
@@ -805,7 +805,7 @@
               <div class="upload-zone__sub">PNG, JPG, WEBP, GIF &middot; Convertida para WebP</div>
             </div>
             <div class="upload-zone__preview hidden" id="upload-preview-wrap">
-              <img id="upload-preview-img" alt="preview" />
+              <img id="upload-preview-img" alt="preview" width="400" height="400" />
               <div class="upload-zone__overlay">
                 <button type="button" class="upload-zone__change" id="btn-change-img">&#x1F504; Trocar</button>
                 <button type="button" class="upload-zone__remove" id="btn-remove-img">&#x1F5D1;&#xFE0F;</button>
@@ -1069,7 +1069,7 @@
               <div class="upload-zone__sub">Recomendado: 1200x400px</div>
             </div>
             <div class="upload-zone__preview hidden" id="promo-upload-preview-wrap">
-              <img id="promo-upload-preview-img" alt="preview" />
+              <img id="promo-upload-preview-img" alt="preview" width="1200" height="400" />
               <div class="upload-zone__overlay">
                 <button type="button" class="upload-zone__change" id="btn-promo-change-img">Trocar</button>
                 <button type="button" class="upload-zone__remove" id="btn-promo-remove-img">✕</button>
@@ -1130,5 +1130,14 @@
 <script src="js/admin/categories.js"></script>
 <script src="js/admin/settings.js"></script>
 <script src="js/admin/menu-pdf.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Admin SW registrado!', reg))
+        .catch(err => console.error('Erro no SW Admin:', err));
+    });
+  }
+</script>
 </body>
 </html>

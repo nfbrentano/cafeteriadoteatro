@@ -343,5 +343,14 @@
   <script src="js/cardapio-dynamic.js"></script>
   <script src="js/cardapio.js"></script>
   <script src="js/cardapio-pdf-viewer.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW registrado!', reg))
+          .catch(err => console.error('Erro no SW:', err));
+      });
+    }
+  </script>
 </body>
 </html>

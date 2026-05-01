@@ -199,6 +199,14 @@
       hamburger.setAttribute('aria-expanded', !expanded);
       mobileMenu.classList.toggle('active');
     });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('404 SW registrado!', reg))
+          .catch(err => console.error('Erro no SW 404:', err));
+      });
+    }
   </script>
   <script src="js/curtain.js"></script>
 </body>

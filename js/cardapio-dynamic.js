@@ -129,7 +129,7 @@
       <article class="produto-card fade-in" aria-label="${p.nome}">
         <div class="produto-card__image-wrap">
           ${imgUrl 
-            ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" loading="lazy">`
+            ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy">`
             : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">${catIcone || '☕'}</span><span>Foto em breve</span></div>`
           }
           <div class="produto-card__badges">${badgeHTML}</div>

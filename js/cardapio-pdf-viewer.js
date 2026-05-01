@@ -276,6 +276,8 @@
     div.dataset.page = pageNum;
     const img = document.createElement('img');
     img.src = canvas.toDataURL('image/jpeg', 0.92);
+    img.width = canvas.width;
+    img.height = canvas.height;
     img.alt = `Página ${pageNum}`;
     div.appendChild(img);
     return div;
