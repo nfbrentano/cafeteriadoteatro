@@ -360,6 +360,61 @@
       }
     },
 
+    // --- Registro de Acessos / Métricas ---
+    acessos: {
+      async registrar() {
+        try {
+          if (!window.cafeteriaSupabase) return;
+          const path = window.location.pathname || '/';
+          // Não registra visitas no painel admin para manter as métricas limpas
+          if (path.includes('admin.html')) return;
+
+          // Evita múltiplos registros no mesmo segundo/sessão com debounce leve
+          const lastVisit = sessionStorage.getItem('cafeteria_last_visit');
+          const now = Date.now();
+          if (lastVisit && now - parseInt(lastVisit, 10) < 5000) {
+            return;
+          }
+          sessionStorage.setItem('cafeteria_last_visit', now.toString());
+
+          await window.cafeteriaSupabase
+            .from('acessos')
+            .insert([{ pagina: path }]);
+        } catch (err) {
+          console.warn('[Analytics] Não foi possível registrar acesso:', err);
+        }
+      }
+    },
+
+    // --- Contador Diário ---
+    contador: {
+      async all(limit = 30) {
+        const { data, error } = await window.cafeteriaSupabase
+          .from('contador')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(limit);
+        if (error) throw error;
+        return data;
+      },
+      async getLatest() {
+        const { data, error } = await window.cafeteriaSupabase
+          .from('contador')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw error;
+        return data;
+      },
+      async consolidar() {
+        const { data, error } = await window.cafeteriaSupabase
+          .rpc('consolidar_contador_dia_anterior');
+        if (error) throw error;
+        return data;
+      }
+    },
+
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
       const channelId = `db-changes-${Math.random().toString(36).slice(2, 9)}`;
@@ -371,6 +426,13 @@
         .subscribe();
     }
   };
+
+  // Registrar acesso automaticamente ao carregar qualquer página pública
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      db.acessos.registrar();
+    }, 1000);
+  }
 
   window.cafeteriaDB = db;
   console.log('CafeteriaDB inicializado com sucesso. Módulos:', Object.keys(db));

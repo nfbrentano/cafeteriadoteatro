@@ -1,0 +1,35 @@
+name: Consolidar Contador Diário e Acessos
+
+on:
+  schedule:
+    # Executa todos os dias às 03:10 UTC (00:10 Horário de Brasília)
+    - cron: '10 3 * * *'
+  workflow_dispatch: # Permite rodar manualmente pela aba Actions do GitHub
+
+jobs:
+  consolidar-acessos:
+    name: Consolidar Acessos do Dia Anterior
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar rotina no Supabase via REST API
+        run: |
+          echo "Disparando consolidacao do contador no Supabase..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            "https://nyretgvzbnbtiyeioeju.supabase.co/rest/v1/rpc/consolidar_contador_dia_anterior" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55cmV0Z3Z6Ym5idGl5ZWlvZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NDMyNjUsImV4cCI6MjA5MjAxOTI2NX0.095yucTEyF_aZx9BnWDkGKT6439r_S8PCPmJt_TlP3Q" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55cmV0Z3Z6Ym5idGl5ZWlvZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NDMyNjUsImV4cCI6MjA5MjAxOTI2NX0.095yucTEyF_aZx9BnWDkGKT6439r_S8PCPmJt_TlP3Q" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+
+          HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+
+          echo "Status retornado: $HTTP_STATUS"
+          echo "Resposta: $HTTP_BODY"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Rotina executada com sucesso e contador atualizado!"
+          else
+            echo "❌ Erro ao executar a rotina no Supabase."
+            exit 1
+          fi
