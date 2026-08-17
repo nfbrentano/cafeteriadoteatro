@@ -58,6 +58,8 @@
   line-height: 1.6;
   font-weight: 400;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .cardapio-hero__cta {
@@ -170,7 +172,8 @@
   color: var(--texto-claro);
   margin-bottom: 0;
   max-width: 50ch;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
   margin-inline: auto;
 }
 
@@ -248,7 +251,8 @@
   max-width: none;
   margin-bottom: 0;
   flex: 1;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .produto-card__footer {
@@ -359,7 +363,8 @@
   color: rgba(237, 224, 196, 0.65);
   max-width: none;
   margin-bottom: 0;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .combo-card__price-wrap {
@@ -431,7 +436,8 @@
   color: rgba(237, 224, 196, 0.7);
   max-width: none;
   margin-bottom: var(--space-5);
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .especial-card__footer {
@@ -484,7 +490,7 @@
     text-align: center;
   }
 
-  .cat-section__description { text-align: center; }
+  .cat-section__description { text-align: justify; text-justify: inter-word; }
 
   .produto-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -695,6 +701,8 @@ body.pdf-fs-open {
   max-width: 44ch;
   margin: 0 auto;
   line-height: 1.6;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 /* ─── ESTADOS ────────────────────────────────────────────── */

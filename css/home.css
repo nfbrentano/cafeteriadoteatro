@@ -106,7 +106,8 @@
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
   opacity: 0;
   animation: fadeUp 0.8s 0.7s forwards;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .hero__actions {
@@ -232,11 +233,13 @@
   margin-bottom: var(--space-10);
   font-size: 1.1rem;
   line-height: 1.7;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .sobre__body p {
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
   margin-inline: auto;
 }
 
@@ -287,7 +290,8 @@
   font-size: var(--size-sm);
   margin-bottom: 0;
   max-width: none;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 /* ─── EXPERIÊNCIA ────────────────────────────────────────── */
@@ -351,7 +355,8 @@
   line-height: 1.7;
   max-width: none;
   margin-bottom: 0;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 /* ─── GALERIA ────────────────────────────────────────────── */
@@ -476,7 +481,8 @@
   margin-top: var(--space-1);
   margin-bottom: 0;
   max-width: none;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .horario-card--verde {
@@ -550,7 +556,8 @@
   color: var(--texto-suave);
   max-width: none;
   margin-bottom: 0;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .chegar__map {
@@ -600,7 +607,8 @@
   color: var(--texto-claro);
   max-width: none;
   margin-bottom: var(--space-4);
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 /* ─── CTA CARDÁPIO ───────────────────────────────────────── */
@@ -653,7 +661,8 @@
 }
 
 .cta-cardapio__text p {
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
   margin-inline: auto;
 }
 

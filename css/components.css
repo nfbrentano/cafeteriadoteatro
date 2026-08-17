@@ -392,7 +392,8 @@
   margin-bottom: var(--space-6);
   max-width: 30ch;
   line-height: 1.6;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
   margin-inline: auto;
 }
 
@@ -489,7 +490,8 @@
   font-size: var(--size-xs);
   color: rgba(237, 224, 196, 0.5);
   max-width: none;
-  text-align: center;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .footer__instagram {
