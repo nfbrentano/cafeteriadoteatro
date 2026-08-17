@@ -43,19 +43,21 @@
 .cardapio-hero__title {
   font-family: var(--font-serif);
   font-size: clamp(var(--size-3xl), 6vw, var(--size-5xl));
-  font-weight: 300;
+  font-weight: 700;
   color: var(--marfim);
   line-height: 1.1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
   margin-bottom: var(--space-4);
 }
 
 .cardapio-hero__subtitle {
   font-size: var(--size-md);
-  color: rgba(245, 236, 215, 0.65);
+  color: rgba(245, 236, 215, 0.85);
   max-width: 50ch;
   margin: 0 auto var(--space-8);
   line-height: 1.6;
-  font-weight: 300;
+  font-weight: 400;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
 }
 
 .cardapio-hero__cta {
@@ -157,7 +159,7 @@
   font-family: var(--font-serif);
   font-size: clamp(var(--size-2xl), 3.5vw, var(--size-3xl));
   color: var(--espresso);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.1;
 }
 

@@ -68,10 +68,11 @@
 .hero__title {
   font-family: var(--font-serif);
   font-size: clamp(3rem, 7vw, 5.5rem);
-  font-weight: 300;
+  font-weight: 700;
   color: var(--marfim);
   line-height: 1.08;
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 4px 24px rgba(0, 0, 0, 0.25);
   margin-bottom: var(--space-6);
   opacity: 0;
   animation: fadeUp 0.8s 0.5s forwards;
@@ -80,16 +81,19 @@
 
 .hero__title em {
   font-style: italic;
-  color: #D4A96A;
+  font-weight: 700;
+  color: #E5B874;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .hero__subtitle {
   font-size: clamp(var(--size-base), 2vw, var(--size-lg));
-  color: rgba(245, 236, 215, 0.8);
+  color: rgba(245, 236, 215, 0.9);
   max-width: 45ch;
   line-height: 1.65;
   margin-bottom: var(--space-10);
-  font-weight: 300;
+  font-weight: 400;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
   opacity: 0;
   animation: fadeUp 0.8s 0.7s forwards;
 }
