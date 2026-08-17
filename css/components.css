@@ -364,6 +364,7 @@
   background-color: var(--espresso);
   color: var(--creme);
   padding: var(--space-20) 0 var(--space-8);
+  text-align: center;
 }
 
 .footer__grid {
@@ -371,6 +372,7 @@
   grid-template-columns: 2fr 1fr 1fr 1.5fr;
   gap: var(--space-12);
   margin-bottom: var(--space-16);
+  text-align: center;
 }
 
 .footer__brand {
@@ -378,6 +380,7 @@
   font-size: var(--size-2xl);
   color: var(--marfim);
   margin-bottom: var(--space-4);
+  text-align: center;
 }
 
 .footer__brand span { color: var(--caramelo); }
@@ -389,11 +392,14 @@
   margin-bottom: var(--space-6);
   max-width: 30ch;
   line-height: 1.6;
+  text-align: center;
+  margin-inline: auto;
 }
 
 .footer__socials {
   display: flex;
   gap: var(--space-3);
+  justify-content: center;
 }
 
 .footer__social-link {
@@ -424,18 +430,22 @@
   text-transform: uppercase;
   color: var(--caramelo);
   margin-bottom: var(--space-5);
+  text-align: center;
 }
 
 .footer__links {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  align-items: center;
+  text-align: center;
 }
 
 .footer__link {
   font-size: var(--size-sm);
   color: var(--bege-escuro);
   transition: color var(--transition-fast);
+  text-align: center;
 }
 
 .footer__link:hover { color: var(--marfim); }
@@ -444,11 +454,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  align-items: center;
+  text-align: center;
 }
 
 .footer__info-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: var(--space-3);
   font-size: var(--size-sm);
   color: var(--bege-escuro);
@@ -468,12 +482,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+  text-align: center;
 }
 
 .footer__copy {
   font-size: var(--size-xs);
   color: rgba(237, 224, 196, 0.5);
   max-width: none;
+  text-align: center;
 }
 
 .footer__instagram {

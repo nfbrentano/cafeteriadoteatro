@@ -123,6 +123,7 @@ h1, h2, h3, h4 {
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.01em;
+  text-align: center;
 }
 
 h1 { font-size: clamp(var(--size-3xl), 6vw, var(--size-5xl)); font-weight: 700; }
@@ -135,6 +136,8 @@ p {
   color: var(--texto-suave);
   line-height: 1.75;
   max-width: 65ch;
+  text-align: center;
+  margin-inline: auto;
 }
 
 /* ─── UTILITÁRIOS ────────────────────────────────────────── */
@@ -164,7 +167,7 @@ p {
 }
 
 .section-tag {
-  display: inline-block;
+  display: block;
   font-family: var(--font-sans);
   font-size: var(--size-xs);
   font-weight: 600;
@@ -172,6 +175,7 @@ p {
   text-transform: uppercase;
   color: var(--caramelo);
   margin-bottom: var(--space-3);
+  text-align: center;
 }
 
 .section-tag--light {
@@ -182,6 +186,7 @@ p {
   margin-bottom: var(--space-5);
   color: var(--espresso);
   font-weight: 600;
+  text-align: center;
 }
 
 .section-title--light {
@@ -195,10 +200,8 @@ p {
   margin-bottom: var(--space-12);
   max-width: 55ch;
   line-height: 1.6;
-}
-
-.section-subtitle--light {
-  color: var(--bege);
+  text-align: center;
+  margin-inline: auto;
 }
 
 .text-center { text-align: center; }

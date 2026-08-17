@@ -10,6 +10,8 @@
   min-height: 600px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   overflow: hidden;
 }
 
@@ -42,23 +44,29 @@
   z-index: 2;
   width: 100%;
   padding-top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .hero__tag {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   font-size: var(--size-xs);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--bege);
-  margin-bottom: var(--space-5);
+  margin: 0 auto var(--space-5);
   opacity: 0;
   animation: fadeUp 0.8s 0.3s forwards;
 }
 
-.hero__tag::before {
+.hero__tag::before,
+.hero__tag::after {
   content: '';
   width: 28px;
   height: 1px;
@@ -76,7 +84,9 @@
   margin-bottom: var(--space-6);
   opacity: 0;
   animation: fadeUp 0.8s 0.5s forwards;
-  max-width: 14ch;
+  max-width: 18ch;
+  text-align: center;
+  margin-inline: auto;
 }
 
 .hero__title em {
@@ -89,18 +99,20 @@
 .hero__subtitle {
   font-size: clamp(var(--size-base), 2vw, var(--size-lg));
   color: rgba(245, 236, 215, 0.9);
-  max-width: 45ch;
+  max-width: 55ch;
   line-height: 1.65;
-  margin-bottom: var(--space-10);
+  margin: 0 auto var(--space-10);
   font-weight: 400;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
   opacity: 0;
   animation: fadeUp 0.8s 0.7s forwards;
+  text-align: center;
 }
 
 .hero__actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-4);
   flex-wrap: wrap;
   opacity: 0;
@@ -205,16 +217,27 @@
   opacity: 0.85;
 }
 
+.sobre__text {
+  text-align: center;
+}
+
 .sobre__text .section-title { 
   margin-bottom: var(--space-8); 
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   line-height: 1.1;
+  text-align: center;
 }
 
 .sobre__body {
   margin-bottom: var(--space-10);
   font-size: 1.1rem;
   line-height: 1.7;
+  text-align: center;
+}
+
+.sobre__body p {
+  text-align: center;
+  margin-inline: auto;
 }
 
 .sobre__body p + p { margin-top: var(--space-6); }
@@ -226,12 +249,15 @@
   margin-top: var(--space-8);
   padding-top: var(--space-8);
   border-top: 1px solid var(--bege);
+  align-items: center;
 }
 
 .sobre__feature {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
 }
 
 .sobre__feature-icon {
@@ -246,16 +272,22 @@
   flex-shrink: 0;
 }
 
+.sobre__feature-text {
+  text-align: center;
+}
+
 .sobre__feature-text h4 {
   font-size: var(--size-base);
   margin-bottom: 2px;
   color: var(--espresso);
+  text-align: center;
 }
 
 .sobre__feature-text p {
   font-size: var(--size-sm);
   margin-bottom: 0;
   max-width: none;
+  text-align: center;
 }
 
 /* ─── EXPERIÊNCIA ────────────────────────────────────────── */
@@ -294,17 +326,23 @@
 
 .exp-card__body {
   padding: var(--space-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .exp-card__icon {
   font-size: var(--size-2xl);
   margin-bottom: var(--space-3);
+  text-align: center;
 }
 
 .exp-card__title {
   font-size: var(--size-xl);
   color: var(--espresso);
   margin-bottom: var(--space-3);
+  text-align: center;
 }
 
 .exp-card__text {
@@ -313,6 +351,7 @@
   line-height: 1.7;
   max-width: none;
   margin-bottom: 0;
+  text-align: center;
 }
 
 /* ─── GALERIA ────────────────────────────────────────────── */
@@ -320,7 +359,10 @@
   background: var(--espresso);
 }
 
-.galeria__header { margin-bottom: var(--space-10); }
+.galeria__header {
+  margin-bottom: var(--space-10);
+  text-align: center;
+}
 
 .galeria__grid {
   display: grid;
@@ -384,6 +426,7 @@
 /* ─── HORÁRIOS ───────────────────────────────────────────── */
 .horarios {
   background: var(--marfim);
+  text-align: center;
 }
 
 .horarios__grid {
@@ -400,6 +443,7 @@
   padding: var(--space-6) var(--space-8);
   border-left: 4px solid var(--caramelo);
   transition: transform var(--transition-base), box-shadow var(--transition-base);
+  text-align: center;
 }
 
 .horario-card:hover {
@@ -415,6 +459,7 @@
   text-transform: uppercase;
   color: var(--caramelo);
   margin-bottom: var(--space-2);
+  text-align: center;
 }
 
 .horario-card__hora {
@@ -422,6 +467,7 @@
   font-size: var(--size-2xl);
   color: var(--espresso);
   line-height: 1.1;
+  text-align: center;
 }
 
 .horario-card__nota {
@@ -430,6 +476,7 @@
   margin-top: var(--space-1);
   margin-bottom: 0;
   max-width: none;
+  text-align: center;
 }
 
 .horario-card--verde {
@@ -443,6 +490,7 @@
 /* ─── COMO CHEGAR ────────────────────────────────────────── */
 .chegar {
   background: var(--creme);
+  text-align: center;
 }
 
 .chegar__grid {
@@ -452,7 +500,13 @@
   align-items: center;
 }
 
+.chegar__text {
+  text-align: center;
+}
 
+.chegar__text .section-title {
+  text-align: center;
+}
 
 .chegar__address {
   display: flex;
@@ -463,12 +517,16 @@
   background: var(--marfim);
   border-radius: var(--radius-md);
   border: 1px solid var(--bege-escuro);
+  text-align: center;
+  align-items: center;
 }
 
 .chegar__address-item {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
 }
 
 .chegar__address-icon {
@@ -476,10 +534,15 @@
   flex-shrink: 0;
 }
 
+.chegar__address-text {
+  text-align: center;
+}
+
 .chegar__address-text h4 {
   font-size: var(--size-base);
   color: var(--espresso);
   margin-bottom: 2px;
+  text-align: center;
 }
 
 .chegar__address-text p {
@@ -487,6 +550,7 @@
   color: var(--texto-suave);
   max-width: none;
   margin-bottom: 0;
+  text-align: center;
 }
 
 .chegar__map {
@@ -516,6 +580,7 @@
   gap: var(--space-4);
   flex-wrap: wrap;
   margin-top: var(--space-8);
+  justify-content: center;
 }
 
 .chegar__actions .btn {
@@ -527,6 +592,7 @@
 
 .chegar__map-placeholder {
   color: var(--texto-claro);
+  text-align: center;
 }
 
 .chegar__map-placeholder p {
@@ -534,6 +600,7 @@
   color: var(--texto-claro);
   max-width: none;
   margin-bottom: var(--space-4);
+  text-align: center;
 }
 
 /* ─── CTA CARDÁPIO ───────────────────────────────────────── */
@@ -541,6 +608,7 @@
   background: var(--verde-cultural);
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 .cta-cardapio::before {
@@ -572,15 +640,29 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-12);
+  text-align: center;
 }
 
-.cta-cardapio__text .section-title { margin-bottom: var(--space-4); }
+.cta-cardapio__text {
+  text-align: center;
+}
+
+.cta-cardapio__text .section-title {
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.cta-cardapio__text p {
+  text-align: center;
+  margin-inline: auto;
+}
 
 .cta-cardapio__actions {
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
   flex-shrink: 0;
+  justify-content: center;
 }
 
 /* ─── RESPONSIVIDADE HOME ────────────────────────────────── */
@@ -633,7 +715,7 @@
 }
 
 @media (max-width: 480px) {
-  .hero__actions { flex-direction: column; align-items: flex-start; }
+  .hero__actions { flex-direction: column; align-items: center; }
   .galeria__grid { grid-template-columns: 1fr; }
   .chegar__actions .btn { min-width: 100%; }
 }

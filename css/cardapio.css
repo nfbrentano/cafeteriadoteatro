@@ -139,20 +139,21 @@
 
 .cat-section__header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--space-10);
   padding-bottom: var(--space-6);
   border-bottom: 1px solid var(--bege);
-  gap: var(--space-6);
+  gap: var(--space-2);
+  text-align: center;
 }
-
-
 
 .cat-section__icon {
   font-size: var(--size-3xl);
   margin-bottom: var(--space-2);
   line-height: 1;
+  text-align: center;
 }
 
 .cat-section__title {
@@ -161,14 +162,16 @@
   color: var(--espresso);
   font-weight: 600;
   line-height: 1.1;
+  text-align: center;
 }
 
 .cat-section__description {
   font-size: var(--size-sm);
   color: var(--texto-claro);
   margin-bottom: 0;
-  max-width: 40ch;
-  text-align: right;
+  max-width: 50ch;
+  text-align: center;
+  margin-inline: auto;
 }
 
 /* ─── PRODUTO GRID ───────────────────────────────────────── */
@@ -225,6 +228,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  text-align: center;
+  align-items: center;
 }
 
 .produto-card__name {
@@ -233,6 +238,7 @@
   color: var(--espresso);
   margin-bottom: var(--space-2);
   line-height: 1.2;
+  text-align: center;
 }
 
 .produto-card__desc {
@@ -242,12 +248,14 @@
   max-width: none;
   margin-bottom: 0;
   flex: 1;
+  text-align: center;
 }
 
 .produto-card__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  width: 100%;
   margin-top: var(--space-5);
   padding-top: var(--space-4);
   border-top: 1px solid var(--bege);
@@ -280,6 +288,7 @@
   color: var(--texto-claro);
   font-size: var(--size-sm);
   background: var(--bege);
+  text-align: center;
 }
 
 .produto-card__image-placeholder .placeholder-icon {
@@ -298,6 +307,7 @@
   box-shadow: 0 8px 32px var(--sombra-forte);
   transition: transform var(--transition-base);
   border: 1px solid rgba(245, 236, 215, 0.08);
+  text-align: center;
 }
 
 .combo-card:hover { transform: translateY(-4px); }
@@ -314,13 +324,17 @@
   border-radius: var(--radius-md);
 }
 
-.combo-card__content { flex: 1; }
+.combo-card__content {
+  flex: 1;
+  text-align: center;
+}
 
 .combo-card__name {
   font-family: var(--font-serif);
   font-size: var(--size-xl);
   color: var(--marfim);
   margin-bottom: var(--space-2);
+  text-align: center;
 }
 
 .combo-card__items {
@@ -328,6 +342,7 @@
   gap: var(--space-2);
   flex-wrap: wrap;
   margin-bottom: var(--space-3);
+  justify-content: center;
 }
 
 .combo-card__item-tag {
@@ -344,10 +359,11 @@
   color: rgba(237, 224, 196, 0.65);
   max-width: none;
   margin-bottom: 0;
+  text-align: center;
 }
 
 .combo-card__price-wrap {
-  text-align: right;
+  text-align: center;
   flex-shrink: 0;
 }
 
@@ -362,6 +378,7 @@
   font-size: var(--size-xs);
   color: rgba(212, 169, 106, 0.7);
   margin-top: var(--space-1);
+  text-align: center;
 }
 
 .combo-grid {
@@ -381,6 +398,7 @@
   box-shadow: 0 8px 32px var(--sombra-forte);
   transition: transform var(--transition-base);
   border: 1px solid rgba(212, 169, 106, 0.2);
+  text-align: center;
 }
 
 .especial-card:hover { transform: translateY(-5px); }
@@ -394,6 +412,10 @@
 
 .especial-card__body {
   padding: var(--space-5) var(--space-6) var(--space-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .especial-card__name {
@@ -401,6 +423,7 @@
   font-size: var(--size-xl);
   color: var(--marfim);
   margin-bottom: var(--space-2);
+  text-align: center;
 }
 
 .especial-card__desc {
@@ -408,18 +431,21 @@
   color: rgba(237, 224, 196, 0.7);
   max-width: none;
   margin-bottom: var(--space-5);
+  text-align: center;
 }
 
 .especial-card__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  width: 100%;
 }
 
 .especial-card__price {
   font-family: var(--font-serif);
   font-size: var(--size-2xl);
   color: #D4A96A;
+  text-align: center;
 }
 
 /* ─── CTA FINAL ──────────────────────────────────────────── */
@@ -454,10 +480,11 @@
 @media (max-width: 768px) {
   .cat-section__header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 
-  .cat-section__description { text-align: left; }
+  .cat-section__description { text-align: center; }
 
   .produto-grid {
     grid-template-columns: repeat(2, 1fr);
