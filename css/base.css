@@ -136,8 +136,9 @@ p {
   color: var(--texto-suave);
   line-height: 1.75;
   max-width: 65ch;
-  text-align: justify;
-  text-justify: inter-word;
+  text-align: center;
+  
+  
   margin-inline: auto;
 }
 
@@ -201,14 +202,15 @@ p {
   margin-bottom: var(--space-12);
   max-width: 55ch;
   line-height: 1.6;
-  text-align: justify;
-  text-justify: inter-word;
+  text-align: center;
+  
+  
   margin-inline: auto;
 }
 
 .text-center { text-align: center; }
 .text-center p { margin-inline: auto; }
-.text-justify { text-align: justify; text-justify: inter-word; }
+.text-justify { text-align: center;  }
 
 /* ─── FADE-IN ANIMAÇÕES ──────────────────────────────────── */
 .fade-in {

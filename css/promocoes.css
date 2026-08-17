@@ -107,8 +107,8 @@
 .promo-hero__desc {
   color: var(--texto-suave);
   font-size: var(--size-base);
-  text-align: justify;
-  text-justify: inter-word;
+  text-align: center;
+  
 }
 
 .promo-hero__cta {
