@@ -177,13 +177,14 @@
   display: block;
   object-position: center;
   border-radius: var(--radius-md);
-  box-shadow: 15px 15px 0 var(--bege);
+  box-shadow: 0 10px 30px var(--sombra);
   content: var(--dynamic-sobre-bg);
-  transition: all 0.5s ease-in-out;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .sobre__image-wrap:hover .sobre__image {
-  transform: translate(5px, 5px);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px var(--sombra-forte);
 }
 
 .sobre__image-badge {
