@@ -502,6 +502,37 @@
 }
 
 @media (max-width: 768px) {
+  .cat-nav {
+    background: rgba(250, 246, 238, 0.98);
+    box-shadow: 0 4px 20px rgba(28, 16, 8, 0.08);
+  }
+
+  .cat-nav__inner {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .cat-nav__btn {
+    padding: 6px 16px;
+    min-height: 38px;
+    font-size: var(--size-xs);
+    font-weight: 600;
+    color: var(--texto-suave);
+    background: rgba(28, 16, 8, 0.04);
+    border: 1px solid rgba(212, 196, 160, 0.3);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    border-bottom: 1px solid rgba(212, 196, 160, 0.3);
+  }
+
+  .cat-nav__btn.active {
+    color: var(--marfim) !important;
+    background: var(--caramelo) !important;
+    border-color: var(--caramelo) !important;
+    border-bottom-color: var(--caramelo) !important;
+    box-shadow: 0 4px 12px rgba(139, 94, 60, 0.25);
+  }
+
   .cat-section__header {
     flex-direction: column;
     align-items: center;
@@ -517,8 +548,172 @@
 }
 
 @media (max-width: 480px) {
-  .produto-grid { grid-template-columns: 1fr; }
+  .produto-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .produto-card {
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 120px;
+    border-radius: var(--radius-md);
+    background: var(--marfim);
+  }
+
+  .produto-card__image-wrap {
+    width: 110px;
+    height: auto;
+    min-height: 110px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+  }
+
+  .produto-card__image {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .produto-card__badges {
+    top: var(--space-2);
+    left: var(--space-2);
+    gap: 2px;
+  }
+
+  .produto-card__badges .badge {
+    padding: 2px 6px;
+    font-size: 8px;
+  }
+
+  .produto-card__body {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .produto-card__name {
+    font-size: var(--size-base);
+    text-align: left;
+    margin-bottom: 4px;
+  }
+
+  .produto-card__desc {
+    font-size: var(--size-xs);
+    text-align: left;
+    margin-bottom: var(--space-2);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .produto-card__footer {
+    margin-top: auto;
+    padding-top: var(--space-2);
+    border-top: none;
+    justify-content: flex-start;
+  }
+
+  .produto-card__price {
+    font-size: var(--size-md);
+  }
+
+  /* Ajustes dos Cards de Combos */
+  .combo-card {
+    padding: var(--space-5);
+    gap: var(--space-4);
+  }
+
+  .combo-card__icon {
+    width: 64px;
+    height: 64px;
+    font-size: 2.2rem;
+  }
+
+  .combo-card__name {
+    font-size: var(--size-lg);
+  }
+
+  .combo-card__desc {
+    font-size: var(--size-xs);
+  }
+
+  .combo-card__items {
+    gap: 4px;
+  }
+
+  .combo-card__item-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  /* Ajustes dos Cards Especiais */
+  .especial-card__image {
+    height: 160px;
+  }
+
+  .especial-card__body {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .especial-card__name {
+    font-size: var(--size-lg);
+  }
+
+  .especial-card__desc {
+    font-size: var(--size-xs);
+    margin-bottom: var(--space-4);
+  }
+
+  /* Ajustes de Seção e Cabeçalho */
+  .cat-section {
+    padding: var(--space-12) 0;
+  }
+
+  .cat-section__header {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+  }
+
+  .cat-section__icon {
+    font-size: var(--size-2xl);
+  }
+
+  .cat-section__title {
+    font-size: var(--size-xl);
+  }
+
+  /* Ajustes do Hero Cardápio */
+  .cardapio-hero {
+    padding: calc(var(--nav-height) + var(--space-4)) 0 var(--space-10);
+  }
+
+  .cardapio-hero__title {
+    font-size: clamp(var(--size-xl), 8vw, var(--size-3xl));
+  }
+
+  .cardapio-hero__subtitle {
+    font-size: var(--size-sm);
+    margin-bottom: var(--space-4);
+  }
+
+  /* Ajustes do CTA Final no Cardápio */
+  .cardapio-cta__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .cardapio-cta__actions .btn {
+    width: 100%;
+    max-width: 320px;
+  }
 }
+
 
 
 /* =========================================================
@@ -1029,12 +1224,18 @@ body.pdf-fs-open {
 
 @media (max-width: 480px) {
   .pdf-controls { flex-wrap: wrap; gap: var(--space-3); }
-  .pdf-nav-btn { width: 36px; height: 36px; font-size: 1.2rem; }
+  .pdf-nav-btn { width: 44px; height: 44px; font-size: 1.4rem; }
   .pdf-modal-header { padding: 8px 12px; }
 
   .pdf-fs-bottom-bar .pdf-nav-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 1.5rem;
+    width: 52px;
+    height: 52px;
+    font-size: 1.6rem;
+  }
+
+  .pdf-ctrl-btn {
+    min-height: 44px;
+    padding: 8px 18px;
+    font-size: var(--size-xs);
   }
 }
