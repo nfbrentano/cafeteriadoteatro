@@ -10,9 +10,9 @@
   <meta property="og:url" content="https://[DOMINIO-PRODUCAO]/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pt_BR" />
-  <meta property="og:image" content="https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.jpg" />
+  <meta property="og:image" content="https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.webp" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.jpg" />
+  <meta name="twitter:image" content="https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.webp" />
   <meta name="theme-color" content="#1C1008" />
   <link rel="canonical" href="https://[DOMINIO-PRODUCAO]/" />
 
@@ -25,7 +25,7 @@
     "description": "Café, cultura e encontros no coração do Teatro da Univates, em Lajeado/RS.",
     "url": "https://[DOMINIO-PRODUCAO]",
     "telephone": "",
-    "image": "https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.jpg",
+    "image": "https://[DOMINIO-PRODUCAO]/assets/images/galeria-ambiente.webp",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Rua Avelino Tallini, 171",
@@ -61,6 +61,9 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://nyretgvzbnbtiyeioeju.supabase.co" crossorigin />
+  <link rel="dns-prefetch" href="https://nyretgvzbnbtiyeioeju.supabase.co" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -204,6 +207,7 @@
               width="1200"
               height="1200"
               loading="lazy"
+              decoding="async"
             />
             <div class="sobre__image-badge" aria-hidden="true">
               <span class="num">+2</span>
@@ -282,12 +286,13 @@
           <div class="exp-card fade-in fade-in-delay-1">
             <div style="overflow:hidden; height:220px">
               <img
-                src="assets/images/galeria-latte.jpg"
+                src="assets/images/galeria-latte.webp"
                 alt="Cappuccino com latte art preparado na Cafeteria do Teatro"
                 class="exp-card__image"
                 width="800"
                 height="1200"
                 loading="lazy"
+                decoding="async"
               />
             </div>
             <div class="exp-card__body">
@@ -303,12 +308,13 @@
           <div class="exp-card fade-in fade-in-delay-2">
             <div style="overflow:hidden; height:220px">
               <img
-                src="assets/images/galeria-ambiente.jpg"
+                src="assets/images/galeria-ambiente.webp"
                 alt="Ambiente interno acolhedor da Cafeteria do Teatro"
                 class="exp-card__image"
                 width="1200"
                 height="748"
                 loading="lazy"
+                decoding="async"
               />
             </div>
             <div class="exp-card__body">
@@ -324,12 +330,13 @@
           <div class="exp-card fade-in fade-in-delay-3">
             <div style="overflow:hidden; height:220px">
               <img
-                src="assets/images/galeria-conversa.jpg"
+                src="assets/images/galeria-conversa.webp"
                 alt="Pessoas conversando e tomando café na Cafeteria do Teatro"
                 class="exp-card__image"
                 width="1200"
                 height="1087"
                 loading="lazy"
+                decoding="async"
               />
             </div>
             <div class="exp-card__body">
@@ -364,35 +371,35 @@
         <div class="galeria__grid" role="list" aria-label="Galeria de fotos da Cafeteria do Teatro">
 
           <div class="galeria__item galeria__item--tall fade-in" role="listitem">
-            <img src="assets/images/galeria-taca.jpg"   alt="Taça de sobremesa gelada com calda de chocolate e frutas vermelhas servida na Cafeteria do Teatro" class="galeria__img" width="960" height="1200" loading="lazy" />
+            <img src="assets/images/galeria-taca.webp"   alt="Taça de sobremesa gelada com calda de chocolate e frutas vermelhas servida na Cafeteria do Teatro" class="galeria__img" width="960" height="1200" loading="lazy" decoding="async" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-1" role="listitem">
-            <img src="assets/images/galeria-tacas.jpg"     alt="Três taças de sobremesas artesanais dispostas no balcão da Cafeteria do Teatro" class="galeria__img" width="1200" height="800" loading="lazy" />
+            <img src="assets/images/galeria-tacas.webp"     alt="Três taças de sobremesas artesanais dispostas no balcão da Cafeteria do Teatro" class="galeria__img" width="1200" height="800" loading="lazy" decoding="async" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-2" role="listitem">
-            <img src="assets/images/galeria-doces.jpg"    alt="Vitrine refrigerada com brigadeiros, bolos e doces artesanais em exposição" class="galeria__img" width="1200" height="800" loading="lazy" />
+            <img src="assets/images/galeria-doces.webp"    alt="Vitrine refrigerada com brigadeiros, bolos e doces artesanais em exposição" class="galeria__img" width="1200" height="800" loading="lazy" decoding="async" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-1" role="listitem">
-            <img src="assets/images/galeria-cafes.jpg"    alt="Cinco tipos de café servidos lado a lado: espresso, cappuccino, latte e café coado" class="galeria__img" width="1200" height="702" loading="lazy" />
+            <img src="assets/images/galeria-cafes.webp"    alt="Cinco tipos de café servidos lado a lado: espresso, cappuccino, latte e café coado" class="galeria__img" width="1200" height="702" loading="lazy" decoding="async" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>
           </div>
 
           <div class="galeria__item fade-in fade-in-delay-2" role="listitem">
-            <img src="assets/images/galeria-local.jpg" alt="Vista interna da Cafeteria do Teatro com mesas de madeira, iluminação quente e ambiente acolhedor" class="galeria__img" width="1200" height="748" loading="lazy" />
+            <img src="assets/images/galeria-local.webp" alt="Vista interna da Cafeteria do Teatro com mesas de madeira, iluminação quente e ambiente acolhedor" class="galeria__img" width="1200" height="748" loading="lazy" decoding="async" />
             <div class="galeria__overlay" aria-hidden="true">
               <span class="galeria__icon">⊕</span>
             </div>

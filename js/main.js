@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           ${promo.image_url ? `
             <div class="promo-hero__image">
-              <img src="${promo.image_url}" alt="${promo.titulo}" />
+              <img src="${promo.image_url}" alt="${promo.titulo}" loading="lazy" decoding="async" />
             </div>
           ` : ''}
         </div>
@@ -318,27 +318,45 @@ document.addEventListener('DOMContentLoaded', () => {
       #lightbox { display: none; }
       #lightbox.open {
         display: flex !important;
-        animation: lbFadeIn 0.3s ease;
+        animation: lbFadeIn 0.25s ease forwards;
       }
       .lightbox__backdrop {
         position: absolute; inset: 0;
-        background: rgba(28, 16, 8, 0.9);
-        backdrop-filter: blur(8px);
+        background: rgba(28, 16, 8, 0.92);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
       }
       .lightbox__close {
-        position: absolute; top: 20px; right: 24px;
-        color: #FAF6EE; font-size: 24px; z-index: 2;
-        cursor: pointer; background: none; border: none;
-        padding: 8px; transition: opacity 0.2s;
+        position: absolute; top: 16px; right: 16px;
+        color: #FAF6EE; font-size: 20px; z-index: 10;
+        cursor: pointer;
+        background: rgba(250, 246, 238, 0.18);
+        border: 1px solid rgba(250, 246, 238, 0.25);
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.2s ease, background 0.2s ease;
+        touch-action: manipulation;
       }
-      .lightbox__close:hover { opacity: 0.7; }
+      .lightbox__close:active {
+        transform: scale(0.9);
+        background: rgba(250, 246, 238, 0.3);
+      }
+      @media (hover: hover) {
+        .lightbox__close:hover {
+          background: rgba(250, 246, 238, 0.3);
+          transform: rotate(90deg);
+        }
+      }
       .lightbox__img {
         position: relative; z-index: 2;
-        max-width: 90vw; max-height: 88vh;
-        object-fit: contain; border-radius: 6px;
-        box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+        max-width: 92vw; max-height: 85vh;
+        object-fit: contain; border-radius: 8px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+        animation: lbImgScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes lbImgScale { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
     `;
     document.head.appendChild(style);
 

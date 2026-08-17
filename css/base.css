@@ -101,9 +101,15 @@ img, video {
   height: auto;
 }
 
+a, button, input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 a {
   color: inherit;
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 ul, ol {
@@ -115,6 +121,18 @@ button {
   border: none;
   background: none;
   font-family: inherit;
+}
+
+/* ─── ACESSIBILIDADE (FOCO VISÍVEL) ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--caramelo);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* ─── TIPOGRAFIA ─────────────────────────────────────────── */
@@ -234,10 +252,18 @@ p {
 ::-webkit-scrollbar-track { background: var(--marfim); }
 ::-webkit-scrollbar-thumb { background: var(--caramelo); border-radius: 3px; }
 
-/* ─── SELEÇÃO ────────────────────────────────────────────── */
-::selection {
-  background-color: var(--caramelo);
-  color: var(--marfim);
+/* ─── PREFERS-REDUCED-MOTION ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* ─── RESPONSIVIDADE BASE ────────────────────────────────── */
