@@ -46,6 +46,8 @@ ON public.contador FOR ALL TO anon, authenticated, service_role USING (true) WIT
 
 
 -- 3. Função que calcula acessos do dia anterior e insere o próximo número sequencial
+DROP FUNCTION IF EXISTS public.incrementar_contador_diario();
+
 CREATE OR REPLACE FUNCTION public.consolidar_contador_dia_anterior()
 RETURNS public.contador
 LANGUAGE plpgsql
