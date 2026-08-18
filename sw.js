@@ -3,8 +3,8 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const STATIC_CACHE = 'cafeteria-static-v2';
-const RUNTIME_CACHE = 'cafeteria-runtime-v2';
+const STATIC_CACHE = 'cafeteria-static-v3';
+const RUNTIME_CACHE = 'cafeteria-runtime-v3';
 
 const STATIC_ASSETS = [
   '/',
@@ -69,9 +69,13 @@ self.addEventListener('fetch', (event) => {
   // Ignorar protocolos não suportados (ex: chrome-extension)
   if (!url.protocol.startsWith('http')) return;
 
-  // Não cachear páginas de administração ou rotas de autenticação/modificação
-  if (url.pathname.includes('/admin') || url.pathname.includes('/auth/v1')) {
-    return;
+  // Não interceptar requisições ao painel admin, rotas de autenticação ou chamadas REST da API do Supabase
+  if (
+    url.pathname.includes('/admin') ||
+    url.pathname.includes('/auth/v1') ||
+    (url.hostname.includes('supabase.co') && url.pathname.startsWith('/rest/v1'))
+  ) {
+    return; // Deixa o navegador ir direto para a rede
   }
 
   // 1. Navegação de páginas HTML -> Network First com fallback para cache/offline

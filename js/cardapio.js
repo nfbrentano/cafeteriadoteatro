@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           ${promo.image_url ? `
             <div class="promo-hero__image">
-              <img src="${promo.image_url}" alt="${promo.titulo}" loading="lazy" decoding="async" />
+              <img src="${promo.image_url}" alt="${promo.titulo || 'Promoção'}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'" />
             </div>
           ` : ''}
         </div>

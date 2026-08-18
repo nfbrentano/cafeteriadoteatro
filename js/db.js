@@ -17,8 +17,22 @@
   const db = {
     // --- Utilitários de Cache ---
     cache: {
-      get: (key) => JSON.parse(localStorage.getItem(key)),
-      set: (key, val) => localStorage.setItem(key, JSON.stringify(val))
+      get: (key) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : null;
+        } catch (e) {
+          console.warn('[Cache] Falha ao ler cache:', key, e);
+          return null;
+        }
+      },
+      set: (key, val) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {
+          console.warn('[Cache] Falha ao gravar cache:', key, e);
+        }
+      }
     },
 
     // --- Categorias ---
