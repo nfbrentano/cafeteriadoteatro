@@ -1,11 +1,17 @@
 {
   "name": "cafeteriadoteatro",
   "version": "1.0.0",
+  "type": "module",
   "description": "Website Cafeteria do Teatro",
   "main": "index.html",
   "scripts": {
-    "dev": "python3 -m http.server 3000",
-    "start": "python3 -m http.server 3000"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.2.1",
+    "vite-plugin-static-copy": "^4.1.1"
   },
   "keywords": [],
   "author": "",

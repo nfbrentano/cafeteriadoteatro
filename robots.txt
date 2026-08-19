@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
-Sitemap: https://[DOMINIO-PRODUCAO]/sitemap.xml
+Sitemap: https://cafeteriadoteatro.com.br/sitemap.xml

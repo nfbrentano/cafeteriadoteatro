@@ -62,12 +62,12 @@ Como o projeto é estático, você pode executá-lo de várias formas simples:
 
 ## 🛠️ Configuração de Produção
 
-### Substituição do Domínio
-Atualmente, o site utiliza o placeholder `[DOMINIO-PRODUCAO]` em vários locais para SEO e metadados. Quando o domínio final for definido (ex: `https://cafeteriadoteatro.com.br`), você deve:
+### Domínio
+O site está configurado por padrão com o domínio `https://cafeteriadoteatro.com.br` para SEO, OpenGraph, Canonical URLs e Sitemaps. Se desejar alterar o domínio:
 
-1.  Fazer uma busca global por `[DOMINIO-PRODUCAO]` em todo o projeto.
-2.  Substituir todas as ocorrências pela URL completa do seu site.
-3.  Arquivos afetados: `index.html`, `cardapio.html`, `sitemap.xml`, `robots.txt` e `manifest.json`.
+1. Faça uma busca global por `cafeteriadoteatro.com.br` em todo o projeto.
+2. Substitua as ocorrências pelo seu novo domínio.
+3. Arquivos afetados: `index.html`, `cardapio.html`, `admin.html`, `404.html`, `sitemap.xml`, `robots.txt` e `manifest.json`.
 
 ### Integração Supabase
 As chaves de acesso estão localizadas em `js/supabase-client.js`. Em caso de mudança de ambiente (produção/homologação), atualize a `SUPABASE_URL` e `SUPABASE_ANON_KEY` neste arquivo.

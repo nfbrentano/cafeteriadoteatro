@@ -15,7 +15,16 @@
   };
 
   const db = {
-    // --- Utilitários de Cache ---
+    // --- Utilitários de Cache e Logger ---
+    logger: {
+      error: (context, err) => {
+        console.error(`[CafeteriaDB][${context}]`, err?.message || err);
+      },
+      warn: (context, msg) => {
+        console.warn(`[CafeteriaDB][${context}]`, msg);
+      }
+    },
+
     cache: {
       get: (key) => {
         try {
@@ -38,39 +47,62 @@
     // --- Categorias ---
     categories: {
       async all() {
+        if (!window.cafeteriaSupabase) {
+          db.logger.warn('categories.all', 'Supabase client não inicializado');
+          return [];
+        }
         const { data, error } = await window.cafeteriaSupabase
           .from('categorias')
           .select('*')
           .order('ordem', { ascending: true });
-        if (error) throw error;
-        return data;
+        if (error) {
+          db.logger.error('categories.all', error);
+          throw error;
+        }
+        return data || [];
       },
       async upsert(category) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         const { error } = await window.cafeteriaSupabase
           .from('categorias')
           .upsert(category);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('categories.upsert', error);
+          throw error;
+        }
       },
       async delete(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         const { error } = await window.cafeteriaSupabase
           .from('categorias')
           .delete()
           .eq('id', id);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('categories.delete', error);
+          throw error;
+        }
       }
     },
 
     // --- Produtos ---
     products: {
       async all() {
+        if (!window.cafeteriaSupabase) {
+          db.logger.warn('products.all', 'Supabase client não inicializado');
+          return [];
+        }
         const { data, error } = await window.cafeteriaSupabase
           .from('produtos')
           .select('*')
           .order('ordem', { ascending: true });
-        if (error) throw error;
-        return data;
+        if (error) {
+          db.logger.error('products.all', error);
+          throw error;
+        }
+        return data || [];
       },
       async upsert(product, imageBlob = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         if (imageBlob) {
           const fileName = `${product.id}.webp`;
           const { data: uploadData, error: uploadError } = await window.cafeteriaSupabase
@@ -78,7 +110,10 @@
             .from('products')
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            db.logger.error('products.uploadImage', uploadError);
+            throw uploadError;
+          }
           
           const { data: { publicUrl } } = window.cafeteriaSupabase
             .storage
@@ -91,14 +126,21 @@
         const { error } = await window.cafeteriaSupabase
           .from('produtos')
           .upsert(product);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('products.upsert', error);
+          throw error;
+        }
       },
       async delete(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         const { error } = await window.cafeteriaSupabase
           .from('produtos')
           .delete()
           .eq('id', id);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('products.delete', error);
+          throw error;
+        }
       }
     },
 
@@ -107,6 +149,7 @@
       async get() {
         // Tenta retornar cache imediatamente
         const cached = db.cache.get(CACHE_KEYS.HERO);
+        if (!window.cafeteriaSupabase) return cached || null;
         
         // Dispara busca no Supabase em paralelo
         const fetchPromise = window.cafeteriaSupabase
@@ -119,6 +162,7 @@
               db.cache.set(CACHE_KEYS.HERO, data);
               return data;
             }
+            if (error) db.logger.warn('hero.get', error);
             return null;
           });
 
@@ -126,6 +170,7 @@
         return cached || await fetchPromise;
       },
       async update(imageBlob = null, alt = '', blurDataUrl = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         let imageUrl = null;
         if (imageBlob) {
           const fileName = `hero-home.webp`;
@@ -135,7 +180,7 @@
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
           if (uploadError) {
-            console.error('Supabase Storage Error (Hero):', uploadError);
+            db.logger.error('hero.update.storage', uploadError);
             throw new Error(`Erro no upload da imagem: ${uploadError.message}`);
           }
           
@@ -155,7 +200,7 @@
           .from('hero_home')
           .upsert(payload);
         if (error) {
-          console.error('Supabase Table Error (hero_home):', error);
+          db.logger.error('hero.update.db', error);
           throw new Error(`Erro ao salvar dados do Hero: ${error.message}`);
         }
       }
@@ -164,34 +209,47 @@
     // --- Horários ---
     hours: {
       async get() {
+        if (!window.cafeteriaSupabase) return null;
         const { data, error } = await window.cafeteriaSupabase
           .from('business_hours')
           .select('*')
           .eq('id', 1)
           .limit(1);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('hours.get', error);
+          throw error;
+        }
         return (data && data.length > 0) ? data[0] : null;
       },
       async update(data) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         const payload = { ...data, id: 1, updated_at: new Date().toISOString() };
         const { error } = await window.cafeteriaSupabase
           .from('business_hours')
           .upsert(payload);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('hours.update', error);
+          throw error;
+        }
       }
     },
 
     // --- Promoções ---
     promotions: {
       async all() {
+        if (!window.cafeteriaSupabase) return [];
         const { data, error } = await window.cafeteriaSupabase
           .from('promotions')
           .select('*')
           .order('updated_at', { ascending: false });
-        if (error) throw error;
-        return data;
+        if (error) {
+          db.logger.error('promotions.all', error);
+          throw error;
+        }
+        return data || [];
       },
       async upsert(promo, imageBlob = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         if (imageBlob) {
           const fileName = `banner-${Date.now()}.webp`;
           const { error: uploadError } = await window.cafeteriaSupabase
@@ -199,7 +257,10 @@
             .from('site-assets')
             .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
           
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            db.logger.error('promotions.upsert.upload', uploadError);
+            throw uploadError;
+          }
           
           const { data: { publicUrl } } = window.cafeteriaSupabase
             .storage
@@ -212,14 +273,21 @@
         const { error } = await window.cafeteriaSupabase
           .from('promotions')
           .upsert(promo);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('promotions.upsert.db', error);
+          throw error;
+        }
       },
       async delete(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         const { error } = await window.cafeteriaSupabase
           .from('promotions')
           .delete()
           .eq('id', id);
-        if (error) throw error;
+        if (error) {
+          db.logger.error('promotions.delete', error);
+          throw error;
+        }
       }
     },
 
@@ -228,6 +296,7 @@
       async all() {
         // Cache imediato
         const cached = db.cache.get(CACHE_KEYS.SETTINGS);
+        if (!window.cafeteriaSupabase) return cached || {};
 
         const fetchPromise = window.cafeteriaSupabase
           .from('site_settings')
@@ -241,16 +310,21 @@
               db.cache.set(CACHE_KEYS.SETTINGS, mapped);
               return mapped;
             }
+            if (error) db.logger.warn('settings.all', error);
             return null;
           });
 
         return cached || await fetchPromise;
       },
       async update(key, value) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         const { error } = await window.cafeteriaSupabase
           .from('site_settings')
           .upsert({ key, value, updated_at: new Date().toISOString() });
-        if (error) throw error;
+        if (error) {
+          db.logger.error('settings.update', error);
+          throw error;
+        }
       }
     },
     

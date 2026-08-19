@@ -3,8 +3,10 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const STATIC_CACHE = 'cafeteria-static-v3';
-const RUNTIME_CACHE = 'cafeteria-runtime-v3';
+const CACHE_VERSION = 'v4';
+const STATIC_CACHE = `cafeteria-static-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `cafeteria-runtime-${CACHE_VERSION}`;
+const MAX_RUNTIME_ITEMS = 60;
 
 const STATIC_ASSETS = [
   '/',
@@ -30,19 +32,35 @@ const STATIC_ASSETS = [
   '/assets/icons/icon-512.png'
 ];
 
+/**
+ * Limita o número de itens armazenados em um cache
+ */
+async function trimCache(cacheName, maxItems) {
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length > maxItems) {
+      await cache.delete(keys[0]);
+      trimCache(cacheName, maxItems);
+    }
+  } catch (e) {
+    // Falha silenciosa para não interromper fluxo
+  }
+}
+
 // Instalação: Pré-cache dos ativos estáticos principais
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('Erro ao pré-cachear alguns ativos:', err);
+        console.warn('[SW] Aviso ao pré-cachear alguns ativos:', err);
       });
     })
   );
   self.skipWaiting();
 });
 
-// Ativação: Limpeza de caches antigos
+// Ativação: Limpeza de caches antigos e claim imediato
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -53,9 +71,15 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+// Comunicação com a aplicação
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Fetch: Gerenciamento inteligente de requisições
@@ -85,7 +109,10 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           if (response.status === 200) {
             const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, copy);
+              trimCache(RUNTIME_CACHE, MAX_RUNTIME_ITEMS);
+            });
           }
           return response;
         })
@@ -111,7 +138,10 @@ self.addEventListener('fetch', (event) => {
         return fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, copy);
+              trimCache(RUNTIME_CACHE, MAX_RUNTIME_ITEMS);
+            });
           }
           return networkResponse;
         }).catch(() => null);
@@ -127,7 +157,10 @@ self.addEventListener('fetch', (event) => {
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, copy);
+              trimCache(RUNTIME_CACHE, MAX_RUNTIME_ITEMS);
+            });
           }
           return networkResponse;
         })
