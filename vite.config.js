@@ -17,6 +17,7 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
+        { src: 'CNAME', dest: '' },
         { src: 'sw.js', dest: '' },
         { src: 'manifest.json', dest: '' },
         { src: 'robots.txt', dest: '' },
