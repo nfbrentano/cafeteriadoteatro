@@ -83,3 +83,9 @@ BEGIN
     RETURN registro_contador;
 END;
 $$;
+
+-- Permissões de execução da função
+GRANT EXECUTE ON FUNCTION public.consolidar_contador_dia_anterior() TO anon, authenticated, service_role;
+
+-- Recarregar cache de esquema do PostgREST
+NOTIFY pgrst, 'reload schema';
