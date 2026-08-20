@@ -27,13 +27,30 @@
       const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
       const el = document.createElement('div');
       el.className = `toast toast--${type}`;
-      el.innerHTML = `
-        <span class="toast__icon">${icons[type] || '✅'}</span>
-        <div class="toast__body">
-          <div class="toast__title">${title}</div>
-          ${msg ? `<div class="toast__msg">${msg}</div>` : ''}
-        </div>`;
+
+      const iconEl = document.createElement('span');
+      iconEl.className = 'toast__icon';
+      iconEl.textContent = icons[type] || '✅';
+
+      const bodyEl = document.createElement('div');
+      bodyEl.className = 'toast__body';
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'toast__title';
+      titleEl.textContent = title;
+      bodyEl.appendChild(titleEl);
+
+      if (msg) {
+        const msgEl = document.createElement('div');
+        msgEl.className = 'toast__msg';
+        msgEl.textContent = msg;
+        bodyEl.appendChild(msgEl);
+      }
+
+      el.appendChild(iconEl);
+      el.appendChild(bodyEl);
       container.appendChild(el);
+
       setTimeout(() => {
         el.classList.add('hide');
         el.addEventListener('animationend', () => el.remove());
