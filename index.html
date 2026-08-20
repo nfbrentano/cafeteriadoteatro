@@ -71,28 +71,34 @@
   <!-- Pre-render Hero cache instant-load -->
   <script>
     (function() {
-      // 1. Hero
-      const heroCache = localStorage.getItem('cafeteria_hero_cache');
-      if (heroCache) {
+      function getCached(key) {
         try {
-          const hero = JSON.parse(heroCache);
-          if (hero && hero.image_url) {
-            document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          try {
+            return JSON.parse(decodeURIComponent(atob(raw)));
+          } catch {
+            return JSON.parse(raw);
           }
-          if (hero && hero.blur_data_url) {
-            document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + hero.blur_data_url + ')');
-          }
-        } catch(e) {}
+        } catch (e) {
+          return null;
+        }
+      }
+
+      // 1. Hero
+      const hero = getCached('cafeteria_hero_cache');
+      if (hero) {
+        if (hero.image_url) {
+          document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
+        }
+        if (hero.blur_data_url) {
+          document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + hero.blur_data_url + ')');
+        }
       }
       // 2. Sobre Image
-      const settingsCache = localStorage.getItem('cafeteria_settings_cache');
-      if (settingsCache) {
-        try {
-          const s = JSON.parse(settingsCache);
-          if (s && s.sobre_imagem_url) {
-            document.documentElement.style.setProperty('--dynamic-sobre-bg', 'url(' + s.sobre_imagem_url + ')');
-          }
-        } catch(e) {}
+      const s = getCached('cafeteria_settings_cache');
+      if (s && s.sobre_imagem_url) {
+        document.documentElement.style.setProperty('--dynamic-sobre-bg', 'url(' + s.sobre_imagem_url + ')');
       }
     })();
   </script>

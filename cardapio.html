@@ -22,18 +22,23 @@
   <!-- Pre-render Hero cache instant-load -->
   <script>
     (function() {
-      const heroCache = localStorage.getItem('cafeteria_hero_cache');
-      if (heroCache) {
-        try {
-          const hero = JSON.parse(heroCache);
+      try {
+        const raw = localStorage.getItem('cafeteria_hero_cache');
+        if (raw) {
+          let hero = null;
+          try {
+            hero = JSON.parse(decodeURIComponent(atob(raw)));
+          } catch {
+            hero = JSON.parse(raw);
+          }
           if (hero && hero.image_url) {
             document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
           }
           if (hero && hero.blur_data_url) {
             document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + hero.blur_data_url + ')');
           }
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
     })();
   </script>
   <title>Cardápio | Cafeteria do Teatro · Teatro da Univates</title>

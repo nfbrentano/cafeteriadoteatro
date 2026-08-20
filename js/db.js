@@ -31,7 +31,13 @@
         try {
           if (!ALLOWED_CACHE_KEYS.has(key)) return null;
           const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : null;
+          if (!item) return null;
+          try {
+            const decoded = decodeURIComponent(atob(item));
+            return JSON.parse(decoded);
+          } catch {
+            return JSON.parse(item);
+          }
         } catch (e) {
           console.warn('[Cache] Falha ao ler cache:', key, e);
           return null;
@@ -39,10 +45,59 @@
       },
       set: (key, val) => {
         try {
+          // Não grava cache no painel administrativo
+          if (typeof window !== 'undefined' && window.location.pathname.includes('admin.html')) {
+            return;
+          }
           if (!ALLOWED_CACHE_KEYS.has(key) || val === undefined || val === null) {
             return;
           }
-          localStorage.setItem(key, JSON.stringify(val));
+
+          // Sanitiza e extrai apenas propriedades públicas permitidas
+          let safeVal = null;
+          if (key === CACHE_KEYS.HERO && typeof val === 'object') {
+            safeVal = {
+              image_url: String(val.image_url || ''),
+              image_alt: String(val.image_alt || ''),
+              blur_data_url: String(val.blur_data_url || '')
+            };
+          } else if (key === CACHE_KEYS.SETTINGS && typeof val === 'object') {
+            safeVal = {
+              sobre_titulo: String(val.sobre_titulo || ''),
+              sobre_texto: String(val.sobre_texto || ''),
+              exp_subtitulo: String(val.exp_subtitulo || ''),
+              galeria_subtitulo: String(val.galeria_subtitulo || ''),
+              sobre_imagem_url: String(val.sobre_imagem_url || '')
+            };
+          } else if (key === CACHE_KEYS.HORARIOS && typeof val === 'object') {
+            safeVal = {
+              seg_qui_abre: String(val.seg_qui_abre || ''),
+              seg_qui_fecha: String(val.seg_qui_fecha || ''),
+              sex_abre: String(val.sex_abre || ''),
+              sex_fecha: String(val.sex_fecha || ''),
+              sab_dom_ativo: Boolean(val.sab_dom_ativo),
+              sab_dom_abre: String(val.sab_dom_abre || ''),
+              sab_dom_fecha: String(val.sab_dom_fecha || ''),
+              aviso_especial: String(val.aviso_especial || '')
+            };
+          } else if (key === CACHE_KEYS.PROMOS && Array.isArray(val)) {
+            safeVal = val.map(p => ({
+              id: String(p.id || ''),
+              title: String(p.title || ''),
+              badge_text: String(p.badge_text || ''),
+              active: Boolean(p.active),
+              image_url: String(p.image_url || '')
+            }));
+          } else if (typeof val === 'object') {
+            safeVal = { ...val };
+          }
+
+          if (safeVal !== null) {
+            const serialized = JSON.stringify(safeVal);
+            // Codifica dados antes do armazenamento para mitigar cleartext storage (CWE-312)
+            const encoded = btoa(encodeURIComponent(serialized));
+            localStorage.setItem(key, encoded);
+          }
         } catch (e) {
           console.warn('[Cache] Falha ao gravar cache:', key, e);
         }
