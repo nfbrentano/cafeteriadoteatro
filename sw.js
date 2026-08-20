@@ -3,7 +3,7 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const STATIC_CACHE = `cafeteria-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cafeteria-runtime-${CACHE_VERSION}`;
 const MAX_RUNTIME_ITEMS = 60;
@@ -14,6 +14,9 @@ const STATIC_ASSETS = [
   '/cardapio.html',
   '/404.html',
   '/manifest.json',
+  '/css/main.css',
+  '/css/cardapio-bundle.css',
+  '/css/404-bundle.css',
   '/css/base.css',
   '/css/components.css',
   '/css/home.css',
