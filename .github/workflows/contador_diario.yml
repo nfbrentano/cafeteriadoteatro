@@ -6,6 +6,8 @@ on:
     - cron: '10 3 * * *'
   workflow_dispatch: # Permite rodar manualmente pela aba Actions do GitHub
 
+permissions: {}
+
 jobs:
   consolidar-acessos:
     name: Consolidar Acessos do Dia Anterior
