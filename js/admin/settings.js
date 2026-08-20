@@ -200,35 +200,39 @@
     const heroZone = document.getElementById('hero-upload-zone');
     const heroFile = document.getElementById('hero-image-file');
     heroZone?.addEventListener('click', () => heroFile.click());
-    heroFile?.addEventListener('change', (e) => {
+    heroFile?.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        document.getElementById('hero-image-data').value = ev.target.result;
-        document.getElementById('hero-upload-preview-img').src = ev.target.result;
+      try {
+        const { dataUrl } = await admin.compressImage(file, { maxWidth: 1600, maxHeight: 1200, quality: 0.82 });
+        document.getElementById('hero-image-data').value = dataUrl;
+        document.getElementById('hero-upload-preview-img').src = dataUrl;
         document.getElementById('hero-upload-preview-wrap').classList.remove('hidden');
         document.getElementById('hero-upload-idle').classList.add('hidden');
-        document.getElementById('hero-preview-bg').style.backgroundImage = `url(${ev.target.result})`;
-      };
-      reader.readAsDataURL(file);
+        document.getElementById('hero-preview-bg').style.backgroundImage = `url(${dataUrl})`;
+      } catch (err) {
+        console.error('Erro ao processar imagem do Hero:', err);
+        admin.toast('Erro', 'Não foi possível processar a imagem.', 'error');
+      }
     });
 
     // Upload Sobre
     const sobreZone = document.getElementById('sobre-upload-zone');
     const sobreFile = document.getElementById('sobre-image-file');
     sobreZone?.addEventListener('click', () => sobreFile.click());
-    sobreFile?.addEventListener('change', (e) => {
+    sobreFile?.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        document.getElementById('sobre-image-data').value = ev.target.result;
-        document.getElementById('sobre-upload-preview-img').src = ev.target.result;
+      try {
+        const { dataUrl } = await admin.compressImage(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.82 });
+        document.getElementById('sobre-image-data').value = dataUrl;
+        document.getElementById('sobre-upload-preview-img').src = dataUrl;
         document.getElementById('sobre-upload-preview-wrap').classList.remove('hidden');
         document.getElementById('sobre-upload-idle').classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error('Erro ao processar imagem do Sobre:', err);
+        admin.toast('Erro', 'Não foi possível processar a imagem.', 'error');
+      }
     });
   });
 
