@@ -97,7 +97,7 @@ self.addEventListener('fetch', (event) => {
   if (
     url.pathname.includes('/admin') ||
     url.pathname.includes('/auth/v1') ||
-    (url.hostname.includes('supabase.co') && url.pathname.startsWith('/rest/v1'))
+    ((url.hostname === 'supabase.co' || url.hostname.endsWith('.supabase.co')) && url.pathname.startsWith('/rest/v1'))
   ) {
     return; // Deixa o navegador ir direto para a rede
   }
@@ -126,11 +126,13 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 2. Fontes do Google e CDNs estáticos -> Cache First com revalidação
-  if (
-    url.hostname.includes('fonts.googleapis.com') ||
-    url.hostname.includes('fonts.gstatic.com') ||
-    url.hostname.includes('cdn.jsdelivr.net')
-  ) {
+  const ALLOWED_CDN_HOSTS = [
+    'fonts.googleapis.com',
+    'fonts.gstatic.com',
+    'cdn.jsdelivr.net'
+  ];
+
+  if (ALLOWED_CDN_HOSTS.includes(url.hostname)) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) return cachedResponse;
