@@ -142,13 +142,10 @@
         this.appData.horarios   = hours;
         this.appData.promotions = promos;
         this.appData.settings   = settings;
-        window.cafeteriaDB.cache.set('cafeteria_cardapio_cache', this.appData);
         this.refreshCurrentPage();
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
-        const cached = window.cafeteriaDB.cache.get('cafeteria_cardapio_cache');
-        if (cached) this.appData = cached;
-        this.toast('Aviso', 'Erro ao sincronizar. Usando cache local.', 'warn');
+        this.toast('Aviso', 'Erro ao sincronizar dados do servidor.', 'warn');
       }
     },
 

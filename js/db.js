@@ -7,12 +7,13 @@
   'use strict';
 
   const CACHE_KEYS = {
-    CARDAPIO: 'cafeteria_cardapio_cache',
     HORARIOS: 'cafeteria_horarios_cache',
     HERO: 'cafeteria_hero_cache',
     PROMOS: 'cafeteria_promos_cache',
     SETTINGS: 'cafeteria_settings_cache'
   };
+
+  const ALLOWED_CACHE_KEYS = new Set(Object.values(CACHE_KEYS));
 
   const db = {
     // --- Utilitários de Cache e Logger ---
@@ -28,6 +29,7 @@
     cache: {
       get: (key) => {
         try {
+          if (!ALLOWED_CACHE_KEYS.has(key)) return null;
           const item = localStorage.getItem(key);
           return item ? JSON.parse(item) : null;
         } catch (e) {
@@ -37,6 +39,9 @@
       },
       set: (key, val) => {
         try {
+          if (!ALLOWED_CACHE_KEYS.has(key) || val === undefined || val === null) {
+            return;
+          }
           localStorage.setItem(key, JSON.stringify(val));
         } catch (e) {
           console.warn('[Cache] Falha ao gravar cache:', key, e);
