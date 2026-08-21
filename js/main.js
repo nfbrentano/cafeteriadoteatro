@@ -7,15 +7,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Navbar scroll ──────────────────────────────────────── */
   const navbar = document.getElementById('navbar');
+  let isNavbarSolid = null;
 
   const updateNavbar = () => {
     if (!navbar) return;
-    if (window.scrollY > 60) {
-      navbar.classList.remove('navbar--transparent');
-      navbar.classList.add('navbar--solid');
-    } else {
-      navbar.classList.add('navbar--transparent');
-      navbar.classList.remove('navbar--solid');
+    const shouldBeSolid = window.scrollY > 60;
+    if (shouldBeSolid !== isNavbarSolid) {
+      isNavbarSolid = shouldBeSolid;
+      if (shouldBeSolid) {
+        navbar.classList.remove('navbar--transparent');
+        navbar.classList.add('navbar--solid');
+      } else {
+        navbar.classList.add('navbar--transparent');
+        navbar.classList.remove('navbar--solid');
+      }
     }
   };
 
@@ -44,10 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Hero Parallax Leve ─────────────────────────────────── */
   const heroBg = document.querySelector('.hero__bg');
   if (heroBg) {
+    let ticking = false;
     window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY;
-      if (scrolled < window.innerHeight) {
-        heroBg.style.transform = `scale(1) translateY(${scrolled * 0.2}px)`;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY;
+          if (scrolled < window.innerHeight) {
+            heroBg.style.transform = `translateY(${scrolled * 0.2}px)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     }, { passive: true });
   }
@@ -75,32 +87,38 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = document.querySelector(targetSelector);
       if (target) {
         e.preventDefault();
-        const navH = parseInt(getComputedStyle(document.documentElement)
-          .getPropertyValue('--nav-height'), 10) || 72;
+        const navH = 72;
         const top = target.getBoundingClientRect().top + window.scrollY - navH;
         window.scrollTo({ top, behavior: 'smooth' });
       }
     });
   });
 
-  /* ── Active link no scroll ──────────────────────────────── */
+  /* ── Active link no scroll (IntersectionObserver - Zero Reflow) ─ */
   const sections  = document.querySelectorAll('section[id]');
   const navLinks  = document.querySelectorAll('.navbar__link[href^="#"]');
 
-  const highlightNav = () => {
-    const scrollMid = window.scrollY + window.innerHeight / 3;
-    sections.forEach(sec => {
-      const top    = sec.offsetTop;
-      const bottom = top + sec.offsetHeight;
-      if (scrollMid >= top && scrollMid < bottom) {
-        navLinks.forEach(l => l.classList.remove('nav-active'));
-        const active = document.querySelector(`.navbar__link[href="#${sec.id}"]`);
-        active?.classList.add('nav-active');
-      }
+  if (sections.length && navLinks.length) {
+    let currentActiveId = '';
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          if (id && id !== currentActiveId) {
+            currentActiveId = id;
+            navLinks.forEach(l => {
+              l.classList.toggle('nav-active', l.getAttribute('href') === `#${id}`);
+            });
+          }
+        }
+      });
+    }, {
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
     });
-  };
 
-  window.addEventListener('scroll', highlightNav, { passive: true });
+    sections.forEach(sec => sectionObserver.observe(sec));
+  }
 
   /* ── Galeria lightbox simples ───────────────────────────── */
   const galeriaItems = document.querySelectorAll('.galeria__item');

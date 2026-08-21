@@ -169,23 +169,31 @@
   function setupScrollSpy() {
     const sections = document.querySelectorAll('.cat-section');
     const navBtns = document.querySelectorAll('.cat-nav__btn');
+    if (!sections.length || !navBtns.length) return;
 
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        if (pageYOffset >= sectionTop - 150) {
-          current = section.getAttribute('id');
+    let activeCatId = '';
+    const catObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          if (id && id !== activeCatId) {
+            activeCatId = id;
+            navBtns.forEach(btn => {
+              btn.classList.toggle('active', btn.dataset.cat === id);
+            });
+            const activeBtn = document.querySelector(`.cat-nav__btn[data-cat="${id}"]`);
+            if (activeBtn) {
+              activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+          }
         }
       });
-
-      navBtns.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.cat === current) {
-          btn.classList.add('active');
-        }
-      });
+    }, {
+      rootMargin: '-30% 0px -60% 0px',
+      threshold: 0
     });
+
+    sections.forEach(sec => catObserver.observe(sec));
   }
 
   // --- Realtime & Initial Load ---

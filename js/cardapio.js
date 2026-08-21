@@ -6,14 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Navbar scroll ──────────────────────────────────────── */
   const navbar = document.getElementById('navbar');
+  let isNavbarSolid = null;
 
   const updateNavbar = () => {
-    if (window.scrollY > 60) {
-      navbar.classList.remove('navbar--transparent');
-      navbar.classList.add('navbar--solid');
-    } else {
-      navbar.classList.add('navbar--transparent');
-      navbar.classList.remove('navbar--solid');
+    if (!navbar) return;
+    const shouldBeSolid = window.scrollY > 60;
+    if (shouldBeSolid !== isNavbarSolid) {
+      isNavbarSolid = shouldBeSolid;
+      if (shouldBeSolid) {
+        navbar.classList.remove('navbar--transparent');
+        navbar.classList.add('navbar--solid');
+      } else {
+        navbar.classList.add('navbar--transparent');
+        navbar.classList.remove('navbar--solid');
+      }
     }
   };
 
@@ -141,9 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ── Navegação sticky de categorias ─────────────────────── */
-  const catBtns    = document.querySelectorAll('.cat-nav__btn');
+  const catBtns     = document.querySelectorAll('.cat-nav__btn');
   const catSections = document.querySelectorAll('.cat-section');
-  const catNav     = document.querySelector('.cat-nav');
+  const catNav      = document.querySelector('.cat-nav');
 
   // Scroll suave para categoria
   catBtns.forEach(btn => {
@@ -152,48 +158,40 @@ document.addEventListener('DOMContentLoaded', () => {
       const target   = document.getElementById(targetId);
 
       if (target) {
-        const navH   = parseInt(getComputedStyle(document.documentElement)
-          .getPropertyValue('--nav-height')) || 72;
-        const catNavH = catNav ? catNav.offsetHeight : 56;
-        const top = target.getBoundingClientRect().top + window.scrollY - navH - catNavH - 8;
+        const navH    = 72;
+        const catNavH = catNav ? 56 : 0;
+        const top     = target.getBoundingClientRect().top + window.scrollY - navH - catNavH - 8;
         window.scrollTo({ top, behavior: 'smooth' });
       }
     });
   });
 
-  // Highlight automático ao rolar
-  const highlightCat = () => {
-    const navH    = parseInt(getComputedStyle(document.documentElement)
-      .getPropertyValue('--nav-height')) || 72;
-    const catNavH = catNav ? catNav.offsetHeight : 56;
-    const offset  = navH + catNavH + 20;
-
-    let current = '';
-    catSections.forEach(sec => {
-      if (window.scrollY >= sec.offsetTop - offset) {
-        current = sec.id;
-      }
+  // Highlight automático usando IntersectionObserver (Zero Reflow)
+  if (catSections.length && catBtns.length) {
+    let activeCatId = '';
+    const catObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          if (id && id !== activeCatId) {
+            activeCatId = id;
+            catBtns.forEach(btn => {
+              btn.classList.toggle('active', btn.getAttribute('data-cat') === id);
+            });
+            const activeBtn = document.querySelector(`.cat-nav__btn[data-cat="${id}"]`);
+            if (activeBtn) {
+              activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+          }
+        }
+      });
+    }, {
+      rootMargin: '-30% 0px -60% 0px',
+      threshold: 0
     });
 
-    catBtns.forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-cat') === current);
-    });
-
-    // Scroll horizontal do catNav para mostrar ativo
-    const activeBtn = document.querySelector(`.cat-nav__btn[data-cat="${current}"]`);
-    if (activeBtn && catNav) {
-      const inner = catNav.querySelector('.cat-nav__inner');
-      if (inner) {
-        const btnLeft  = activeBtn.offsetLeft;
-        const btnWidth = activeBtn.offsetWidth;
-        const innerW   = inner.offsetWidth;
-        inner.scrollTo({ left: btnLeft - (innerW / 2) + (btnWidth / 2), behavior: 'smooth' });
-      }
-    }
-  };
-
-  window.addEventListener('scroll', highlightCat, { passive: true });
-  highlightCat();
+    catSections.forEach(sec => catObserver.observe(sec));
+  }
 
   /* ── Fade-in ────────────────────────────────────────────── */
   const observer = new IntersectionObserver((entries) => {
