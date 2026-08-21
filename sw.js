@@ -3,7 +3,7 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const STATIC_CACHE = `cafeteria-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cafeteria-runtime-${CACHE_VERSION}`;
 const MAX_RUNTIME_ITEMS = 60;

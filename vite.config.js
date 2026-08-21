@@ -22,9 +22,9 @@ export default defineConfig({
         { src: 'manifest.json', dest: '' },
         { src: 'robots.txt', dest: '' },
         { src: 'sitemap.xml', dest: '' },
-        { src: 'assets/**/*', dest: 'assets' },
-        { src: 'css/**/*', dest: 'css' },
-        { src: 'js/**/*', dest: 'js' }
+        { src: 'assets', dest: '' },
+        { src: 'css', dest: '' },
+        { src: 'js', dest: '' }
       ]
     })
   ],
