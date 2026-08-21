@@ -1,6 +1,6 @@
 /* =========================================================
    CURTAIN.CSS — Theater Entrance Animation
-   Rich Burgundy-Brown | Caricature Folds | Premium Feel
+   Vintage Theater Bordeaux / Velvet Finish | Caricature Folds | Premium Feel
    ========================================================= */
 
 .curtain-wrapper {
@@ -16,29 +16,30 @@
   position: relative;
   width: 50%;
   height: 100%;
-  background-color: #6B3D23; /* Further lightened rich brown */
+  background-color: #520e19; /* Bordô / veludo nobre de teatro clássico */
   background-image: 
     repeating-linear-gradient(
       90deg,
       transparent 0,
-      rgba(0, 0, 0, 0.15) 20px,
-      rgba(255, 255, 255, 0.05) 40px,
+      rgba(20, 2, 5, 0.35) 20px,
+      rgba(255, 170, 185, 0.09) 35px,
+      rgba(160, 25, 45, 0.22) 48px,
       transparent 60px
     ),
     linear-gradient(
       to bottom,
-      rgba(0,0,0,0.2) 0%,
-      transparent 10%,
-      transparent 90%,
-      rgba(0,0,0,0.3) 100%
+      rgba(15, 2, 5, 0.45) 0%,
+      transparent 12%,
+      transparent 85%,
+      rgba(15, 2, 5, 0.6) 100%
     );
   transition: transform 1.8s cubic-bezier(0.77, 0, 0.175, 1);
   will-change: transform;
   pointer-events: all;
-  box-shadow: 0 0 100px rgba(0,0,0,0.8);
+  box-shadow: 0 0 100px rgba(0,0,0,0.85);
 }
 
-/* Folds detail - Caricature style */
+/* Folds detail - Efeito de dobras de veludo pesado */
 .curtain-panel::before {
   content: '';
   position: absolute;
@@ -47,24 +48,25 @@
     repeating-linear-gradient(
       to right,
       transparent 0%,
-      rgba(0,0,0,0.15) 5%,
-      rgba(0,0,0,0.3) 10%,
-      rgba(0,0,0,0.15) 15%,
+      rgba(10, 0, 4, 0.32) 5%,
+      rgba(20, 2, 6, 0.52) 10%,
+      rgba(230, 60, 80, 0.14) 13%,
+      rgba(10, 0, 4, 0.32) 16%,
       transparent 20%
     );
-  background-size: 200px 100%;
-  opacity: 0.6;
+  background-size: 220px 100%;
+  opacity: 0.85;
 }
 
-/* Golden rope / Tie back */
+/* Golden rope / Cordão dourado */
 .curtain-rope {
   position: absolute;
   top: 60%;
   width: 100px;
   height: 20px;
-  background: radial-gradient(circle, #E5C08A 0%, #A07554 100%);
+  background: radial-gradient(circle, #F3E08F 0%, #D4AF37 55%, #8C6219 100%);
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
   z-index: 10001;
   transition: opacity 1s ease, transform 1.5s ease;
 }
@@ -79,27 +81,28 @@
   transform: rotate(10deg);
 }
 
-/* Stitching detail */
+/* Franja / acabamento costurado dourado */
 .curtain-panel::after {
   content: '';
   position: absolute;
   bottom: 40px;
   left: 0;
   width: 100%;
-  height: 2px;
-  background-image: repeating-linear-gradient(90deg, #D4A96A 0, #D4A96A 5px, transparent 5px, transparent 15px);
-  opacity: 0.5;
+  height: 3px;
+  background-image: repeating-linear-gradient(90deg, #D4AF37 0, #D4AF37 6px, transparent 6px, transparent 14px);
+  opacity: 0.75;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
 /* Animation triggers */
 .curtain-left {
   transform: translateX(0);
-  border-right: 2px solid rgba(0,0,0,0.3);
+  border-right: 2px solid rgba(0,0,0,0.4);
 }
 
 .curtain-right {
   transform: translateX(0);
-  border-left: 2px solid rgba(0,0,0,0.3);
+  border-left: 2px solid rgba(0,0,0,0.4);
 }
 
 .curtain-wrapper.is-opening .curtain-left {
@@ -118,7 +121,7 @@
 /* Mobile Adjustments */
 @media (max-width: 768px) {
   .curtain-panel::before {
-    background-size: 100px 100%;
+    background-size: 110px 100%;
   }
   
   .curtain-rope {
