@@ -164,11 +164,13 @@
       async upsert(product, imageBlob = null) {
         if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         if (imageBlob) {
-          const fileName = `${product.id}.webp`;
+          const mime = (imageBlob && imageBlob.type) ? imageBlob.type : 'image/webp';
+          const ext = mime.includes('jpeg') || mime.includes('jpg') ? 'jpg' : 'webp';
+          const fileName = `${product.id}.${ext}`;
           const { data: uploadData, error: uploadError } = await window.cafeteriaSupabase
             .storage
             .from('products')
-            .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
+            .upload(fileName, imageBlob, { upsert: true, contentType: mime, cacheControl: '31536000' });
           
           if (uploadError) {
             db.logger.error('products.uploadImage', uploadError);
@@ -233,11 +235,12 @@
         if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         let imageUrl = null;
         if (imageBlob) {
+          const mime = (imageBlob && imageBlob.type) ? imageBlob.type : 'image/webp';
           const fileName = `hero-home.webp`;
           const { error: uploadError } = await window.cafeteriaSupabase
             .storage
             .from('site-assets')
-            .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
+            .upload(fileName, imageBlob, { upsert: true, contentType: mime, cacheControl: '31536000' });
           
           if (uploadError) {
             db.logger.error('hero.update.storage', uploadError);
@@ -311,11 +314,12 @@
       async upsert(promo, imageBlob = null) {
         if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
         if (imageBlob) {
+          const mime = (imageBlob && imageBlob.type) ? imageBlob.type : 'image/webp';
           const fileName = `banner-${Date.now()}.webp`;
           const { error: uploadError } = await window.cafeteriaSupabase
             .storage
             .from('site-assets')
-            .upload(fileName, imageBlob, { upsert: true, contentType: 'image/webp' });
+            .upload(fileName, imageBlob, { upsert: true, contentType: mime, cacheControl: '31536000' });
           
           if (uploadError) {
             db.logger.error('promotions.upsert.upload', uploadError);
@@ -391,10 +395,11 @@
     // --- Assets / Storage ---
     assets: {
       async upload(fileName, blob, bucket = 'site-assets') {
+        const mime = (blob && blob.type) ? blob.type : 'image/webp';
         const { error } = await window.cafeteriaSupabase
           .storage
           .from(bucket)
-          .upload(fileName, blob, { upsert: true, contentType: 'image/webp' });
+          .upload(fileName, blob, { upsert: true, contentType: mime, cacheControl: '31536000' });
         
         if (error) throw error;
         

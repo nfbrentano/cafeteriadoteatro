@@ -217,32 +217,23 @@
     el.dataInput.value = dataUrl;
   }
 
-  function processFile(file) {
+  async function processFile(file) {
     if (!file || !file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width, h = img.height;
-        if (w > MAX_SIDE || h > MAX_SIDE) {
-          const ratio = Math.min(MAX_SIDE / w, MAX_SIDE / h);
-          w *= ratio; h *= ratio;
-        }
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        const dataUrl = canvas.toDataURL('image/webp', WEBP_QUAL);
-        showPreview(dataUrl);
-        // Stats resumido
-        const el = productsEls();
-        el.infoDims.textContent = `${Math.round(w)} x ${Math.round(h)}px`;
-        el.infoSize.textContent = `WebP Otimizado`;
-        el.info.style.display = 'flex';
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    const el = productsEls();
+    try {
+      const result = await admin.compressImage(file, 'product');
+      showPreview(result.dataUrl);
+      if (el.infoDims) el.infoDims.textContent = `${result.width} × ${result.height}px`;
+      if (el.infoSize) el.infoSize.textContent = `${result.format} • ${result.formattedOptimizedSize}`;
+      if (el.infoSaving) {
+        el.infoSaving.textContent = result.savedPercentage;
+        el.infoSaving.style.display = result.originalSizeBytes > result.optimizedSizeBytes ? 'inline-block' : 'none';
+      }
+      if (el.info) el.info.style.display = 'flex';
+    } catch (err) {
+      console.error('Erro ao processar imagem do produto:', err);
+      admin.toast('Erro', 'Não foi possível processar a imagem.', 'error');
+    }
   }
 
   // --- Event Bindings ---

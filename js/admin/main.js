@@ -158,33 +158,142 @@
     slugify(str) {
       return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     },
-    async compressImage(file, { maxWidth = 1200, maxHeight = 1200, quality = 0.82 } = {}) {
+    formatBytes(bytes, decimals = 1) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    },
+
+    /**
+     * Motor de Compressão e Otimização Inteligente para Web
+     * Suporta Presets ('hero', 'sobre', 'product', 'banner') ou parâmetros manuais.
+     */
+    async compressImage(file, options = {}) {
+      const PRESETS = {
+        hero:    { maxWidth: 1600, maxHeight: 1000, quality: 0.78, maxSizeBytes: 130 * 1024, minQuality: 0.55 },
+        sobre:   { maxWidth: 800,  maxHeight: 800,  quality: 0.78, maxSizeBytes: 65 * 1024,  minQuality: 0.55 },
+        product: { maxWidth: 600,  maxHeight: 600,  quality: 0.78, maxSizeBytes: 42 * 1024,  minQuality: 0.55 },
+        banner:  { maxWidth: 1200, maxHeight: 500,  quality: 0.78, maxSizeBytes: 85 * 1024,  minQuality: 0.55 }
+      };
+
+      const preset = typeof options === 'string' ? PRESETS[options] : (options.preset ? PRESETS[options.preset] : {});
+      const config = {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.78,
+        maxSizeBytes: 100 * 1024,
+        minQuality: 0.55,
+        ...preset,
+        ...(typeof options === 'object' ? options : {})
+      };
+
       return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) {
+        if (!file || !(file instanceof Blob || (typeof file.type === 'string' && file.type.startsWith('image/')))) {
           return reject(new Error('Arquivo não é uma imagem válida'));
         }
+
+        const originalSizeBytes = file.size || 0;
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            let { width, height } = img;
-            if (width > maxWidth || height > maxHeight) {
-              const ratio = Math.min(maxWidth / width, maxHeight / height);
-              width = Math.round(width * ratio);
-              height = Math.round(height * ratio);
+            let srcW = img.naturalWidth || img.width;
+            let srcH = img.naturalHeight || img.height;
+
+            // 1. Calcula dimensões mantendo aspect ratio
+            let targetW = srcW;
+            let targetH = srcH;
+            if (targetW > config.maxWidth || targetH > config.maxHeight) {
+              const ratio = Math.min(config.maxWidth / targetW, config.maxHeight / targetH);
+              targetW = Math.round(targetW * ratio);
+              targetH = Math.round(targetH * ratio);
             }
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/webp', quality);
-            resolve({ dataUrl, width, height });
+
+            // 2. Stepped downscaling (redução em passos se for encolher mais de 50%)
+            let curCanvas = document.createElement('canvas');
+            curCanvas.width = srcW;
+            curCanvas.height = srcH;
+            let curCtx = curCanvas.getContext('2d');
+            curCtx.drawImage(img, 0, 0, srcW, srcH);
+
+            let curW = srcW;
+            let curH = srcH;
+
+            while (curW * 0.5 > targetW && curH * 0.5 > targetH) {
+              const nextW = Math.round(curW * 0.5);
+              const nextH = Math.round(curH * 0.5);
+              const nextCanvas = document.createElement('canvas');
+              nextCanvas.width = nextW;
+              nextCanvas.height = nextH;
+              const nextCtx = nextCanvas.getContext('2d');
+              nextCtx.imageSmoothingEnabled = true;
+              nextCtx.imageSmoothingQuality = 'high';
+              nextCtx.drawImage(curCanvas, 0, 0, curW, curH, 0, 0, nextW, nextH);
+              curCanvas = nextCanvas;
+              curW = nextW;
+              curH = nextH;
+            }
+
+            // Canvas final
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = targetW;
+            finalCanvas.height = targetH;
+            const finalCtx = finalCanvas.getContext('2d');
+            finalCtx.imageSmoothingEnabled = true;
+            finalCtx.imageSmoothingQuality = 'high';
+            finalCtx.drawImage(curCanvas, 0, 0, curW, curH, 0, 0, targetW, targetH);
+
+            // 3. Detecção de formato suportado (WebP priority, JPEG fallback)
+            let mimeType = 'image/webp';
+            let testData = finalCanvas.toDataURL('image/webp', 0.5);
+            if (!testData.startsWith('data:image/webp')) {
+              mimeType = 'image/jpeg'; // Evita fallback para PNG não comprimido
+            }
+
+            // 4. Compressão adaptativa por orçamento de bytes (target byte budget loop)
+            let currentQuality = config.quality;
+            let finalDataUrl = finalCanvas.toDataURL(mimeType, currentQuality);
+            let finalBlob = admin.dataURLtoBlob(finalDataUrl);
+
+            // Se exceder o orçamento de tamanho e houver margem de qualidade
+            let iterations = 0;
+            while (finalBlob.size > config.maxSizeBytes && currentQuality > config.minQuality && iterations < 5) {
+              currentQuality = Math.max(config.minQuality, currentQuality - 0.08);
+              finalDataUrl = finalCanvas.toDataURL(mimeType, currentQuality);
+              finalBlob = admin.dataURLtoBlob(finalDataUrl);
+              iterations++;
+            }
+
+            const optimizedSizeBytes = finalBlob.size;
+            const savedBytes = Math.max(0, originalSizeBytes - optimizedSizeBytes);
+            const savedPercentage = originalSizeBytes > 0 
+              ? Math.round((savedBytes / originalSizeBytes) * 100) 
+              : 0;
+
+            const formatLabel = mimeType === 'image/webp' ? 'WebP' : 'JPEG';
+
+            resolve({
+              dataUrl: finalDataUrl,
+              blob: finalBlob,
+              width: targetW,
+              height: targetH,
+              mimeType,
+              format: formatLabel,
+              originalSizeBytes,
+              optimizedSizeBytes,
+              formattedOriginalSize: admin.formatBytes(originalSizeBytes),
+              formattedOptimizedSize: admin.formatBytes(optimizedSizeBytes),
+              savedPercentage: `-${savedPercentage}%`,
+              summaryText: `${formatLabel} • ${targetW}×${targetH}px • ${admin.formatBytes(optimizedSizeBytes)} (${savedPercentage > 0 ? `-${savedPercentage}%` : 'Otimizado'})`
+            });
           };
-          img.onerror = () => reject(new Error('Erro ao carregar imagem no canvas'));
+          img.onerror = () => reject(new Error('Erro ao carregar imagem no navegador'));
           img.src = e.target.result;
         };
-        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+        reader.onerror = () => reject(new Error('Erro ao ler arquivo de imagem'));
         reader.readAsDataURL(file);
       });
     },

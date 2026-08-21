@@ -388,9 +388,20 @@
                     </div>
                     <div class="upload-zone__preview hidden" id="sobre-upload-preview-wrap">
                       <img src="" id="sobre-upload-preview-img" width="800" height="400" style="width: 100%; height: auto; display: block;" />
+                      <div class="upload-zone__overlay">
+                        <button class="upload-zone__change" id="btn-sobre-change-img" type="button">Trocar Imagem</button>
+                      </div>
                     </div>
                     <input type="file" id="sobre-image-file" accept="image/*" class="hidden" />
                     <input type="hidden" id="sobre-image-data" />
+                  </div>
+
+                  <!-- Info bar for stats -->
+                  <div class="upload-info" id="sobre-upload-info" style="display: none; margin-top: 8px;">
+                    <span class="upload-info__badge">Otimizada</span>
+                    <span class="upload-info__text" id="sobre-info-dims">800 × 800px</span>
+                    <span class="upload-info__text" id="sobre-info-size">45 KB</span>
+                    <span class="upload-info__saving" id="sobre-info-saving">↓ 92%</span>
                   </div>
                 </div>
                 
@@ -1080,6 +1091,13 @@
               </div>
             </div>
             <input type="file" id="promo-image-file" accept="image/*" style="display:none" />
+          </div>
+          <!-- Info bar for stats -->
+          <div class="upload-info" id="promo-upload-info" style="display: none; margin-top: 8px;">
+            <span class="upload-info__badge">Otimizada</span>
+            <span class="upload-info__text" id="promo-info-dims">1200 × 400px</span>
+            <span class="upload-info__text" id="promo-info-size">60 KB</span>
+            <span class="upload-info__saving" id="promo-info-saving">↓ 85%</span>
           </div>
           <input type="hidden" id="promo-image-data" />
         </div>
