@@ -1,6 +1,36 @@
-import { resolve } from 'path';
+import { resolve, basename } from 'path';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+function inlineCssPlugin() {
+  return {
+    name: 'inline-css-plugin',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml(html, ctx) {
+      if (!ctx || !ctx.bundle) return html;
+
+      let resultHtml = html;
+      for (const [fileName, file] of Object.entries(ctx.bundle)) {
+        if (fileName.endsWith('.css') && file.type === 'asset') {
+          const fileBase = basename(fileName);
+          const cssContent = typeof file.source === 'string' ? file.source : file.source.toString();
+          
+          // Match any <link> tag that references this css file
+          const linkRegex = new RegExp(
+            `<link\\s+[^>]*?href=["'][^"']*?${fileBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*?>`,
+            'gi'
+          );
+
+          if (linkRegex.test(resultHtml)) {
+            resultHtml = resultHtml.replace(linkRegex, `<style>${cssContent}</style>`);
+          }
+        }
+      }
+      return resultHtml;
+    }
+  };
+}
 
 export default defineConfig({
   build: {
@@ -15,6 +45,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    inlineCssPlugin(),
     viteStaticCopy({
       targets: [
         { src: 'CNAME', dest: '' },
