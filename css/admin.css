@@ -1712,7 +1712,7 @@ tbody tr:hover { background: var(--admin-hover); }
 .hero-manage-preview__bg {
   position: absolute;
   inset: 0;
-  background-image: url('../assets/images/hero-bg.png'); /* Default fallback */
+  background-image: url('../assets/images/galeria-ambiente.webp'); /* Default fallback */
   background-size: cover;
   background-position: center;
   opacity: 0.8;

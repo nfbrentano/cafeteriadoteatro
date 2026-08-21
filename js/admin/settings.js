@@ -22,7 +22,7 @@
       document.getElementById('hero-alt').value = data.image_alt || '';
       livePreviewBg.style.backgroundImage = `url(${data.image_url})`;
     } else {
-      livePreviewBg.style.backgroundImage = "url('assets/images/hero-bg.png')";
+      livePreviewBg.style.backgroundImage = "url('assets/images/galeria-ambiente.webp')";
     }
   };
 
