@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos | Cafeteria do Teatro</title>
+  <link rel="stylesheet" href="css/pedidos.css">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+</head>
+<body>
+
+  <!-- TELA DE LOGIN (BARISTA) -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">☕ Cafeteria do Teatro</div>
+      <h3>Login do Barista</h3>
+      <div class="login-error" id="login-error"></div>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="E-mail" required />
+        <input type="password" id="login-pass" placeholder="Senha" required />
+        <button type="submit" id="login-btn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APLICATIVO PRINCIPAL -->
+  <div id="app" class="app-container hidden">
+    <!-- BARRA SUPERIOR -->
+    <header class="topbar">
+      <div class="topbar__logo">☕ PDV Barista</div>
+      <div class="topbar__user">
+        <span id="user-name">Carregando...</span>
+        <button id="btn-logout" class="btn-logout">Sair</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- PAINEL ESQUERDO: CARDÁPIO E MESAS -->
+      <main class="menu-panel">
+        <div class="panel-header">
+          <h2>Fazer Pedido</h2>
+          
+          <div class="mesa-selector">
+            <label for="mesa-select">Mesa / Local:</label>
+            <select id="mesa-select">
+              <option value="">Selecione...</option>
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="categories-tabs" id="categories-tabs">
+          <!-- Categorias via JS -->
+        </div>
+
+        <div class="products-grid" id="products-grid">
+          <!-- Produtos via JS -->
+          <div class="loading">Carregando cardápio...</div>
+        </div>
+      </main>
+
+      <!-- PAINEL DIREITO: CARRINHO -->
+      <aside class="cart-panel">
+        <div class="cart-header">
+          <h2>Resumo do Pedido</h2>
+          <span class="mesa-badge" id="cart-mesa-badge">Sem Mesa</span>
+        </div>
+        
+        <div class="cart-items" id="cart-items">
+          <div class="cart-empty">Nenhum item adicionado.</div>
+        </div>
+
+        <div class="cart-footer">
+          <textarea id="pedido-obs" placeholder="Observações (opcional)"></textarea>
+          
+          <div class="cart-total">
+            <span>Total:</span>
+            <span id="cart-total-value">R$ 0,00</span>
+          </div>
+          
+          <button id="btn-enviar-pedido" class="btn-primary" disabled>
+            Enviar Pedido
+          </button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/pedidos.js"></script>
+</body>
+</html>

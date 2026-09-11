@@ -100,6 +100,9 @@
         dashboard: 'Dashboard',
         produtos: 'Produtos',
         categorias: 'Categorias',
+        pedidos: 'Pedidos',
+        mesas: 'Mesas',
+        usuarios: 'Usuários',
         hero: 'Hero da Home',
         horarios: 'Horários',
         promocoes: 'Promoções',
@@ -114,6 +117,9 @@
         dashboard: 'renderDashboard',
         produtos:  'renderProdutos',
         categorias: 'renderCategorias',
+        pedidos:    'initAdminPedidos',
+        mesas:      'initAdminMesas',
+        usuarios:   'loadUsuarios',
         hero:       'renderHero',
         horarios:   'renderHorarios',
         promocoes:  'renderPromocoes',
@@ -359,7 +365,7 @@
     document.querySelectorAll('.sidebar__link[data-page]').forEach(btn => {
       btn.addEventListener('click', () => admin.navigateTo(btn.dataset.page));
     });
-    ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay'].forEach(id => {
+    ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay', 'modal-mesa-overlay', 'modal-usuario-overlay'].forEach(id => {
       document.getElementById(id)?.addEventListener('click', e => {
         if (e.target.id === id) admin.closeModal(id);
       });

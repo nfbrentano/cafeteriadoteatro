@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozinha | Cafeteria do Teatro</title>
+  <link rel="stylesheet" href="css/cozinha.css">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+</head>
+<body>
+
+  <!-- TELA DE LOGIN (COZINHA) -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">🍳 Cafeteria do Teatro</div>
+      <h3>Painel da Cozinha</h3>
+      <div class="login-error" id="login-error"></div>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="E-mail" required />
+        <input type="password" id="login-pass" placeholder="Senha" required />
+        <button type="submit" id="login-btn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APLICATIVO PRINCIPAL -->
+  <div id="app" class="app-container hidden">
+    <!-- BARRA SUPERIOR -->
+    <header class="topbar">
+      <div class="topbar__logo">🍳 Pedidos na Cozinha</div>
+      
+      <div class="topbar__center">
+        <div class="status-indicator">
+          <span class="pulse-dot"></span>
+          Conectado (Realtime Ativo)
+        </div>
+      </div>
+
+      <div class="topbar__user">
+        <button id="btn-teste-impressao" class="btn-ghost">🖨 Testar Impressão</button>
+        <span id="user-name">Carregando...</span>
+        <button id="btn-logout" class="btn-logout">Sair</button>
+      </div>
+    </header>
+
+    <!-- GRID DE PEDIDOS -->
+    <main class="pedidos-board">
+      <div class="column" id="col-pendentes">
+        <h2 class="column-header">
+          🟡 Pendentes <span class="count" id="count-pendentes">0</span>
+        </h2>
+        <div class="pedidos-list" id="list-pendentes">
+          <!-- Cards via JS -->
+          <div class="empty-state">Nenhum pedido pendente.</div>
+        </div>
+      </div>
+
+      <div class="column" id="col-preparo">
+        <h2 class="column-header">
+          🔵 Em Preparo <span class="count" id="count-preparo">0</span>
+        </h2>
+        <div class="pedidos-list" id="list-preparo">
+          <!-- Cards via JS -->
+          <div class="empty-state">Nenhum pedido em preparo.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- IFRAME OCULTO PARA IMPRESSÃO -->
+  <iframe id="print-frame" style="display:none;"></iframe>
+
+  <!-- AUDIO ALERT -->
+  <audio id="audio-alert" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=message-incoming-132126.mp3" preload="auto"></audio>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/pedido-print.js"></script>
+  <script src="js/cozinha.js"></script>
+</body>
+</html>

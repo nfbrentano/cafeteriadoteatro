@@ -46,10 +46,10 @@
 
     <form id="login-form" novalidate>
       <div class="field">
-        <label class="field__label" for="login-user">Usuário</label>
-        <input class="field__input" type="text" id="login-user"
-               placeholder="admin" autocomplete="username" required />
-        <div class="field__error-msg" id="err-login-user">Digite seu usuário.</div>
+        <label class="field__label" for="login-user">E-mail</label>
+        <input class="field__input" type="email" id="login-user"
+               placeholder="seu@email.com" autocomplete="username" required />
+        <div class="field__error-msg" id="err-login-user">Digite seu e-mail.</div>
       </div>
 
       <div class="field">
@@ -84,11 +84,20 @@
       <button class="sidebar__link active" data-page="dashboard" id="nav-dashboard">
         <span class="sidebar__link-icon">📊</span> Dashboard
       </button>
+      <button class="sidebar__link" data-page="pedidos" id="nav-pedidos">
+        <span class="sidebar__link-icon">🛎️</span> Pedidos
+      </button>
       <button class="sidebar__link" data-page="produtos" id="nav-produtos">
         <span class="sidebar__link-icon">🍽️</span> Produtos
       </button>
       <button class="sidebar__link" data-page="categorias" id="nav-categorias">
         <span class="sidebar__link-icon">🏷️</span> Categorias
+      </button>
+      <button class="sidebar__link" data-page="mesas" id="nav-mesas">
+        <span class="sidebar__link-icon">🪑</span> Mesas
+      </button>
+      <button class="sidebar__link" data-page="usuarios" id="nav-usuarios">
+        <span class="sidebar__link-icon">👥</span> Usuários
       </button>
       <button class="sidebar__link" data-page="configuracoes" id="nav-configuracoes">
         <span class="sidebar__link-icon">⚙️</span> Configurações
@@ -198,6 +207,83 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <!-- ── PEDIDOS ────────────────────────────────────── -->
+      <section class="page" id="page-pedidos">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Pedidos</div>
+            <div class="page-header__sub">Histórico e gestão de pedidos</div>
+          </div>
+          <a href="cozinha.html" target="_blank" class="btn btn--outline-dark" id="btn-abrir-cozinha">
+            👨‍🍳 Abrir Painel Cozinha
+          </a>
+          <a href="pedidos.html" target="_blank" class="btn btn--primary" id="btn-abrir-barista">
+            ☕ Abrir Tela Barista
+          </a>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters">
+            <select class="filter-select" id="filter-pedido-status">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendentes</option>
+              <option value="em_preparo">Em Preparo</option>
+              <option value="concluido">Concluídos</option>
+              <option value="cancelado">Cancelados</option>
+            </select>
+          </div>
+          <button class="btn btn--ghost" id="btn-refresh-pedidos">🔄 Atualizar</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Mesa</th>
+                <th>Itens</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Barista</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="pedidos-table-body">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── MESAS ─────────────────────────────────────── -->
+      <section class="page" id="page-mesas">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Mesas</div>
+            <div class="page-header__sub">Gerencie os códigos e mesas disponíveis</div>
+          </div>
+          <button class="btn btn--primary" id="btn-nova-mesa">
+            + Nova Mesa
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Status</th>
+                <th>Criada em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="mesas-table-body">
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -502,6 +588,35 @@
             </thead>
             <tbody id="promo-table-body">
               <!-- Gerado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── USUÁRIOS ─────────────────────────────────────── -->
+      <section class="page" id="page-usuarios">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Usuários</div>
+            <div class="page-header__sub">Gerencie a equipe da cafeteria</div>
+          </div>
+          <button class="btn btn--primary" id="btn-novo-usuario">
+            + Novo Usuário
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail (Login)</th>
+                <th>Perfil</th>
+                <th>Status</th>
+                <th>Criado em</th>
+              </tr>
+            </thead>
+            <tbody id="usuarios-table-body">
             </tbody>
           </table>
         </div>
@@ -1132,6 +1247,110 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
+     MODAL DE MESAS
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-mesa-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-mesa-title">
+  <div class="modal" id="modal-mesa">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-mesa-title">Nova Mesa</span>
+      <button class="modal__close" id="modal-mesa-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-mesa">
+        <input type="hidden" id="mesa-id" />
+        
+        <div class="form-group">
+          <label for="mesa-codigo">Código da Mesa (Ex: 01, BALCAO)</label>
+          <input type="text" id="mesa-codigo" class="form-control" required maxlength="20" />
+        </div>
+        
+        <div class="form-group">
+          <label for="mesa-descricao">Descrição (Opcional)</label>
+          <input type="text" id="mesa-descricao" class="form-control" />
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="mesa-ativo" checked />
+            <span class="slider round"></span>
+            <span style="margin-left:8px;">Mesa Ativa</span>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-mesa-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-mesa">Salvar Mesa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DETALHES DO PEDIDO
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-pedido-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pedido-title">
+  <div class="modal" id="modal-pedido" style="max-width: 600px;">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-pedido-title">Detalhes do Pedido</span>
+      <button class="modal__close" id="modal-pedido-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body" id="modal-pedido-body">
+      <!-- Injetado via JS -->
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-pedido-cancel">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE USUÁRIOS
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-usuario-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-usuario-title">
+  <div class="modal" id="modal-usuario">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-usuario-title">Novo Usuário</span>
+      <button class="modal__close" id="modal-usuario-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-usuario" novalidate>
+        <div class="field">
+          <label class="field__label" for="usuario-nome">Nome *</label>
+          <input class="field__input" type="text" id="usuario-nome" placeholder="Nome do colaborador" required />
+          <div class="field__error-msg" id="err-usuario-nome">Nome é obrigatório.</div>
+        </div>
+        
+        <div class="field">
+          <label class="field__label" for="usuario-email">E-mail *</label>
+          <input class="field__input" type="email" id="usuario-email" placeholder="email@exemplo.com" required />
+          <div class="field__error-msg" id="err-usuario-email">E-mail inválido.</div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="usuario-senha">Senha *</label>
+          <input class="field__input" type="password" id="usuario-senha" placeholder="Mínimo 6 caracteres" required minlength="6" />
+          <div class="field__error-msg" id="err-usuario-senha">Senha muito curta.</div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="usuario-role">Perfil *</label>
+          <select class="field__select" id="usuario-role" required>
+            <option value="barista">Barista</option>
+            <option value="cozinha">Cozinha</option>
+            <option value="admin">Admin</option>
+          </select>
+          <div class="field__error-msg" id="err-usuario-role">Selecione um perfil.</div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-usuario-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-usuario">Criar Usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
      CONFIRM DIALOG
 ════════════════════════════════════════════════════════════ -->
 <div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
@@ -1161,6 +1380,9 @@
 <script defer src="js/admin/categories.js"></script>
 <script defer src="js/admin/settings.js"></script>
 <script defer src="js/admin/menu-pdf.js"></script>
+<script defer src="js/admin/pedidos-admin.js"></script>
+<script defer src="js/admin/mesas-admin.js"></script>
+<script defer src="js/admin/usuarios-admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
