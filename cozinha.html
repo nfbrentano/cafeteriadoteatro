@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cozinha | Cafeteria do Teatro</title>
+  <title>Cozinha & Bar | Cafeteria do Teatro</title>
   <link rel="stylesheet" href="css/cozinha.css">
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
 </head>
@@ -13,7 +13,7 @@
   <div id="login-screen" class="login-screen">
     <div class="login-card">
       <div class="login-logo">🍳 Cafeteria do Teatro</div>
-      <h3>Painel da Cozinha</h3>
+      <h3>Painel da Cozinha & Bar</h3>
       <div class="login-error" id="login-error"></div>
       <form id="login-form">
         <input type="email" id="login-email" placeholder="E-mail" required />
@@ -25,43 +25,69 @@
 
   <!-- APLICATIVO PRINCIPAL -->
   <div id="app" class="app-container hidden">
+    <!-- BANNER DE ATIVAÇÃO DE ÁUDIO -->
+    <div id="audio-banner" class="audio-banner">
+      <span>🔔 <strong>Atenção:</strong> O navegador requer sua interação para tocar alertas sonoros de novos pedidos.</span>
+      <button id="btn-ativar-audio" class="btn-ativar-audio">Ativar Alertas de Áudio</button>
+    </div>
+
     <!-- BARRA SUPERIOR -->
     <header class="topbar">
-      <div class="topbar__logo">🍳 Pedidos na Cozinha</div>
+      <div class="topbar__logo">🍳 Cozinha & Bar (KDS)</div>
       
       <div class="topbar__center">
         <div class="status-indicator">
           <span class="pulse-dot"></span>
-          Conectado (Realtime Ativo)
+          Conectado (Tempo Real Ativo)
         </div>
       </div>
 
       <div class="topbar__user">
+        <button id="btn-toggle-som" class="btn-ghost" title="Testar ou Silenciar Alarme">🔔 Som Ativo</button>
         <button id="btn-teste-impressao" class="btn-ghost">🖨 Testar Impressão</button>
         <span id="user-name">Carregando...</span>
         <button id="btn-logout" class="btn-logout">Sair</button>
       </div>
     </header>
 
-    <!-- GRID DE PEDIDOS -->
+    <!-- TOAST DE CANCELAMENTO -->
+    <div id="cancel-toast" class="cancel-toast hidden">
+      <span id="cancel-toast-msg">⚠️ Um pedido foi cancelado</span>
+      <button id="cancel-toast-close">✕</button>
+    </div>
+
+    <!-- GRID DE PEDIDOS (3 COLUNAS) -->
     <main class="pedidos-board">
+      <!-- 1. PENDENTES -->
       <div class="column" id="col-pendentes">
         <h2 class="column-header">
-          🟡 Pendentes <span class="count" id="count-pendentes">0</span>
+          <span>🟡 Pendentes</span>
+          <span class="count" id="count-pendentes">0</span>
         </h2>
         <div class="pedidos-list" id="list-pendentes">
-          <!-- Cards via JS -->
           <div class="empty-state">Nenhum pedido pendente.</div>
         </div>
       </div>
 
+      <!-- 2. EM PREPARO -->
       <div class="column" id="col-preparo">
         <h2 class="column-header">
-          🔵 Em Preparo <span class="count" id="count-preparo">0</span>
+          <span>🔵 Em Preparo</span>
+          <span class="count" id="count-preparo">0</span>
         </h2>
         <div class="pedidos-list" id="list-preparo">
-          <!-- Cards via JS -->
           <div class="empty-state">Nenhum pedido em preparo.</div>
+        </div>
+      </div>
+
+      <!-- 3. CONCLUÍDOS RECENTEMENTE -->
+      <div class="column" id="col-concluidos">
+        <h2 class="column-header">
+          <span>🟢 Prontos Recentes</span>
+          <span class="count" id="count-concluidos">0</span>
+        </h2>
+        <div class="pedidos-list" id="list-concluidos">
+          <div class="empty-state">Nenhum pedido concluído recentemente.</div>
         </div>
       </div>
     </main>
@@ -71,7 +97,7 @@
   <iframe id="print-frame" style="display:none;"></iframe>
 
   <!-- AUDIO ALERT -->
-  <audio id="audio-alert" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=message-incoming-132126.mp3" preload="auto"></audio>
+  <audio id="audio-alert" src="assets/audio/alert.wav" preload="auto"></audio>
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

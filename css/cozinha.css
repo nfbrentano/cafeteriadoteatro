@@ -1,21 +1,27 @@
 /* =========================================================
-   COZINHA.CSS — Estilos do Painel da Cozinha
+   COZINHA.CSS — Estilos do Painel da Cozinha & Bar (KDS)
    ========================================================= */
 
 :root {
   --marrom-escuro: #1C1008;
   --marfim: #FAF6EE;
-  --cinza-bg: #EAE6DF;
-  --amarelo: #FFC107;
-  --azul: #2196F3;
-  --verde: #4CAF50;
-  --vermelho: #F44336;
+  --cinza-bg: #EFECE6;
+  --cinza-card: #FFFFFF;
+  --cinza-borda: #DDD8CE;
+  --amarelo: #E65100;
+  --amarelo-bg: #FFF8E1;
+  --azul: #1565C0;
+  --azul-bg: #E3F2FD;
+  --verde: #2E7D32;
+  --verde-bg: #E8F5E9;
+  --vermelho: #C62828;
+  --vermelho-bg: #FFEBEE;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Jost', sans-serif;
+  font-family: 'Jost', system-ui, -apple-system, sans-serif;
   background-color: var(--cinza-bg);
   color: var(--marrom-escuro);
   height: 100vh;
@@ -38,15 +44,15 @@ body {
 .login-card {
   background: var(--marfim);
   padding: 40px;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 100%;
   max-width: 400px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 
 .login-logo {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   margin-bottom: 8px;
 }
@@ -54,6 +60,7 @@ body {
 .login-card h3 {
   margin-bottom: 24px;
   color: #666;
+  font-weight: 500;
 }
 
 .login-error {
@@ -67,8 +74,9 @@ body {
   padding: 12px;
   margin-bottom: 16px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: 'Jost', sans-serif;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 15px;
 }
 
 .login-card button {
@@ -77,19 +85,51 @@ body {
   background-color: var(--marrom-escuro);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.login-card button:hover {
+  opacity: 0.9;
 }
 
 /* -------------------------------------
-   APP LAYOUT
+   APP LAYOUT & TOPBAR
 -------------------------------------- */
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+}
+
+.audio-banner {
+  background: #FFF3CD;
+  color: #856404;
+  border-bottom: 1px solid #FFEEBA;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  z-index: 20;
+}
+
+.btn-ativar-audio {
+  background: #D39E00;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-ativar-audio:hover {
+  background: #BA8B00;
 }
 
 .topbar {
@@ -98,14 +138,15 @@ body {
   align-items: center;
   background-color: var(--marrom-escuro);
   color: var(--marfim);
-  padding: 16px 24px;
+  padding: 12px 24px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   z-index: 10;
 }
 
 .topbar__logo {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
+  letter-spacing: 0.5px;
 }
 
 .status-indicator {
@@ -113,13 +154,13 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #aaa;
+  color: #ccc;
 }
 
 .pulse-dot {
   width: 10px;
   height: 10px;
-  background-color: var(--verde);
+  background-color: #4CAF50;
   border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
   animation: pulse 2s infinite;
@@ -134,100 +175,129 @@ body {
 .topbar__user {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   font-size: 14px;
 }
 
 .btn-ghost {
-  background: transparent;
-  border: 1px solid #555;
-  color: #ddd;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #eee;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
 }
 
 .btn-logout {
   background: transparent;
-  border: 1px solid #aaa;
-  color: #aaa;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #eee;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 13px;
 }
 
 .btn-logout:hover, .btn-ghost:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.2);
   color: white;
 }
 
+/* Toast de Cancelamento */
+.cancel-toast {
+  background: var(--vermelho);
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.cancel-toast button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
 /* -------------------------------------
-   GRID DE PEDIDOS
+   GRID DE PEDIDOS (3 COLUNAS)
 -------------------------------------- */
 .pedidos-board {
   flex: 1;
   display: flex;
-  padding: 24px;
-  gap: 24px;
+  padding: 18px;
+  gap: 18px;
   overflow: hidden;
 }
 
 .column {
   flex: 1;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.65);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  border: 1px solid var(--cinza-borda);
 }
 
 .column-header {
-  padding: 16px 20px;
-  font-size: 20px;
-  font-weight: 600;
+  padding: 14px 18px;
+  font-size: 18px;
+  font-weight: 700;
   border-bottom: 2px solid #ddd;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-#col-pendentes .column-header { background: #FFF8E1; border-color: var(--amarelo); color: #795548; }
-#col-preparo .column-header { background: #E3F2FD; border-color: var(--azul); color: #1565C0; }
+#col-pendentes .column-header { background: var(--amarelo-bg); border-color: var(--amarelo); color: var(--amarelo); }
+#col-preparo .column-header { background: var(--azul-bg); border-color: var(--azul); color: var(--azul); }
+#col-concluidos .column-header { background: var(--verde-bg); border-color: var(--verde); color: var(--verde); }
 
 .count {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.08);
   padding: 2px 10px;
   border-radius: 20px;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: bold;
 }
 
 .pedidos-list {
   flex: 1;
-  padding: 16px;
+  padding: 14px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .empty-state {
   text-align: center;
   color: #888;
-  margin-top: 40px;
+  margin-top: 50px;
   font-style: italic;
+  font-size: 15px;
 }
 
 /* -------------------------------------
-   CARTÃO DO PEDIDO
+   CARD DO PEDIDO
 -------------------------------------- */
 .pedido-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--cinza-borda);
   animation: slideIn 0.3s ease-out;
 }
 
@@ -241,18 +311,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #EEE;
+  background: #FAFAFA;
 }
 
 .pedido-mesa {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--marrom-escuro);
 }
 
 .pedido-tempo {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .pedido-tempo.atrasado {
@@ -262,53 +334,117 @@ body {
 
 @keyframes blink { 50% { opacity: 0.5; } }
 
+.pedido-operador {
+  padding: 4px 16px;
+  font-size: 11px;
+  color: #888;
+  background: #FAFAFA;
+}
+
 .pedido-itens {
-  padding: 16px;
-  font-size: 18px;
-  line-height: 1.5;
+  padding: 14px 16px;
+  font-size: 16px;
+  line-height: 1.4;
 }
 
 .item-row {
   display: flex;
-  gap: 12px;
-  margin-bottom: 8px;
-  border-bottom: 1px dashed #eee;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #EEE;
   padding-bottom: 8px;
 }
-.item-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
 
-.item-qty { font-weight: bold; min-width: 30px; }
-.item-name { flex: 1; }
+.item-row:last-child {
+  border: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.item-main {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.item-qty {
+  font-weight: 800;
+  min-width: 26px;
+  color: var(--marrom-escuro);
+}
+
+.item-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.item-obs-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: #D97706;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+  margin-left: 36px;
+  display: inline-block;
+}
 
 .pedido-obs {
   background: #FFF9C4;
-  padding: 12px 16px;
-  font-size: 16px;
+  padding: 10px 16px;
+  font-size: 14px;
   font-style: italic;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #EEE;
+  color: #5D4037;
 }
 
 .pedido-footer {
-  padding: 12px 16px;
-  background: #f9f9f9;
-  border-top: 1px solid #eee;
+  padding: 10px 16px;
+  background: #FAFAFA;
+  border-top: 1px solid #EEE;
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .btn-card {
-  padding: 10px 20px;
+  padding: 8px 14px;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   color: white;
+  transition: opacity 0.2s;
+}
+
+.btn-card:hover {
+  opacity: 0.9;
 }
 
 .btn-card--preparo { background: var(--azul); }
-.btn-card--preparo:hover { background: #1976D2; }
-
 .btn-card--concluir { background: var(--verde); }
-.btn-card--concluir:hover { background: #388E3C; }
+.btn-card--desfazer { background: #757575; font-size: 12px; }
+.btn-card--print {
+  background: white;
+  border: 1px solid #CCC;
+  color: #333;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-card--print:hover {
+  background: #EEE;
+}

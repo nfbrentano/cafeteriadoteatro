@@ -40,6 +40,8 @@ export default defineConfig({
         main: resolve(import.meta.dirname, 'index.html'),
         cardapio: resolve(import.meta.dirname, 'cardapio.html'),
         admin: resolve(import.meta.dirname, 'admin.html'),
+        pedidos: resolve(import.meta.dirname, 'pedidos.html'),
+        cozinha: resolve(import.meta.dirname, 'cozinha.html'),
         notfound: resolve(import.meta.dirname, '404.html')
       }
     }

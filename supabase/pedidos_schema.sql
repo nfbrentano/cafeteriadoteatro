@@ -22,13 +22,9 @@ AS $$
   SELECT role FROM public.perfis WHERE id = auth.uid();
 $$;
 
-DROP POLICY IF EXISTS "perfis_select_own" ON public.perfis;
-CREATE POLICY "perfis_select_own" ON public.perfis FOR SELECT TO authenticated
-    USING (id = auth.uid());
-
-DROP POLICY IF EXISTS "perfis_select_admin" ON public.perfis;
-CREATE POLICY "perfis_select_admin" ON public.perfis FOR SELECT TO authenticated
-    USING (public.get_user_role() = 'admin');
+DROP POLICY IF EXISTS "perfis_select_authenticated" ON public.perfis;
+CREATE POLICY "perfis_select_authenticated" ON public.perfis FOR SELECT TO authenticated
+    USING (true);
 
 -- Trigger para criar perfil automaticamente ao cadastrar usuário (Opcional, mas útil)
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
@@ -45,6 +41,15 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Sincronizar usuários existentes em auth.users que ainda não tenham perfil em public.perfis:
+INSERT INTO public.perfis (id, nome, role)
+SELECT 
+    id, 
+    COALESCE(raw_user_meta_data->>'nome', split_part(email, '@', 1), 'Administrador') AS nome,
+    COALESCE(raw_user_meta_data->>'role', 'admin') AS role
+FROM auth.users
+ON CONFLICT (id) DO NOTHING;
 
 
 -- 2. Criar tabela de Mesas
@@ -93,6 +98,9 @@ CREATE TABLE IF NOT EXISTS public.pedidos (
     observacoes TEXT,
     total NUMERIC(10,2) NOT NULL DEFAULT 0,
     criado_por UUID REFERENCES auth.users(id),
+    criado_por_nome TEXT,
+    forma_pagamento TEXT CHECK (forma_pagamento IN ('pix', 'dinheiro', 'cartao_credito', 'cartao_debito', 'outros')),
+    status_pagamento TEXT NOT NULL DEFAULT 'pendente' CHECK (status_pagamento IN ('pendente', 'pago')),
     concluido_por UUID REFERENCES auth.users(id),
     concluido_em TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('America/Sao_Paulo', now()),
@@ -102,6 +110,8 @@ CREATE TABLE IF NOT EXISTS public.pedidos (
 CREATE INDEX IF NOT EXISTS idx_pedidos_status ON public.pedidos(status);
 CREATE INDEX IF NOT EXISTS idx_pedidos_mesa ON public.pedidos(mesa_codigo);
 CREATE INDEX IF NOT EXISTS idx_pedidos_created ON public.pedidos(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pedidos_status_pagamento ON public.pedidos(status_pagamento);
+CREATE INDEX IF NOT EXISTS idx_pedidos_forma_pagamento ON public.pedidos(forma_pagamento);
 
 -- Habilitar RLS em pedidos
 ALTER TABLE public.pedidos ENABLE ROW LEVEL SECURITY;
@@ -129,6 +139,7 @@ CREATE TABLE IF NOT EXISTS public.pedido_itens (
     nome_produto TEXT NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 1,
     preco_unitario NUMERIC(10,2) NOT NULL,
+    observacoes TEXT,
     subtotal NUMERIC(10,2) GENERATED ALWAYS AS (quantidade * preco_unitario) STORED
 );
 
@@ -146,13 +157,35 @@ CREATE POLICY "pedido_itens_insert" ON public.pedido_itens FOR INSERT TO authent
         public.get_user_role() IN ('barista', 'admin')
     );
 
+DROP POLICY IF EXISTS "pedido_itens_update" ON public.pedido_itens;
+CREATE POLICY "pedido_itens_update" ON public.pedido_itens FOR UPDATE TO authenticated
+    USING (
+        public.get_user_role() IN ('barista', 'admin')
+    );
 
--- 5. Habilitar Realtime na tabela de Pedidos
--- Supabase exige que a tabela seja adicionada ao publication supabase_realtime
-BEGIN;
-  DROP PUBLICATION IF EXISTS supabase_realtime;
-  CREATE PUBLICATION supabase_realtime FOR TABLE public.pedidos;
-COMMIT;
+DROP POLICY IF EXISTS "pedido_itens_delete" ON public.pedido_itens;
+CREATE POLICY "pedido_itens_delete" ON public.pedido_itens FOR DELETE TO authenticated
+    USING (
+        public.get_user_role() IN ('barista', 'admin')
+    );
+
+-- 5. Habilitar Realtime na tabela de Pedidos e Itens
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'pedidos'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.pedidos;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'pedido_itens'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.pedido_itens;
+  END IF;
+END $$;
 
 -- 6. Função RPC para Admin criar usuários
 CREATE EXTENSION IF NOT EXISTS pgcrypto;

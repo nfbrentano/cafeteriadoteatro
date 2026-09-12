@@ -214,25 +214,66 @@
       <section class="page" id="page-pedidos">
         <div class="page-header">
           <div>
-            <div class="page-header__title">Pedidos</div>
-            <div class="page-header__sub">Histórico e gestão de pedidos</div>
+            <div class="page-header__title">Pedidos & Vendas</div>
+            <div class="page-header__sub">Histórico, indicadores de faturamento e gestão em tempo real</div>
           </div>
-          <a href="cozinha.html" target="_blank" class="btn btn--outline-dark" id="btn-abrir-cozinha">
-            👨‍🍳 Abrir Painel Cozinha
-          </a>
-          <a href="pedidos.html" target="_blank" class="btn btn--primary" id="btn-abrir-barista">
-            ☕ Abrir Tela Barista
-          </a>
+          <div style="display: flex; gap: 10px;">
+            <a href="cozinha.html" target="_blank" class="btn btn--outline-dark" id="btn-abrir-cozinha">
+              👨‍🍳 Abrir Painel Cozinha
+            </a>
+            <a href="pedidos.html" target="_blank" class="btn btn--primary" id="btn-abrir-barista">
+              ☕ Abrir Tela Barista
+            </a>
+          </div>
+        </div>
+
+        <!-- Indicadores / Métricas do Dia -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__value" id="stat-pedidos-faturamento">R$ 0,00</div>
+            <div class="stat-card__label">Faturamento (Hoje)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📦</div>
+            <div class="stat-card__value" id="stat-pedidos-total">0</div>
+            <div class="stat-card__label">Pedidos Fechados (Hoje)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📊</div>
+            <div class="stat-card__value" id="stat-pedidos-ticket">R$ 0,00</div>
+            <div class="stat-card__label">Ticket Médio (Hoje)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">⏳</div>
+            <div class="stat-card__value" id="stat-pedidos-abertos">0</div>
+            <div class="stat-card__label">Pedidos em Aberto</div>
+          </div>
         </div>
 
         <div class="table-toolbar">
-          <div class="table-filters">
+          <div class="table-filters" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <select class="filter-select" id="filter-pedido-periodo">
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="7dias">Últimos 7 dias</option>
+              <option value="mes">Este Mês</option>
+              <option value="todos">Todo o Histórico</option>
+            </select>
             <select class="filter-select" id="filter-pedido-status">
               <option value="">Todos os status</option>
               <option value="pendente">Pendentes</option>
               <option value="em_preparo">Em Preparo</option>
               <option value="concluido">Concluídos</option>
               <option value="cancelado">Cancelados</option>
+            </select>
+            <select class="filter-select" id="filter-pedido-pagamento">
+              <option value="">Todas as formas</option>
+              <option value="pix">PIX</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="cartao_debito">Cartão Débito</option>
+              <option value="cartao_credito">Cartão Crédito</option>
+              <option value="outros">Outros</option>
             </select>
           </div>
           <button class="btn btn--ghost" id="btn-refresh-pedidos">🔄 Atualizar</button>
@@ -246,9 +287,10 @@
                 <th>Mesa</th>
                 <th>Itens</th>
                 <th>Total</th>
+                <th>Pagamento</th>
                 <th>Status</th>
-                <th>Barista</th>
-                <th>Criado em</th>
+                <th>Atendente</th>
+                <th>Data e Hora</th>
                 <th>Ações</th>
               </tr>
             </thead>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedidos | Cafeteria do Teatro</title>
+  <title>PDV Barista | Cafeteria do Teatro</title>
   <link rel="stylesheet" href="css/pedidos.css">
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
 </head>
@@ -13,7 +13,7 @@
   <div id="login-screen" class="login-screen">
     <div class="login-card">
       <div class="login-logo">☕ Cafeteria do Teatro</div>
-      <h3>Login do Barista</h3>
+      <h3>Login do Barista / Atendimento</h3>
       <div class="login-error" id="login-error"></div>
       <form id="login-form">
         <input type="email" id="login-email" placeholder="E-mail" required />
@@ -27,25 +27,39 @@
   <div id="app" class="app-container hidden">
     <!-- BARRA SUPERIOR -->
     <header class="topbar">
-      <div class="topbar__logo">☕ PDV Barista</div>
+      <div class="topbar__left">
+        <div class="topbar__logo">☕ PDV Cafeteria do Teatro</div>
+        <nav class="topbar__nav">
+          <button id="nav-btn-novo" class="nav-tab active">
+            ☕ Novo Pedido
+          </button>
+          <button id="nav-btn-mesas" class="nav-tab">
+            📋 Mesas & Entregas <span id="badge-prontos" class="badge-pill hidden">0 prontos</span>
+          </button>
+        </nav>
+      </div>
+
       <div class="topbar__user">
         <span id="user-name">Carregando...</span>
         <button id="btn-logout" class="btn-logout">Sair</button>
       </div>
     </header>
 
-    <div class="main-layout">
+    <!-- ABA 1: NOVO PEDIDO -->
+    <div id="view-novo-pedido" class="main-layout">
       <!-- PAINEL ESQUERDO: CARDÁPIO E MESAS -->
       <main class="menu-panel">
         <div class="panel-header">
-          <h2>Fazer Pedido</h2>
-          
           <div class="mesa-selector">
             <label for="mesa-select">Mesa / Local:</label>
             <select id="mesa-select">
-              <option value="">Selecione...</option>
+              <option value="">Selecione a Mesa...</option>
               <!-- Preenchido via JS -->
             </select>
+          </div>
+
+          <div class="search-wrap">
+            <input type="search" id="product-search" placeholder="🔍 Buscar café, doce, salgado..." autocomplete="off" />
           </div>
         </div>
 
@@ -71,7 +85,29 @@
         </div>
 
         <div class="cart-footer">
-          <textarea id="pedido-obs" placeholder="Observações (opcional)"></textarea>
+          <div class="form-group">
+            <label for="pedido-obs">Observações gerais:</label>
+            <textarea id="pedido-obs" placeholder="Ex: Entregar com rapidez, cliente com pressa..."></textarea>
+          </div>
+
+          <div class="payment-box">
+            <div class="payment-row">
+              <label for="pedido-pagamento">Pagamento:</label>
+              <select id="pedido-pagamento">
+                <option value="">A definir / No fechamento</option>
+                <option value="pix">PIX</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao_debito">Cartão Débito</option>
+                <option value="cartao_credito">Cartão Crédito</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+
+            <label class="payment-checkbox">
+              <input type="checkbox" id="pedido-pago" />
+              <span>Marcar como <strong>Já Pago</strong></span>
+            </label>
+          </div>
           
           <div class="cart-total">
             <span>Total:</span>
@@ -79,16 +115,92 @@
           </div>
           
           <button id="btn-enviar-pedido" class="btn-primary" disabled>
-            Enviar Pedido
+            Enviar para Cozinha
           </button>
         </div>
       </aside>
     </div>
+
+    <!-- ABA 2: MESAS & ACOMPANHAMENTO DE ENTREGAS -->
+    <div id="view-mesas-pedidos" class="mesas-layout hidden">
+      <!-- Seção Superior: Visão Geral de Mesas -->
+      <section class="mesas-section">
+        <div class="section-header">
+          <h3>Status das Mesas & Comandas</h3>
+          <span class="subtext">Clique na mesa para ver os pedidos ou imprimir a prévia da conta</span>
+        </div>
+        <div class="mesas-grid" id="mesas-grid">
+          <!-- Cards de mesas via JS -->
+        </div>
+      </section>
+
+      <!-- Seção Inferior: Pedidos Ativos / Entregas -->
+      <section class="pedidos-section">
+        <div class="section-header">
+          <div class="header-with-filters">
+            <h3>Pedidos em Andamento</h3>
+            <div class="status-filters" id="pedidos-filtro-barista">
+              <button class="filter-chip active" data-filter="todos">Todos</button>
+              <button class="filter-chip chip--prontos" data-filter="concluido">🟢 Prontos p/ Servir</button>
+              <button class="filter-chip chip--preparo" data-filter="em_preparo">🔵 Em Preparo</button>
+              <button class="filter-chip chip--pendente" data-filter="pendente">🟡 Na Fila</button>
+            </div>
+          </div>
+          <button id="btn-recarregar-pedidos" class="btn-secondary">🔄 Atualizar</button>
+        </div>
+
+        <div class="pedidos-cards-grid" id="pedidos-cards-grid">
+          <div class="empty-state">Nenhum pedido em andamento.</div>
+        </div>
+      </section>
+    </div>
   </div>
+
+  <!-- MODAL: OBSERVAÇÃO POR ITEM -->
+  <div id="modal-obs" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 id="modal-obs-title">Observação do Item</h4>
+        <button id="modal-obs-close" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">Ex: sem açúcar, leite de aveia, canela extra, bem quente...</p>
+        <textarea id="modal-obs-input" rows="3" placeholder="Digite a preferência do cliente..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-obs-cancel" class="btn-ghost">Cancelar</button>
+        <button id="modal-obs-save" class="btn-primary-small">Salvar Observação</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETALHES / CONFERÊNCIA DA MESA -->
+  <div id="modal-mesa" class="modal-overlay hidden">
+    <div class="modal-card modal-card--large">
+      <div class="modal-header">
+        <h4 id="modal-mesa-title">Consumo da Mesa</h4>
+        <button id="modal-mesa-close" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-mesa-body">
+        <!-- Detalhes preenchidos via JS -->
+      </div>
+      <div class="modal-footer">
+        <button id="modal-mesa-print" class="btn-secondary">🖨 Imprimir Prévia da Conta</button>
+        <button id="modal-mesa-fechar" class="btn-ghost">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOM DE NOTIFICAÇÃO (QUANDO PEDIDO FICA PRONTO) -->
+  <audio id="audio-pronto" src="assets/audio/ding.wav" preload="auto"></audio>
+
+  <!-- IFRAME OCULTO DE IMPRESSÃO -->
+  <iframe id="print-frame" style="display:none;"></iframe>
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
+  <script src="js/pedido-print.js"></script>
   <script src="js/pedidos.js"></script>
 </body>
 </html>
