@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /pedidos.html
+Disallow: /cozinha.html
+Disallow: /pedidos
+Disallow: /cozinha
 Sitemap: https://cafeteriadoteatro.com.br/sitemap.xml
