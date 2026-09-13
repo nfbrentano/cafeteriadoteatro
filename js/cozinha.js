@@ -19,6 +19,15 @@
   const countPreparo = document.getElementById('count-preparo');
   const countConcluidos = document.getElementById('count-concluidos');
 
+  const colPendentes = document.getElementById('col-pendentes');
+  const colPreparo = document.getElementById('col-preparo');
+  const colConcluidos = document.getElementById('col-concluidos');
+  const mcountPendentes = document.getElementById('mcount-pendentes');
+  const mcountPreparo = document.getElementById('mcount-preparo');
+  const mcountConcluidos = document.getElementById('mcount-concluidos');
+  const btnTesteVoz = document.getElementById('btn-teste-voz');
+  const kdsTabBtns = document.querySelectorAll('.kds-tab-btn');
+
   const audioAlert = document.getElementById('audio-alert');
   const audioBanner = document.getElementById('audio-banner');
   const btnAtivarAudio = document.getElementById('btn-ativar-audio');
@@ -133,6 +142,10 @@
     audioAlert.play().then(() => {
       audioDesbloqueado = true;
       audioBanner.classList.add('hidden');
+      if ('speechSynthesis' in window) {
+        const unlock = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(unlock);
+      }
     }).catch(e => console.log('Erro ao tocar:', e));
   });
 
@@ -155,6 +168,64 @@
       audioAlert.play().catch(e => console.warn('Autoplay impedido', e));
     } catch (e) {}
   }
+
+  function chamarPedidoVoz(numeroPedido, mesaCodigo) {
+    playAlert();
+    if (!('speechSynthesis' in window)) return;
+
+    try {
+      window.speechSynthesis.cancel();
+      const frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para retirada!`;
+      const utterance = new SpeechSynthesisUtterance(frase);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoice = voices.find(v => v.lang && (v.lang === 'pt-BR' || v.lang.startsWith('pt')));
+      if (ptVoice) {
+        utterance.voice = ptVoice;
+      }
+
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 300);
+    } catch (err) {
+      console.warn('Erro ao sintetizar voz na cozinha:', err);
+    }
+  }
+
+  window.cozinhaChamarPedido = chamarPedidoVoz;
+
+  if (btnTesteVoz) {
+    btnTesteVoz.addEventListener('click', () => {
+      chamarPedidoVoz('10', 'Mesa 01');
+    });
+  }
+
+  // -----------------------------------------------------
+  // 2.1 NAVEGAÇÃO SEGMENTADA MOBILE (KDS)
+  // -----------------------------------------------------
+  let activeMobileCol = 'pendentes';
+
+  function setMobileCol(colName) {
+    activeMobileCol = colName;
+    kdsTabBtns.forEach(b => {
+      b.classList.toggle('active', b.dataset.col === colName);
+    });
+    if (colPendentes) colPendentes.classList.toggle('active-col', colName === 'pendentes');
+    if (colPreparo) colPreparo.classList.toggle('active-col', colName === 'preparo');
+    if (colConcluidos) colConcluidos.classList.toggle('active-col', colName === 'concluidos');
+  }
+
+  kdsTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setMobileCol(btn.dataset.col);
+    });
+  });
+
+  // Inicializar coluna ativa no mobile
+  setMobileCol('pendentes');
 
   // Toast de Cancelamento
   cancelToastClose.addEventListener('click', () => {
@@ -205,6 +276,10 @@
     countPendentes.textContent = pendentes.length;
     countPreparo.textContent = preparo.length;
     countConcluidos.textContent = concluidos.length;
+
+    if (mcountPendentes) mcountPendentes.textContent = pendentes.length;
+    if (mcountPreparo) mcountPreparo.textContent = preparo.length;
+    if (mcountConcluidos) mcountConcluidos.textContent = concluidos.length;
 
     renderList(pendentes, listPendentes, 'pendente');
     renderList(preparo, listPreparo, 'em_preparo');
@@ -280,12 +355,17 @@
           </div>
         `;
       } else {
-        // Concluído (Permite desfazer ou reimprimir)
+        // Concluído (Permite chamar por voz, desfazer ou reimprimir)
         botoesHtml = `
-          <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir">🖨 Reimprimir</button>
-          <button class="btn-card btn-card--desfazer" onclick="window.updateStatus(${pedido.id}, 'em_preparo')">
-            ↩ Desfazer
-          </button>
+          <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir">🖨 Comanda</button>
+          <div class="footer-actions">
+            <button class="btn-card btn-card--chamar" onclick="window.cozinhaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}')" title="Chamar pelo celular">
+              📢 Chamar
+            </button>
+            <button class="btn-card btn-card--desfazer" onclick="window.updateStatus(${pedido.id}, 'em_preparo')">
+              ↩ Desfazer
+            </button>
+          </div>
         `;
       }
 
@@ -348,6 +428,9 @@
     if (p) {
       p.status = novoStatus;
       p.updated_at = payload.updated_at;
+      if (novoStatus === 'concluido') {
+        chamarPedidoVoz(p.numero_pedido || p.id, p.mesa_codigo);
+      }
       renderPedidos();
     }
   };

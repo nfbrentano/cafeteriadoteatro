@@ -24,6 +24,22 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "PDV Barista / Pedidos",
+      "short_name": "PDV Pedidos",
+      "description": "Lançamento e chamada de pedidos no balcão e mesas",
+      "url": "./pedidos.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cozinha & Bar (KDS)",
+      "short_name": "Cozinha KDS",
+      "description": "Painel de preparo e chamada de comandas da cozinha",
+      "url": "./cozinha.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
 

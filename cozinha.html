@@ -2,8 +2,15 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Cozinha & Bar | Cafeteria do Teatro</title>
+  <meta name="theme-color" content="#1C1008">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cozinha KDS">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/cozinha.css">
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
 </head>
@@ -27,8 +34,8 @@
   <div id="app" class="app-container hidden">
     <!-- BANNER DE ATIVAÇÃO DE ÁUDIO -->
     <div id="audio-banner" class="audio-banner">
-      <span>🔔 <strong>Atenção:</strong> O navegador requer sua interação para tocar alertas sonoros de novos pedidos.</span>
-      <button id="btn-ativar-audio" class="btn-ativar-audio">Ativar Alertas de Áudio</button>
+      <span>🔔 <strong>Atenção:</strong> O celular requer sua interação para tocar som e chamar pedidos por voz.</span>
+      <button id="btn-ativar-audio" class="btn-ativar-audio">Ativar Som & Voz</button>
     </div>
 
     <!-- BARRA SUPERIOR -->
@@ -38,17 +45,31 @@
       <div class="topbar__center">
         <div class="status-indicator">
           <span class="pulse-dot"></span>
-          Conectado (Tempo Real Ativo)
+          Conectado (Tempo Real)
         </div>
       </div>
 
       <div class="topbar__user">
         <button id="btn-toggle-som" class="btn-ghost" title="Testar ou Silenciar Alarme">🔔 Som Ativo</button>
+        <button id="btn-teste-voz" class="btn-ghost" title="Testar Chamada de Voz">📢 Testar Voz</button>
         <button id="btn-teste-impressao" class="btn-ghost">🖨 Testar Impressão</button>
         <span id="user-name">Carregando...</span>
         <button id="btn-logout" class="btn-logout">Sair</button>
       </div>
     </header>
+
+    <!-- NAVEGAÇÃO SEGMENTADA MOBILE (KDS) -->
+    <nav class="kds-mobile-tabs" id="kds-mobile-tabs">
+      <button class="kds-tab-btn active" data-col="pendentes">
+        🟡 Pendentes <span class="tab-badge" id="mcount-pendentes">0</span>
+      </button>
+      <button class="kds-tab-btn" data-col="preparo">
+        🔵 Preparo <span class="tab-badge" id="mcount-preparo">0</span>
+      </button>
+      <button class="kds-tab-btn" data-col="concluidos">
+        🟢 Prontos <span class="tab-badge" id="mcount-concluidos">0</span>
+      </button>
+    </nav>
 
     <!-- TOAST DE CANCELAMENTO -->
     <div id="cancel-toast" class="cancel-toast hidden">
@@ -104,5 +125,14 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pedido-print.js"></script>
   <script src="js/cozinha.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[KDS] SW registrado:', reg.scope))
+          .catch(err => console.warn('[KDS] SW falhou:', err));
+      });
+    }
+  </script>
 </body>
 </html>

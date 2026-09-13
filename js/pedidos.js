@@ -31,6 +31,15 @@
   const pedidoPagamento = document.getElementById('pedido-pagamento');
   const pedidoPago = document.getElementById('pedido-pago');
 
+  // Refs Mobile Carrinho & Drawer
+  const mobileCartBar = document.getElementById('mobile-cart-bar');
+  const mobileCartCount = document.getElementById('mobile-cart-count');
+  const mobileCartTotal = document.getElementById('mobile-cart-total');
+  const btnOpenMobileCart = document.getElementById('btn-open-mobile-cart');
+  const btnCloseCartDrawer = document.getElementById('btn-close-cart-drawer');
+  const cartPanel = document.getElementById('cart-panel');
+  const cartBackdrop = document.getElementById('cart-backdrop');
+
   // Refs Mesas & Acompanhamento
   const mesasGrid = document.getElementById('mesas-grid');
   const pedidosCardsGrid = document.getElementById('pedidos-cards-grid');
@@ -338,10 +347,26 @@
 
   [modalObsClose, modalObsCancel].forEach(b => b.addEventListener('click', closeItemObsModal));
 
+  function openCartDrawer() {
+    if (cartPanel) cartPanel.classList.add('open-mobile');
+    if (cartBackdrop) cartBackdrop.classList.remove('hidden');
+  }
+
+  function closeCartDrawer() {
+    if (cartPanel) cartPanel.classList.remove('open-mobile');
+    if (cartBackdrop) cartBackdrop.classList.add('hidden');
+  }
+
+  if (btnOpenMobileCart) btnOpenMobileCart.addEventListener('click', openCartDrawer);
+  if (btnCloseCartDrawer) btnCloseCartDrawer.addEventListener('click', closeCartDrawer);
+  if (cartBackdrop) cartBackdrop.addEventListener('click', closeCartDrawer);
+
   function renderCart() {
     if (cart.length === 0) {
       cartItemsContainer.innerHTML = '<div class="cart-empty">Nenhum item adicionado.</div>';
       cartTotalValue.textContent = 'R$ 0,00';
+      if (mobileCartBar) mobileCartBar.classList.add('hidden');
+      closeCartDrawer();
       checkFormValidity();
       return;
     }
@@ -379,6 +404,13 @@
     });
 
     cartTotalValue.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+    // Atualizar Barra Mobile Flutuante
+    const totalItens = cart.reduce((acc, item) => acc + item.quantidade, 0);
+    if (mobileCartCount) mobileCartCount.textContent = `${totalItens} ${totalItens === 1 ? 'item' : 'itens'}`;
+    if (mobileCartTotal) mobileCartTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    if (mobileCartBar) mobileCartBar.classList.remove('hidden');
+
     checkFormValidity();
   }
 
@@ -577,7 +609,14 @@
       });
 
       const btnAcaoHtml = isPronto
-        ? `<button class="btn-entregar" onclick="window.baristaMarcarEntregue(${pedido.id})">✅ Entregue na Mesa</button>`
+        ? `<div class="pedido-card-barista__actions">
+            <button class="btn-chamar-voz" onclick="window.baristaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}')" title="Fazer chamada por voz">
+              📢 Chamar
+            </button>
+            <button class="btn-entregar" onclick="window.baristaMarcarEntregue(${pedido.id})">
+              ✅ Entregue
+            </button>
+          </div>`
         : `<span style="font-size:12px; color:#888;">Operador: ${pedido.criado_por_nome || 'Barista'}</span>`;
 
       card.innerHTML = `
@@ -672,6 +711,7 @@
         if (payload.eventType === 'UPDATE') {
           if (payload.new && payload.new.status === 'concluido' && payload.old && payload.old.status !== 'concluido') {
             tocarAlertaPronto();
+            chamarPedidoVoz(payload.new.numero_pedido || payload.new.id, payload.new.mesa_codigo);
           }
         }
         loadActivePedidos();
@@ -685,6 +725,34 @@
       audioPronto.play().catch(e => console.log('Autoplay bloqueado:', e));
     } catch (e) {}
   }
+
+  function chamarPedidoVoz(numeroPedido, mesaCodigo) {
+    tocarAlertaPronto();
+    if (!('speechSynthesis' in window)) return;
+
+    try {
+      window.speechSynthesis.cancel();
+      const frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para ser servido!`;
+      const utterance = new SpeechSynthesisUtterance(frase);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoice = voices.find(v => v.lang && (v.lang === 'pt-BR' || v.lang.startsWith('pt')));
+      if (ptVoice) {
+        utterance.voice = ptVoice;
+      }
+
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 300);
+    } catch (err) {
+      console.warn('Erro ao chamar por voz:', err);
+    }
+  }
+
+  window.baristaChamarPedido = chamarPedidoVoz;
 
   // Inicializar
   checkSession();

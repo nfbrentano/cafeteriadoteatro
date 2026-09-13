@@ -25,10 +25,22 @@ body {
   background-color: var(--cinza-bg);
   color: var(--marrom-escuro);
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .hidden { display: none !important; }
+
+.kds-mobile-tabs {
+  display: none;
+}
+
+.btn-card--chamar {
+  background: #E65100;
+  color: white;
+}
 
 /* -------------------------------------
    LOGIN
@@ -448,3 +460,184 @@ body {
 .btn-card--print:hover {
   background: #EEE;
 }
+
+/* -----------------------------------------------------
+   RESPONSIVIDADE MOBILE (PWA / TABLET / SMARTPHONE)
+------------------------------------------------------ */
+@media (max-width: 860px) {
+  .audio-banner {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .btn-ativar-audio {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .topbar {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .topbar__logo {
+    font-size: 15px;
+  }
+
+  .status-indicator {
+    font-size: 11px;
+  }
+
+  .topbar__user {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .topbar__user #user-name {
+    display: none;
+  }
+
+  .btn-ghost, .btn-logout {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  /* Abas Segmentadas do KDS */
+  .kds-mobile-tabs {
+    display: flex;
+    background: var(--marrom-escuro);
+    padding: 8px 10px;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .kds-tab-btn {
+    flex: 1;
+    padding: 9px 4px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: #CCC;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .kds-tab-btn.active[data-col="pendentes"] {
+    background: var(--amarelo-bg);
+    color: var(--amarelo);
+    border-color: var(--amarelo);
+    font-weight: 800;
+  }
+
+  .kds-tab-btn.active[data-col="preparo"] {
+    background: var(--azul-bg);
+    color: var(--azul);
+    border-color: var(--azul);
+    font-weight: 800;
+  }
+
+  .kds-tab-btn.active[data-col="concluidos"] {
+    background: var(--verde-bg);
+    color: var(--verde);
+    border-color: var(--verde);
+    font-weight: 800;
+  }
+
+  .tab-badge {
+    background: rgba(0,0,0,0.14);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  /* Área das Colunas do KDS */
+  .pedidos-board {
+    padding: 10px 10px calc(14px + env(safe-area-inset-bottom, 0px)) 10px;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .column {
+    display: none;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+  }
+
+  .column.active-col {
+    display: flex !important;
+  }
+
+  .column-header {
+    padding: 10px 14px;
+    font-size: 16px;
+  }
+
+  .pedidos-list {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .pedido-card {
+    border-radius: 10px;
+  }
+
+  .pedido-mesa {
+    font-size: 19px;
+  }
+
+  .pedido-tempo {
+    font-size: 12px;
+  }
+
+  .pedido-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .footer-actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btn-card {
+    flex: 1;
+    padding: 11px 12px;
+    font-size: 14px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-card--print {
+    width: 100%;
+    padding: 9px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar__logo {
+    font-size: 14px;
+  }
+
+  .btn-card {
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+}
+

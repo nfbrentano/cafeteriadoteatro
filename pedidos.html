@@ -2,8 +2,15 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PDV Barista | Cafeteria do Teatro</title>
+  <meta name="theme-color" content="#1C1008">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PDV Barista">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/pedidos.css">
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
 </head>
@@ -73,11 +80,17 @@
         </div>
       </main>
 
+      <!-- BACKDROP DO CARRINHO MOBILE -->
+      <div id="cart-backdrop" class="cart-backdrop hidden"></div>
+
       <!-- PAINEL DIREITO: CARRINHO -->
-      <aside class="cart-panel">
+      <aside class="cart-panel" id="cart-panel">
         <div class="cart-header">
-          <h2>Resumo do Pedido</h2>
-          <span class="mesa-badge" id="cart-mesa-badge">Sem Mesa</span>
+          <div class="cart-header__title-wrap">
+            <h2>Resumo do Pedido</h2>
+            <span class="mesa-badge" id="cart-mesa-badge">Sem Mesa</span>
+          </div>
+          <button id="btn-close-cart-drawer" class="btn-close-drawer" aria-label="Fechar Carrinho">✕</button>
         </div>
         
         <div class="cart-items" id="cart-items">
@@ -119,6 +132,20 @@
           </button>
         </div>
       </aside>
+
+      <!-- BARRA FLUTUANTE INFERIOR MOBILE DO CARRINHO -->
+      <div id="mobile-cart-bar" class="mobile-cart-bar hidden">
+        <div class="mobile-cart-bar__info">
+          <span class="mobile-cart-bar__icon">🛒</span>
+          <div class="mobile-cart-bar__text">
+            <strong id="mobile-cart-count">0 itens</strong>
+            <span id="mobile-cart-total">R$ 0,00</span>
+          </div>
+        </div>
+        <button id="btn-open-mobile-cart" class="mobile-cart-bar__btn">
+          Ver Pedido ➔
+        </button>
+      </div>
     </div>
 
     <!-- ABA 2: MESAS & ACOMPANHAMENTO DE ENTREGAS -->
@@ -202,5 +229,14 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pedido-print.js"></script>
   <script src="js/pedidos.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[PV-PDV] SW registrado:', reg.scope))
+          .catch(err => console.warn('[PV-PDV] SW falhou:', err));
+      });
+    }
+  </script>
 </body>
 </html>

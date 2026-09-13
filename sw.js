@@ -3,7 +3,7 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const STATIC_CACHE = `cafeteria-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cafeteria-runtime-${CACHE_VERSION}`;
 const MAX_RUNTIME_ITEMS = 60;
@@ -12,6 +12,8 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/cardapio.html',
+  '/pedidos.html',
+  '/cozinha.html',
   '/404.html',
   '/manifest.json',
   '/css/main.css',
@@ -23,6 +25,8 @@ const STATIC_ASSETS = [
   '/css/cardapio.css',
   '/css/promocoes.css',
   '/css/curtain.css',
+  '/css/pedidos.css',
+  '/css/cozinha.css',
   '/js/supabase-client.js',
   '/js/db.js',
   '/js/home-dynamic.js',
@@ -30,6 +34,9 @@ const STATIC_ASSETS = [
   '/js/main.js',
   '/js/cardapio-dynamic.js',
   '/js/cardapio.js',
+  '/js/pedidos.js',
+  '/js/cozinha.js',
+  '/js/pedido-print.js',
   '/assets/icons/favicon.png',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png'

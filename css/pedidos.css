@@ -27,10 +27,55 @@ body {
   background-color: var(--cinza-bg);
   color: var(--marrom-escuro);
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .hidden { display: none !important; }
+
+.btn-close-drawer {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #777;
+  padding: 6px;
+}
+
+.mobile-cart-bar {
+  display: none;
+}
+
+.cart-backdrop {
+  display: none;
+}
+
+.btn-chamar-voz {
+  background: #E65100;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-chamar-voz:hover {
+  background: #BF360C;
+  transform: translateY(-1px);
+}
+
+.btn-chamar-voz:active {
+  transform: translateY(0);
+}
 
 /* -------------------------------------
    LOGIN
@@ -371,6 +416,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.cart-header__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .cart-header h2 {
@@ -914,3 +965,385 @@ body {
   cursor: pointer;
   font-size: 14px;
 }
+
+/* -----------------------------------------------------
+   RESPONSIVIDADE MOBILE (PWA / TABLET / SMARTPHONE)
+------------------------------------------------------ */
+@media (max-width: 900px) {
+  .topbar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .topbar__left {
+    gap: 8px;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .topbar__logo {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .topbar__nav {
+    gap: 6px;
+  }
+
+  .nav-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .topbar__user #user-name {
+    display: none;
+  }
+
+  .btn-logout {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  /* Aba 1: Layout do Cardápio no Mobile */
+  .main-layout {
+    flex-direction: column;
+    position: relative;
+    height: calc(100vh - 54px);
+    height: calc(100dvh - 54px);
+    overflow: hidden;
+  }
+
+  .menu-panel {
+    border-right: none;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .mesa-selector {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .mesa-selector label {
+    font-size: 12px;
+  }
+
+  .mesa-selector select {
+    width: 100%;
+    min-width: 0;
+    font-size: 14px;
+    padding: 9px 12px;
+  }
+
+  .search-wrap {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    font-size: 14px;
+    padding: 9px 14px;
+  }
+
+  .categories-tabs {
+    padding: 8px 12px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .categories-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cat-tab {
+    padding: 6px 14px;
+    font-size: 13px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .products-grid {
+    padding: 10px 12px 100px 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .product-card {
+    padding: 12px;
+    min-height: 95px;
+    border-radius: 8px;
+  }
+
+  .product-card h4 {
+    font-size: 13px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+
+  .product-card .price {
+    font-size: 14px;
+  }
+
+  /* Carrinho como Gaveta / Bottom Sheet no Mobile */
+  .cart-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+    opacity: 1;
+    transition: opacity 0.25s;
+  }
+
+  .cart-backdrop.hidden {
+    display: none !important;
+  }
+
+  .cart-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: 20px 20px 0 0;
+    z-index: 100;
+    transform: translateY(105%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.3);
+    border-left: none;
+    border-top: 1px solid var(--cinza-borda);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .cart-panel.open-mobile {
+    transform: translateY(0);
+  }
+
+  .btn-close-drawer {
+    display: block;
+    font-size: 22px;
+    padding: 4px 8px;
+    line-height: 1;
+    border-radius: 50%;
+  }
+
+  .cart-items {
+    max-height: 38vh;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+
+  .cart-footer {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
+  }
+
+  /* Barra Flutuante Mobile do Carrinho */
+  .mobile-cart-bar {
+    display: flex !important;
+    position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+    background: var(--marrom-escuro);
+    color: var(--marfim);
+    border-radius: 14px;
+    padding: 10px 16px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 90;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.18);
+    animation: popBar 0.25s ease-out;
+  }
+
+  .mobile-cart-bar.hidden {
+    display: none !important;
+  }
+
+  @keyframes popBar {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .mobile-cart-bar__info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mobile-cart-bar__icon {
+    font-size: 22px;
+  }
+
+  .mobile-cart-bar__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .mobile-cart-bar__text strong {
+    color: var(--caramelo);
+    font-size: 13px;
+  }
+
+  .mobile-cart-bar__text span {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .mobile-cart-bar__btn {
+    background: var(--caramelo);
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(192, 127, 67, 0.4);
+    transition: background 0.15s;
+  }
+
+  .mobile-cart-bar__btn:active {
+    transform: scale(0.97);
+  }
+
+  /* Aba 2: Mesas & Entregas no Mobile */
+  .mesas-layout {
+    padding: 14px 12px calc(24px + env(safe-area-inset-bottom, 0px)) 12px;
+    gap: 20px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-with-filters {
+    width: 100%;
+  }
+
+  .status-filters {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .status-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .mesas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+
+  .mesa-card {
+    padding: 12px;
+  }
+
+  .mesa-card__codigo {
+    font-size: 16px;
+  }
+
+  .pedidos-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .pedido-card-barista {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .pedido-card-barista__header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .pedido-card-barista__footer {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .pedido-card-barista__actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btn-entregar, .btn-chamar-voz {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* Modais no Mobile */
+  .modal-card {
+    width: 95%;
+    padding: 16px;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar__logo {
+    font-size: 13px;
+  }
+
+  .nav-tab {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px 10px 100px 10px;
+  }
+
+  .product-card {
+    padding: 10px;
+  }
+
+  .mesas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

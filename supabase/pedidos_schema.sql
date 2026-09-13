@@ -135,7 +135,7 @@ CREATE POLICY "pedidos_update" ON public.pedidos FOR UPDATE TO authenticated
 CREATE TABLE IF NOT EXISTS public.pedido_itens (
     id BIGSERIAL PRIMARY KEY,
     pedido_id BIGINT NOT NULL REFERENCES public.pedidos(id) ON DELETE CASCADE,
-    produto_id BIGINT NOT NULL,
+    produto_id TEXT NOT NULL,
     nome_produto TEXT NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 1,
     preco_unitario NUMERIC(10,2) NOT NULL,
