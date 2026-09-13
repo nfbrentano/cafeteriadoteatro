@@ -241,11 +241,13 @@
   }
 
   // -----------------------------------------------------
-  // 3. BUSCA DE PEDIDOS (Pendentes, Preparo e Concluídos Recentes)
+  // 3. BUSCA DE PEDIDOS (Pendentes, Preparo e Concluídos do Dia)
   // -----------------------------------------------------
   async function fetchPedidosIniciais() {
-    // Buscar pedidos pendentes e em preparo, mais concluídos nos últimos 45 minutos
-    const limiteRecentes = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    // Buscar pedidos pendentes e em preparo, mais todos os pedidos concluídos do dia atual (desde as 00:00)
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const inicioDoDia = hoje.toISOString();
 
     const { data: pedidosData, error } = await window.cafeteriaSupabase
       .from('pedidos')
@@ -253,7 +255,7 @@
         *,
         pedido_itens (*)
       `)
-      .or(`status.in.(pendente,em_preparo),and(status.eq.concluido,created_at.gte.${limiteRecentes})`)
+      .or(`status.in.(pendente,em_preparo),and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -271,7 +273,10 @@
   function renderPedidos() {
     const pendentes = pedidos.filter(p => p.status === 'pendente');
     const preparo = pedidos.filter(p => p.status === 'em_preparo');
-    const concluidos = pedidos.filter(p => p.status === 'concluido').sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+    // Concluídos do dia: sempre os mais recentes no topo
+    const concluidos = pedidos
+      .filter(p => p.status === 'concluido')
+      .sort((a, b) => new Date(b.concluido_em || b.updated_at || b.created_at) - new Date(a.concluido_em || a.updated_at || a.created_at));
 
     countPendentes.textContent = pendentes.length;
     countPreparo.textContent = preparo.length;
@@ -291,7 +296,7 @@
       const msgs = {
         'pendente': 'Nenhum pedido pendente.',
         'em_preparo': 'Nenhum pedido em preparo.',
-        'concluido': 'Nenhum pedido recente.'
+        'concluido': 'Nenhum pedido concluído hoje.'
       };
       container.innerHTML = `<div class="empty-state">${msgs[tipo]}</div>`;
       return;
@@ -429,6 +434,7 @@
       p.status = novoStatus;
       p.updated_at = payload.updated_at;
       if (novoStatus === 'concluido') {
+        p.concluido_em = payload.concluido_em;
         chamarPedidoVoz(p.numero_pedido || p.id, p.mesa_codigo);
       }
       renderPedidos();

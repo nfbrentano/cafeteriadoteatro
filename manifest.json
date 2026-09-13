@@ -34,8 +34,8 @@
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Cozinha & Bar (KDS)",
-      "short_name": "Cozinha KDS",
+      "name": "Cozinha & Bar",
+      "short_name": "Cozinha & Bar",
       "description": "Painel de preparo e chamada de comandas da cozinha",
       "url": "./cozinha.html",
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]

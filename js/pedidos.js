@@ -284,9 +284,16 @@
     filtered.forEach(p => {
       const card = document.createElement('div');
       card.className = 'product-card';
+      const descHtml = p.descricao ? `<p class="product-card__desc">${p.descricao}</p>` : '';
       card.innerHTML = `
-        <h4>${p.nome}</h4>
-        <div class="price">R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</div>
+        <div class="product-card__header">
+          <h4>${p.nome}</h4>
+          ${descHtml}
+        </div>
+        <div class="product-card__bottom">
+          <span class="price">R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</span>
+          <span class="btn-add-badge">+ Adicionar</span>
+        </div>
       `;
       card.onclick = () => addToCart(p);
       productsGrid.appendChild(card);
