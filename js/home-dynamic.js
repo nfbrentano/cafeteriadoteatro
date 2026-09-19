@@ -28,7 +28,8 @@
   function renderHero(hero) {
     if (!hero) return;
     const bg = document.querySelector('.hero__bg');
-    if (!bg) return;
+    if (!bg) return; // Carousel mode — hero images managed by hero-carousel.js
+
     
     // 1. Aplica o blur placeholder imediatamente se existir
     if (hero.blur_data_url) {
