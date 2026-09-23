@@ -194,6 +194,48 @@
     });
   };
 
+  window.baristaCancelarItem = async function(itemId, pedidoId, mesaCodigo) {
+    const motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
+    if (!motivo) return;
+
+    try {
+      const { data, error } = await window.cafeteriaSupabase.rpc('cancelar_item', {
+        p_item_id: itemId,
+        p_motivo: motivo
+      });
+
+      if (error) throw error;
+      
+      alert('Item cancelado com sucesso!');
+      
+      // Checar se todos os itens foram cancelados (fazendo fetch)
+      const { data: itens, error: itErr } = await window.cafeteriaSupabase
+        .from('pedido_itens')
+        .select('cancelado')
+        .eq('pedido_id', pedidoId);
+        
+      if (!itErr && itens && itens.every(i => i.cancelado === true)) {
+        if (confirm('Todos os itens deste pedido foram cancelados. Deseja cancelar o pedido inteiro também?')) {
+          await window.cafeteriaSupabase
+            .from('pedidos')
+            .update({ status: 'cancelado', updated_at: new Date().toISOString() })
+            .eq('id', pedidoId);
+          alert('Pedido cancelado!');
+        }
+      }
+
+      carregarPainel(); // Recarrega PDV
+      if (currentSelectedMesaParaConta && currentSelectedMesaParaConta.mesaCodigo === mesaCodigo) {
+        // Atualiza a view da mesa
+        const pd = window.cafeteriaDadosPainel.pedidosPendentes.filter(p => p.mesa_codigo === mesaCodigo);
+        abrirModalMesa(mesaCodigo, pd);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao cancelar item: ' + err.message);
+    }
+  };
+
   window.baristaLancarCortesia = async function(pedidoId, itemId, produtoCortesiaId) {
     const confirmed = await showConfirm('Lançar Cortesia', 'Deseja lançar esta cortesia agora?');
     if (!confirmed) return;
@@ -1250,7 +1292,16 @@
           });
         }
 
-        html += `<li>${it.quantidade}x ${window.escapeHtml(it.nome_produto)} ${it.observacoes ? '<em style="color:#D97706">(' + window.escapeHtml(it.observacoes) + ')</em>' : ''} — R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')} ${adicText} ${cortesiaHtml}</li>`;
+        let cancelClass = it.cancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
+        let cancelLabel = it.cancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
+        let btnCancelarItemHtml = '';
+        if (!it.cancelado && p.status !== 'concluido' && p.status !== 'cancelado') {
+          btnCancelarItemHtml = `<button class="btn-ghost-small" style="color: #e74c3c; padding: 2px 6px; font-size: 11px; margin-left:8px;" onclick="window.baristaCancelarItem(${it.id}, ${p.id}, '${currentSelectedMesaParaConta.mesaCodigo}')">✕ Cancelar</button>`;
+        }
+        
+        let obsLabel = it.observacoes ? `<em style="color:#D97706">(${window.escapeHtml(it.observacoes)})</em>` : '';
+
+        html += `<li ${cancelClass}>${it.quantidade}x ${window.escapeHtml(it.nome_produto)} ${obsLabel} — R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')} ${cancelLabel} ${btnCancelarItemHtml} ${adicText} ${cortesiaHtml}</li>`;
       });
 
       html += '</ul></div>';

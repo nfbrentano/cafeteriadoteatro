@@ -206,16 +206,29 @@
         
         let isCortesia = item.cortesia_de_item_id ? `<span style="background:#e74c3c; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>` : '';
 
+        let cancelClass = item.cancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
+        let cancelLabel = item.cancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
+        let btnCancelarItemHtml = '';
+        
+        if (!item.cancelado && pedido.status !== 'concluido' && pedido.status !== 'cancelado') {
+          btnCancelarItemHtml = `<button class="btn-ghost-small btn-cancelar-item" data-item-id="${item.id}" style="color: #e74c3c; padding: 2px 6px; font-size: 11px; border: 1px solid #e74c3c; border-radius: 4px;">✕ Cancelar Item</button>`;
+        }
+
         itensHtml += `
           <div style="border-bottom: 1px dashed #eee; padding: 6px 0;">
-            <div style="display: flex; justify-content: space-between;">
-              <span><strong>${item.quantidade}x</strong> ${window.escapeHtml(item.nome_produto)} ${isCortesia}</span>
-              <span>R$ ${subtotal}</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <span ${cancelClass}><strong>${item.quantidade}x</strong> ${window.escapeHtml(item.nome_produto)} ${isCortesia} ${cancelLabel}</span>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <span ${cancelClass}>R$ ${subtotal}</span>
+                ${btnCancelarItemHtml}
+              </div>
             </div>
-            ${saboresHtml}
-            ${adicHtml}
-            ${descHtml}
-            ${obsItem}
+            <div ${cancelClass}>
+              ${saboresHtml}
+              ${adicHtml}
+              ${descHtml}
+              ${obsItem}
+            </div>
           </div>
         `;
       });
@@ -266,6 +279,36 @@
         }
       });
     }
+
+    const btnsCancelarItem = modalBody.querySelectorAll('.btn-cancelar-item');
+    btnsCancelarItem.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const itemId = e.target.getAttribute('data-item-id');
+        const motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
+        if (!motivo) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Cancelando...';
+
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('cancelar_item', {
+            p_item_id: itemId,
+            p_motivo: motivo
+          });
+
+          if (error) throw error;
+          
+          alert('Item cancelado com sucesso!');
+          fecharModal();
+          await fetchPedidos('hoje'); // Recarrega a lista
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao cancelar item: ' + err.message);
+          btn.disabled = false;
+          btn.innerHTML = '✕ Cancelar Item';
+        }
+      });
+    });
 
     const btnCancelar = modalBody.querySelector('#btn-cancelar-pedido');
     if (btnCancelar) {

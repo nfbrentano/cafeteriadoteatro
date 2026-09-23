@@ -513,6 +513,13 @@
 
         fetchPedidosIniciais();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedido_itens' }, async payload => {
+        if (payload.eventType === 'UPDATE' && payload.new.cancelado === true && payload.old.cancelado === false) {
+          showCancelToast(`⚠️ Item cancelado: 1x ${payload.new.nome_produto}`);
+          playAlert();
+          fetchPedidosIniciais();
+        }
+      })
       .subscribe();
   }
 
