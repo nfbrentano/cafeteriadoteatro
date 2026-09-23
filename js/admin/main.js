@@ -109,7 +109,8 @@
         promocoes: 'Promoções',
         conteudo: 'Conteúdo Home',
         configuracoes: 'Configurações',
-        'menu-pdf': 'Cardápio PDF'
+        'menu-pdf': 'Cardápio PDF',
+        caixa: 'Caixa do Dia'
       };
       document.getElementById('topbar-title').textContent = titles[pageId] || '';
       
@@ -126,7 +127,8 @@
         horarios:   'renderHorarios',
         promocoes:  'renderPromocoes',
         conteudo:   'renderConteudo',
-        'menu-pdf': 'renderMenuPdf'
+        'menu-pdf': 'renderMenuPdf',
+        caixa:      'initAdminCaixa'
       };
       if (renderers[pageId] && typeof window[renderers[pageId]] === 'function') {
         window[renderers[pageId]]();
@@ -388,7 +390,7 @@
     document.querySelectorAll('.sidebar__link[data-page]').forEach(btn => {
       btn.addEventListener('click', () => admin.navigateTo(btn.dataset.page));
     });
-    ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay', 'modal-mesa-overlay', 'modal-usuario-overlay'].forEach(id => {
+    ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay', 'modal-mesa-overlay', 'modal-usuario-overlay', 'modal-movimento-caixa-overlay', 'modal-fechar-caixa-overlay'].forEach(id => {
       document.getElementById(id)?.addEventListener('click', e => {
         if (e.target.id === id) admin.closeModal(id);
       });

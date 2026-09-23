@@ -109,6 +109,9 @@
       <button class="sidebar__link" data-page="relatorios" id="nav-relatorios">
         <span class="sidebar__link-icon">📈</span> Relatórios
       </button>
+      <button class="sidebar__link" data-page="caixa" id="nav-caixa">
+        <span class="sidebar__link-icon">💵</span> Caixa
+      </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Aparência</div>
 
@@ -375,6 +378,81 @@
           </div>
         </div>
 
+      </section>
+
+      <!-- ── CAIXA ────────────────────────────────────── -->
+      <section class="page" id="page-caixa">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Caixa do Dia</div>
+            <div class="page-header__sub">Controle de abertura, fechamento e sangrias/suprimentos</div>
+          </div>
+          <button class="btn btn--primary" id="btn-fechar-caixa" style="display:none;">
+            🔒 Fechar Caixa
+          </button>
+        </div>
+
+        <div id="caixa-estado-fechado" style="display:none; text-align:center; padding: 40px;">
+          <h2>O Caixa está Fechado</h2>
+          <p style="margin-bottom: 20px; color: var(--text-sec);">Abra o caixa para iniciar as operações do dia.</p>
+          <div style="max-width: 400px; margin: 0 auto; text-align:left;">
+            <div class="field">
+              <label class="field__label">Fundo de Troco (R$)</label>
+              <input class="field__input" type="number" id="caixa-fundo-troco" value="0.00" step="0.01" />
+            </div>
+            <button class="btn btn--primary btn--full" id="btn-abrir-caixa">Abrir Caixa</button>
+          </div>
+        </div>
+
+        <div id="caixa-estado-aberto" style="display:none;">
+          <div class="stats-grid" style="margin-bottom: 24px;">
+            <div class="stat-card">
+              <div class="stat-card__icon">🟢</div>
+              <div class="stat-card__value" id="stat-caixa-status">Aberto</div>
+              <div class="stat-card__label" id="stat-caixa-data">--</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon">💰</div>
+              <div class="stat-card__value" id="stat-caixa-fundo">R$ 0,00</div>
+              <div class="stat-card__label">Fundo de Troco</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon">📈</div>
+              <div class="stat-card__value" id="stat-caixa-entradas">R$ 0,00</div>
+              <div class="stat-card__label">Suprimentos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon">📉</div>
+              <div class="stat-card__value" id="stat-caixa-saidas">R$ 0,00</div>
+              <div class="stat-card__label">Sangrias</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn btn--outline-dark" id="btn-suprimento">➕ Novo Suprimento</button>
+            <button class="btn btn--outline-dark" id="btn-sangria">➖ Nova Sangria</button>
+            <button class="btn btn--ghost" id="btn-historico-caixas">📜 Histórico de Caixas</button>
+          </div>
+
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Resumo do Sistema</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Forma de Pagamento</th>
+                    <th>Valor Calculado</th>
+                  </tr>
+                </thead>
+                <tbody id="caixa-resumo-table-body">
+                  <tr><td colspan="2" class="text-center">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ── PEDIDOS ────────────────────────────────────── -->
@@ -1874,6 +1952,83 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
+     MODAL DE MOVIMENTO DE CAIXA (SANGRIA/SUPRIMENTO)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-movimento-caixa-overlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal-movimento-caixa">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-movimento-caixa-title">Novo Movimento</span>
+      <button class="modal__close" id="modal-movimento-caixa-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-movimento-caixa" novalidate>
+        <input type="hidden" id="movimento-tipo" />
+        <div class="field">
+          <label class="field__label" for="movimento-valor">Valor (R$) *</label>
+          <input class="field__input" type="number" id="movimento-valor" step="0.01" min="0.01" required />
+        </div>
+        <div class="field">
+          <label class="field__label" for="movimento-motivo">Motivo (Opcional)</label>
+          <input class="field__input" type="text" id="movimento-motivo" placeholder="Motivo da retirada/entrada" />
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-movimento-caixa-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-movimento">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE FECHAMENTO DE CAIXA
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-fechar-caixa-overlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal-fechar-caixa" style="max-width: 600px;">
+    <div class="modal__header">
+      <span class="modal__title">Fechamento de Caixa</span>
+      <button class="modal__close" id="modal-fechar-caixa-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="alerta-mesas-abertas" class="alert alert--warn" style="display:none; margin-bottom: 20px;">
+        <div class="alert__icon">⚠️</div>
+        <div class="alert__content">
+          <strong>Atenção:</strong> Existem <span id="qtd-mesas-abertas">0</span> mesas/pedidos em aberto. O ideal é fechar as contas antes de encerrar o caixa.
+        </div>
+      </div>
+
+      <p style="margin-bottom:15px; color:var(--text-sec)">Informe o valor contado para cada forma de pagamento:</p>
+      
+      <form id="form-fechar-caixa" novalidate>
+        <div class="table-wrap">
+          <table style="margin-bottom: 20px;">
+            <thead>
+              <tr>
+                <th>Forma</th>
+                <th>Sistema</th>
+                <th>Contado (R$)</th>
+                <th>Diferença</th>
+              </tr>
+            </thead>
+            <tbody id="fechar-caixa-tbody">
+              <!-- Gerado via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="field">
+          <label class="field__label" for="fechar-caixa-observacoes">Observações (Opcional)</label>
+          <textarea class="field__textarea" id="fechar-caixa-observacoes" rows="2"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-fechar-caixa-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-confirmar-fechar-caixa">Confirmar Fechamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
      CONFIRM DIALOG
 ════════════════════════════════════════════════════════════ -->
 <div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
@@ -1909,6 +2064,7 @@
 <script defer src="js/admin/promocoes.js"></script>
 <script defer src="js/admin/usuarios-admin.js"></script>
 <script defer src="js/admin/relatorios-admin.js"></script>
+<script defer src="js/admin/caixa-admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
