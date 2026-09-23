@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let promoId = inId.value;
       if (promoId) {
         // Update
-        const { error } = await supabaseClient
+        const { error } = await window.cafeteriaSupabase
           .from('promocoes')
           .update(payload)
           .eq('id', promoId);
@@ -113,10 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) throw error;
         
         // delete and re-insert items
-        await supabaseClient.from('promocao_itens').delete().eq('promocao_id', promoId);
+        await window.cafeteriaSupabase.from('promocao_itens').delete().eq('promocao_id', promoId);
       } else {
         // Insert
-        const { data, error } = await supabaseClient
+        const { data, error } = await window.cafeteriaSupabase
           .from('promocoes')
           .insert([payload])
           .select('id')
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (alvoTipo === 'produto') itemPayload.produto_id = alvoId;
       else itemPayload.categoria_id = alvoId;
       
-      const { error: errItem } = await supabaseClient.from('promocao_itens').insert([itemPayload]);
+      const { error: errItem } = await window.cafeteriaSupabase.from('promocao_itens').insert([itemPayload]);
       if (errItem) throw errItem;
       
       window.cafeteriaToast.show('Promoção salva com sucesso!');
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadPromocoes() {
     tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Carregando...</td></tr>';
     try {
-      const { data, error } = await supabaseClient
+      const { data, error } = await window.cafeteriaSupabase
         .from('promocoes')
         .select(`
           *,
@@ -214,10 +214,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadAlvos() {
     try {
-      const pRes = await supabaseClient.from('produtos').select('id, nome').order('nome');
+      const pRes = await window.cafeteriaSupabase.from('produtos').select('id, nome').order('nome');
       if (pRes.data) produtos = pRes.data;
       
-      const cRes = await supabaseClient.from('categorias').select('id, nome').order('ordem');
+      const cRes = await window.cafeteriaSupabase.from('categorias').select('id, nome').order('ordem');
       if (cRes.data) categorias = cRes.data;
       
       renderAlvos();
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function deletePromo(id) {
     if (confirm('Tem certeza que deseja excluir esta promoção?')) {
       try {
-        const { error } = await supabaseClient.from('promocoes').delete().eq('id', id);
+        const { error } = await window.cafeteriaSupabase.from('promocoes').delete().eq('id', id);
         if (error) throw error;
         window.cafeteriaToast.show('Promoção excluída!');
         loadPromocoes();
