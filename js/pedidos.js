@@ -40,6 +40,8 @@
   const cartMesaBadge = document.getElementById('cart-mesa-badge');
   const btnEnviarPedido = document.getElementById('btn-enviar-pedido');
   const pedidoObs = document.getElementById('pedido-obs');
+  const pedidoClienteNome = document.getElementById('pedido-cliente-nome');
+  const pedidoParaViagem = document.getElementById('pedido-para-viagem');
   const pedidoPagamento = document.getElementById('pedido-pagamento');
   const pedidoPago = document.getElementById('pedido-pago');
 
@@ -81,6 +83,17 @@
   const modalMesaFechar = document.getElementById('modal-mesa-fechar');
   const modalMesaPrint = document.getElementById('modal-mesa-print');
   const modalMesaFecharConta = document.getElementById('modal-mesa-fechar-conta');
+  const btnMesaTransferir = document.getElementById('btn-mesa-transferir');
+  const btnMesaJuntar = document.getElementById('btn-mesa-juntar');
+  const modalTransferirMesa = document.getElementById('modal-transferir-mesa');
+  const modalTransferirTitle = document.getElementById('modal-transferir-title');
+  const selectTransferirMesa = document.getElementById('transferir-mesa-select');
+  const btnTransferirClose = document.getElementById('modal-transferir-close');
+  const btnTransferirCancel = document.getElementById('modal-transferir-cancel');
+  const btnTransferirConfirm = document.getElementById('modal-transferir-confirm');
+  let acaoTransferenciaAtiva = null;
+  let mesaAlvoTransferencia = null;
+
   const btnMesaAdicionarItens = document.getElementById('btn-mesa-adicionar-itens');
   const bannerAdicionandoItens = document.getElementById('banner-adicionando-itens');
   const lblMesaAdicionando = document.getElementById('lbl-mesa-adicionando');
@@ -103,6 +116,19 @@
   const inputDinheiroRecebido = document.getElementById('fechar-conta-dinheiro-recebido');
   const fecharContaTrocoLbl = document.getElementById('fechar-conta-troco-lbl');
   const fecharContaLista = document.getElementById('fechar-conta-lista-pagamentos');
+
+  const fecharContaModo = document.getElementById('fechar-conta-modo');
+  const fecharContaDivPessoas = document.getElementById('fechar-conta-div-pessoas');
+  const fecharContaNumPessoas = document.getElementById('fechar-conta-num-pessoas');
+  const btnGerarPartesIgual = document.getElementById('btn-gerar-partes-igual');
+  const fecharContaDivAddParte = document.getElementById('fechar-conta-div-add-parte');
+  const fecharContaNomeParte = document.getElementById('fechar-conta-nome-parte');
+  const btnAddParteItem = document.getElementById('btn-add-parte-item');
+  const fecharContaListaPartes = document.getElementById('fechar-conta-lista-partes');
+  const fecharContaPainelPagamento = document.getElementById('fechar-conta-painel-pagamento');
+  const tituloPagamentoParte = document.getElementById('titulo-pagamento-parte');
+  const fecharContaImprimirCupom = document.getElementById('fechar-conta-imprimir-cupom');
+
 
   const audioPronto = document.getElementById('audio-pronto');
 
@@ -1016,9 +1042,17 @@
 
   function checkFormValidity() {
     const hasMesa = mesaSelect.value !== '';
+    const isParaViagem = pedidoParaViagem.checked;
+    const hasNome = pedidoClienteNome.value.trim() !== '';
     const hasItems = cart.length > 0;
-    btnEnviarPedido.disabled = !(hasMesa && hasItems);
+    
+    // Pode enviar se tiver mesa selecionada OU se for para viagem/tiver nome (pois usaremos BALCAO).
+    const canSend = (hasMesa || isParaViagem || hasNome) && hasItems;
+    btnEnviarPedido.disabled = !canSend;
   }
+  
+  if (pedidoClienteNome) pedidoClienteNome.addEventListener('input', checkFormValidity);
+  if (pedidoParaViagem) pedidoParaViagem.addEventListener('change', checkFormValidity);
 
   // -----------------------------------------------------
   // 5. ENVIAR PEDIDO
@@ -1028,6 +1062,8 @@
     
     const mesaCodigo = mesaSelect.value;
     const obsGeral = pedidoObs.value.trim();
+    const clienteNome = pedidoClienteNome.value.trim();
+    const paraViagem = pedidoParaViagem.checked;
     const formaPag = pedidoPagamento.value || null;
     const statusPag = pedidoPago.checked ? 'pago' : 'pendente';
     
@@ -1049,6 +1085,8 @@
     const payload = {
       mesa_codigo: mesaCodigo,
       observacoes: obsGeral,
+      cliente_nome: clienteNome,
+      para_viagem: paraViagem,
       forma_pagamento: formaPag,
       status_pagamento: statusPag,
       itens: itensParaRpc
@@ -1068,6 +1106,8 @@
     // Limpeza e Sucesso
     cart = [];
     pedidoObs.value = '';
+    pedidoClienteNome.value = '';
+    pedidoParaViagem.checked = false;
     pedidoPagamento.value = '';
     pedidoPago.checked = false;
     resetarModoAdicao();
@@ -1267,7 +1307,7 @@
 
       const btnAcaoHtml = isPronto
         ? `<div class="pedido-card-barista__actions">
-            <button class="btn-chamar-voz" onclick="window.baristaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}')" title="Fazer chamada por voz">
+            <button class="btn-chamar-voz" onclick="window.baristaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}', '${window.escapeHtml(pedido.cliente_nome || '')}')" title="Fazer chamada por voz">
               📢 Chamar
             </button>
             <button class="btn-entregar" onclick="window.baristaMarcarEntregue(${pedido.id})">
@@ -1276,13 +1316,17 @@
           </div>`
         : `<span style="font-size:12px; color:#888;">Operador: ${pedido.criado_por_nome || 'Barista'}</span>`;
 
+      const viagemTag = pedido.para_viagem ? `<span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">🥡 VIAGEM</span>` : '';
+      const nomeClienteHtml = pedido.cliente_nome ? `<div style="font-size:14px; font-weight:bold; color:var(--marrom-escuro); margin-top:4px;">${window.escapeHtml(pedido.cliente_nome)}</div>` : '';
+
       card.innerHTML = `
         <div class="pedido-card-barista__header">
-          <span class="pedido-card-barista__mesa">${pedido.mesa_codigo} (Pedido #${pedido.numero_pedido || pedido.id})</span>
+          <span class="pedido-card-barista__mesa">${pedido.mesa_codigo} (Pedido #${pedido.numero_pedido || pedido.id})${viagemTag}</span>
           <span class="pedido-card-barista__status status-chip--${pedido.status === 'concluido' ? 'pronto' : pedido.status === 'em_preparo' ? 'preparo' : 'pendente'}">
             ${statusLabel}
           </span>
         </div>
+        ${nomeClienteHtml}
         <div class="pedido-card-barista__itens">
           ${itensHtml}
         </div>
@@ -1472,81 +1516,431 @@
     abrirModalFecharConta(currentSelectedMesaParaConta.mesaCodigo, currentSelectedMesaParaConta.pedidosMesa);
   });
 
+  // -----------------------------------------------------
+  // 7.0. TRANSFERIR / JUNTAR MESAS
+  // -----------------------------------------------------
+
+  btnMesaTransferir.addEventListener('click', () => {
+    if (!currentSelectedMesaParaConta) return;
+    abrirModalTransferencia('transferir', currentSelectedMesaParaConta.mesaCodigo);
+  });
+
+  btnMesaJuntar.addEventListener('click', () => {
+    if (!currentSelectedMesaParaConta) return;
+    abrirModalTransferencia('juntar', currentSelectedMesaParaConta.mesaCodigo);
+  });
+
+  async function abrirModalTransferencia(acao, mesaBase) {
+    acaoTransferenciaAtiva = acao;
+    mesaAlvoTransferencia = mesaBase;
+
+    modalTransferirTitle.textContent = acao === 'transferir' 
+      ? `Transferir pedidos da mesa ${mesaBase} para:` 
+      : `Juntar pedidos de outra mesa à mesa ${mesaBase}:`;
+    
+    selectTransferirMesa.innerHTML = '<option value="">Carregando mesas...</option>';
+    modalTransferirMesa.classList.remove('hidden');
+
+    try {
+      const { data: mesas, error } = await supabase
+        .from('mesas')
+        .select('codigo')
+        .eq('ativo', true)
+        .order('codigo');
+
+      if (error) throw error;
+
+      selectTransferirMesa.innerHTML = '<option value="">Selecione...</option>';
+      mesas.forEach(m => {
+        if (m.codigo !== mesaBase) {
+          const opt = document.createElement('option');
+          opt.value = m.codigo;
+          opt.textContent = m.codigo;
+          selectTransferirMesa.appendChild(opt);
+        }
+      });
+    } catch (err) {
+      console.error('Erro ao buscar mesas:', err);
+      selectTransferirMesa.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
+  }
+
+  function fecharModalTransferencia() {
+    modalTransferirMesa.classList.add('hidden');
+    acaoTransferenciaAtiva = null;
+    mesaAlvoTransferencia = null;
+    selectTransferirMesa.value = '';
+  }
+
+  [btnTransferirClose, btnTransferirCancel].forEach(b => b.addEventListener('click', fecharModalTransferencia));
+
+  btnTransferirConfirm.addEventListener('click', async () => {
+    const mesaSelecionada = selectTransferirMesa.value;
+    if (!mesaSelecionada) {
+      alert('Por favor, selecione uma mesa.');
+      return;
+    }
+
+    let pOrigem, pDestino;
+    if (acaoTransferenciaAtiva === 'transferir') {
+      pOrigem = mesaAlvoTransferencia;
+      pDestino = mesaSelecionada;
+    } else {
+      pOrigem = mesaSelecionada;
+      pDestino = mesaAlvoTransferencia;
+    }
+
+    try {
+      btnTransferirConfirm.disabled = true;
+      btnTransferirConfirm.textContent = 'Processando...';
+
+      const { error } = await supabase.rpc('transferir_mesa', {
+        p_origem: pOrigem,
+        p_destino: pDestino
+      });
+
+      if (error) throw error;
+
+      window.showToast(`Operação realizada com sucesso!`);
+      fecharModalTransferencia();
+      fecharModalMesa();
+      loadPedidos(); // Recarrega os pedidos e mesas
+    } catch (err) {
+      console.error('Erro ao transferir:', err);
+      alert('Erro ao transferir pedidos: ' + err.message);
+    } finally {
+      btnTransferirConfirm.disabled = false;
+      btnTransferirConfirm.textContent = 'Confirmar';
+    }
+  });
+
+
+  let currentPartes = [];
+  let parteAtivaId = null;
+
   function abrirModalFecharConta(mesaCodigo, pedidosMesa) {
     currentFechamento.mesaCodigo = mesaCodigo;
     currentFechamento.pedidos = pedidosMesa;
     currentFechamento.totalConta = 0;
     currentFechamento.jaPago = 0;
     currentFechamento.aPagar = 0;
-    currentFechamento.pagamentos = [];
-    currentFechamento.valorRecebidoDinheiro = 0;
-
-    fecharContaTitle.textContent = `Fechar Conta: ${mesaCodigo}`;
     
-    let htmlResumo = '<ul style="padding-left:16px; margin:0;">';
-    
+    // Calcula totais
     pedidosMesa.forEach(p => {
       const valorPedido = Number(p.total || 0);
       currentFechamento.totalConta += valorPedido;
-      
-      let statusHtml = '';
       if (p.status_pagamento === 'pago') {
         currentFechamento.jaPago += valorPedido;
-        statusHtml = '<span style="color:green; font-weight:bold;">(Pago)</span>';
       } else {
         currentFechamento.aPagar += valorPedido;
-        statusHtml = '<span style="color:#D97706; font-weight:bold;">(A pagar)</span>';
+        // Iniciar pedidos com % de atribuição
+        p._atribuicoes = []; // { parteId, perc }
       }
-
-      htmlResumo += `<li>Pedido #${p.numero_pedido || p.id} - R$ ${valorPedido.toFixed(2).replace('.', ',')} ${statusHtml}</li>`;
     });
-    htmlResumo += '</ul>';
 
     if (currentFechamento.aPagar <= 0) {
       showToast('Esta mesa não tem pedidos pendentes de pagamento.', 'info');
       return;
     }
 
-    fecharContaResumo.innerHTML = htmlResumo;
+    fecharContaTitle.textContent = `Fechar Conta: ${mesaCodigo}`;
     fecharContaTotalLbl.textContent = `R$ ${currentFechamento.totalConta.toFixed(2).replace('.', ',')}`;
     fecharContaJaPagoLbl.textContent = `R$ ${currentFechamento.jaPago.toFixed(2).replace('.', ',')}`;
     fecharContaAPagarLbl.textContent = `R$ ${currentFechamento.aPagar.toFixed(2).replace('.', ',')}`;
     
-    fecharContaForma.value = 'pix';
-    fecharContaValor.value = '';
-    inputDinheiroRecebido.value = '';
-    divDinheiroRecebido.classList.add('hidden');
-    
-    atualizarTotaisFechamento();
+    // Reseta UI
+    fecharContaModo.value = 'padrao';
+    fecharContaModo.dispatchEvent(new Event('change'));
     
     modalMesa.classList.add('hidden');
     modalFecharConta.classList.remove('hidden');
   }
 
-  function fecharModalFecharConta() {
-    modalFecharConta.classList.add('hidden');
-    // Se quiser que volte para o modal da mesa:
-    if (currentSelectedMesaParaConta) {
-      abrirModalMesa(currentSelectedMesaParaConta.mesaCodigo, currentSelectedMesaParaConta.pedidosMesa);
+  fecharContaModo.addEventListener('change', () => {
+    const modo = fecharContaModo.value;
+    fecharContaDivPessoas.classList.add('hidden');
+    fecharContaDivAddParte.classList.add('hidden');
+    
+    currentPartes = [];
+    parteAtivaId = null;
+    
+    if (modo === 'padrao') {
+      currentPartes.push({
+        id: 1,
+        nome: 'Parte Única',
+        valor_devido: currentFechamento.aPagar,
+        pagamentos: [],
+        dinheiro_recebido: 0
+      });
+      parteAtivaId = 1;
+    } else if (modo === 'igual') {
+      fecharContaDivPessoas.classList.remove('hidden');
+    } else if (modo === 'item') {
+      fecharContaDivAddParte.classList.remove('hidden');
+      // Limpar atribuições dos pedidos
+      currentFechamento.pedidos.forEach(p => { if (p._atribuicoes) p._atribuicoes = []; });
     }
+    renderPartes();
+    renderResumoItens();
+  });
+
+  btnGerarPartesIgual.addEventListener('click', () => {
+    const num = Number(fecharContaNumPessoas.value);
+    if (num < 2) return;
+    currentPartes = [];
+    
+    const valorBase = Math.floor((currentFechamento.aPagar / num) * 100) / 100;
+    let sobra = currentFechamento.aPagar - (valorBase * num);
+    
+    for (let i = 1; i <= num; i++) {
+      let valor = valorBase;
+      if (i === 1) valor += sobra;
+      
+      currentPartes.push({
+        id: i,
+        nome: `Parte ${i}`,
+        valor_devido: valor,
+        pagamentos: [],
+        dinheiro_recebido: 0
+      });
+    }
+    parteAtivaId = 1;
+    renderPartes();
+  });
+
+  btnAddParteItem.addEventListener('click', () => {
+    const nome = fecharContaNomeParte.value.trim() || `Parte ${currentPartes.length + 1}`;
+    currentPartes.push({
+      id: Date.now(),
+      nome: nome,
+      valor_devido: 0,
+      pagamentos: [],
+      dinheiro_recebido: 0
+    });
+    fecharContaNomeParte.value = '';
+    renderPartes();
+  });
+
+  // Expor no window para usar no html gerado
+  window.selecionarParte = function(id) {
+    parteAtivaId = id;
+    renderPartes();
+    renderResumoItens();
+  };
+
+  window.atribuirItem = function(pedidoId, percent) {
+    if (fecharContaModo.value !== 'item') return;
+    if (!parteAtivaId) {
+      showToast('Selecione uma parte primeiro!', 'warning');
+      return;
+    }
+    
+    const p = currentFechamento.pedidos.find(x => x.id === pedidoId);
+    if (!p) return;
+    
+    // Remove se já existe essa atribuição para recalcular
+    p._atribuicoes = p._atribuicoes.filter(a => a.parteId !== parteAtivaId);
+    
+    // Soma % atual (exceto a parte atual)
+    let totalPerc = p._atribuicoes.reduce((sum, a) => sum + a.perc, 0);
+    if (totalPerc + percent > 100) {
+      showToast('O item não pode passar de 100% de atribuição.', 'error');
+      return;
+    }
+    
+    if (percent > 0) {
+      p._atribuicoes.push({ parteId: parteAtivaId, perc: percent });
+    }
+    
+    recalcularValorDevidoItemMode();
+    renderResumoItens();
+    renderPartes();
+  };
+
+  function recalcularValorDevidoItemMode() {
+    currentPartes.forEach(pt => pt.valor_devido = 0);
+    
+    currentFechamento.pedidos.forEach(p => {
+      if (p.status_pagamento === 'pago') return;
+      if (!p._atribuicoes) return;
+      
+      const valorPedido = Number(p.total || 0);
+      p._atribuicoes.forEach(a => {
+        const pt = currentPartes.find(x => x.id === a.parteId);
+        if (pt) {
+          pt.valor_devido += (valorPedido * (a.perc / 100));
+        }
+      });
+    });
   }
 
-  [fecharContaClose, fecharContaCancelar].forEach(b => b.addEventListener('click', fecharModalFecharConta));
+  function renderResumoItens() {
+    let htmlResumo = '<ul style="padding-left:16px; margin:0; list-style-type:none;">';
+    
+    currentFechamento.pedidos.forEach(p => {
+      const valorPedido = Number(p.total || 0);
+      let statusHtml = '';
+      if (p.status_pagamento === 'pago') {
+        statusHtml = '<span style="color:green; font-weight:bold;">(Pago)</span>';
+      }
+      
+      htmlResumo += `<li style="margin-bottom: 8px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span>Pedido #${p.numero_pedido || p.id} ${statusHtml}</span>
+          <strong>R$ ${valorPedido.toFixed(2).replace('.', ',')}</strong>
+        </div>`;
+        
+      if (fecharContaModo.value === 'item' && p.status_pagamento !== 'pago') {
+        let atribuido = 0;
+        let badges = '';
+        if (p._atribuicoes) {
+          p._atribuicoes.forEach(a => {
+            atribuido += a.perc;
+            const pt = currentPartes.find(x => x.id === a.parteId);
+            if (pt) {
+              badges += `<span style="font-size:10px; background:#ddd; padding:2px 4px; border-radius:4px; margin-right:4px;">${pt.nome} (${a.perc}%)</span>`;
+            }
+          });
+        }
+        
+        let botoesAtrib = '';
+        if (atribuido < 100 && parteAtivaId) {
+          let faltante = 100 - atribuido;
+          botoesAtrib = `
+            <div style="margin-top: 4px;">
+              ${faltante === 100 ? `<button class="btn-ghost-small" style="font-size:11px;" onclick="window.atribuirItem(${p.id}, 100)">Atribuir 100%</button>` : ''}
+              <button class="btn-ghost-small" style="font-size:11px;" onclick="window.atribuirItem(${p.id}, 50)">+50%</button>
+              <button class="btn-ghost-small" style="font-size:11px;" onclick="window.atribuirItem(${p.id}, ${faltante})">Restante (${faltante}%)</button>
+            </div>
+          `;
+        }
+        
+        htmlResumo += `<div>${badges}${botoesAtrib}</div>`;
+      }
+      
+      htmlResumo += `</li>`;
+    });
+    htmlResumo += '</ul>';
+    fecharContaResumo.innerHTML = htmlResumo;
+  }
+
+  function renderPartes() {
+    let totalPagoAll = 0;
+    
+    let htmlPartes = '';
+    currentPartes.forEach(pt => {
+      let totalPagoParte = pt.pagamentos.reduce((sum, pag) => sum + pag.valor, 0);
+      totalPagoAll += totalPagoParte;
+      
+      let faltaParte = pt.valor_devido - totalPagoParte;
+      if (faltaParte < 0) faltaParte = 0;
+      
+      let statusColor = faltaParte > 0 ? '#D97706' : 'green';
+      if (pt.valor_devido === 0 && fecharContaModo.value === 'item') statusColor = '#999';
+      
+      let isActive = pt.id === parteAtivaId;
+      
+      htmlPartes += `
+        <div onclick="window.selecionarParte(${pt.id})" style="border: 2px solid ${isActive ? 'var(--marrom)' : '#E5E5E5'}; padding: 8px 12px; border-radius: 8px; cursor: pointer; background: ${isActive ? '#fdf7f1' : '#fff'};">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="color: ${isActive ? 'var(--marrom-escuro)' : '#333'}">${pt.nome}</strong>
+            <span style="font-size:12px; font-weight:bold; color: ${statusColor}">
+              ${faltaParte > 0 ? 'Falta: R$ ' + faltaParte.toFixed(2).replace('.', ',') : (pt.valor_devido > 0 ? 'Pago!' : '')}
+            </span>
+          </div>
+          <div style="font-size: 12px; color: #555;">
+            Devido: R$ ${pt.valor_devido.toFixed(2).replace('.', ',')} | Pago: R$ ${totalPagoParte.toFixed(2).replace('.', ',')}
+          </div>
+        </div>
+      `;
+    });
+    
+    fecharContaListaPartes.innerHTML = htmlPartes;
+    
+    const faltaTotal = currentFechamento.aPagar - totalPagoAll;
+    fecharContaFaltaLbl.textContent = `R$ ${(faltaTotal > 0 ? faltaTotal : 0).toFixed(2).replace('.', ',')}`;
+    
+    if (faltaTotal <= 0.05 && totalPagoAll > 0 && currentPartes.length > 0) {
+      fecharContaConfirmar.disabled = false;
+      fecharContaFaltaLbl.style.color = 'green';
+    } else {
+      fecharContaConfirmar.disabled = true;
+      fecharContaFaltaLbl.style.color = 'red';
+    }
+
+    renderPainelPagamento();
+  }
+
+  function renderPainelPagamento() {
+    if (!parteAtivaId) {
+      fecharContaPainelPagamento.classList.add('hidden');
+      return;
+    }
+    const pt = currentPartes.find(x => x.id === parteAtivaId);
+    if (!pt) return;
+    
+    fecharContaPainelPagamento.classList.remove('hidden');
+    tituloPagamentoParte.textContent = `Pagamentos - ${pt.nome}`;
+    
+    inputDinheiroRecebido.value = pt.dinheiro_recebido || '';
+    
+    let totalPagoParte = 0;
+    let htmlLista = '';
+    const formasNomes = { 'pix': 'PIX', 'dinheiro': 'Dinheiro', 'cartao_debito': 'Cartão de Débito', 'cartao_credito': 'Cartão de Crédito', 'outros': 'Outros' };
+
+    pt.pagamentos.forEach(pag => {
+      totalPagoParte += pag.valor;
+      htmlLista += `
+        <div style="display:flex; justify-content: space-between; align-items:center; background:#f9f9f9; border:1px solid #ddd; padding:6px; border-radius:4px; margin-bottom:4px; font-size:13px;">
+          <span>${formasNomes[pag.forma] || pag.forma}: <strong>R$ ${pag.valor.toFixed(2).replace('.', ',')}</strong></span>
+          <button class="btn-ghost-small" style="color:red; padding:2px 6px;" onclick="window.removerPagamentoFechamento(${pag.id})">X</button>
+        </div>
+      `;
+    });
+    fecharContaLista.innerHTML = htmlLista;
+    
+    const faltaParte = pt.valor_devido - totalPagoParte;
+    if (faltaParte > 0 && !fecharContaValor.value) {
+      fecharContaValor.value = faltaParte.toFixed(2);
+    } else if (faltaParte <= 0) {
+      fecharContaValor.value = '';
+    }
+
+    let valorDinheiroLancado = pt.pagamentos.filter(pag => pag.forma === 'dinheiro').reduce((sum, pag) => sum + pag.valor, 0);
+    let recebido = Number(inputDinheiroRecebido.value) || 0;
+    
+    if (recebido > 0) {
+      let troco = recebido - valorDinheiroLancado;
+      if (troco < 0) troco = 0;
+      fecharContaTrocoLbl.textContent = `R$ ${troco.toFixed(2).replace('.', ',')}`;
+    } else {
+      fecharContaTrocoLbl.textContent = `R$ 0,00`;
+    }
+  }
 
   fecharContaForma.addEventListener('change', () => {
     if (fecharContaForma.value === 'dinheiro') {
       divDinheiroRecebido.classList.remove('hidden');
     } else {
       divDinheiroRecebido.classList.add('hidden');
-      inputDinheiroRecebido.value = '';
     }
   });
 
   inputDinheiroRecebido.addEventListener('input', () => {
-    atualizarTotaisFechamento();
+    if (parteAtivaId) {
+      const pt = currentPartes.find(x => x.id === parteAtivaId);
+      if (pt) {
+        pt.dinheiro_recebido = Number(inputDinheiroRecebido.value) || 0;
+        renderPainelPagamento();
+      }
+    }
   });
 
   btnAddPagamento.addEventListener('click', () => {
+    if (!parteAtivaId) return;
+    const pt = currentPartes.find(x => x.id === parteAtivaId);
+    if (!pt) return;
+
     const forma = fecharContaForma.value;
     const valor = Number(fecharContaValor.value);
     
@@ -1555,89 +1949,51 @@
       return;
     }
 
-    currentFechamento.pagamentos.push({
+    pt.pagamentos.push({
       id: Date.now(),
       forma: forma,
       valor: valor
     });
 
     fecharContaValor.value = '';
-    atualizarTotaisFechamento();
+    renderPartes();
   });
 
-  function removerPagamento(id) {
-    currentFechamento.pagamentos = currentFechamento.pagamentos.filter(p => p.id !== id);
-    atualizarTotaisFechamento();
-  }
-  
-  // Expor no window para o onclick
-  window.removerPagamentoFechamento = removerPagamento;
-
-  function atualizarTotaisFechamento() {
-    let totalPagamentos = 0;
-    let htmlLista = '';
-    
-    const formasNomes = {
-      'pix': 'PIX',
-      'dinheiro': 'Dinheiro',
-      'cartao_debito': 'Cartão de Débito',
-      'cartao_credito': 'Cartão de Crédito',
-      'outros': 'Outros'
-    };
-
-    currentFechamento.pagamentos.forEach(p => {
-      totalPagamentos += p.valor;
-      htmlLista += `
-        <div style="display:flex; justify-content: space-between; align-items:center; background:#fff; border:1px solid #ddd; padding:8px; border-radius:4px; margin-bottom:4px;">
-          <span>${formasNomes[p.forma] || p.forma}: <strong>R$ ${p.valor.toFixed(2).replace('.', ',')}</strong></span>
-          <button class="btn-ghost-small" style="color:red; padding:2px 6px;" onclick="window.removerPagamentoFechamento(${p.id})">Remover</button>
-        </div>
-      `;
-    });
-    fecharContaLista.innerHTML = htmlLista;
-
-    const falta = currentFechamento.aPagar - totalPagamentos;
-    
-    if (falta > 0) {
-      fecharContaFaltaLbl.textContent = `R$ ${falta.toFixed(2).replace('.', ',')}`;
-      fecharContaFaltaLbl.style.color = 'red';
-      fecharContaConfirmar.disabled = true;
-      // Preencher o input com o valor que falta
-      if (!fecharContaValor.value) {
-        fecharContaValor.value = falta.toFixed(2);
-      }
-    } else {
-      fecharContaFaltaLbl.textContent = `R$ 0,00 (Total atingido)`;
-      fecharContaFaltaLbl.style.color = 'green';
-      fecharContaConfirmar.disabled = false;
-      fecharContaValor.value = '';
+  window.removerPagamentoFechamento = function(id) {
+    if (!parteAtivaId) return;
+    const pt = currentPartes.find(x => x.id === parteAtivaId);
+    if (pt) {
+      pt.pagamentos = pt.pagamentos.filter(p => p.id !== id);
+      renderPartes();
     }
+  };
 
-    // Calcular troco se houver dinheiro envolvido
-    let valorDinheiroLancado = currentFechamento.pagamentos.filter(p => p.forma === 'dinheiro').reduce((sum, p) => sum + p.valor, 0);
-    let recebido = Number(inputDinheiroRecebido.value) || 0;
-    
-    if (recebido > 0) {
-      // O troco é o que o cliente deu menos a PARCELA do pagamento em dinheiro que ele se comprometeu
-      let troco = recebido - valorDinheiroLancado;
-      if (troco < 0) troco = 0;
-      fecharContaTrocoLbl.textContent = `R$ ${troco.toFixed(2).replace('.', ',')}`;
-      currentFechamento.valorRecebidoDinheiro = recebido;
-    } else {
-      fecharContaTrocoLbl.textContent = `R$ 0,00`;
-      currentFechamento.valorRecebidoDinheiro = 0;
+  function fecharModalFecharConta() {
+    modalFecharConta.classList.add('hidden');
+    if (currentSelectedMesaParaConta) {
+      abrirModalMesa(currentSelectedMesaParaConta.mesaCodigo, currentSelectedMesaParaConta.pedidosMesa);
     }
   }
+
+  [fecharContaClose, fecharContaCancelar].forEach(b => b.addEventListener('click', fecharModalFecharConta));
 
   fecharContaConfirmar.addEventListener('click', async () => {
-    let totalPagamentos = currentFechamento.pagamentos.reduce((sum, p) => sum + p.valor, 0);
-    // Margem de erro de arredondamento
-    if (totalPagamentos < currentFechamento.aPagar - 0.01) {
+    // Coleta todos pagamentos de todas as partes
+    let todosPagamentos = [];
+    currentPartes.forEach(pt => {
+      pt.pagamentos.forEach(pag => {
+        todosPagamentos.push({ forma: pag.forma, valor: pag.valor, parteNome: pt.nome });
+      });
+    });
+
+    let totalPagamentos = todosPagamentos.reduce((sum, p) => sum + p.valor, 0);
+    
+    if (totalPagamentos < currentFechamento.aPagar - 0.05) {
       showToast('O valor dos pagamentos é menor que o total a pagar!', 'error');
       return;
     }
 
-    if (currentFechamento.pagamentos.length === 0) {
+    if (todosPagamentos.length === 0) {
       showToast('Adicione pelo menos uma forma de pagamento.', 'error');
       return;
     }
@@ -1646,7 +2002,7 @@
     fecharContaConfirmar.textContent = 'Fechando...';
 
     try {
-      const pagamentosPayload = currentFechamento.pagamentos.map(p => ({
+      const pagamentosPayload = todosPagamentos.map(p => ({
         forma: p.forma,
         valor: p.valor
       }));
@@ -1660,12 +2016,19 @@
 
       showToast(`Conta da mesa ${currentFechamento.mesaCodigo} fechada com sucesso!`, 'success');
       
-      // Imprimir
-      if (window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoConta) {
+      if (fecharContaImprimirCupom.checked && window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoContaMultiPartes) {
+        window.cafeteriaPrint.printFechamentoContaMultiPartes(
+          currentFechamento.mesaCodigo,
+          currentFechamento.pedidos,
+          currentPartes,
+          currentFechamento.aPagar,
+          data.troco || 0
+        );
+      } else if (fecharContaImprimirCupom.checked && window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoConta) {
         window.cafeteriaPrint.printFechamentoConta(
           currentFechamento.mesaCodigo,
           currentFechamento.pedidos,
-          currentFechamento.pagamentos,
+          todosPagamentos,
           currentFechamento.aPagar,
           data.troco || 0
         );
@@ -1673,7 +2036,7 @@
 
       currentSelectedMesaParaConta = null;
       modalFecharConta.classList.add('hidden');
-      loadActivePedidos(); // Recarrega para limpar as mesas
+      loadActivePedidos();
 
     } catch (err) {
       console.error(err);
@@ -1687,22 +2050,70 @@
   // -----------------------------------------------------
   // 8. REALTIME (NOTIFICAÇÃO QUANDO PEDIDO FICA PRONTO)
   // -----------------------------------------------------
+  let fetchTimeout = null;
+  function debouncedLoadActivePedidos() {
+    if (fetchTimeout) clearTimeout(fetchTimeout);
+    fetchTimeout = setTimeout(() => {
+      loadActivePedidos();
+    }, 300);
+  }
+
+  function updateConnectionStatus(isConnected) {
+    const indicator = document.querySelector('.status-indicator');
+    if (!indicator) return;
+    const dot = indicator.querySelector('.pulse-dot');
+    const text = indicator.querySelector('.status-text');
+    
+    if (isConnected) {
+      if(dot) dot.style.backgroundColor = '#4CAF50';
+      if(text) { text.textContent = 'Conectado'; text.style.color = '#fff'; }
+    } else {
+      if(dot) dot.style.backgroundColor = '#e74c3c';
+      if(text) { text.textContent = 'Reconectando...'; text.style.color = '#e74c3c'; }
+    }
+  }
+
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-barista')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, payload => {
         if (payload.eventType === 'UPDATE') {
           if (payload.new && payload.new.status === 'concluido' && payload.old && payload.old.status !== 'concluido') {
             tocarAlertaPronto();
-            chamarPedidoVoz(payload.new.numero_pedido || payload.new.id, payload.new.mesa_codigo);
+            chamarPedidoVoz(payload.new.numero_pedido || payload.new.id, payload.new.mesa_codigo, payload.new.cliente_nome);
           }
         }
-        loadActivePedidos();
+        debouncedLoadActivePedidos();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedido_itens' }, payload => {
+        debouncedLoadActivePedidos();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'produtos' }, payload => {
         loadProdutos();
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          updateConnectionStatus(true);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          updateConnectionStatus(false);
+        }
+      });
   }
+
+  // Lidar com conexão caindo ou voltando
+  window.addEventListener('online', () => {
+    updateConnectionStatus(true);
+    debouncedLoadActivePedidos();
+  });
+  window.addEventListener('offline', () => {
+    updateConnectionStatus(false);
+  });
+
+  // Lidar com repouso/troca de aba
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      debouncedLoadActivePedidos();
+    }
+  });
 
   function tocarAlertaPronto() {
     try {
@@ -1711,13 +2122,18 @@
     } catch (e) {}
   }
 
-  function chamarPedidoVoz(numeroPedido, mesaCodigo) {
+  function chamarPedidoVoz(numeroPedido, mesaCodigo, clienteNome) {
     tocarAlertaPronto();
     if (!('speechSynthesis' in window)) return;
 
     try {
       window.speechSynthesis.cancel();
-      const frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para ser servido!`;
+      let frase = '';
+      if (clienteNome) {
+        frase = `Atenção! Pedido da ${clienteNome}, está pronto para ser servido!`;
+      } else {
+        frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para ser servido!`;
+      }
       const utterance = new SpeechSynthesisUtterance(frase);
       utterance.lang = 'pt-BR';
       utterance.rate = 1.0;

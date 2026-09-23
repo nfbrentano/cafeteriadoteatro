@@ -153,7 +153,11 @@
         <button class="topbar__menu-btn" id="btn-sidebar-toggle" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">☰</button>
         <span class="topbar__title" id="topbar-title">Dashboard</span>
       </div>
-      <div class="topbar__right">
+      <div class="topbar__right" style="display: flex; align-items: center; gap: 16px;">
+        <div class="status-indicator" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
+          <span class="pulse-dot" style="width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block;"></span>
+          <span class="status-text" style="color: #666;">Conectado</span>
+        </div>
         <div class="topbar__user">
           <div class="topbar__user-avatar" id="user-avatar">A</div>
           <span class="topbar__user-name" id="user-name-display">admin</span>

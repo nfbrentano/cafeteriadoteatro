@@ -90,7 +90,8 @@
           
           <div class="divider"></div>
           
-          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${pedido.mesa_codigo}</span></div>
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${pedido.mesa_codigo}</span> ${pedido.para_viagem ? ' <strong>(🥡 VIAGEM)</strong>' : ''}</div>
+          ${pedido.cliente_nome ? `<div><span class="bold">CLIENTE:</span> ${window.escapeHtml(pedido.cliente_nome)}</div>` : ''}
           <div><span class="bold">PEDIDO:</span> #${pedido.numero_pedido || pedido.id}</div>
           <div><span class="bold">HORA:</span> ${date}</div>
           <div><span class="bold">STATUS PAG.:</span> ${statusPag} ${pagamento ? '(' + pagamento + ')' : ''}</div>
@@ -274,6 +275,96 @@
     },
 
     // Fechamento da Conta (Comprovante de Pagamento)
+    
+    printFechamentoContaMultiPartes: function (mesaCodigo, pedidosMesa, partes, totalConta, trocoGeral) {
+      const date = new Date().toLocaleString('pt-BR');
+
+      let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>${baseStyles}</style>
+          <style>
+            .page-break { page-break-after: always; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+      `;
+
+      partes.forEach((pt, index) => {
+        let totalPagoParte = pt.pagamentos.reduce((sum, pag) => sum + pag.valor, 0);
+
+        html += `
+          <div class="${index < partes.length - 1 ? 'page-break' : ''}">
+            <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
+            <div class="center bold">COMPROVANTE DE PAGAMENTO</div>
+            <div class="center" style="font-size: 11px;">*** NÃO É DOCUMENTO FISCAL ***</div>
+            
+            <div class="divider"></div>
+            
+            <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${mesaCodigo}</span></div>
+            <div><span class="bold">DATA:</span> ${date}</div>
+            <div><span class="bold">PARTE:</span> <span style="font-size: 15px; font-weight: bold;">${window.escapeHtml(pt.nome)}</span></div>
+            
+            <div class="divider"></div>
+            
+            <div class="bold" style="font-size: 14px; text-align: right;">
+              VALOR DEVIDO: R$ ${Number(pt.valor_devido).toFixed(2).replace('.', ',')}
+            </div>
+            <div class="bold" style="font-size: 16px; text-align: right;">
+              TOTAL PAGO: R$ ${Number(totalPagoParte).toFixed(2).replace('.', ',')}
+            </div>
+            
+            <div class="divider"></div>
+            <div class="bold" style="font-size: 13px; text-align: left;">
+              FORMAS DE PAGAMENTO:
+            </div>
+            <table style="margin-top: 4px;">
+        `;
+
+        (pt.pagamentos || []).forEach(pag => {
+          html += `
+            <tr>
+              <td>${formatFormaPagamento(pag.forma)}</td>
+              <td class="price">R$ ${Number(pag.valor).toFixed(2).replace('.', ',')}</td>
+            </tr>
+          `;
+        });
+
+        html += `</table>`;
+
+        let valorDinheiroLancado = pt.pagamentos.filter(pag => pag.forma === 'dinheiro').reduce((sum, pag) => sum + pag.valor, 0);
+        if (pt.dinheiro_recebido && pt.dinheiro_recebido > 0) {
+           let trocoParte = pt.dinheiro_recebido - valorDinheiroLancado;
+           if (trocoParte < 0) trocoParte = 0;
+           if (trocoParte > 0) {
+             html += `
+               <div class="divider"></div>
+               <div class="bold" style="font-size: 14px; text-align: right;">
+                 TROCO: R$ ${Number(trocoParte).toFixed(2).replace('.', ',')}
+               </div>
+             `;
+           }
+        }
+
+        html += `
+            <div class="divider"></div>
+            <div class="center" style="font-size: 11px; margin-top: 8px;">
+              Muito obrigado e volte sempre!
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+        </body>
+        </html>
+      `;
+
+      executePrint(html);
+    },
+
     printFechamentoConta: function (mesaCodigo, pedidosMesa, pagamentos, totalConta, troco) {
       const date = new Date().toLocaleString('pt-BR');
 

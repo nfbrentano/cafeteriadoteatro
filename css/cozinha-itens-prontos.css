@@ -1,0 +1,41 @@
+/* Estilos para marcar itens como pronto */
+.item-row.is-clickable {
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.item-row.is-clickable:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.item-row.is-clickable:active {
+  background: rgba(0,0,0,0.06);
+}
+
+.item-row.is-pronto {
+  opacity: 0.5;
+}
+
+.item-row.is-pronto .item-name {
+  text-decoration: line-through;
+}
+
+.check-icon {
+  color: var(--verde);
+  font-weight: bold;
+  margin-right: 6px;
+  display: inline-block;
+  min-width: 14px;
+}
+
+.pedido-progress {
+  font-size: 13px;
+  font-weight: bold;
+  background: var(--azul-bg);
+  color: var(--azul);
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-left: auto;
+}

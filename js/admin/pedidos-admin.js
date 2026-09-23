@@ -350,17 +350,64 @@
     openModal();
   }
 
+  let fetchTimeout = null;
+  function debouncedLoadPedidos() {
+    if (fetchTimeout) clearTimeout(fetchTimeout);
+    fetchTimeout = setTimeout(() => {
+      if (pagePedidos.classList.contains('active')) {
+        loadPedidos();
+      }
+    }, 300);
+  }
+
+  function updateConnectionStatus(isConnected) {
+    const indicator = document.querySelector('.status-indicator');
+    if (!indicator) return;
+    const dot = indicator.querySelector('.pulse-dot');
+    const text = indicator.querySelector('.status-text');
+    
+    if (isConnected) {
+      if(dot) dot.style.backgroundColor = '#4CAF50';
+      if(text) { text.textContent = 'Conectado'; text.style.color = '#666'; }
+    } else {
+      if(dot) dot.style.backgroundColor = '#e74c3c';
+      if(text) { text.textContent = 'Reconectando...'; text.style.color = '#e74c3c'; }
+    }
+  }
+
   function setupRealtime() {
     if (realtimeChannel) return;
     realtimeChannel = window.cafeteriaSupabase.channel('admin-pedidos-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => {
-        // Recarregar tabela e KPIs se a aba estiver ativa
-        if (pagePedidos.classList.contains('active')) {
-          loadPedidos();
-        }
+        debouncedLoadPedidos();
       })
-      .subscribe();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedido_itens' }, () => {
+        debouncedLoadPedidos();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          updateConnectionStatus(true);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          updateConnectionStatus(false);
+        }
+      });
   }
+
+  // Lidar com conexão caindo ou voltando
+  window.addEventListener('online', () => {
+    updateConnectionStatus(true);
+    debouncedLoadPedidos();
+  });
+  window.addEventListener('offline', () => {
+    updateConnectionStatus(false);
+  });
+
+  // Lidar com repouso/troca de aba
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      debouncedLoadPedidos();
+    }
+  });
 
   // Eventos
   if (btnRefresh) btnRefresh.addEventListener('click', loadPedidos);
@@ -375,3 +422,4 @@
   };
 
 })();
+

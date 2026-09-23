@@ -206,13 +206,18 @@
     } catch (e) {}
   }
 
-  function chamarPedidoVoz(numeroPedido, mesaCodigo) {
+  function chamarPedidoVoz(numeroPedido, mesaCodigo, clienteNome) {
     playAlert();
     if (!('speechSynthesis' in window)) return;
 
     try {
       window.speechSynthesis.cancel();
-      const frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para retirada!`;
+      let frase = '';
+      if (clienteNome) {
+        frase = `Atenção! Pedido da ${clienteNome}, está pronto para retirada!`;
+      } else {
+        frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para retirada!`;
+      }
       const utterance = new SpeechSynthesisUtterance(frase);
       utterance.lang = 'pt-BR';
       utterance.rate = 1.0;
@@ -379,6 +384,21 @@
         return; // não mostra o pedido se ele não tem itens para esta estação
       }
 
+      // Contagem de progresso
+      let totalItems = 0;
+      let readyItems = 0;
+      if (pedido.pedido_itens) {
+        pedido.pedido_itens.forEach(item => {
+          if (!item.cancelado) {
+            totalItems++;
+            if (item.pronto_em) {
+              readyItems++;
+            }
+          }
+        });
+      }
+      let progressHtml = totalItems > 0 && tipo !== 'concluido' ? `<div class="pedido-progress">${readyItems}/${totalItems} itens</div>` : '';
+
       let itensHtml = '';
       if (itensDaEstacao.length > 0) {
         itensDaEstacao.forEach(item => {
@@ -387,6 +407,12 @@
           
           let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
           let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
+          let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
+          let prontoClass = item.pronto_em ? 'is-pronto' : '';
+          let checkHtml = item.pronto_em ? '<span class="check-icon">✓</span>' : '';
+          
+          let actionClass = (!isCancelado && tipo !== 'concluido') ? 'is-clickable' : '';
+          let onClick = (!isCancelado && tipo !== 'concluido') ? `onclick="window.toggleItemPronto(${pedido.id}, ${item.id}, ${item.pronto_em ? 'true' : 'false'})"` : '';
           let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
 
           const obsItemHtml = item.observacoes 
@@ -409,10 +435,10 @@
           }
 
           itensHtml += `
-            <div class="item-row">
+            <div class="item-row ${actionClass} ${prontoClass}" ${onClick}>
               <div class="item-main" ${cancelClass}>
                 <span class="item-qty">${item.quantidade}x</span>
-                <span class="item-name">${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${cancelLabel}</span>
+                <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${cancelLabel}</span>
               </div>
               ${saboresHtml}
               ${adicHtml}
@@ -458,7 +484,7 @@
         botoesHtml = `
           <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir">🖨 Comanda</button>
           <div class="footer-actions">
-            <button class="btn-card btn-card--chamar" onclick="window.cozinhaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}')" title="Chamar pelo celular">
+            <button class="btn-card btn-card--chamar" onclick="window.cozinhaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}', '${window.escapeHtml(pedido.cliente_nome || '')}')" title="Chamar pelo celular">
               📢 Chamar
             </button>
             <button class="btn-card btn-card--desfazer" onclick="window.updateStatus(${pedido.id}, 'em_preparo')">
@@ -475,12 +501,17 @@
       const operadorStr = pedido.criado_por_nome ? `Atendente: ${pedido.criado_por_nome}` : 'Atendimento';
       
       const badgeEntregue = pedido.status === 'entregue' ? '<span style="background:#ddd; color:#555; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">ENTREGUE NA MESA</span>' : '';
+      
+      const viagemTag = pedido.para_viagem ? `<span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">🥡 VIAGEM</span>` : '';
+      const nomeClienteHtml = pedido.cliente_nome ? `<div style="font-size:15px; font-weight:bold; color:var(--marrom-escuro); margin-bottom: 6px;">${window.escapeHtml(pedido.cliente_nome)}</div>` : '';
 
       card.innerHTML = `
         <div class="pedido-header">
-          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${badgeEntregue}</div>
+          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue}</div>
+          ${progressHtml}
           <div class="pedido-tempo ${atrasadoClass}">⏱ ${tempoStr}</div>
         </div>
+        ${nomeClienteHtml}
         <div class="pedido-operador">${operadorStr}</div>
         <div class="pedido-itens" ${pedido.status === 'entregue' ? 'style="opacity: 0.6;"' : ''}>
           ${itensHtml}
@@ -503,6 +534,51 @@
   // -----------------------------------------------------
   // 5. AÇÕES (Atualizar Status e Reimpressão)
   // -----------------------------------------------------
+
+  window.toggleItemPronto = async function(pedidoId, itemId, isProntoAtualmente) {
+    const pedido = pedidos.find(p => p.id === pedidoId);
+    if (!pedido) return;
+    
+    // Otimista
+    const item = pedido.pedido_itens.find(i => i.id === itemId);
+    if (item) {
+      item.pronto_em = isProntoAtualmente ? null : new Date().toISOString();
+      renderPedidos();
+    }
+    
+    const { error } = await window.cafeteriaSupabase
+      .from('pedido_itens')
+      .update({ pronto_em: isProntoAtualmente ? null : new Date().toISOString() })
+      .eq('id', itemId);
+      
+    if (error) {
+      alert('Erro ao atualizar item: ' + error.message);
+      if (item) {
+        item.pronto_em = isProntoAtualmente ? new Date().toISOString() : null;
+        renderPedidos();
+      }
+      return;
+    }
+    
+    // Checar progresso atualizado (se foi marcado)
+    if (!isProntoAtualmente) {
+      let total = 0;
+      let ready = 0;
+      pedido.pedido_itens.forEach(i => {
+        if (!i.cancelado) {
+          total++;
+          if (i.pronto_em) ready++;
+        }
+      });
+      
+      if (pedido.status === 'pendente') {
+        window.updateStatus(pedidoId, 'em_preparo');
+      } else if (ready === total && total > 0) {
+        window.updateStatus(pedidoId, 'concluido');
+      }
+    }
+  };
+
   window.updateStatus = async function (pedidoId, novoStatus) {
     const payload = {
       status: novoStatus,
@@ -512,6 +588,14 @@
     if (novoStatus === 'concluido') {
       payload.concluido_por = currentUser.id;
       payload.concluido_em = new Date().toISOString();
+      
+      // Marcar todos os itens não cancelados como prontos
+      await window.cafeteriaSupabase
+        .from('pedido_itens')
+        .update({ pronto_em: new Date().toISOString() })
+        .eq('pedido_id', pedidoId)
+        .eq('cancelado', false)
+        .is('pronto_em', null);
     }
 
     const { error } = await window.cafeteriaSupabase
@@ -558,8 +642,29 @@
   };
 
   // -----------------------------------------------------
-  // 6. SUPABASE REALTIME
+  // 6. SUPABASE REALTIME & CONEXÃO
   // -----------------------------------------------------
+  let fetchTimeout = null;
+  function debouncedFetchPedidos() {
+    if (fetchTimeout) clearTimeout(fetchTimeout);
+    fetchTimeout = setTimeout(() => {
+      fetchPedidosIniciais();
+    }, 300);
+  }
+
+  function updateConnectionStatus(isConnected) {
+    const indicator = document.querySelector('.status-indicator');
+    if (!indicator) return;
+    
+    if (isConnected) {
+      indicator.innerHTML = '<span class="pulse-dot"></span>Conectado (Tempo Real)';
+      indicator.style.color = '#fff';
+    } else {
+      indicator.innerHTML = '<span class="pulse-dot" style="background:#e74c3c;"></span>Reconectando...';
+      indicator.style.color = '#e74c3c';
+    }
+  }
+
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-cozinha-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, async payload => {
@@ -589,17 +694,46 @@
           }
         }
 
-        fetchPedidosIniciais();
+        debouncedFetchPedidos();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedido_itens' }, async payload => {
-        if (payload.eventType === 'UPDATE' && payload.new.cancelado === true && payload.old.cancelado === false) {
-          showCancelToast(`⚠️ Item cancelado: 1x ${payload.new.nome_produto}`);
+        if (payload.eventType === 'UPDATE' && payload.new.cancelado === true && (!payload.old || payload.old.cancelado === false)) {
+          // Vamos notificar só se o item tiver mudado para cancelado agora
+          const nomeProd = payload.new.nome_produto || 'Item';
+          showCancelToast(`⚠️ Item cancelado: ${payload.new.quantidade || 1}x ${nomeProd}`);
           playAlert();
-          fetchPedidosIniciais();
+        } else if (payload.eventType === 'INSERT') {
+          const isCortesia = payload.new.cortesia_de_item_id ? true : false;
+          if (isCortesia) {
+            playAlert();
+          }
         }
+        debouncedFetchPedidos();
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          updateConnectionStatus(true);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          updateConnectionStatus(false);
+        }
+      });
   }
+
+  // Lidar com conexão caindo ou voltando
+  window.addEventListener('online', () => {
+    updateConnectionStatus(true);
+    debouncedFetchPedidos();
+  });
+  window.addEventListener('offline', () => {
+    updateConnectionStatus(false);
+  });
+
+  // Lidar com repouso/troca de aba
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      debouncedFetchPedidos();
+    }
+  });
 
   // Teste de impressão
   btnTesteImpressao.addEventListener('click', () => {

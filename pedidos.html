@@ -47,7 +47,11 @@
         </nav>
       </div>
 
-      <div class="topbar__user">
+      <div class="topbar__user" style="display: flex; align-items: center; gap: 16px;">
+        <div class="status-indicator" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
+          <span class="pulse-dot" style="width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block;"></span>
+          <span class="status-text" style="color: #fff;">Conectado</span>
+        </div>
         <span id="user-name">Carregando...</span>
         <button id="btn-logout" class="btn-logout">Sair</button>
       </div>
@@ -104,6 +108,16 @@
         </div>
 
         <div class="cart-footer">
+          <div class="form-group">
+            <label for="pedido-cliente-nome">Nome do cliente (opcional):</label>
+            <input type="text" id="pedido-cliente-nome" class="input-padrao" placeholder="Ex: Ana Maria" maxlength="40" style="margin-bottom: 8px;">
+            
+            <label class="payment-checkbox" style="margin-bottom: 12px; display: flex; align-items: center;">
+              <input type="checkbox" id="pedido-para-viagem" />
+              <span>🥡 <strong>Para viagem</strong> / Balcão</span>
+            </label>
+          </div>
+
           <div class="form-group">
             <label for="pedido-obs">Observações gerais:</label>
             <textarea id="pedido-obs" placeholder="Ex: Entregar com rapidez, cliente com pressa..."></textarea>
@@ -259,6 +273,8 @@
       <div class="modal-footer" style="justify-content: space-between;">
         <button id="modal-mesa-print" class="btn-secondary">🖨 Imprimir Prévia da Conta</button>
         <div style="display:flex; gap: 8px;">
+          <button id="btn-mesa-transferir" class="btn-ghost" style="color: var(--primaria); border-color: var(--primaria);">↔ Transferir Mesa</button>
+          <button id="btn-mesa-juntar" class="btn-ghost" style="color: var(--primaria); border-color: var(--primaria);">⊕ Juntar com…</button>
           <button id="btn-mesa-adicionar-itens" class="btn-ghost" style="color: var(--marrom-escuro); border-color: var(--marrom-escuro);">➕ Adicionar Itens</button>
           <button id="modal-mesa-fechar" class="btn-ghost">Fechar</button>
           <button id="modal-mesa-fechar-conta" class="btn-primary">💳 Fechar Conta</button>
@@ -267,72 +283,131 @@
     </div>
   </div>
 
+  <!-- MODAL: TRANSFERIR / JUNTAR MESA -->
+  <div id="modal-transferir-mesa" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 id="modal-transferir-title">Transferir Mesa</h4>
+        <button id="modal-transferir-close" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="transferir-mesa-select" id="lbl-transferir-mesa-select">Selecione a mesa destino:</label>
+          <select id="transferir-mesa-select" class="form-control">
+            <option value="">Carregando mesas...</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-transferir-cancel" class="btn-ghost">Cancelar</button>
+        <button id="modal-transferir-confirm" class="btn-primary">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: FECHAR CONTA DA MESA -->
   <div id="modal-fechar-conta" class="modal-overlay hidden">
-    <div class="modal-card modal-card--large">
+    <div class="modal-card modal-card--large" style="max-width: 900px; width: 90%;">
       <div class="modal-header">
         <h4 id="modal-fechar-conta-title">Fechar Conta</h4>
         <button id="modal-fechar-conta-close" class="btn-close">✕</button>
       </div>
-      <div class="modal-body" style="display:flex; gap: 20px; flex-wrap: wrap;">
+      <div class="modal-body" style="display:flex; flex-direction: column; gap: 16px;">
         
-        <!-- Lado Esquerdo: Resumo -->
-        <div style="flex: 1; min-width: 250px; background: #F9F9F9; padding: 16px; border-radius: 8px; border: 1px solid #E5E5E5;">
-          <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Resumo da Conta</h5>
-          <div id="fechar-conta-resumo-pedidos" style="font-size: 13px; color: #444; max-height: 200px; overflow-y: auto; margin-bottom: 12px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
-            <!-- Pedidos listados aqui -->
+        <!-- Seleção de Modo de Divisão -->
+        <div style="background: #F9F9F9; padding: 12px; border-radius: 8px; border: 1px solid #E5E5E5; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+          <label style="font-weight: bold; color: var(--marrom-escuro);">Modo de Fechamento:</label>
+          <select id="fechar-conta-modo" class="input-padrao" style="max-width: 200px;">
+            <option value="padrao">Padrão (Tudo junto)</option>
+            <option value="igual">Dividir Igualmente</option>
+            <option value="item">Dividir por Item</option>
+          </select>
+          
+          <div id="fechar-conta-div-pessoas" class="hidden" style="display: flex; gap: 8px; align-items: center;">
+            <label>Nº Pessoas:</label>
+            <input type="number" id="fechar-conta-num-pessoas" class="input-padrao" min="2" max="20" value="2" style="width: 80px;">
+            <button id="btn-gerar-partes-igual" class="btn-secondary">Gerar</button>
           </div>
           
-          <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
-            <span>Total da Conta:</span>
-            <strong id="fechar-conta-total-lbl">R$ 0,00</strong>
-          </div>
-          <div style="display:flex; justify-content: space-between; margin-bottom: 8px; color: green;">
-            <span>Já Pago:</span>
-            <strong id="fechar-conta-ja-pago-lbl">R$ 0,00</strong>
-          </div>
-          <div style="display:flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: #D97706;">
-            <strong>A Pagar:</strong>
-            <strong id="fechar-conta-a-pagar-lbl">R$ 0,00</strong>
-          </div>
-          
-          <div style="display:flex; justify-content: space-between; margin-bottom: 8px; margin-top: 16px; font-size: 16px; color: var(--marrom-escuro);">
-            <strong>Falta:</strong>
-            <strong id="fechar-conta-falta-lbl">R$ 0,00</strong>
+          <div id="fechar-conta-div-add-parte" class="hidden" style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="fechar-conta-nome-parte" class="input-padrao" placeholder="Nome da pessoa" style="width: 150px;">
+            <button id="btn-add-parte-item" class="btn-secondary">Add Pessoa</button>
           </div>
         </div>
 
-        <!-- Lado Direito: Pagamentos -->
-        <div style="flex: 1; min-width: 250px;">
-          <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Pagamentos</h5>
+        <div style="display:flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
           
-          <div style="display:flex; gap: 8px; margin-bottom: 12px;">
-            <select id="fechar-conta-forma" class="input-padrao" style="flex:1;">
-              <option value="pix">PIX</option>
-              <option value="dinheiro">Dinheiro</option>
-              <option value="cartao_debito">Cartão de Débito</option>
-              <option value="cartao_credito">Cartão de Crédito</option>
-              <option value="outros">Outros</option>
-            </select>
-            <input type="number" id="fechar-conta-valor" class="input-padrao" step="0.01" min="0" placeholder="Valor" style="width: 100px;">
-            <button id="btn-add-pagamento" class="btn-secondary" style="padding: 0 12px;">+</button>
-          </div>
-
-          <div id="div-dinheiro-recebido" class="hidden" style="margin-bottom: 12px; background: #E8F5E9; padding: 12px; border-radius: 8px; border: 1px solid #A5D6A7;">
-            <label style="font-size:12px; display:block; margin-bottom:4px; font-weight:bold;">Valor recebido em Dinheiro (para troco):</label>
-            <input type="number" id="fechar-conta-dinheiro-recebido" class="input-padrao" step="0.01" min="0" placeholder="Ex: 50.00" style="width: 100%;">
-            <div style="margin-top: 8px; font-size: 14px; text-align: right; font-weight: bold; color: #2E7D32;">
-              Troco: <span id="fechar-conta-troco-lbl">R$ 0,00</span>
+          <!-- Lado Esquerdo: Resumo / Atribuição de Itens -->
+          <div style="flex: 1; min-width: 300px; background: #F9F9F9; padding: 16px; border-radius: 8px; border: 1px solid #E5E5E5;">
+            <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Resumo da Conta</h5>
+            <div id="fechar-conta-resumo-pedidos" style="font-size: 13px; color: #444; max-height: 250px; overflow-y: auto; margin-bottom: 12px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
+              <!-- Pedidos listados aqui -->
+            </div>
+            
+            <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Total da Conta:</span>
+              <strong id="fechar-conta-total-lbl">R$ 0,00</strong>
+            </div>
+            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; color: green;">
+              <span>Já Pago:</span>
+              <strong id="fechar-conta-ja-pago-lbl">R$ 0,00</strong>
+            </div>
+            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: #D97706;">
+              <strong>A Pagar:</strong>
+              <strong id="fechar-conta-a-pagar-lbl">R$ 0,00</strong>
+            </div>
+            
+            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; margin-top: 16px; font-size: 16px; color: var(--marrom-escuro);">
+              <strong>Total Restante:</strong>
+              <strong id="fechar-conta-falta-lbl">R$ 0,00</strong>
             </div>
           </div>
 
-          <div id="fechar-conta-lista-pagamentos" style="margin-top: 16px;">
-            <!-- Pagamentos adicionados aparecem aqui -->
+          <!-- Lado Direito: Partes e Pagamentos -->
+          <div style="flex: 1.5; min-width: 350px;">
+            <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Divisões e Pagamentos</h5>
+            
+            <!-- Lista de Partes -->
+            <div id="fechar-conta-lista-partes" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;">
+              <!-- Partes geradas via JS -->
+            </div>
+
+            <div id="fechar-conta-painel-pagamento" class="hidden" style="background: #fff; border: 1px solid #ccc; padding: 12px; border-radius: 8px;">
+              <h6 id="titulo-pagamento-parte" style="margin-top: 0; margin-bottom: 8px; font-size: 14px; color: #333;">Pagamento</h6>
+              
+              <div style="display:flex; gap: 8px; margin-bottom: 12px;">
+                <select id="fechar-conta-forma" class="input-padrao" style="flex:1;">
+                  <option value="pix">PIX</option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao_debito">Cartão de Débito</option>
+                  <option value="cartao_credito">Cartão de Crédito</option>
+                  <option value="outros">Outros</option>
+                </select>
+                <input type="number" id="fechar-conta-valor" class="input-padrao" step="0.01" min="0" placeholder="Valor" style="width: 100px;">
+                <button id="btn-add-pagamento" class="btn-secondary" style="padding: 0 12px;">+</button>
+              </div>
+
+              <div id="div-dinheiro-recebido" class="hidden" style="margin-bottom: 12px; background: #E8F5E9; padding: 12px; border-radius: 8px; border: 1px solid #A5D6A7;">
+                <label style="font-size:12px; display:block; margin-bottom:4px; font-weight:bold;">Valor recebido em Dinheiro (para troco):</label>
+                <input type="number" id="fechar-conta-dinheiro-recebido" class="input-padrao" step="0.01" min="0" placeholder="Ex: 50.00" style="width: 100%;">
+                <div style="margin-top: 8px; font-size: 14px; text-align: right; font-weight: bold; color: #2E7D32;">
+                  Troco: <span id="fechar-conta-troco-lbl">R$ 0,00</span>
+                </div>
+              </div>
+
+              <div id="fechar-conta-lista-pagamentos">
+                <!-- Pagamentos da parte selecionada -->
+              </div>
+            </div>
+            
           </div>
         </div>
-
       </div>
       <div class="modal-footer" style="justify-content: flex-end;">
+        <label style="display: flex; align-items: center; gap: 8px; margin-right: auto;">
+          <input type="checkbox" id="fechar-conta-imprimir-cupom" checked>
+          Imprimir Cupons
+        </label>
         <button id="modal-fechar-conta-cancelar" class="btn-ghost">Cancelar</button>
         <button id="modal-fechar-conta-confirmar" class="btn-primary" disabled>Confirmar Fechamento</button>
       </div>
