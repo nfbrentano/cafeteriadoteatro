@@ -1011,6 +1011,56 @@ body {
   font-size: 14px;
 }
 
+/* Lista de adicionais do modal de montagem */
+.montagem-adicionais-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adicional-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.adicional-checkbox:has(input:checked) {
+  border-color: var(--caramelo);
+  background: #FFF7EC;
+}
+
+.adicional-checkbox input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--caramelo);
+}
+
+/* Atalhos rápidos de observação */
+.btn-ghost-small {
+  background: white;
+  border: 1px solid var(--cinza-borda);
+  color: var(--marrom-escuro);
+  padding: 6px 12px;
+  min-height: 36px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-ghost-small:active {
+  background: #FFF7EC;
+  border-color: var(--caramelo);
+}
+
 /* Toast Component */
 .toast-container {
   position: fixed;
@@ -1214,14 +1264,15 @@ body {
 
   .cat-tab {
     padding: 6px 14px;
-    font-size: 13px;
-    min-height: 36px;
+    font-size: 14px;
+    min-height: 40px;
     display: inline-flex;
     align-items: center;
   }
 
+  /* Espaço para a barra do carrinho + navegação inferior */
   .products-grid {
-    padding: 10px 12px 100px 12px;
+    padding: 10px 12px calc(160px + env(safe-area-inset-bottom, 0px)) 12px;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     align-items: stretch;
@@ -1302,12 +1353,79 @@ body {
     transform: translateY(0);
   }
 
-  .btn-close-drawer {
-    display: block;
+  .btn-close-drawer,
+  .btn-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
     font-size: 22px;
-    padding: 4px 8px;
     line-height: 1;
     border-radius: 50%;
+  }
+
+  /* Campos com 16px para o iOS não dar zoom ao focar */
+  .login-card input,
+  .payment-row select,
+  .modal-body textarea,
+  .sabor-select,
+  #modal-obs-input,
+  #modal-montagem-obs {
+    font-size: 16px;
+  }
+
+  .payment-row select {
+    min-height: 44px;
+    padding: 8px 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .payment-checkbox {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .payment-checkbox input {
+    width: 22px;
+    height: 22px;
+  }
+
+  .sabor-select {
+    min-height: 44px;
+  }
+
+  .modal-footer {
+    padding-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  /* Total ocupa a linha inteira; botões dividem a linha de baixo */
+  .montagem-total {
+    flex: 1 0 100% !important;
+    font-size: 17px;
+  }
+
+  .modal-footer .btn-ghost,
+  .modal-footer .btn-primary-small,
+  .modal-footer .btn-secondary {
+    flex: 1;
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  .btn-ghost-small {
+    min-height: 40px;
+  }
+
+  .btn-logout {
+    min-height: 40px;
+  }
+
+  /* Toast acima da barra do carrinho e da navegação inferior */
+  .toast-container {
+    bottom: calc(140px + env(safe-area-inset-bottom, 0px));
   }
 
   .cart-items {
@@ -1331,8 +1449,30 @@ body {
     font-size: 18px;
   }
 
+  /* Item do carrinho: nome em cima, controles embaixo */
+  .cart-item-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .cart-item-name {
+    font-size: 15px;
+  }
+
+  .cart-item-actions {
+    gap: 8px;
+  }
+
+  .cart-btn.obs-btn {
+    height: 40px;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* Lixeira afastada dos botões de quantidade para evitar toque acidental */
   .cart-btn.remove {
-    margin-right: 16px;
+    margin-left: auto;
   }
 
   /* Barra Flutuante Mobile do Carrinho */
@@ -1408,7 +1548,7 @@ body {
 
   /* Aba 2: Mesas & Entregas no Mobile */
   .mesas-layout {
-    padding: 14px 12px calc(24px + env(safe-area-inset-bottom, 0px)) 12px;
+    padding: 14px 12px calc(90px + env(safe-area-inset-bottom, 0px)) 12px;
     gap: 20px;
   }
 
@@ -1440,8 +1580,9 @@ body {
   .filter-chip {
     white-space: nowrap;
     flex-shrink: 0;
-    font-size: 12px;
-    padding: 6px 12px;
+    font-size: 13px;
+    padding: 6px 14px;
+    min-height: 40px;
   }
 
   .mesas-grid {
@@ -1490,7 +1631,8 @@ body {
     text-align: center;
     justify-content: center;
     padding: 10px;
-    font-size: 13px;
+    font-size: 14px;
+    min-height: 48px;
   }
 
   /* Modais no Mobile */
@@ -1525,8 +1667,9 @@ body {
   }
 
   .nav-tab {
-    padding: 5px 8px;
-    font-size: 11px;
+    padding: 8px 6px;
+    font-size: 13px;
+    min-height: 44px;
   }
 
   .products-grid {

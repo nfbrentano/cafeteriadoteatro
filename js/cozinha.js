@@ -152,11 +152,13 @@
   btnToggleSom.addEventListener('click', () => {
     somHabilitado = !somHabilitado;
     if (somHabilitado) {
-      btnToggleSom.textContent = '🔔 Som Ativo';
+      btnToggleSom.innerHTML = '🔔 <span class="btn-label">Som Ativo</span>';
+      btnToggleSom.setAttribute('aria-label', 'Som Ativo');
       btnToggleSom.style.color = '#EEE';
       playAlert();
     } else {
-      btnToggleSom.textContent = '🔕 Mudo';
+      btnToggleSom.innerHTML = '🔕 <span class="btn-label">Mudo</span>';
+      btnToggleSom.setAttribute('aria-label', 'Som Mudo');
       btnToggleSom.style.color = '#FFA726';
     }
   });
@@ -314,7 +316,11 @@
       const diffMinutos = Math.floor((agora - criacao) / 60000);
       
       const atrasadoClass = (diffMinutos > 15 && tipo !== 'concluido') ? 'atrasado' : '';
-      let tempoStr = diffMinutos < 1 ? 'Agora' : `${diffMinutos}m atrás`;
+      let tempoStr;
+      if (diffMinutos < 1) tempoStr = 'Agora';
+      else if (diffMinutos < 60) tempoStr = `${diffMinutos}m atrás`;
+      else if (diffMinutos < 1440) tempoStr = `${Math.floor(diffMinutos / 60)}h ${diffMinutos % 60}m atrás`;
+      else tempoStr = `${Math.floor(diffMinutos / 1440)}d atrás`;
 
       // Montar Itens com observações individuais
       let itensHtml = '';

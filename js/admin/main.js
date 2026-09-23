@@ -366,6 +366,25 @@
 
   // Iniciar listeners globais
   document.addEventListener('DOMContentLoaded', () => {
+    // Sidebar como gaveta no mobile
+    const sidebar = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const sidebarToggle = document.getElementById('btn-sidebar-toggle');
+    const setSidebarOpen = open => {
+      sidebar?.classList.toggle('mobile-open', open);
+      sidebarBackdrop?.classList.toggle('open', open);
+      sidebarToggle?.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('sidebar-locked', open);
+    };
+    sidebarToggle?.addEventListener('click', () => setSidebarOpen(!sidebar.classList.contains('mobile-open')));
+    sidebarBackdrop?.addEventListener('click', () => setSidebarOpen(false));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && sidebar?.classList.contains('mobile-open')) setSidebarOpen(false);
+    });
+
+    document.querySelectorAll('.sidebar__link').forEach(link => {
+      link.addEventListener('click', () => setSidebarOpen(false));
+    });
     document.querySelectorAll('.sidebar__link[data-page]').forEach(btn => {
       btn.addEventListener('click', () => admin.navigateTo(btn.dataset.page));
     });

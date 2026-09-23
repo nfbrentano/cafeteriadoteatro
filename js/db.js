@@ -77,7 +77,9 @@
               sobre_texto: String(val.sobre_texto || ''),
               exp_subtitulo: String(val.exp_subtitulo || ''),
               galeria_subtitulo: String(val.galeria_subtitulo || ''),
-              sobre_imagem_url: String(val.sobre_imagem_url || '')
+              sobre_imagem_url: String(val.sobre_imagem_url || ''),
+              whatsapp_ativo: val.whatsapp_ativo !== undefined ? String(val.whatsapp_ativo) : 'true',
+              whatsapp_numero: String(val.whatsapp_numero || '')
             };
           } else if (key === CACHE_KEYS.HORARIOS && typeof val === 'object') {
             safeVal = {

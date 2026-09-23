@@ -115,6 +115,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
 }
 
 .audio-banner {
@@ -303,6 +304,7 @@ body {
    CARD DO PEDIDO
 -------------------------------------- */
 .pedido-card {
+  flex-shrink: 0; /* não encolher dentro da lista com rolagem (cortava os botões) */
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -473,37 +475,79 @@ body {
     text-align: center;
   }
 
+  .audio-banner {
+    padding: 8px 12px;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+    font-size: 13px;
+  }
+
   .btn-ativar-audio {
     width: 100%;
     padding: 8px;
+    min-height: 44px;
+    font-size: 14px;
   }
 
+  /* Topbar numa linha só: logo + status à esquerda, ações em ícone à direita */
   .topbar {
-    padding: 8px 12px;
+    padding: 6px 10px;
+    padding-top: calc(6px + env(safe-area-inset-top, 0px));
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+  }
+
+  .audio-banner:not(.hidden) + .topbar {
+    padding-top: 6px;
   }
 
   .topbar__logo {
     font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .topbar__center {
+    flex: 1;
+    min-width: 0;
   }
 
   .status-indicator {
     font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .topbar__user {
-    gap: 5px;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
   }
 
   .topbar__user #user-name {
     display: none;
   }
 
+  .btn-icon .btn-label {
+    display: none;
+  }
+
   .btn-ghost, .btn-logout {
-    padding: 5px 8px;
-    font-size: 11px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 6px 8px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-logout {
+    font-size: 13px;
+  }
+
+  /* As abas já mostram título e contagem; cabeçalho da coluna fica redundante */
+  .column-header {
+    display: none !important;
   }
 
   /* Abas Segmentadas do KDS */
@@ -517,6 +561,7 @@ body {
 
   .kds-tab-btn {
     flex: 1;
+    min-height: 44px;
     padding: 9px 4px;
     border: 1px solid rgba(255,255,255,0.15);
     background: rgba(255,255,255,0.06);
@@ -615,8 +660,9 @@ body {
 
   .btn-card {
     flex: 1;
+    min-height: 48px;
     padding: 11px 12px;
-    font-size: 14px;
+    font-size: 15px;
     text-align: center;
     display: flex;
     align-items: center;
@@ -625,8 +671,23 @@ body {
 
   .btn-card--print {
     width: 100%;
+    min-height: 44px;
     padding: 9px;
     text-align: center;
+  }
+
+  .cancel-toast button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .login-card {
+    padding: 28px 20px;
+    margin: 0 16px;
+  }
+
+  .login-card input {
+    font-size: 16px;
   }
 }
 
@@ -636,8 +697,12 @@ body {
   }
 
   .btn-card {
-    font-size: 13px;
+    font-size: 14px;
     padding: 10px 8px;
+  }
+
+  .status-indicator {
+    font-size: 0; /* só o ponto pulsante em telas estreitas */
   }
 }
 

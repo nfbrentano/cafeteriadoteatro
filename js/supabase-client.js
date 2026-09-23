@@ -15,3 +15,16 @@ const _supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_AN
 
 // Exportar para uso global
 window.cafeteriaSupabase = _supabaseInstance;
+
+// Escape de HTML disponível em todas as páginas (pedidos/cozinha não carregam db.js)
+if (!window.escapeHtml) {
+  window.escapeHtml = function(unsafe) {
+    if (!unsafe) return '';
+    return unsafe.toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+}
