@@ -164,7 +164,8 @@
     document.getElementById('c-galeria-subtitulo').value = s.galeria_subtitulo || '';
     
     // WhatsApp
-    document.getElementById('c-whatsapp-ativo').checked = s.whatsapp_ativo !== false; // Padrão é true se não existir
+    const wppAtivo = s.whatsapp_ativo !== undefined ? String(s.whatsapp_ativo) !== 'false' : true;
+    document.getElementById('c-whatsapp-ativo').checked = wppAtivo;
     document.getElementById('c-whatsapp-numero').value = s.whatsapp_numero || '5551984224792';
 
     // Preview do Sobre
