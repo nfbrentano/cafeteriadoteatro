@@ -276,7 +276,7 @@
 
     // Fechamento da Conta (Comprovante de Pagamento)
     
-    printFechamentoContaMultiPartes: function (mesaCodigo, pedidosMesa, partes, totalConta, trocoGeral) {
+    printFechamentoContaMultiPartes: function (mesaCodigo, pedidosMesa, partes, totalConta, trocoGeral, subtotal = 0, desconto = 0, taxa = 0) {
       const date = new Date().toLocaleString('pt-BR');
 
       let html = `
@@ -309,8 +309,20 @@
             
             <div class="divider"></div>
             
+            <div style="font-size: 14px; text-align: right;">
+              SUBTOTAL: R$ ${Number(subtotal).toFixed(2).replace('.', ',')}
+            </div>
+            ${desconto > 0 ? `
+            <div style="font-size: 14px; text-align: right; color: #555;">
+              DESCONTO: - R$ ${Number(desconto).toFixed(2).replace('.', ',')}
+            </div>` : ''}
+            ${taxa > 0 ? `
+            <div style="font-size: 14px; text-align: right;">
+              TAXA DE SERVIÇO: R$ ${Number(taxa).toFixed(2).replace('.', ',')}
+            </div>` : ''}
+            
             <div class="bold" style="font-size: 14px; text-align: right;">
-              VALOR DEVIDO: R$ ${Number(pt.valor_devido).toFixed(2).replace('.', ',')}
+              VALOR DEVIDO DA PARTE: R$ ${Number(pt.valor_devido).toFixed(2).replace('.', ',')}
             </div>
             <div class="bold" style="font-size: 16px; text-align: right;">
               TOTAL PAGO: R$ ${Number(totalPagoParte).toFixed(2).replace('.', ',')}
@@ -365,7 +377,7 @@
       executePrint(html);
     },
 
-    printFechamentoConta: function (mesaCodigo, pedidosMesa, pagamentos, totalConta, troco) {
+    printFechamentoConta: function (mesaCodigo, pedidosMesa, pagamentos, totalConta, troco, subtotal = 0, desconto = 0, taxa = 0) {
       const date = new Date().toLocaleString('pt-BR');
 
       let html = `
@@ -418,8 +430,21 @@
       html += `
           </table>
           <div class="divider"></div>
-          <div class="bold" style="font-size: 17px; text-align: right;">
-            TOTAL PAGO: R$ ${totalStr}
+          
+          <div style="font-size: 15px; text-align: right;">
+            SUBTOTAL: R$ ${Number(subtotal).toFixed(2).replace('.', ',')}
+          </div>
+          ${desconto > 0 ? `
+          <div style="font-size: 15px; text-align: right; color: #555;">
+            DESCONTO: - R$ ${Number(desconto).toFixed(2).replace('.', ',')}
+          </div>` : ''}
+          ${taxa > 0 ? `
+          <div style="font-size: 15px; text-align: right;">
+            TAXA DE SERVIÇO: R$ ${Number(taxa).toFixed(2).replace('.', ',')}
+          </div>` : ''}
+          
+          <div class="bold" style="font-size: 17px; text-align: right; margin-top: 4px;">
+            TOTAL A PAGAR: R$ ${totalStr}
           </div>
           <div class="divider"></div>
           <div class="bold" style="font-size: 13px; text-align: left;">

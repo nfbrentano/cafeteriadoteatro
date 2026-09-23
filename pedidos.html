@@ -345,6 +345,33 @@
             </div>
             
             <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Subtotal Itens:</span>
+              <strong id="fechar-conta-subtotal-lbl">R$ 0,00</strong>
+            </div>
+
+            <div id="fechar-conta-div-desconto" class="hidden" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 13px; font-weight: bold; color: var(--marrom-escuro);">Desconto Manual</label>
+                <div style="display: flex; gap: 4px;">
+                  <select id="fechar-conta-desconto-tipo" class="input-padrao" style="padding: 4px; font-size: 13px;">
+                    <option value="valor">R$</option>
+                    <option value="percent">%</option>
+                  </select>
+                  <input type="number" id="fechar-conta-desconto-valor" class="input-padrao" style="padding: 4px; font-size: 13px; width: 80px;" placeholder="Valor" min="0" step="0.01">
+                </div>
+                <input type="text" id="fechar-conta-desconto-motivo" class="input-padrao" style="padding: 4px; font-size: 13px;" placeholder="Motivo do desconto (obrigatório)">
+              </div>
+            </div>
+
+            <div id="fechar-conta-div-taxa" class="hidden" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" id="fechar-conta-taxa-check" checked>
+                Taxa de Serviço (<span id="fechar-conta-taxa-perc-lbl">10%</span>)
+              </label>
+              <strong id="fechar-conta-taxa-val-lbl">R$ 0,00</strong>
+            </div>
+
+            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px;">
               <span>Total da Conta:</span>
               <strong id="fechar-conta-total-lbl">R$ 0,00</strong>
             </div>

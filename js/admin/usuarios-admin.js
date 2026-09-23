@@ -17,6 +17,8 @@
   const inputEmail = document.getElementById('usuario-email');
   const inputSenha = document.getElementById('usuario-senha');
   const selectRole = document.getElementById('usuario-role');
+  const checkboxDesconto = document.getElementById('usuario-pode-dar-desconto');
+  const containerDesconto = document.getElementById('usuario-desconto-container');
   const btnSalvarUsuario = document.getElementById('btn-salvar-usuario');
 
   // --- Funções do Modal ---
@@ -30,6 +32,13 @@
       modalOverlay.style.pointerEvents = 'all';
     }
     document.body.style.overflow = 'hidden';
+    
+    // Configura o checkbox de desconto
+    if (selectRole && containerDesconto) {
+      containerDesconto.style.display = selectRole.value === 'barista' ? 'block' : 'none';
+      if (checkboxDesconto) checkboxDesconto.checked = false;
+    }
+    
     if (inputNome) inputNome.focus();
   }
 
@@ -144,7 +153,8 @@
         email: email,
         password: senha,
         nome: nome,
-        role_param: role
+        role_param: role,
+        pode_dar_desconto_param: checkboxDesconto ? checkboxDesconto.checked : false
       });
 
       if (error) {
@@ -182,6 +192,14 @@
 
   // Exportar para que main.js chame na navegação
   window.loadUsuarios = loadUsuarios;
+
+  if (selectRole) {
+    selectRole.addEventListener('change', () => {
+      if (containerDesconto) {
+        containerDesconto.style.display = selectRole.value === 'barista' ? 'block' : 'none';
+      }
+    });
+  }
 
   // Carrega se estiver na página
   loadUsuarios();

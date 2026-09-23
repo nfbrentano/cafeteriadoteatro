@@ -168,6 +168,11 @@
     document.getElementById('c-whatsapp-ativo').checked = wppAtivo;
     document.getElementById('c-whatsapp-numero').value = s.whatsapp_numero || '5551984224792';
 
+    // Taxa de Serviço
+    const taxaAtiva = s.taxa_servico_ativa !== undefined ? String(s.taxa_servico_ativa) === 'true' : false;
+    document.getElementById('c-taxa-servico-ativa').checked = taxaAtiva;
+    document.getElementById('c-taxa-servico-percentual').value = s.taxa_servico_percentual || '10';
+
     // Preview do Sobre
     const sobreImg = s.sobre_imagem_url;
     if (sobreImg) {
@@ -186,7 +191,9 @@
       exp_subtitulo: document.getElementById('c-exp-subtitulo').value,
       galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value,
       whatsapp_ativo: document.getElementById('c-whatsapp-ativo').checked,
-      whatsapp_numero: document.getElementById('c-whatsapp-numero').value.replace(/\D/g, '')
+      whatsapp_numero: document.getElementById('c-whatsapp-numero').value.replace(/\D/g, ''),
+      taxa_servico_ativa: document.getElementById('c-taxa-servico-ativa').checked,
+      taxa_servico_percentual: document.getElementById('c-taxa-servico-percentual').value || 10
     };
 
     const sobreDataUrl = document.getElementById('sobre-image-data').value;

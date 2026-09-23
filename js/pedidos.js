@@ -105,6 +105,19 @@
   const fecharContaCancelar = document.getElementById('modal-fechar-conta-cancelar');
   const fecharContaConfirmar = document.getElementById('modal-fechar-conta-confirmar');
   const fecharContaResumo = document.getElementById('fechar-conta-resumo-pedidos');
+  
+  const fecharContaSubtotalLbl = document.getElementById('fechar-conta-subtotal-lbl');
+  
+  const fecharContaDivDesconto = document.getElementById('fechar-conta-div-desconto');
+  const fecharContaDescontoTipo = document.getElementById('fechar-conta-desconto-tipo');
+  const fecharContaDescontoValor = document.getElementById('fechar-conta-desconto-valor');
+  const fecharContaDescontoMotivo = document.getElementById('fechar-conta-desconto-motivo');
+  
+  const fecharContaDivTaxa = document.getElementById('fechar-conta-div-taxa');
+  const fecharContaTaxaCheck = document.getElementById('fechar-conta-taxa-check');
+  const fecharContaTaxaPercLbl = document.getElementById('fechar-conta-taxa-perc-lbl');
+  const fecharContaTaxaValLbl = document.getElementById('fechar-conta-taxa-val-lbl');
+  
   const fecharContaTotalLbl = document.getElementById('fechar-conta-total-lbl');
   const fecharContaJaPagoLbl = document.getElementById('fechar-conta-ja-pago-lbl');
   const fecharContaAPagarLbl = document.getElementById('fechar-conta-a-pagar-lbl');
@@ -150,12 +163,17 @@
   let currentFechamento = {
     mesaCodigo: null,
     pedidos: [],
+    subtotal: 0,
+    descontoAplicado: 0,
+    descontoMotivo: '',
+    taxaServico: 0,
     totalConta: 0,
     jaPago: 0,
     aPagar: 0,
     pagamentos: [],
     valorRecebidoDinheiro: 0
   };
+  let configTaxaServico = { ativa: false, percentual: 10 };
 
   let activePromos = [];
   let cortesiasDisponiveis = [];
@@ -306,7 +324,7 @@
   async function loadProfile(user) {
     const { data: perfil, error } = await window.cafeteriaSupabase
       .from('perfis')
-      .select('nome, role')
+      .select('nome, role, pode_dar_desconto')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1621,40 +1639,115 @@
   function abrirModalFecharConta(mesaCodigo, pedidosMesa) {
     currentFechamento.mesaCodigo = mesaCodigo;
     currentFechamento.pedidos = pedidosMesa;
+    currentFechamento.subtotal = 0;
+    currentFechamento.descontoAplicado = 0;
+    currentFechamento.descontoMotivo = '';
+    currentFechamento.taxaServico = 0;
     currentFechamento.totalConta = 0;
     currentFechamento.jaPago = 0;
     currentFechamento.aPagar = 0;
     
-    // Calcula totais
+    // Calcula subtotal e já pago
     pedidosMesa.forEach(p => {
       const valorPedido = Number(p.total || 0);
-      currentFechamento.totalConta += valorPedido;
+      currentFechamento.subtotal += valorPedido;
       if (p.status_pagamento === 'pago') {
         currentFechamento.jaPago += valorPedido;
       } else {
-        currentFechamento.aPagar += valorPedido;
         // Iniciar pedidos com % de atribuição
         p._atribuicoes = []; // { parteId, perc }
       }
     });
 
-    if (currentFechamento.aPagar <= 0) {
+    if (currentFechamento.subtotal - currentFechamento.jaPago <= 0) {
       showToast('Esta mesa não tem pedidos pendentes de pagamento.', 'info');
       return;
     }
 
     fecharContaTitle.textContent = `Fechar Conta: ${mesaCodigo}`;
-    fecharContaTotalLbl.textContent = `R$ ${currentFechamento.totalConta.toFixed(2).replace('.', ',')}`;
-    fecharContaJaPagoLbl.textContent = `R$ ${currentFechamento.jaPago.toFixed(2).replace('.', ',')}`;
-    fecharContaAPagarLbl.textContent = `R$ ${currentFechamento.aPagar.toFixed(2).replace('.', ',')}`;
     
-    // Reseta UI
+    // Configura UI Taxa de Serviço
+    if (configTaxaServico.ativa) {
+      fecharContaDivTaxa.classList.remove('hidden');
+      fecharContaTaxaCheck.checked = true;
+      fecharContaTaxaPercLbl.textContent = `${configTaxaServico.percentual}%`;
+    } else {
+      fecharContaDivTaxa.classList.add('hidden');
+      fecharContaTaxaCheck.checked = false;
+    }
+
+    // Configura UI Desconto Manual
+    if (currentUser && currentUser.perfil && (currentUser.perfil.role === 'admin' || currentUser.perfil.pode_dar_desconto)) {
+      fecharContaDivDesconto.classList.remove('hidden');
+      fecharContaDescontoTipo.value = 'valor';
+      fecharContaDescontoValor.value = '';
+      fecharContaDescontoMotivo.value = '';
+    } else {
+      fecharContaDivDesconto.classList.add('hidden');
+      fecharContaDescontoValor.value = '';
+      fecharContaDescontoMotivo.value = '';
+    }
+
+    recalcularTotaisFechamento();
+    
+    // Reseta UI Divisão
     fecharContaModo.value = 'padrao';
     fecharContaModo.dispatchEvent(new Event('change'));
     
     modalMesa.classList.add('hidden');
     modalFecharConta.classList.remove('hidden');
   }
+
+  function recalcularTotaisFechamento() {
+    let desconto = 0;
+    if (fecharContaDescontoValor.value) {
+      let val = Number(fecharContaDescontoValor.value);
+      if (fecharContaDescontoTipo.value === 'percent') {
+        desconto = (currentFechamento.subtotal * val) / 100;
+      } else {
+        desconto = val;
+      }
+    }
+    
+    // Limita desconto ao subtotal
+    if (desconto > currentFechamento.subtotal) {
+      desconto = currentFechamento.subtotal;
+    }
+    currentFechamento.descontoAplicado = desconto;
+    currentFechamento.descontoMotivo = fecharContaDescontoMotivo.value.trim();
+
+    let subtotalAposDesconto = currentFechamento.subtotal - desconto;
+    let taxa = 0;
+    if (configTaxaServico.ativa && fecharContaTaxaCheck.checked) {
+      taxa = (subtotalAposDesconto * configTaxaServico.percentual) / 100;
+    }
+    currentFechamento.taxaServico = taxa;
+    
+    currentFechamento.totalConta = subtotalAposDesconto + taxa;
+    currentFechamento.aPagar = currentFechamento.totalConta - currentFechamento.jaPago;
+    
+    fecharContaSubtotalLbl.textContent = `R$ ${currentFechamento.subtotal.toFixed(2).replace('.', ',')}`;
+    fecharContaTaxaValLbl.textContent = `R$ ${currentFechamento.taxaServico.toFixed(2).replace('.', ',')}`;
+    fecharContaTotalLbl.textContent = `R$ ${currentFechamento.totalConta.toFixed(2).replace('.', ',')}`;
+    fecharContaJaPagoLbl.textContent = `R$ ${currentFechamento.jaPago.toFixed(2).replace('.', ',')}`;
+    fecharContaAPagarLbl.textContent = `R$ ${currentFechamento.aPagar.toFixed(2).replace('.', ',')}`;
+    
+    // Recalcula divisões se necessário
+    if (fecharContaModo.value === 'padrao') {
+       if (currentPartes.length > 0) {
+         currentPartes[0].valor_devido = currentFechamento.aPagar;
+       }
+    } else if (fecharContaModo.value === 'igual') {
+       btnGerarPartesIgual.click(); // forca recalcular divisao igual
+    }
+    
+    renderPartes();
+  }
+
+  fecharContaDescontoValor.addEventListener('input', recalcularTotaisFechamento);
+  fecharContaDescontoTipo.addEventListener('change', recalcularTotaisFechamento);
+  fecharContaDescontoMotivo.addEventListener('input', () => { currentFechamento.descontoMotivo = fecharContaDescontoMotivo.value.trim(); });
+  fecharContaTaxaCheck.addEventListener('change', recalcularTotaisFechamento);
 
   fecharContaModo.addEventListener('change', () => {
     const modo = fecharContaModo.value;
@@ -2009,7 +2102,11 @@
 
       const { data, error } = await window.cafeteriaSupabase.rpc('fechar_conta_mesa', {
         p_mesa_codigo: currentFechamento.mesaCodigo,
-        p_pagamentos: pagamentosPayload
+        p_pagamentos: pagamentosPayload,
+        p_subtotal: currentFechamento.subtotal,
+        p_desconto: currentFechamento.descontoAplicado,
+        p_desconto_motivo: currentFechamento.descontoMotivo,
+        p_taxa_servico: currentFechamento.taxaServico
       });
 
       if (error) throw error;
@@ -2022,7 +2119,10 @@
           currentFechamento.pedidos,
           currentPartes,
           currentFechamento.aPagar,
-          data.troco || 0
+          data.troco || 0,
+          currentFechamento.subtotal,
+          currentFechamento.descontoAplicado,
+          currentFechamento.taxaServico
         );
       } else if (fecharContaImprimirCupom.checked && window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoConta) {
         window.cafeteriaPrint.printFechamentoConta(
@@ -2030,7 +2130,10 @@
           currentFechamento.pedidos,
           todosPagamentos,
           currentFechamento.aPagar,
-          data.troco || 0
+          data.troco || 0,
+          currentFechamento.subtotal,
+          currentFechamento.descontoAplicado,
+          currentFechamento.taxaServico
         );
       }
 
@@ -2157,5 +2260,6 @@
 
   // Inicializar
   checkSession();
+  loadConfiguracoes();
 
 })();

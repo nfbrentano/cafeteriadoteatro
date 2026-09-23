@@ -688,6 +688,27 @@
             </div>
           </div>
 
+          <!-- TAXA DE SERVIÇO -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Taxa de Serviço</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="switch-field" style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                  <input type="checkbox" id="c-taxa-servico-ativa" class="switch-field__input" />
+                  <span class="switch-field__label">Habilitar sugestão de taxa de serviço no PDV</span>
+                </label>
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="c-taxa-servico-percentual">Percentual Padrão (%)</label>
+                <input class="field__input" type="number" id="c-taxa-servico-percentual" 
+                       placeholder="Ex: 10" min="0" max="100" />
+              </div>
+            </div>
+          </div>
+
           <div class="form-actions" style="margin-top: 32px; padding-bottom: 40px;">
             <button type="submit" class="btn btn--primary" id="btn-save-conteudo">
               💾 Salvar Textos
@@ -1579,6 +1600,14 @@
             <option value="admin">Admin</option>
           </select>
           <div class="field__error-msg" id="err-usuario-role">Selecione um perfil.</div>
+        </div>
+
+        <div class="field" id="usuario-desconto-container">
+          <label class="switch-field" style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="usuario-pode-dar-desconto" class="switch-field__input" />
+            <span class="switch-field__label">Permitir aplicar descontos manuais no PDV</span>
+          </label>
+          <div class="hint" style="margin-top: 4px;">Útil para baristas de confiança. Admins já possuem essa permissão.</div>
         </div>
       </form>
     </div>
