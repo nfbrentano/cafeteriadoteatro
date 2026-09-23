@@ -5,6 +5,18 @@
 (function () {
   'use strict';
 
+  if (!window.escapeHtml) {
+    window.escapeHtml = function(unsafe) {
+      if (!unsafe) return '';
+      return unsafe.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+  }
+
   // Refs de Telas e Navegação
   const app = document.getElementById('app');
   const loginScreen = document.getElementById('login-screen');
@@ -951,7 +963,9 @@
       produto_id: item.produto.id,
       quantidade: item.quantidade,
       observacoes: item.observacoes || null,
-      adicionais: (item.adicionaisSelecionados || []).map(ad => ad.id)
+      adicionais: (item.adicionaisSelecionados || []).map(ad => ad.id),
+      sabores: item.sabores || undefined,
+      cortesia_de_item_index: item.cortesia_de_item_index !== undefined ? item.cortesia_de_item_index : null
     }));
 
     const payload = {

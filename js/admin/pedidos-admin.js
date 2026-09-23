@@ -3,6 +3,18 @@
  * Lógica para listagem, gestão e métricas de pedidos na tela de Admin.
  */
 (function() {
+  if (!window.escapeHtml) {
+    window.escapeHtml = function(unsafe) {
+      if (!unsafe) return '';
+      return unsafe.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+  }
+
   const pagePedidos = document.getElementById('page-pedidos');
   if (!pagePedidos) return;
 
