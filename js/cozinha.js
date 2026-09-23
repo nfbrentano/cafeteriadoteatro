@@ -261,7 +261,7 @@
           pedido_item_sabores (*)
         )
       `)
-      .or(`status.in.(pendente,em_preparo),and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
+      .or(`status.in.(pendente,em_preparo),and(status.in.(concluido,entregue),created_at.gte.${inicioDoDia})`)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -281,7 +281,7 @@
     const preparo = pedidos.filter(p => p.status === 'em_preparo');
     // Concluídos do dia: sempre os mais recentes no topo
     const concluidos = pedidos
-      .filter(p => p.status === 'concluido')
+      .filter(p => p.status === 'concluido' || p.status === 'entregue')
       .sort((a, b) => new Date(b.concluido_em || b.updated_at || b.created_at) - new Date(a.concluido_em || a.updated_at || a.created_at));
 
     countPendentes.textContent = pendentes.length;
@@ -413,14 +413,16 @@
         : '';
 
       const operadorStr = pedido.criado_por_nome ? `Atendente: ${pedido.criado_por_nome}` : 'Atendimento';
+      
+      const badgeEntregue = pedido.status === 'entregue' ? '<span style="background:#ddd; color:#555; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">ENTREGUE NA MESA</span>' : '';
 
       card.innerHTML = `
         <div class="pedido-header">
-          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span></div>
+          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${badgeEntregue}</div>
           <div class="pedido-tempo ${atrasadoClass}">⏱ ${tempoStr}</div>
         </div>
         <div class="pedido-operador">${operadorStr}</div>
-        <div class="pedido-itens">
+        <div class="pedido-itens" ${pedido.status === 'entregue' ? 'style="opacity: 0.6;"' : ''}>
           ${itensHtml}
         </div>
         ${obsHtml}

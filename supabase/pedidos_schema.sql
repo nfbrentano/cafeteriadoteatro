@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS public.pedidos (
     id BIGSERIAL PRIMARY KEY,
     numero_pedido SERIAL,
     mesa_codigo TEXT NOT NULL REFERENCES public.mesas(codigo),
-    status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'em_preparo', 'concluido', 'cancelado')),
+    status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'em_preparo', 'concluido', 'entregue', 'cancelado')),
     observacoes TEXT,
     total NUMERIC(10,2) NOT NULL DEFAULT 0,
     criado_por UUID REFERENCES auth.users(id),
@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS public.pedidos (
     status_pagamento TEXT NOT NULL DEFAULT 'pendente' CHECK (status_pagamento IN ('pendente', 'pago')),
     concluido_por UUID REFERENCES auth.users(id),
     concluido_em TIMESTAMPTZ,
+    entregue_por UUID REFERENCES auth.users(id),
+    entregue_em TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('America/Sao_Paulo', now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('America/Sao_Paulo', now())
 );

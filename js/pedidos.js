@@ -84,7 +84,6 @@
   let activeObsCartIndex = null;
   let activeMontagemItem = null; // Guardará o item temporário da montagem
   let currentSelectedMesaParaConta = null;
-  let pedidosEntreguesLocais = new Set();
   let activePromos = [];
   let cortesiasDisponiveis = [];
 
@@ -323,7 +322,7 @@
     mesaSelect.innerHTML = '<option value="">Selecione a Mesa...</option>';
 
     mesas.forEach(m => {
-      const pedidosMesa = activePedidos.filter(p => p.mesa_codigo === m.codigo && !pedidosEntreguesLocais.has(p.id));
+      const pedidosMesa = activePedidos.filter(p => p.mesa_codigo === m.codigo);
       const hasOpen = pedidosMesa.length > 0;
       const opt = document.createElement('option');
       opt.value = m.codigo;
@@ -931,7 +930,7 @@
           pedido_item_adicionais (*)
         )
       `)
-      .in('status', ['pendente', 'em_preparo', 'concluido'])
+      .in('status', ['pendente', 'em_preparo', 'concluido', 'entregue'])
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -953,7 +952,7 @@
   }
 
   function updateProntosBadge() {
-    const prontosCount = activePedidos.filter(p => p.status === 'concluido' && !pedidosEntreguesLocais.has(p.id)).length;
+    const prontosCount = activePedidos.filter(p => p.status === 'concluido').length;
     if (prontosCount > 0) {
       badgeProntos.textContent = `${prontosCount} pronto${prontosCount > 1 ? 's' : ''}`;
       badgeProntos.classList.remove('hidden');
@@ -966,7 +965,7 @@
     mesasGrid.innerHTML = '';
     
     mesas.forEach(mesa => {
-      const pedidosMesa = activePedidos.filter(p => p.mesa_codigo === mesa.codigo && !pedidosEntreguesLocais.has(p.id));
+      const pedidosMesa = activePedidos.filter(p => p.mesa_codigo === mesa.codigo);
       const ocupada = pedidosMesa.length > 0;
       const totalMesa = pedidosMesa.reduce((acc, p) => acc + Number(p.total || 0), 0);
 
@@ -1061,7 +1060,7 @@
   function renderPedidosCards() {
     pedidosCardsGrid.innerHTML = '';
 
-    let list = activePedidos.filter(p => !pedidosEntreguesLocais.has(p.id));
+    let list = activePedidos.filter(p => p.status !== 'entregue');
     if (currentFilterStatus !== 'todos') {
       list = list.filter(p => p.status === currentFilterStatus);
     }
@@ -1130,10 +1129,53 @@
     });
   }
 
-  window.baristaMarcarEntregue = function (pedidoId) {
-    pedidosEntreguesLocais.add(pedidoId);
+  window.baristaMarcarEntregue = async function (pedidoId) {
+    const payload = {
+      status: 'entregue',
+      entregue_em: new Date().toISOString(),
+      entregue_por: currentUser.id,
+      updated_at: new Date().toISOString()
+    };
+    
+    const { error } = await window.cafeteriaSupabase
+      .from('pedidos')
+      .update(payload)
+      .eq('id', pedidoId);
+
+    if (error) {
+      if (window.showToast) window.showToast("Erro ao marcar como entregue: " + error.message);
+      return;
+    }
+
+    // Otimista
+    const p = activePedidos.find(x => x.id === pedidoId);
+    if (p) p.status = 'entregue';
+    
     renderPedidosCards();
     updateProntosBadge();
+
+    if (window.showToast) {
+      window.showToast('Pedido entregue', 'Desfazer', async () => {
+        const { error: errRevert } = await window.cafeteriaSupabase
+          .from('pedidos')
+          .update({ 
+            status: 'concluido', 
+            entregue_em: null, 
+            entregue_por: null, 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', pedidoId);
+          
+        if (errRevert) {
+          window.showToast("Erro ao desfazer: " + errRevert.message);
+          return;
+        }
+
+        if (p) p.status = 'concluido';
+        renderPedidosCards();
+        updateProntosBadge();
+      });
+    }
   };
 
   // -----------------------------------------------------

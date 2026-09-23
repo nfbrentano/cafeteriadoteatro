@@ -40,6 +40,7 @@
       'pendente': '<span class="status status--inactive" style="background:#FFF8E1; color:#E65100; font-weight:bold;">Pendente</span>',
       'em_preparo': '<span class="status status--active" style="background:#E3F2FD; color:#1565C0; font-weight:bold;">Em Preparo</span>',
       'concluido': '<span class="status status--active" style="background:#E8F5E9; color:#2E7D32; font-weight:bold;">Concluído</span>',
+      'entregue': '<span class="status status--active" style="background:#E0E0E0; color:#424242; font-weight:bold;">Entregue</span>',
       'cancelado': '<span class="status status--inactive" style="background:#FFEBEE; color:#C62828; font-weight:bold;">Cancelado</span>'
     };
     return map[status] || status;
@@ -80,7 +81,7 @@
     if (!error && pedidosHoje) {
       const validos = pedidosHoje.filter(p => p.status !== 'cancelado');
       const faturamento = validos.reduce((acc, p) => acc + Number(p.total || 0), 0);
-      const concluidosCount = validos.filter(p => p.status === 'concluido').length;
+      const concluidosCount = validos.filter(p => p.status === 'concluido' || p.status === 'entregue').length;
       const ticketMedio = validos.length > 0 ? faturamento / validos.length : 0;
 
       if (statFaturamento) statFaturamento.textContent = `R$ ${faturamento.toFixed(2).replace('.', ',')}`;
