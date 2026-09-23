@@ -271,6 +271,102 @@
       `;
 
       executePrint(html);
+    },
+
+    // Fechamento da Conta (Comprovante de Pagamento)
+    printFechamentoConta: function (mesaCodigo, pedidosMesa, pagamentos, totalConta, troco) {
+      const date = new Date().toLocaleString('pt-BR');
+
+      let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>${baseStyles}</style>
+        </head>
+        <body>
+          <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
+          <div class="center bold">COMPROVANTE DE PAGAMENTO</div>
+          <div class="center" style="font-size: 11px;">*** NÃO É DOCUMENTO FISCAL ***</div>
+          
+          <div class="divider"></div>
+          
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${mesaCodigo}</span></div>
+          <div><span class="bold">DATA:</span> ${date}</div>
+          <div><span class="bold">STATUS:</span> <span style="font-size: 15px; font-weight: bold; color: #000;">PAGO ✅</span></div>
+          
+          <div class="divider"></div>
+          <table>
+      `;
+
+      (pedidosMesa || []).forEach(ped => {
+        if (ped.pedido_itens) {
+          ped.pedido_itens.forEach(item => {
+            const isCancelado = item.cancelado;
+            const isCortesia = item.cortesia_de_item_id ? true : false;
+            
+            const subtotal = (Number(item.preco_unitario || 0) * (item.quantidade || 1)).toFixed(2).replace('.', ',');
+            
+            let cancelStyle = isCancelado ? 'text-decoration: line-through; color: #555;' : '';
+            let cancelLabel = isCancelado ? ' - CANCELADO' : '';
+            let cortesiaLabel = isCortesia && !isCancelado ? ' (CORTESIA)' : '';
+            
+            html += `
+              <tr>
+                <td class="qty" style="${cancelStyle}">${item.quantidade}x</td>
+                <td style="${cancelStyle}">${window.escapeHtml(item.nome_produto)}${cortesiaLabel}${cancelLabel}</td>
+                <td class="price" style="${cancelStyle}">R$ ${subtotal}</td>
+              </tr>
+            `;
+          });
+        }
+      });
+
+      const totalStr = Number(totalConta || 0).toFixed(2).replace('.', ',');
+
+      html += `
+          </table>
+          <div class="divider"></div>
+          <div class="bold" style="font-size: 17px; text-align: right;">
+            TOTAL PAGO: R$ ${totalStr}
+          </div>
+          <div class="divider"></div>
+          <div class="bold" style="font-size: 13px; text-align: left;">
+            FORMAS DE PAGAMENTO:
+          </div>
+          <table style="margin-top: 4px;">
+      `;
+
+      (pagamentos || []).forEach(pag => {
+        html += `
+          <tr>
+            <td>${formatFormaPagamento(pag.forma)}</td>
+            <td class="price">R$ ${Number(pag.valor).toFixed(2).replace('.', ',')}</td>
+          </tr>
+        `;
+      });
+
+      html += `</table>`;
+
+      if (troco > 0) {
+        html += `
+          <div class="divider"></div>
+          <div class="bold" style="font-size: 14px; text-align: right;">
+            TROCO: R$ ${Number(troco).toFixed(2).replace('.', ',')}
+          </div>
+        `;
+      }
+
+      html += `
+          <div class="divider"></div>
+          <div class="center" style="font-size: 11px; margin-top: 8px;">
+            Muito obrigado e volte sempre!
+          </div>
+        </body>
+        </html>
+      `;
+
+      executePrint(html);
     }
   };
 

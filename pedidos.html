@@ -252,9 +252,84 @@
       <div class="modal-body" id="modal-mesa-body">
         <!-- Detalhes preenchidos via JS -->
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="justify-content: space-between;">
         <button id="modal-mesa-print" class="btn-secondary">🖨 Imprimir Prévia da Conta</button>
-        <button id="modal-mesa-fechar" class="btn-ghost">Fechar</button>
+        <div style="display:flex; gap: 8px;">
+          <button id="modal-mesa-fechar" class="btn-ghost">Fechar</button>
+          <button id="modal-mesa-fechar-conta" class="btn-primary">💳 Fechar Conta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FECHAR CONTA DA MESA -->
+  <div id="modal-fechar-conta" class="modal-overlay hidden">
+    <div class="modal-card modal-card--large">
+      <div class="modal-header">
+        <h4 id="modal-fechar-conta-title">Fechar Conta</h4>
+        <button id="modal-fechar-conta-close" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex; gap: 20px; flex-wrap: wrap;">
+        
+        <!-- Lado Esquerdo: Resumo -->
+        <div style="flex: 1; min-width: 250px; background: #F9F9F9; padding: 16px; border-radius: 8px; border: 1px solid #E5E5E5;">
+          <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Resumo da Conta</h5>
+          <div id="fechar-conta-resumo-pedidos" style="font-size: 13px; color: #444; max-height: 200px; overflow-y: auto; margin-bottom: 12px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
+            <!-- Pedidos listados aqui -->
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>Total da Conta:</span>
+            <strong id="fechar-conta-total-lbl">R$ 0,00</strong>
+          </div>
+          <div style="display:flex; justify-content: space-between; margin-bottom: 8px; color: green;">
+            <span>Já Pago:</span>
+            <strong id="fechar-conta-ja-pago-lbl">R$ 0,00</strong>
+          </div>
+          <div style="display:flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: #D97706;">
+            <strong>A Pagar:</strong>
+            <strong id="fechar-conta-a-pagar-lbl">R$ 0,00</strong>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; margin-bottom: 8px; margin-top: 16px; font-size: 16px; color: var(--marrom-escuro);">
+            <strong>Falta:</strong>
+            <strong id="fechar-conta-falta-lbl">R$ 0,00</strong>
+          </div>
+        </div>
+
+        <!-- Lado Direito: Pagamentos -->
+        <div style="flex: 1; min-width: 250px;">
+          <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Pagamentos</h5>
+          
+          <div style="display:flex; gap: 8px; margin-bottom: 12px;">
+            <select id="fechar-conta-forma" class="input-padrao" style="flex:1;">
+              <option value="pix">PIX</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="cartao_debito">Cartão de Débito</option>
+              <option value="cartao_credito">Cartão de Crédito</option>
+              <option value="outros">Outros</option>
+            </select>
+            <input type="number" id="fechar-conta-valor" class="input-padrao" step="0.01" min="0" placeholder="Valor" style="width: 100px;">
+            <button id="btn-add-pagamento" class="btn-secondary" style="padding: 0 12px;">+</button>
+          </div>
+
+          <div id="div-dinheiro-recebido" class="hidden" style="margin-bottom: 12px; background: #E8F5E9; padding: 12px; border-radius: 8px; border: 1px solid #A5D6A7;">
+            <label style="font-size:12px; display:block; margin-bottom:4px; font-weight:bold;">Valor recebido em Dinheiro (para troco):</label>
+            <input type="number" id="fechar-conta-dinheiro-recebido" class="input-padrao" step="0.01" min="0" placeholder="Ex: 50.00" style="width: 100%;">
+            <div style="margin-top: 8px; font-size: 14px; text-align: right; font-weight: bold; color: #2E7D32;">
+              Troco: <span id="fechar-conta-troco-lbl">R$ 0,00</span>
+            </div>
+          </div>
+
+          <div id="fechar-conta-lista-pagamentos" style="margin-top: 16px;">
+            <!-- Pagamentos adicionados aparecem aqui -->
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end;">
+        <button id="modal-fechar-conta-cancelar" class="btn-ghost">Cancelar</button>
+        <button id="modal-fechar-conta-confirmar" class="btn-primary" disabled>Confirmar Fechamento</button>
       </div>
     </div>
   </div>

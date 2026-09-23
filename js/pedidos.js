@@ -68,6 +68,25 @@
   const modalMesaClose = document.getElementById('modal-mesa-close');
   const modalMesaFechar = document.getElementById('modal-mesa-fechar');
   const modalMesaPrint = document.getElementById('modal-mesa-print');
+  const modalMesaFecharConta = document.getElementById('modal-mesa-fechar-conta');
+
+  const modalFecharConta = document.getElementById('modal-fechar-conta');
+  const fecharContaTitle = document.getElementById('modal-fechar-conta-title');
+  const fecharContaClose = document.getElementById('modal-fechar-conta-close');
+  const fecharContaCancelar = document.getElementById('modal-fechar-conta-cancelar');
+  const fecharContaConfirmar = document.getElementById('modal-fechar-conta-confirmar');
+  const fecharContaResumo = document.getElementById('fechar-conta-resumo-pedidos');
+  const fecharContaTotalLbl = document.getElementById('fechar-conta-total-lbl');
+  const fecharContaJaPagoLbl = document.getElementById('fechar-conta-ja-pago-lbl');
+  const fecharContaAPagarLbl = document.getElementById('fechar-conta-a-pagar-lbl');
+  const fecharContaFaltaLbl = document.getElementById('fechar-conta-falta-lbl');
+  const fecharContaForma = document.getElementById('fechar-conta-forma');
+  const fecharContaValor = document.getElementById('fechar-conta-valor');
+  const btnAddPagamento = document.getElementById('btn-add-pagamento');
+  const divDinheiroRecebido = document.getElementById('div-dinheiro-recebido');
+  const inputDinheiroRecebido = document.getElementById('fechar-conta-dinheiro-recebido');
+  const fecharContaTrocoLbl = document.getElementById('fechar-conta-troco-lbl');
+  const fecharContaLista = document.getElementById('fechar-conta-lista-pagamentos');
 
   const audioPronto = document.getElementById('audio-pronto');
 
@@ -84,6 +103,17 @@
   let activeObsCartIndex = null;
   let activeMontagemItem = null; // Guardará o item temporário da montagem
   let currentSelectedMesaParaConta = null;
+  
+  let currentFechamento = {
+    mesaCodigo: null,
+    pedidos: [],
+    totalConta: 0,
+    jaPago: 0,
+    aPagar: 0,
+    pagamentos: [],
+    valorRecebidoDinheiro: 0
+  };
+
   let activePromos = [];
   let cortesiasDisponiveis = [];
 
@@ -1248,6 +1278,227 @@
         currentSelectedMesaParaConta.mesaCodigo,
         currentSelectedMesaParaConta.pedidosMesa
       );
+    }
+  });
+
+  // -----------------------------------------------------
+  // 7.1. FLUXO DE FECHAMENTO DE CONTA DA MESA
+  // -----------------------------------------------------
+
+  modalMesaFecharConta.addEventListener('click', () => {
+    if (!currentSelectedMesaParaConta) return;
+    abrirModalFecharConta(currentSelectedMesaParaConta.mesaCodigo, currentSelectedMesaParaConta.pedidosMesa);
+  });
+
+  function abrirModalFecharConta(mesaCodigo, pedidosMesa) {
+    currentFechamento.mesaCodigo = mesaCodigo;
+    currentFechamento.pedidos = pedidosMesa;
+    currentFechamento.totalConta = 0;
+    currentFechamento.jaPago = 0;
+    currentFechamento.aPagar = 0;
+    currentFechamento.pagamentos = [];
+    currentFechamento.valorRecebidoDinheiro = 0;
+
+    fecharContaTitle.textContent = `Fechar Conta: ${mesaCodigo}`;
+    
+    let htmlResumo = '<ul style="padding-left:16px; margin:0;">';
+    
+    pedidosMesa.forEach(p => {
+      const valorPedido = Number(p.total || 0);
+      currentFechamento.totalConta += valorPedido;
+      
+      let statusHtml = '';
+      if (p.status_pagamento === 'pago') {
+        currentFechamento.jaPago += valorPedido;
+        statusHtml = '<span style="color:green; font-weight:bold;">(Pago)</span>';
+      } else {
+        currentFechamento.aPagar += valorPedido;
+        statusHtml = '<span style="color:#D97706; font-weight:bold;">(A pagar)</span>';
+      }
+
+      htmlResumo += `<li>Pedido #${p.numero_pedido || p.id} - R$ ${valorPedido.toFixed(2).replace('.', ',')} ${statusHtml}</li>`;
+    });
+    htmlResumo += '</ul>';
+
+    if (currentFechamento.aPagar <= 0) {
+      showToast('Esta mesa não tem pedidos pendentes de pagamento.', 'info');
+      return;
+    }
+
+    fecharContaResumo.innerHTML = htmlResumo;
+    fecharContaTotalLbl.textContent = `R$ ${currentFechamento.totalConta.toFixed(2).replace('.', ',')}`;
+    fecharContaJaPagoLbl.textContent = `R$ ${currentFechamento.jaPago.toFixed(2).replace('.', ',')}`;
+    fecharContaAPagarLbl.textContent = `R$ ${currentFechamento.aPagar.toFixed(2).replace('.', ',')}`;
+    
+    fecharContaForma.value = 'pix';
+    fecharContaValor.value = '';
+    inputDinheiroRecebido.value = '';
+    divDinheiroRecebido.classList.add('hidden');
+    
+    atualizarTotaisFechamento();
+    
+    modalMesa.classList.add('hidden');
+    modalFecharConta.classList.remove('hidden');
+  }
+
+  function fecharModalFecharConta() {
+    modalFecharConta.classList.add('hidden');
+    // Se quiser que volte para o modal da mesa:
+    if (currentSelectedMesaParaConta) {
+      abrirModalMesa(currentSelectedMesaParaConta.mesaCodigo, currentSelectedMesaParaConta.pedidosMesa);
+    }
+  }
+
+  [fecharContaClose, fecharContaCancelar].forEach(b => b.addEventListener('click', fecharModalFecharConta));
+
+  fecharContaForma.addEventListener('change', () => {
+    if (fecharContaForma.value === 'dinheiro') {
+      divDinheiroRecebido.classList.remove('hidden');
+    } else {
+      divDinheiroRecebido.classList.add('hidden');
+      inputDinheiroRecebido.value = '';
+    }
+  });
+
+  inputDinheiroRecebido.addEventListener('input', () => {
+    atualizarTotaisFechamento();
+  });
+
+  btnAddPagamento.addEventListener('click', () => {
+    const forma = fecharContaForma.value;
+    const valor = Number(fecharContaValor.value);
+    
+    if (!valor || valor <= 0) {
+      showToast('Digite um valor válido para o pagamento.', 'error');
+      return;
+    }
+
+    currentFechamento.pagamentos.push({
+      id: Date.now(),
+      forma: forma,
+      valor: valor
+    });
+
+    fecharContaValor.value = '';
+    atualizarTotaisFechamento();
+  });
+
+  function removerPagamento(id) {
+    currentFechamento.pagamentos = currentFechamento.pagamentos.filter(p => p.id !== id);
+    atualizarTotaisFechamento();
+  }
+  
+  // Expor no window para o onclick
+  window.removerPagamentoFechamento = removerPagamento;
+
+  function atualizarTotaisFechamento() {
+    let totalPagamentos = 0;
+    let htmlLista = '';
+    
+    const formasNomes = {
+      'pix': 'PIX',
+      'dinheiro': 'Dinheiro',
+      'cartao_debito': 'Cartão de Débito',
+      'cartao_credito': 'Cartão de Crédito',
+      'outros': 'Outros'
+    };
+
+    currentFechamento.pagamentos.forEach(p => {
+      totalPagamentos += p.valor;
+      htmlLista += `
+        <div style="display:flex; justify-content: space-between; align-items:center; background:#fff; border:1px solid #ddd; padding:8px; border-radius:4px; margin-bottom:4px;">
+          <span>${formasNomes[p.forma] || p.forma}: <strong>R$ ${p.valor.toFixed(2).replace('.', ',')}</strong></span>
+          <button class="btn-ghost-small" style="color:red; padding:2px 6px;" onclick="window.removerPagamentoFechamento(${p.id})">Remover</button>
+        </div>
+      `;
+    });
+    fecharContaLista.innerHTML = htmlLista;
+
+    const falta = currentFechamento.aPagar - totalPagamentos;
+    
+    if (falta > 0) {
+      fecharContaFaltaLbl.textContent = `R$ ${falta.toFixed(2).replace('.', ',')}`;
+      fecharContaFaltaLbl.style.color = 'red';
+      fecharContaConfirmar.disabled = true;
+      // Preencher o input com o valor que falta
+      if (!fecharContaValor.value) {
+        fecharContaValor.value = falta.toFixed(2);
+      }
+    } else {
+      fecharContaFaltaLbl.textContent = `R$ 0,00 (Total atingido)`;
+      fecharContaFaltaLbl.style.color = 'green';
+      fecharContaConfirmar.disabled = false;
+      fecharContaValor.value = '';
+    }
+
+    // Calcular troco se houver dinheiro envolvido
+    let valorDinheiroLancado = currentFechamento.pagamentos.filter(p => p.forma === 'dinheiro').reduce((sum, p) => sum + p.valor, 0);
+    let recebido = Number(inputDinheiroRecebido.value) || 0;
+    
+    if (recebido > 0) {
+      // O troco é o que o cliente deu menos a PARCELA do pagamento em dinheiro que ele se comprometeu
+      let troco = recebido - valorDinheiroLancado;
+      if (troco < 0) troco = 0;
+      fecharContaTrocoLbl.textContent = `R$ ${troco.toFixed(2).replace('.', ',')}`;
+      currentFechamento.valorRecebidoDinheiro = recebido;
+    } else {
+      fecharContaTrocoLbl.textContent = `R$ 0,00`;
+      currentFechamento.valorRecebidoDinheiro = 0;
+    }
+  }
+
+  fecharContaConfirmar.addEventListener('click', async () => {
+    let totalPagamentos = currentFechamento.pagamentos.reduce((sum, p) => sum + p.valor, 0);
+    // Margem de erro de arredondamento
+    if (totalPagamentos < currentFechamento.aPagar - 0.01) {
+      showToast('O valor dos pagamentos é menor que o total a pagar!', 'error');
+      return;
+    }
+
+    if (currentFechamento.pagamentos.length === 0) {
+      showToast('Adicione pelo menos uma forma de pagamento.', 'error');
+      return;
+    }
+
+    fecharContaConfirmar.disabled = true;
+    fecharContaConfirmar.textContent = 'Fechando...';
+
+    try {
+      const pagamentosPayload = currentFechamento.pagamentos.map(p => ({
+        forma: p.forma,
+        valor: p.valor
+      }));
+
+      const { data, error } = await window.cafeteriaSupabase.rpc('fechar_conta_mesa', {
+        p_mesa_codigo: currentFechamento.mesaCodigo,
+        p_pagamentos: pagamentosPayload
+      });
+
+      if (error) throw error;
+
+      showToast(`Conta da mesa ${currentFechamento.mesaCodigo} fechada com sucesso!`, 'success');
+      
+      // Imprimir
+      if (window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoConta) {
+        window.cafeteriaPrint.printFechamentoConta(
+          currentFechamento.mesaCodigo,
+          currentFechamento.pedidos,
+          currentFechamento.pagamentos,
+          currentFechamento.aPagar,
+          data.troco || 0
+        );
+      }
+
+      currentSelectedMesaParaConta = null;
+      modalFecharConta.classList.add('hidden');
+      loadActivePedidos(); // Recarrega para limpar as mesas
+
+    } catch (err) {
+      console.error(err);
+      showToast('Erro ao fechar conta: ' + err.message, 'error');
+    } finally {
+      fecharContaConfirmar.disabled = false;
+      fecharContaConfirmar.textContent = 'Confirmar Fechamento';
     }
   });
 
