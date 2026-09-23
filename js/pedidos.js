@@ -951,6 +951,7 @@
   // 6. MESAS & ACOMPANHAMENTO DE ENTREGAS
   // -----------------------------------------------------
   async function loadActivePedidos() {
+    const inicioDoDia = window.getInicioDoDiaSaoPaulo();
     const { data, error } = await window.cafeteriaSupabase
       .from('pedidos')
       .select(`
@@ -960,7 +961,7 @@
           pedido_item_adicionais (*)
         )
       `)
-      .in('status', ['pendente', 'em_preparo', 'concluido', 'entregue'])
+      .or(`status.in.(pendente,em_preparo),status_pagamento.eq.pendente,status_pagamento.is.null,and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
       .order('created_at', { ascending: false });
 
     if (!error && data) {

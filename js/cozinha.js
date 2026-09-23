@@ -246,10 +246,8 @@
   // 3. BUSCA DE PEDIDOS (Pendentes, Preparo e Concluídos do Dia)
   // -----------------------------------------------------
   async function fetchPedidosIniciais() {
-    // Buscar pedidos pendentes e em preparo, mais todos os pedidos concluídos do dia atual (desde as 00:00)
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const inicioDoDia = hoje.toISOString();
+    // Buscar pedidos pendentes e em preparo, mais todos os pedidos concluídos do dia atual (fuso de SP)
+    const inicioDoDia = window.getInicioDoDiaSaoPaulo();
 
     const { data: pedidosData, error } = await window.cafeteriaSupabase
       .from('pedidos')
