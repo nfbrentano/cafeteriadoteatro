@@ -444,6 +444,23 @@
       }
     },
 
+    // --- Promoções do Cardápio ---
+    promocoesCardapio: {
+      async all() {
+        if (!window.cafeteriaSupabase) return [];
+        const { data, error } = await window.cafeteriaSupabase
+          .from('promocoes')
+          .select('*, promocao_itens(*)')
+          .eq('ativo', true)
+          .order('ordem', { ascending: true });
+        if (error) {
+          db.logger.error('promocoesCardapio.all', error);
+          throw error;
+        }
+        return data || [];
+      }
+    },
+
     // --- Settings / Textos ---
     settings: {
       async all() {

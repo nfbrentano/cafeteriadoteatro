@@ -522,7 +522,11 @@
               <option value="outros">Outros</option>
             </select>
           </div>
-          <button class="btn btn--ghost" id="btn-refresh-pedidos">🔄 Atualizar</button>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn--ghost" id="btn-export-pedidos">⬇ Exportar Pedidos CSV</button>
+            <button class="btn btn--ghost" id="btn-export-itens">⬇ Exportar Itens CSV</button>
+            <button class="btn btn--ghost" id="btn-refresh-pedidos">🔄 Atualizar</button>
+          </div>
         </div>
 
         <div class="table-wrap">
@@ -582,9 +586,12 @@
             <div class="page-header__title">Produtos</div>
             <div class="page-header__sub">Gerencie todos os itens do cardápio</div>
           </div>
-          <button class="btn btn--primary" id="btn-novo-produto">
-            + Novo Produto
-          </button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn--ghost" id="btn-export-produtos">⬇ Exportar CSV</button>
+            <button class="btn btn--primary" id="btn-novo-produto">
+              + Novo Produto
+            </button>
+          </div>
         </div>
 
         <div class="table-toolbar">

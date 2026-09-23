@@ -22,13 +22,46 @@
     const nav = document.getElementById('dyn-cat-nav');
 
     try {
-      const [cats, prods] = await Promise.all([
+      const [cats, prods, promosData] = await Promise.all([
         window.cafeteriaDB.categories.all(),
-        window.cafeteriaDB.products.all()
+        window.cafeteriaDB.products.all(),
+        window.cafeteriaDB.promocoesCardapio ? window.cafeteriaDB.promocoesCardapio.all() : []
       ]);
 
+      // Processa Promoções
+      const todayInBrazil = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+      const currentDayOfWeek = todayInBrazil.getDay();
+      const currentDateString = todayInBrazil.toISOString().split('T')[0];
+
+      const promosHoje = [];
+      const promosSemana = [];
+
+      (promosData || []).forEach(promo => {
+        if (promo.vigencia_inicio && promo.vigencia_inicio > currentDateString) return;
+        if (promo.vigencia_fim && promo.vigencia_fim < currentDateString) return;
+
+        if (promo.dias_semana.includes(currentDayOfWeek)) {
+          promosHoje.push(promo);
+        } else {
+          promosSemana.push(promo);
+        }
+      });
+
+      window.cafeteriaPromosHoje = promosHoje;
+      
+      const categoriasAtivas = cats.filter(c => c.ativo).sort((a, b) => a.ordem - b.ordem);
+
+      if (promosHoje.length > 0 || promosSemana.length > 0) {
+        categoriasAtivas.unshift({
+          id: 'promos',
+          nome: '🔥 Promos',
+          icone: '🔥',
+          descricao: 'Nossas ofertas e condições especiais da semana.'
+        });
+      }
+
       const data = { 
-        categorias: cats.filter(c => c.ativo).sort((a, b) => a.ordem - b.ordem), 
+        categorias: categoriasAtivas, 
         produtos: prods.filter(p => p.ativo) 
       };
 
@@ -38,7 +71,7 @@
       }
 
       renderNav(data.categorias, nav);
-      renderContent(data.categorias, data.produtos, root);
+      renderContent(data.categorias, data.produtos, root, promosHoje, promosSemana);
       setupScrollSpy();
     } catch (err) {
       console.error('Erro na carga dinâmica:', err);
@@ -70,10 +103,14 @@
     });
   }
 
-  function renderContent(cats, products, container) {
+  function renderContent(cats, products, container, promosHoje, promosSemana) {
     if (!container) return;
     
     container.innerHTML = cats.map(cat => {
+      if (cat.id === 'promos') {
+        return renderPromosSection(promosHoje, promosSemana);
+      }
+
       const catProducts = products.filter(p => (p.categoria_id || p.categoriaId) === cat.id);
       if (catProducts.length === 0) return '';
 
@@ -112,11 +149,92 @@
     }, 100);
   }
 
+  function renderPromosSection(hoje, semana) {
+    let html = `
+      <section class="cat-section" id="promos">
+        <div class="container">
+          <div class="cat-section__header fade-in">
+            <div class="cat-section__title-group">
+              <div class="cat-section__icon">🔥</div>
+              <h2 class="cat-section__title">Promos</h2>
+            </div>
+            <p class="cat-section__description">Nossas ofertas e condições especiais.</p>
+          </div>
+          <div class="promos-container">
+    `;
+
+    const diasNomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    const renderPromoItem = (p, isHoje) => {
+      const diasTexto = p.dias_semana.map(d => diasNomes[d]).join(', ');
+      let detalhes = '';
+      if (p.tipo === 'percentual') detalhes = `${p.percentual}% OFF`;
+      else if (p.tipo === 'segunda_unidade') detalhes = `2ª unid. com ${p.percentual}% OFF`;
+      else if (p.tipo === 'compre_leve') detalhes = `Compre ${p.qtd_compra}, Leve ${p.qtd_leva}`;
+      
+      return `
+        <article class="produto-card fade-in" aria-label="${p.nome}">
+          <div class="produto-card__image-wrap">
+            ${p.imagem_url 
+              ? `<img src="${p.imagem_url}" alt="${p.nome}" class="produto-card__image" loading="lazy">`
+              : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">🔥</span></div>`
+            }
+          </div>
+          <div class="produto-card__body">
+            <h3 class="produto-card__name">${p.nome}</h3>
+            <p class="produto-card__desc">${p.descricao || ''}</p>
+            <div class="produto-card__footer" style="flex-direction:column; align-items:flex-start; gap:8px;">
+              <span class="badge" style="background:var(--caramelo);color:#fff">${detalhes}</span>
+              ${!isHoje ? `<span class="badge" style="background:#555;color:#fff;font-size:0.75rem;">Válido: ${diasTexto}</span>` : `<span class="badge badge--promo" style="background:#dc3545;">HOJE</span>`}
+            </div>
+          </div>
+        </article>
+      `;
+    };
+
+    if (hoje && hoje.length > 0) {
+      html += `
+        <h3 class="promos-subtitle" style="margin-top:0px; margin-bottom: 20px; font-family: var(--font-display); color: var(--caramelo); font-size: 1.5rem;">Hoje</h3>
+        <div class="produto-grid">
+          ${hoje.map(p => renderPromoItem(p, true)).join('')}
+        </div>
+      `;
+    }
+
+    if (semana && semana.length > 0) {
+      html += `
+        <h3 class="promos-subtitle" style="margin-top:40px; margin-bottom: 20px; font-family: var(--font-display); color: var(--caramelo); font-size: 1.5rem;">Na Semana</h3>
+        <div class="produto-grid">
+          ${semana.map(p => renderPromoItem(p, false)).join('')}
+        </div>
+      `;
+    }
+
+    html += `
+          </div>
+        </div>
+      </section>
+    `;
+    return html;
+  }
+
   function renderProductCard(p, catIcone) {
     const price = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const imgUrl = p.imagem_url || p.imagemUrl;
     
     let badgeHTML = '';
+
+    const isPromoHoje = (window.cafeteriaPromosHoje || []).some(promo => {
+      if (!promo.promocao_itens) return false;
+      return promo.promocao_itens.some(item => 
+        item.produto_id === p.id || item.categoria_id === (p.categoria_id || p.categoriaId)
+      );
+    });
+
+    if (isPromoHoje) {
+      badgeHTML += '<span class="badge badge--promo" style="background:#dc3545;color:#fff;">🔥 PROMO HOJE</span>';
+    }
+
     if (p.disponivel === false) {
       badgeHTML += '<span class="badge" style="background:#6c757d;">Indisponível hoje</span>';
     }
@@ -154,6 +272,17 @@
     const price = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const itens = p.combo_items || p.comboItens || [];
     let tagsHTML = Array.isArray(itens) ? itens.map(i => `<span class="combo-card__item-tag">${i}</span>`).join('') : '';
+
+    const isPromoHoje = (window.cafeteriaPromosHoje || []).some(promo => {
+      if (!promo.promocao_itens) return false;
+      return promo.promocao_itens.some(item => 
+        item.produto_id === p.id || item.categoria_id === (p.categoria_id || p.categoriaId)
+      );
+    });
+
+    if (isPromoHoje) {
+      tagsHTML = `<span class="combo-card__item-tag" style="background:#dc3545; color:#fff; border-color:#dc3545;">🔥 PROMO HOJE</span> ` + tagsHTML;
+    }
 
     if (p.disponivel === false) {
       tagsHTML = `<span class="combo-card__item-tag" style="background:#6c757d; color:#fff;">Indisponível hoje</span> ` + tagsHTML;

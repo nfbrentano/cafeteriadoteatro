@@ -103,11 +103,7 @@
     }
   }
 
-  async function loadPedidos() {
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center">Carregando pedidos...</td></tr>';
-    
-    updateKPIs();
-
+  function buildPedidosQuery() {
     let query = window.cafeteriaSupabase
       .from('pedidos')
       .select(`
@@ -123,20 +119,27 @@
     // Filtro Período
     const periodoVal = filterPeriodo ? filterPeriodo.value : 'hoje';
     const now = new Date();
+    let inicio, fim;
 
     if (periodoVal === 'hoje') {
-      const inicio = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      inicio = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      fim = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
       query = query.gte('created_at', inicio.toISOString());
     } else if (periodoVal === 'ontem') {
-      const ontemInicio = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
-      const ontemFim = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
-      query = query.gte('created_at', ontemInicio.toISOString()).lte('created_at', ontemFim.toISOString());
+      inicio = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+      fim = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+      query = query.gte('created_at', inicio.toISOString()).lte('created_at', fim.toISOString());
     } else if (periodoVal === '7dias') {
-      const seteDiasAtras = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      query = query.gte('created_at', seteDiasAtras.toISOString());
+      inicio = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      fim = now;
+      query = query.gte('created_at', inicio.toISOString());
     } else if (periodoVal === 'mes') {
-      const mesInicio = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
-      query = query.gte('created_at', mesInicio.toISOString());
+      inicio = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      fim = now;
+      query = query.gte('created_at', inicio.toISOString());
+    } else {
+      inicio = new Date(2000,0,1);
+      fim = now;
     }
 
     // Filtro Status
@@ -150,6 +153,29 @@
     if (pagamentoVal) {
       query = query.eq('forma_pagamento', pagamentoVal);
     }
+
+    return { query, inicio, fim };
+  }
+
+  function escapeCSV(val) {
+    if (val === null || val === undefined) return '""';
+    const str = String(val);
+    if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  }
+
+  function formatDateFile(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  async function loadPedidos() {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center">Carregando pedidos...</td></tr>';
+    
+    updateKPIs();
+
+    const { query } = buildPedidosQuery();
 
     const { data, error } = await query;
 
@@ -420,6 +446,79 @@
     loadPedidos();
     setupRealtime();
   };
+
+  // Funções de Exportação (CSV)
+  const btnExportPedidos = document.getElementById('btn-export-pedidos');
+  const btnExportItens = document.getElementById('btn-export-itens');
+
+  if (btnExportPedidos) {
+    btnExportPedidos.addEventListener('click', async () => {
+      const { query, inicio, fim } = buildPedidosQuery();
+      const { data, error } = await query;
+      if (error || !data) return admin.toast('Erro', 'Não foi possível buscar dados para exportação', 'error');
+      
+      const linhas = [];
+      // Cabeçalho: nº, data/hora, mesa, status, pagamento, total
+      linhas.push(['Nº', 'Data/Hora', 'Mesa', 'Status', 'Pagamento', 'Total'].join(';'));
+      
+      data.forEach(p => {
+        const d = new Date(p.created_at).toLocaleString('pt-BR');
+        const num = p.numero_pedido || p.id;
+        const total = Number(p.total).toFixed(2).replace('.', ',');
+        linhas.push([
+          escapeCSV(num),
+          escapeCSV(d),
+          escapeCSV(p.mesa_codigo),
+          escapeCSV(p.status),
+          escapeCSV(p.forma_pagamento),
+          escapeCSV(total)
+        ].join(';'));
+      });
+
+      const fileName = `pedidos_${formatDateFile(inicio)}_a_${formatDateFile(fim)}.csv`;
+      admin.downloadCSV(fileName, linhas.join('\n'));
+    });
+  }
+
+  if (btnExportItens) {
+    btnExportItens.addEventListener('click', async () => {
+      const { query, inicio, fim } = buildPedidosQuery();
+      const { data, error } = await query;
+      if (error || !data) return admin.toast('Erro', 'Não foi possível buscar dados para exportação', 'error');
+      
+      const linhas = [];
+      // Cabeçalho: nº do pedido, produto, quantidade, preço, adicionais, desconto, cortesia, cancelado
+      linhas.push(['Nº Pedido', 'Produto', 'Quantidade', 'Preço Unit.', 'Adicionais', 'Desconto', 'Cortesia', 'Cancelado', 'Observação'].join(';'));
+      
+      data.forEach(p => {
+        const num = p.numero_pedido || p.id;
+        if (p.pedido_itens) {
+          p.pedido_itens.forEach(item => {
+            const preco = Number(item.preco_unitario).toFixed(2).replace('.', ',');
+            const desc = Number(item.desconto || 0).toFixed(2).replace('.', ',');
+            const adds = (item.pedido_item_adicionais || []).map(a => `${a.nome} (+R$ ${Number(a.preco).toFixed(2).replace('.',',')})`).join(' | ');
+            const sabs = (item.pedido_item_sabores || []).map(s => s.nome).join(' | ');
+            const prodStr = item.produto_nome + (sabs ? ` [${sabs}]` : '');
+
+            linhas.push([
+              escapeCSV(num),
+              escapeCSV(prodStr),
+              escapeCSV(item.quantidade),
+              escapeCSV(preco),
+              escapeCSV(adds),
+              escapeCSV(desc),
+              escapeCSV(item.cortesia ? 'Sim' : 'Não'),
+              escapeCSV(item.cancelado ? 'Sim' : 'Não'),
+              escapeCSV(item.observacao || '')
+            ].join(';'));
+          });
+        }
+      });
+
+      const fileName = `itens_pedidos_${formatDateFile(inicio)}_a_${formatDateFile(fim)}.csv`;
+      admin.downloadCSV(fileName, linhas.join('\n'));
+    });
+  }
 
 })();
 

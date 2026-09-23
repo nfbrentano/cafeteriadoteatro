@@ -367,6 +367,65 @@
       els.zone.classList.remove('drag-over');
       processFile(e.dataTransfer.files[0]);
     });
+
+    const btnExportProdutos = document.getElementById('btn-export-produtos');
+    if (btnExportProdutos) {
+      btnExportProdutos.addEventListener('click', () => {
+        const el = productsEls();
+        const catF    = el.filterCat.value;
+        const statusF = el.filterStatus.value;
+        const search  = (el.search.value || '').toLowerCase();
+
+        const produtos = admin.appData.produtos || [];
+        const filtered = produtos.filter(p => {
+          const pCatId = p.categoria_id || p.categoriaId; // Compatibilidade
+          if (catF    && pCatId !== catF) return false;
+          if (statusF === 'ativo' && !p.ativo)  return false;
+          if (statusF === 'inativo' && p.ativo) return false;
+          if (search  && !p.nome.toLowerCase().includes(search)) return false;
+          return true;
+        });
+
+        if (filtered.length === 0) {
+          admin.toast('Aviso', 'Nenhum produto para exportar com os filtros atuais.', 'warn');
+          return;
+        }
+
+        const cats = admin.appData.categorias || [];
+        const escapeCSV = (val) => {
+          if (val === null || val === undefined) return '""';
+          const str = String(val);
+          if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        };
+
+        const linhas = [];
+        // Cabeçalho
+        linhas.push(['ID', 'Nome', 'Categoria', 'Preço', 'Ativo', 'Disponível', 'Descrição'].join(';'));
+        
+        filtered.forEach(p => {
+          const pCatId = p.categoria_id || p.categoriaId;
+          const cat = cats.find(c => c.id === pCatId);
+          const catName = cat ? cat.nome : pCatId;
+          const preco = Number(p.preco || 0).toFixed(2).replace('.', ',');
+          
+          linhas.push([
+            escapeCSV(p.id),
+            escapeCSV(p.nome),
+            escapeCSV(catName),
+            escapeCSV(preco),
+            escapeCSV(p.ativo ? 'Sim' : 'Não'),
+            escapeCSV(p.disponivel !== false ? 'Sim' : 'Não'),
+            escapeCSV(p.descricao || '')
+          ].join(';'));
+        });
+
+        const dataHoje = new Date().toISOString().split('T')[0];
+        admin.downloadCSV(`produtos_${dataHoje}.csv`, linhas.join('\n'));
+      });
+    }
   });
 
 })();
