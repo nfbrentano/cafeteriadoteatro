@@ -1136,6 +1136,7 @@
   position: relative;
   text-align: left;
   margin-top: 2rem;
+  margin-bottom: 2.5rem;
   padding: 1.5rem;
   background: rgba(20, 10, 5, 0.85);
   border-left: 3px solid var(--accent-light);
