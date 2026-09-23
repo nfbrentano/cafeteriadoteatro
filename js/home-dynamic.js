@@ -77,10 +77,15 @@
     // Configurações do WhatsApp
     const fabWhatsapp = document.getElementById('fab-whatsapp');
     if (fabWhatsapp) {
-      if (s.whatsapp_ativo === false) {
+      // Se não houver configuração, o padrão é true
+      const wppAtivo = s.whatsapp_ativo !== undefined ? String(s.whatsapp_ativo) !== 'false' : true;
+      
+      if (!wppAtivo) {
         fabWhatsapp.classList.add('hidden');
+        fabWhatsapp.style.display = 'none';
       } else {
         fabWhatsapp.classList.remove('hidden');
+        fabWhatsapp.style.display = 'flex';
         if (s.whatsapp_numero) {
           fabWhatsapp.href = `https://wa.me/${s.whatsapp_numero}`;
         }
