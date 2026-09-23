@@ -585,6 +585,13 @@
       updated_at: new Date().toISOString()
     };
     
+    if (novoStatus === 'em_preparo') {
+      const p = pedidos.find(item => item.id === pedidoId);
+      if (p && !p.iniciado_em) {
+        payload.iniciado_em = new Date().toISOString();
+      }
+    }
+    
     if (novoStatus === 'concluido') {
       payload.concluido_por = currentUser.id;
       payload.concluido_em = new Date().toISOString();
@@ -613,6 +620,9 @@
     if (p) {
       p.status = novoStatus;
       p.updated_at = payload.updated_at;
+      if (payload.iniciado_em) {
+        p.iniciado_em = payload.iniciado_em;
+      }
       if (novoStatus === 'concluido') {
         p.concluido_em = payload.concluido_em;
         chamarPedidoVoz(p.numero_pedido || p.id, p.mesa_codigo);

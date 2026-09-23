@@ -25,6 +25,7 @@
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <title>Painel Admin | Cafeteria do Teatro</title>
 </head>
 <body>
@@ -104,6 +105,9 @@
       </button>
       <button class="sidebar__link" data-page="configuracoes" id="nav-configuracoes">
         <span class="sidebar__link-icon">⚙️</span> Configurações
+      </button>
+      <button class="sidebar__link" data-page="relatorios" id="nav-relatorios">
+        <span class="sidebar__link-icon">📈</span> Relatórios
       </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Aparência</div>
@@ -220,6 +224,157 @@
             </table>
           </div>
         </div>
+      </section>
+
+      <!-- ── RELATÓRIOS ────────────────────────────────────── -->
+      <section class="page" id="page-relatorios">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Relatórios</div>
+            <div class="page-header__sub">Métricas, vendas e tempo de preparo</div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select class="filter-select" id="filter-relatorio-periodo">
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="7dias">Últimos 7 dias</option>
+              <option value="mes">Mês Atual</option>
+              <option value="personalizado">Personalizado</option>
+            </select>
+            <div id="relatorio-datas-custom" style="display: none; gap: 5px; align-items: center;">
+              <input type="date" class="field__input" style="width: auto; padding: 4px 8px;" id="relatorio-data-inicio">
+              <span>até</span>
+              <input type="date" class="field__input" style="width: auto; padding: 4px 8px;" id="relatorio-data-fim">
+            </div>
+            <button class="btn btn--primary" id="btn-gerar-relatorio">Gerar</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__value" id="relatorio-faturamento">R$ 0,00</div>
+            <div class="stat-card__label">Faturamento Total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📊</div>
+            <div class="stat-card__value" id="relatorio-ticket">R$ 0,00</div>
+            <div class="stat-card__label">Ticket Médio</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">⏳</div>
+            <div class="stat-card__value" id="relatorio-fila">0 min</div>
+            <div class="stat-card__label">Tempo Médio (Fila)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">👨‍🍳</div>
+            <div class="stat-card__value" id="relatorio-preparo">0 min</div>
+            <div class="stat-card__label">Tempo Médio (Preparo)</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <!-- Horários de Pico -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Horários de Pico (Hora)</span>
+            </div>
+            <div class="section-card__body">
+              <canvas id="chartHorariosHora" width="400" height="200"></canvas>
+            </div>
+          </div>
+          <!-- Dias da Semana -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Horários de Pico (Dia)</span>
+            </div>
+            <div class="section-card__body">
+              <canvas id="chartHorariosDia" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <!-- Mais Vendidos -->
+          <div class="section-card">
+            <div class="section-card__header" style="display: flex; justify-content: space-between;">
+              <span class="section-card__title">Produtos Mais Vendidos</span>
+              <select class="filter-select" id="filter-relatorio-categoria" style="padding: 2px 8px; font-size: 0.8rem;">
+                <option value="">Todas as categorias</option>
+              </select>
+            </div>
+            <div class="table-scroll" style="max-height: 300px; overflow-y: auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Qtd</th>
+                    <th>Faturamento</th>
+                  </tr>
+                </thead>
+                <tbody id="relatorio-mais-vendidos">
+                  <tr><td colspan="3" class="text-center">Sem dados</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pagamentos -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Formas de Pagamento</span>
+            </div>
+            <div class="section-card__body">
+              <canvas id="chartPagamentos" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <!-- Cortesias -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Cortesias Concedidas</span>
+            </div>
+            <div class="table-scroll" style="max-height: 250px; overflow-y: auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Prato Liberador</th>
+                    <th>Qtd</th>
+                    <th>Valor Abonado</th>
+                  </tr>
+                </thead>
+                <tbody id="relatorio-cortesias">
+                  <tr><td colspan="3" class="text-center">Sem dados</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Promoções -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Descontos Promocionais</span>
+            </div>
+            <div class="table-scroll" style="max-height: 250px; overflow-y: auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Promoção</th>
+                    <th>Aplicações</th>
+                    <th>Desconto Total</th>
+                  </tr>
+                </thead>
+                <tbody id="relatorio-promocoes">
+                  <tr><td colspan="3" class="text-center">Sem dados</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       <!-- ── PEDIDOS ────────────────────────────────────── -->
@@ -1753,6 +1908,7 @@
 <script defer src="js/admin/mesas-admin.js"></script>
 <script defer src="js/admin/promocoes.js"></script>
 <script defer src="js/admin/usuarios-admin.js"></script>
+<script defer src="js/admin/relatorios-admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
