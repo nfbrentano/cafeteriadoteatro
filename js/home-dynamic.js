@@ -73,6 +73,19 @@
         document.documentElement.style.setProperty('--dynamic-sobre-bg', `url(${s.sobre_imagem_url})`);
       }
     }
+
+    // Configurações do WhatsApp
+    const fabWhatsapp = document.getElementById('fab-whatsapp');
+    if (fabWhatsapp) {
+      if (s.whatsapp_ativo === false) {
+        fabWhatsapp.classList.add('hidden');
+      } else {
+        fabWhatsapp.classList.remove('hidden');
+        if (s.whatsapp_numero) {
+          fabWhatsapp.href = `https://wa.me/${s.whatsapp_numero}`;
+        }
+      }
+    }
   }
 
   function renderHours(h) {

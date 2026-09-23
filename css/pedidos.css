@@ -54,9 +54,9 @@ body {
 }
 
 .btn-chamar-voz {
-  background: #E65100;
-  color: white;
-  border: none;
+  background: white;
+  color: #E65100;
+  border: 1px solid #E65100;
   padding: 8px 12px;
   border-radius: 6px;
   font-weight: 700;
@@ -69,12 +69,12 @@ body {
 }
 
 .btn-chamar-voz:hover {
-  background: #BF360C;
+  background: #FFF3E0;
   transform: translateY(-1px);
 }
 
 .btn-chamar-voz:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.97);
 }
 
 /* -------------------------------------
@@ -1429,6 +1429,8 @@ body {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: 4px;
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
   }
 
   .status-filters::-webkit-scrollbar {

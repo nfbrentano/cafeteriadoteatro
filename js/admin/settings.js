@@ -162,6 +162,10 @@
     document.getElementById('c-sobre-texto').value = s.sobre_texto || '';
     document.getElementById('c-exp-subtitulo').value = s.exp_subtitulo || '';
     document.getElementById('c-galeria-subtitulo').value = s.galeria_subtitulo || '';
+    
+    // WhatsApp
+    document.getElementById('c-whatsapp-ativo').checked = s.whatsapp_ativo !== false; // Padrão é true se não existir
+    document.getElementById('c-whatsapp-numero').value = s.whatsapp_numero || '5551984224792';
 
     // Preview do Sobre
     const sobreImg = s.sobre_imagem_url;
@@ -179,7 +183,9 @@
       sobre_titulo: document.getElementById('c-sobre-titulo').value,
       sobre_texto: document.getElementById('c-sobre-texto').value,
       exp_subtitulo: document.getElementById('c-exp-subtitulo').value,
-      galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value
+      galeria_subtitulo: document.getElementById('c-galeria-subtitulo').value,
+      whatsapp_ativo: document.getElementById('c-whatsapp-ativo').checked,
+      whatsapp_numero: document.getElementById('c-whatsapp-numero').value.replace(/\D/g, '')
     };
 
     const sobreDataUrl = document.getElementById('sobre-image-data').value;

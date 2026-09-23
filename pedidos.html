@@ -152,6 +152,9 @@
 
     <!-- ABA 2: MESAS & ACOMPANHAMENTO DE ENTREGAS -->
     <div id="view-mesas-pedidos" class="mesas-layout hidden">
+      <div id="ptr-indicator" style="text-align: center; height: 0; overflow: hidden; transition: height 0.2s, opacity 0.2s; opacity: 0; display: flex; align-items: center; justify-content: center; color: #777; font-size: 14px; font-weight: 500;">
+        <span>↻ Puxe para atualizar...</span>
+      </div>
       <!-- Seção Superior: Visão Geral de Mesas -->
       <section class="mesas-section">
         <div class="section-header">
@@ -175,7 +178,6 @@
               <button class="filter-chip chip--pendente" data-filter="pendente">🟡 Na Fila</button>
             </div>
           </div>
-          <button id="btn-recarregar-pedidos" class="btn-secondary">🔄 Atualizar</button>
         </div>
 
         <div class="pedidos-cards-grid" id="pedidos-cards-grid">

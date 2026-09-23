@@ -6,7 +6,7 @@
 /* ─── HERO ───────────────────────────────────────────────── */
 .hero {
   position: relative;
-  height: 100svh;
+  height: 100dvh;
   min-height: 600px;
   display: flex;
   align-items: center;
@@ -118,6 +118,11 @@
   flex-wrap: wrap;
   opacity: 0;
   animation: fadeUp 0.8s 0.9s forwards;
+}
+
+.hero__actions .btn {
+  min-height: 56px;
+  padding: 0 32px;
 }
 
 .hero__scroll {

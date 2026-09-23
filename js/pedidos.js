@@ -43,7 +43,6 @@
   // Refs Mesas & Acompanhamento
   const mesasGrid = document.getElementById('mesas-grid');
   const pedidosCardsGrid = document.getElementById('pedidos-cards-grid');
-  const btnRecarregarPedidos = document.getElementById('btn-recarregar-pedidos');
   const filtroChips = document.querySelectorAll('.status-filters .filter-chip');
 
   // Refs Modais
@@ -1009,7 +1008,55 @@
     });
   });
 
-  btnRecarregarPedidos.addEventListener('click', loadActivePedidos);
+  const viewMesas = document.getElementById('view-mesas-pedidos');
+  const ptrIndicator = document.getElementById('ptr-indicator');
+  let ptrStartY = 0;
+  let ptrCurrentY = 0;
+  let isPulling = false;
+
+  if (viewMesas) {
+    viewMesas.addEventListener('touchstart', (e) => {
+      if (viewMesas.scrollTop > 0) return;
+      ptrStartY = e.touches[0].clientY;
+      isPulling = true;
+    }, { passive: true });
+
+    viewMesas.addEventListener('touchmove', (e) => {
+      if (!isPulling) return;
+      ptrCurrentY = e.touches[0].clientY;
+      const dy = ptrCurrentY - ptrStartY;
+      
+      if (dy > 0 && viewMesas.scrollTop === 0) {
+        if (ptrIndicator) {
+          ptrIndicator.style.transition = 'none';
+          ptrIndicator.style.height = Math.min(dy * 0.5, 60) + 'px';
+          ptrIndicator.style.opacity = Math.min(dy / 100, 1);
+        }
+      }
+    }, { passive: true });
+
+    viewMesas.addEventListener('touchend', async () => {
+      if (!isPulling) return;
+      isPulling = false;
+      const dy = ptrCurrentY - ptrStartY;
+      if (dy > 60 && viewMesas.scrollTop === 0) {
+        if (ptrIndicator) {
+          ptrIndicator.style.transition = 'height 0.2s, opacity 0.2s';
+          ptrIndicator.style.height = '40px';
+          ptrIndicator.innerHTML = '<span>↻ Atualizando...</span>';
+        }
+        await Promise.all([loadActivePedidos(), loadMesasOverview()]);
+      }
+      if (ptrIndicator) {
+        ptrIndicator.style.transition = 'height 0.2s, opacity 0.2s';
+        ptrIndicator.style.height = '0';
+        ptrIndicator.style.opacity = '0';
+        setTimeout(() => {
+          ptrIndicator.innerHTML = '<span>↻ Puxe para atualizar...</span>';
+        }, 200);
+      }
+    });
+  }
 
   function renderPedidosCards() {
     pedidosCardsGrid.innerHTML = '';
