@@ -117,16 +117,21 @@
     const imgUrl = p.imagem_url || p.imagemUrl;
     
     let badgeHTML = '';
+    if (p.disponivel === false) {
+      badgeHTML += '<span class="badge" style="background:#6c757d;">Indisponível hoje</span>';
+    }
     if (p.badges && Array.isArray(p.badges)) {
-        badgeHTML = p.badges.map(b => {
+        badgeHTML += p.badges.map(b => {
             if (b === 'popular') return '<span class="badge badge--popular">🔥 Mais Pedido</span>';
             if (b === 'novo') return '<span class="badge badge--novo">🆕 Novidade</span>';
             return '';
         }).join('');
     }
+    
+    const esgotadoClass = p.disponivel === false ? 'produto-esgotado' : '';
 
     return `
-      <article class="produto-card fade-in" aria-label="${p.nome}">
+      <article class="produto-card fade-in ${esgotadoClass}" aria-label="${p.nome}">
         <div class="produto-card__image-wrap">
           ${imgUrl 
             ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/images/produto-cafe.webp'">`
@@ -148,10 +153,15 @@
   function renderComboCard(p) {
     const price = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const itens = p.combo_items || p.comboItens || [];
-    const tagsHTML = Array.isArray(itens) ? itens.map(i => `<span class="combo-card__item-tag">${i}</span>`).join('') : '';
+    let tagsHTML = Array.isArray(itens) ? itens.map(i => `<span class="combo-card__item-tag">${i}</span>`).join('') : '';
+
+    if (p.disponivel === false) {
+      tagsHTML = `<span class="combo-card__item-tag" style="background:#6c757d; color:#fff;">Indisponível hoje</span> ` + tagsHTML;
+    }
+    const esgotadoClass = p.disponivel === false ? 'produto-esgotado' : '';
 
     return `
-      <article class="combo-card fade-in">
+      <article class="combo-card fade-in ${esgotadoClass}">
         <div class="combo-card__icon">${p.combo_icon || '🎁'}</div>
         <div class="combo-card__content">
           <h3 class="combo-card__name">${p.nome}</h3>

@@ -92,7 +92,7 @@
           <td><span style="color:var(--admin-text-dim)">${cat ? cat.icone + ' ' + cat.nome : pCatId}</span></td>
           <td class="td-price">R$ ${preco}</td>
           <td><div class="td-badges">${badgesHTML || '—'}</div></td>
-          <td>${p.ativo ? '<span class="status-pill status-pill--ativo">Ativo</span>' : '<span class="status-pill status-pill--inativo">Inativo</span>'}</td>
+          <td>${p.ativo ? '<span class="status-pill status-pill--ativo">Ativo</span>' : '<span class="status-pill status-pill--inativo">Inativo</span>'} ${p.disponivel === false ? '<span class="status-pill" style="background:#e74c3c;color:white;font-size:0.7em;">Esgotado</span>' : ''}</td>
           <td>
             <div class="td-actions">
               <button class="btn btn--icon btn--ghost" onclick="window.openProdutoModal('${p.id}')">✏️</button>
@@ -121,6 +121,7 @@
         document.getElementById('produto-preco').value = p.preco;
         document.getElementById('produto-descricao').value = p.descricao || '';
         document.getElementById('produto-ativo').checked = !!p.ativo;
+        document.getElementById('produto-disponivel').checked = p.disponivel !== false;
         
         // Badges
         (p.badges || []).forEach(b => {
@@ -150,6 +151,7 @@
     const preco = parseFloat(document.getElementById('produto-preco').value);
     const descricao = document.getElementById('produto-descricao').value;
     const ativo = document.getElementById('produto-ativo').checked;
+    const disponivel = document.getElementById('produto-disponivel').checked;
     
     if (!nome || !categoria_id || isNaN(preco)) {
       return admin.toast('Erro', 'Preencha os campos obrigatórios (*)', 'error');
@@ -165,7 +167,7 @@
 
     try {
       await window.cafeteriaDB.products.upsert({
-        id, nome, categoria_id, preco, descricao, ativo, badges,
+        id, nome, categoria_id, preco, descricao, ativo, badges, disponivel,
         imagem_url: isNewImage ? null : dataUrl,
         updated_at: new Date().toISOString()
       }, imageBlob);

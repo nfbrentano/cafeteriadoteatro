@@ -217,6 +217,12 @@
   }
 }
 
+.produto-esgotado {
+  opacity: 0.6;
+  filter: grayscale(100%);
+  pointer-events: none;
+}
+
 .produto-card__image-wrap {
   position: relative;
   overflow: hidden;

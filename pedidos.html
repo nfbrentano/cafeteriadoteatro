@@ -57,6 +57,10 @@
     <div id="view-novo-pedido" class="main-layout">
       <!-- PAINEL ESQUERDO: CARDÁPIO E MESAS -->
       <main class="menu-panel">
+        <div id="banner-adicionando-itens" class="hidden" style="background-color: #fff3cd; padding: 12px; margin: 16px 16px 0 16px; border-radius: 8px; border: 1px solid #ffeeba; display: flex; justify-content: space-between; align-items: center;">
+          <strong style="color: #856404;">➕ Adicionando itens à <span id="lbl-mesa-adicionando"></span></strong>
+          <button id="btn-cancelar-adicao" class="btn-ghost-small" style="background-color: #856404; color: white; border: none;">Cancelar adição</button>
+        </div>
         <div class="panel-header">
           <div class="mesa-selector">
             <label for="mesa-select">Mesa / Local:</label>
@@ -255,6 +259,7 @@
       <div class="modal-footer" style="justify-content: space-between;">
         <button id="modal-mesa-print" class="btn-secondary">🖨 Imprimir Prévia da Conta</button>
         <div style="display:flex; gap: 8px;">
+          <button id="btn-mesa-adicionar-itens" class="btn-ghost" style="color: var(--marrom-escuro); border-color: var(--marrom-escuro);">➕ Adicionar Itens</button>
           <button id="modal-mesa-fechar" class="btn-ghost">Fechar</button>
           <button id="modal-mesa-fechar-conta" class="btn-primary">💳 Fechar Conta</button>
         </div>

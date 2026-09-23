@@ -1694,3 +1694,31 @@ body {
   }
 }
 
+
+/* Esgotado Styles */
+.produto-esgotado {
+  opacity: 0.5;
+  filter: grayscale(100%);
+  pointer-events: none; /* Previne clicks se os listeners não forem parados */
+  cursor: not-allowed;
+  position: relative;
+}
+.produto-esgotado .btn-add-badge {
+  display: none;
+}
+.esgotado-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border: 3px solid #d32f2f;
+  color: #d32f2f;
+  font-weight: 800;
+  font-size: 1.2rem;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.9);
+  z-index: 10;
+  white-space: nowrap;
+}
+

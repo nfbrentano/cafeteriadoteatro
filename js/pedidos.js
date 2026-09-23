@@ -81,6 +81,10 @@
   const modalMesaFechar = document.getElementById('modal-mesa-fechar');
   const modalMesaPrint = document.getElementById('modal-mesa-print');
   const modalMesaFecharConta = document.getElementById('modal-mesa-fechar-conta');
+  const btnMesaAdicionarItens = document.getElementById('btn-mesa-adicionar-itens');
+  const bannerAdicionandoItens = document.getElementById('banner-adicionando-itens');
+  const lblMesaAdicionando = document.getElementById('lbl-mesa-adicionando');
+  const btnCancelarAdicao = document.getElementById('btn-cancelar-adicao');
 
   const modalFecharConta = document.getElementById('modal-fechar-conta');
   const fecharContaTitle = document.getElementById('modal-fechar-conta-title');
@@ -500,10 +504,11 @@
 
     filtered.forEach(p => {
       const card = document.createElement('div');
-      card.className = 'product-card';
+      card.className = 'product-card' + (p.disponivel === false ? ' produto-esgotado' : '');
       const descHtml = p.descricao ? `<p class="product-card__desc">${p.descricao}</p>` : '';
       const isPromo = activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id);
       const promoBadgeHtml = isPromo ? `<span style="background:#e74c3c; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">PROMO</span>` : '';
+      const stampHtml = p.disponivel === false ? `<div class="esgotado-stamp">ESGOTADO</div>` : '';
       
       card.innerHTML = `
         <div class="product-card__header">
@@ -514,10 +519,58 @@
           <span class="price">R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</span>
           <span class="btn-add-badge">+ Adicionar</span>
         </div>
+        ${stampHtml}
       `;
-      card.onclick = () => openMontagemModal(p);
+      card.onclick = (e) => {
+        if (p.disponivel === false) return;
+        openMontagemModal(p);
+      };
+
+      // Lógica de Esgotar (Pressionar e Segurar)
+      let pressTimer;
+      const startPress = (e) => {
+        if (e.button && e.button !== 0) return; // apenas click esquerdo
+        pressTimer = setTimeout(() => {
+          showEsgotadoMenu(p);
+        }, 800); // 800ms para considerar long press
+      };
+      const cancelPress = () => clearTimeout(pressTimer);
+      
+      card.addEventListener('pointerdown', startPress);
+      card.addEventListener('pointerup', cancelPress);
+      card.addEventListener('pointerleave', cancelPress);
+      card.addEventListener('pointercancel', cancelPress);
+      card.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); // Evita menu nativo no right-click/long-press mobile e mostra o nosso
+        cancelPress();
+        showEsgotadoMenu(p);
+      });
+
       productsGrid.appendChild(card);
     });
+  }
+
+  async function showEsgotadoMenu(produto) {
+    const isEsgotado = produto.disponivel === false;
+    const msg = isEsgotado 
+      ? `Marcar "${produto.nome}" como DISPONÍVEL?` 
+      : `Marcar "${produto.nome}" como ESGOTADO?`;
+      
+    if (confirm(msg)) {
+      try {
+        const { error } = await window.cafeteriaSupabase.rpc('toggle_produto_disponivel', {
+          p_produto_id: produto.id,
+          p_disponivel: isEsgotado
+        });
+        if (error) throw error;
+        // Atualiza localmente para resposta rápida. O realtime sincronizará outras abas.
+        produto.disponivel = isEsgotado;
+        renderProducts();
+      } catch (err) {
+        console.error('Erro ao atualizar disponibilidade', err);
+        alert('Erro ao atualizar produto. Verifique suas permissões ou tente recarregar.');
+      }
+    }
   }
 
   // -----------------------------------------------------
@@ -992,6 +1045,8 @@
     pedidoObs.value = '';
     pedidoPagamento.value = '';
     pedidoPago.checked = false;
+    resetarModoAdicao();
+    mesaSelect.value = '';
     renderCart();
 
     btnEnviarPedido.textContent = 'Enviado! ✅';
@@ -1338,6 +1393,42 @@
 
   [modalMesaClose, modalMesaFechar].forEach(b => b.addEventListener('click', fecharModalMesa));
 
+  function resetarModoAdicao() {
+    if (mesaSelect) mesaSelect.disabled = false;
+    if (bannerAdicionandoItens) bannerAdicionandoItens.classList.add('hidden');
+    if (lblMesaAdicionando) lblMesaAdicionando.textContent = '';
+  }
+
+  if (btnCancelarAdicao) {
+    btnCancelarAdicao.addEventListener('click', () => {
+      cart = [];
+      renderCart();
+      resetarModoAdicao();
+      mesaSelect.value = '';
+      checkFormValidity();
+      switchTab('mesas');
+    });
+  }
+
+  if (btnMesaAdicionarItens) {
+    btnMesaAdicionarItens.addEventListener('click', () => {
+      if (!currentSelectedMesaParaConta) return;
+      const mesa = currentSelectedMesaParaConta.mesaCodigo;
+      fecharModalMesa();
+      
+      switchTab('novo');
+      mesaSelect.value = mesa;
+      mesaSelect.disabled = true;
+      lblMesaAdicionando.textContent = mesa;
+      bannerAdicionandoItens.classList.remove('hidden');
+      
+      const badge = document.getElementById('cart-mesa-badge');
+      if (badge) badge.textContent = mesa;
+      
+      checkFormValidity();
+    });
+  }
+
   modalMesaPrint.addEventListener('click', () => {
     if (currentSelectedMesaParaConta && window.cafeteriaPrint) {
       window.cafeteriaPrint.printConferenciaMesa(
@@ -1581,6 +1672,9 @@
           }
         }
         loadActivePedidos();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'produtos' }, payload => {
+        loadProdutos();
       })
       .subscribe();
   }
