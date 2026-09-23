@@ -100,6 +100,7 @@
         dashboard: 'Dashboard',
         produtos: 'Produtos',
         categorias: 'Categorias',
+        adicionais: 'Adicionais',
         pedidos: 'Pedidos',
         mesas: 'Mesas',
         usuarios: 'Usuários',
@@ -117,6 +118,7 @@
         dashboard: 'renderDashboard',
         produtos:  'renderProdutos',
         categorias: 'renderCategorias',
+        adicionais: 'renderAdicionais',
         pedidos:    'initAdminPedidos',
         mesas:      'initAdminMesas',
         usuarios:   'loadUsuarios',
@@ -134,8 +136,9 @@
     // --- Dados ---
     async loadData() {
       try {
-        const [cats, prods, hero, hours, promos, settings] = await Promise.all([
+        const [cats, adics, prods, hero, hours, promos, settings] = await Promise.all([
           window.cafeteriaDB.categories.all(),
+          window.cafeteriaDB.adicionais.all(),
           window.cafeteriaDB.products.all(),
           window.cafeteriaDB.hero.get(),
           window.cafeteriaDB.hours.get(),
@@ -143,6 +146,7 @@
           window.cafeteriaDB.settings.all()
         ]);
         this.appData.categorias = cats;
+        this.appData.adicionais = adics;
         this.appData.produtos   = prods;
         this.appData.hero       = hero;
         this.appData.horarios   = hours;

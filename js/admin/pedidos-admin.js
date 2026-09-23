@@ -99,7 +99,11 @@
       .from('pedidos')
       .select(`
         *,
-        pedido_itens (*)
+        pedido_itens (
+          *,
+          pedido_item_adicionais (*),
+          pedido_item_sabores (*)
+        )
       `)
       .order('created_at', { ascending: false });
 
@@ -180,13 +184,36 @@
     if (pedido.pedido_itens) {
       pedido.pedido_itens.forEach(item => {
         const subtotal = (item.quantidade * item.preco_unitario).toFixed(2).replace('.', ',');
-        const obsItem = item.observacoes ? `<div style="font-size:12px; color:#E65100; margin-left:14px;">↳ Obs: ${item.observacoes}</div>` : '';
+        const obsItem = item.observacoes ? `<div style="font-size:12px; color:#E65100; margin-left:14px;">↳ Obs: ${window.escapeHtml(item.observacoes)}</div>` : '';
+        
+        let adicHtml = '';
+        if (item.pedido_item_adicionais && item.pedido_item_adicionais.length > 0) {
+          adicHtml = item.pedido_item_adicionais.map(ad => 
+            `<div style="font-size:12px; color:#666; margin-left:14px;">+ ${window.escapeHtml(ad.nome_adicional)}</div>`
+          ).join('');
+        }
+
+        let saboresHtml = '';
+        if (item.pedido_item_sabores && item.pedido_item_sabores.length === 2) {
+          saboresHtml = `<div style="font-size:12px; color:#555; margin-left:14px;">½ ${window.escapeHtml(item.pedido_item_sabores[0].nome)} / ½ ${window.escapeHtml(item.pedido_item_sabores[1].nome)}</div>`;
+        }
+        
+        let descHtml = '';
+        if (item.desconto > 0) {
+           descHtml = `<div style="font-size:12px; color:#e74c3c; margin-left:14px;">↳ Desconto: - R$ ${Number(item.desconto).toFixed(2).replace('.', ',')}</div>`;
+        }
+        
+        let isCortesia = item.cortesia_de_item_id ? `<span style="background:#e74c3c; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>` : '';
+
         itensHtml += `
           <div style="border-bottom: 1px dashed #eee; padding: 6px 0;">
             <div style="display: flex; justify-content: space-between;">
-              <span><strong>${item.quantidade}x</strong> ${item.nome_produto}</span>
+              <span><strong>${item.quantidade}x</strong> ${window.escapeHtml(item.nome_produto)} ${isCortesia}</span>
               <span>R$ ${subtotal}</span>
             </div>
+            ${saboresHtml}
+            ${adicHtml}
+            ${descHtml}
             ${obsItem}
           </div>
         `;
@@ -194,7 +221,7 @@
     }
 
     const obsHtml = pedido.observacoes 
-      ? `<div style="margin-top: 14px; padding: 10px 14px; background: #FFF9C4; border-radius: 6px; font-size:13px; color:#5D4037;"><strong>Observações do Pedido:</strong> ${pedido.observacoes}</div>`
+      ? `<div style="margin-top: 14px; padding: 10px 14px; background: #FFF9C4; border-radius: 6px; font-size:13px; color:#5D4037;"><strong>Observações do Pedido:</strong> ${window.escapeHtml(pedido.observacoes)}</div>`
       : '';
 
     let btnCancelarHtml = '';

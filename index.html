@@ -97,16 +97,13 @@
         }
       }
 
-      // 1. Hero
-      const hero = getCached('cafeteria_hero_cache');
-      if (hero) {
-        if (hero.image_url) {
-          document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
-        }
-        if (hero.blur_data_url) {
-          document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + hero.blur_data_url + ')');
-        }
+      // 1. Hero Image
+      const h = getCached('cafeteria_hero_cache');
+      if (h) {
+        if (h.blur_data_url) document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + h.blur_data_url + ')');
+        if (h.image_url) document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + h.image_url + ')');
       }
+
       // 2. Sobre Image
       const s = getCached('cafeteria_settings_cache');
       if (s && s.sobre_imagem_url) {
@@ -168,12 +165,9 @@
 
   <main>
 
-    <!-- ═══════════════════════════════════════
-         HERO — Carrossel Cinematográfico "Galeria de Artes"
-    ══════════════════════════════════════════ -->
-    <section class="hero hero--carousel" id="home" aria-label="Galeria de Artes — Seção principal">
-      <!-- Carousel Slides -->
-      <div class="hero-carousel" id="hero-carousel" aria-roledescription="carousel" aria-label="Galeria de Artes">
+    <section class="hero" id="home" aria-label="Galeria de Artes — Seção principal">
+      <!-- Carousel Slides (substituindo hero__bg) -->
+      <div class="hero-carousel hero-carousel--fullscreen" id="hero-carousel" aria-roledescription="carousel" aria-label="Galeria de Artes">
         <div class="hero-carousel__slide hero-carousel__slide--active" role="group" aria-roledescription="slide" aria-label="Slide 1 de 8" data-caption="Thriller na Cafeteria" data-subtitle="O rei do pop aprova nosso pão com chocolate">
           <div class="hero-carousel__img" style="background-image:url('assets/images/arte-thriller.webp')"></div>
         </div>
@@ -200,25 +194,24 @@
         </div>
       </div>
 
-      <!-- Overlay gradiente -->
       <div class="hero__overlay"></div>
 
-      <!-- Frame decorativo "quadro de museu" -->
-      <div class="hero-carousel__frame" aria-hidden="true"></div>
-
-      <!-- Conteúdo principal -->
       <div class="hero__content container">
         <div class="hero__tag">
-          <span class="hero__tag-icon" aria-hidden="true">🎨</span>
-          Galeria de Artes · Cafeteria do Teatro
+          Cafeteria do Teatro
         </div>
 
         <h1 class="hero__title">
           <span style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">Cafeteria do Teatro em Lajeado: </span>Onde o café<br>encontra a <em>cultura.</em>
         </h1>
 
+        <p class="hero__subtitle">
+          No coração do Teatro da Univates, uma pausa que vale o ato.
+          Café de qualidade, ambiente acolhedor e a energia única de um espaço cultural.
+        </p>
+
         <!-- Caption dinâmico do slide atual -->
-        <div class="hero-carousel__caption" id="carousel-caption" aria-live="polite">
+        <div class="hero-carousel__caption hero-carousel__caption--fullscreen" id="carousel-caption" aria-live="polite">
           <p class="hero-carousel__caption-text">Thriller na Cafeteria</p>
           <p class="hero-carousel__caption-sub">O rei do pop aprova nosso pão com chocolate</p>
         </div>
@@ -234,7 +227,7 @@
       </div>
 
       <!-- Navegação do carrossel -->
-      <div class="hero-carousel__nav" aria-label="Controles do carrossel">
+      <div class="hero-carousel__nav hero-carousel__nav--fullscreen" aria-label="Controles do carrossel">
         <button class="hero-carousel__arrow hero-carousel__arrow--prev" id="carousel-prev" aria-label="Slide anterior">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
@@ -256,7 +249,7 @@
       </div>
 
       <!-- Barra de progresso automática -->
-      <div class="hero-carousel__progress" aria-hidden="true">
+      <div class="hero-carousel__progress hero-carousel__progress--fullscreen" aria-hidden="true">
         <div class="hero-carousel__progress-bar" id="carousel-progress"></div>
       </div>
 
@@ -265,6 +258,7 @@
         <span>Rolar</span>
       </div>
     </section>
+
 
     <!-- ═══════════════════════════════════════
          SOBRE
@@ -763,7 +757,6 @@
   <script defer src="js/supabase-client.js"></script>
   <script defer src="js/db.js"></script>
   <script defer src="js/hero-carousel.js"></script>
-  
   <script defer src="js/home-dynamic.js"></script>
   <script defer src="js/curtain.js"></script>
   <script defer src="js/main.js"></script>

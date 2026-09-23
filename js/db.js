@@ -6,6 +6,16 @@
 (function() {
   'use strict';
 
+  window.escapeHtml = function(unsafe) {
+    if (!unsafe) return '';
+    return unsafe.toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
   const CACHE_KEYS = {
     HORARIOS: 'cafeteria_horarios_cache',
     HERO: 'cafeteria_hero_cache',
@@ -202,6 +212,70 @@
         if (error) {
           db.logger.error('products.delete', error);
           throw error;
+        }
+      }
+    },
+
+    // --- Adicionais ---
+    adicionais: {
+      async all() {
+        if (!window.cafeteriaSupabase) {
+          db.logger.warn('adicionais.all', 'Supabase client não inicializado');
+          return [];
+        }
+        const { data, error } = await window.cafeteriaSupabase
+          .from('adicionais')
+          .select('*')
+          .order('ordem', { ascending: true });
+        if (error) {
+          db.logger.error('adicionais.all', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async vinculos() {
+        if (!window.cafeteriaSupabase) return [];
+        const { data, error } = await window.cafeteriaSupabase
+          .from('adicional_vinculos')
+          .select('*');
+        if (error) {
+          db.logger.error('adicionais.vinculos', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async upsert(adicional) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const { error } = await window.cafeteriaSupabase
+          .from('adicionais')
+          .upsert(adicional);
+        if (error) {
+          db.logger.error('adicionais.upsert', error);
+          throw error;
+        }
+      },
+      async delete(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const { error } = await window.cafeteriaSupabase
+          .from('adicionais')
+          .delete()
+          .eq('id', id);
+        if (error) {
+          db.logger.error('adicionais.delete', error);
+          throw error;
+        }
+      },
+      async upsertVinculos(adicionalId, vinculos) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        // Remove antigos
+        await window.cafeteriaSupabase.from('adicional_vinculos').delete().eq('adicional_id', adicionalId);
+        // Insere novos se houver
+        if (vinculos && vinculos.length > 0) {
+          const { error } = await window.cafeteriaSupabase.from('adicional_vinculos').insert(vinculos);
+          if (error) {
+            db.logger.error('adicionais.upsertVinculos', error);
+            throw error;
+          }
         }
       }
     },

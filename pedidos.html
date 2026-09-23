@@ -184,6 +184,43 @@
     </div>
   </div>
 
+  <!-- MODAL: MONTAGEM DO PRODUTO (ADICIONAIS) -->
+  <div id="modal-montagem" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 id="modal-montagem-title">Personalizar Item</h4>
+        <button id="modal-montagem-close" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-montagem-body">
+        <div id="montagem-sabores-container" class="hidden" style="margin-bottom: 16px;">
+          <label style="font-size:14px; color:#aaa; margin-bottom:4px; display:block;">Escolha os sabores (Metade Doce / Metade Salgada)</label>
+          <div style="display: flex; gap: 10px;">
+            <select id="modal-montagem-sabor-doce" style="flex:1; padding:8px; border-radius:4px; border:1px solid #333; background:#1c1c1c; color:#fff;"></select>
+            <select id="modal-montagem-sabor-salgado" style="flex:1; padding:8px; border-radius:4px; border:1px solid #333; background:#1c1c1c; color:#fff;"></select>
+          </div>
+        </div>
+        <div class="montagem-adicionais-list" id="montagem-adicionais-list">
+          <!-- Checkboxes de adicionais via JS -->
+        </div>
+        <div style="margin-top: 16px;">
+          <label for="modal-montagem-obs" style="font-size:14px; color:#aaa; margin-bottom:4px; display:block;">Observação (Opcional)</label>
+          <div id="modal-montagem-fast-chips" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Sem açúcar '">Sem açúcar</button>
+            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Bem quente '">Bem quente</button>
+            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Para viagem '">Para viagem</button>
+            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Sem cebola '">Sem cebola</button>
+          </div>
+          <textarea id="modal-montagem-obs" rows="2" placeholder="Ex: sem açúcar, copo grande..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="montagem-total" id="montagem-total" style="font-weight: bold; flex-grow: 1;">Total: R$ 0,00</div>
+        <button id="modal-montagem-cancel" class="btn-ghost">Cancelar</button>
+        <button id="modal-montagem-save" class="btn-primary-small">Adicionar ao Pedido</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: OBSERVAÇÃO POR ITEM -->
   <div id="modal-obs" class="modal-overlay hidden">
     <div class="modal-card">

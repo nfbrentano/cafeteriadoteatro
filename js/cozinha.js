@@ -253,7 +253,11 @@
       .from('pedidos')
       .select(`
         *,
-        pedido_itens (*)
+        pedido_itens (
+          *,
+          pedido_item_adicionais (*),
+          pedido_item_sabores (*)
+        )
       `)
       .or(`status.in.(pendente,em_preparo),and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
       .order('created_at', { ascending: true });
@@ -316,16 +320,40 @@
       let itensHtml = '';
       if (pedido.pedido_itens && pedido.pedido_itens.length > 0) {
         pedido.pedido_itens.forEach(item => {
+          const isCancelado = item.cancelado;
+          const isCortesia = item.cortesia_de_item_id ? true : false;
+          
+          let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
+          let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
+          let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
+
           const obsItemHtml = item.observacoes 
-            ? `<div class="item-obs-badge">⚠️ Obs: ${item.observacoes}</div>` 
+            ? `<div class="item-obs-badge">⚠️ Obs: ${window.escapeHtml(item.observacoes)}</div>` 
             : '';
+
+          let adicHtml = '';
+          if (item.pedido_item_adicionais && item.pedido_item_adicionais.length > 0) {
+            adicHtml = item.pedido_item_adicionais.map(ad => 
+              `<div style="font-size:12px; color:#666; margin-left:24px; ${isCancelado ? 'text-decoration: line-through;' : ''}">+ ${window.escapeHtml(ad.nome_adicional)}</div>`
+            ).join('');
+          }
+          
+          let saboresHtml = '';
+          if (item.pedido_item_sabores && item.pedido_item_sabores.length === 2) {
+            saboresHtml = `<div style="font-size:13px; color:#555; margin-left:24px; ${isCancelado ? 'text-decoration: line-through;' : ''}">
+              ½ ${window.escapeHtml(item.pedido_item_sabores[0].nome)} <br/>
+              ½ ${window.escapeHtml(item.pedido_item_sabores[1].nome)}
+            </div>`;
+          }
 
           itensHtml += `
             <div class="item-row">
-              <div class="item-main">
+              <div class="item-main" ${cancelClass}>
                 <span class="item-qty">${item.quantidade}x</span>
-                <span class="item-name">${item.nome_produto}</span>
+                <span class="item-name">${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${cancelLabel}</span>
               </div>
+              ${saboresHtml}
+              ${adicHtml}
               ${obsItemHtml}
             </div>
           `;
@@ -375,7 +403,7 @@
       }
 
       const obsHtml = pedido.observacoes 
-        ? `<div class="pedido-obs">📝 Obs Geral: ${pedido.observacoes}</div>` 
+        ? `<div class="pedido-obs">📝 Obs Geral: ${window.escapeHtml(pedido.observacoes)}</div>` 
         : '';
 
       const operadorStr = pedido.criado_por_nome ? `Atendente: ${pedido.criado_por_nome}` : 'Atendimento';
@@ -460,7 +488,7 @@
           // Buscar pedido completo com itens para impressão e board
           const { data: newPedido } = await window.cafeteriaSupabase
             .from('pedidos')
-            .select('*, pedido_itens(*)')
+            .select('*, pedido_itens(*, pedido_item_adicionais(*))')
             .eq('id', payload.new.id)
             .single();
             

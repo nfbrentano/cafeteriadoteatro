@@ -101,18 +101,56 @@
       `;
 
       (itens || []).forEach(item => {
+        const isCancelado = item.cancelado;
+        const isCortesia = item.cortesia_de_item_id ? true : false;
+        
         const preco = (Number(item.preco_unitario || 0) * (item.quantidade || 1)).toFixed(2).replace('.', ',');
+        
+        let cancelStyle = isCancelado ? 'text-decoration: line-through; color: #555;' : '';
+        let cancelLabel = isCancelado ? ' - CANCELADO' : '';
+        let cortesiaLabel = isCortesia && !isCancelado ? ' (CORTESIA)' : '';
+        
         html += `
           <tr>
-            <td class="qty">${item.quantidade}x</td>
-            <td><strong>${item.nome_produto}</strong></td>
-            <td class="price">R$ ${preco}</td>
+            <td class="qty" style="${cancelStyle}">${item.quantidade}x</td>
+            <td style="${cancelStyle}"><strong>${window.escapeHtml(item.nome_produto)}</strong>${cortesiaLabel}${cancelLabel}</td>
+            <td class="price" style="${cancelStyle}">R$ ${preco}</td>
           </tr>
         `;
+        
+        if (item.pedido_item_sabores && item.pedido_item_sabores.length === 2) {
+          html += `
+            <tr>
+              <td colspan="3" class="item-obs" style="${cancelStyle}">
+                ½ ${window.escapeHtml(item.pedido_item_sabores[0].nome)}<br>
+                ½ ${window.escapeHtml(item.pedido_item_sabores[1].nome)}
+              </td>
+            </tr>
+          `;
+        }
+        
+        if (item.pedido_item_adicionais && item.pedido_item_adicionais.length > 0) {
+          item.pedido_item_adicionais.forEach(ad => {
+            html += `
+              <tr>
+                <td colspan="3" class="item-obs" style="color:#555; ${cancelStyle}">+ ${window.escapeHtml(ad.nome_adicional)}</td>
+              </tr>
+            `;
+          });
+        }
+        
+        if (item.desconto > 0 && !isCancelado) {
+          html += `
+            <tr>
+              <td colspan="3" class="item-obs">Desconto promo: - R$ ${Number(item.desconto).toFixed(2).replace('.', ',')}</td>
+            </tr>
+          `;
+        }
+        
         if (item.observacoes && item.observacoes.trim()) {
           html += `
             <tr>
-              <td colspan="3" class="item-obs">↳ Obs: ${item.observacoes.trim()}</td>
+              <td colspan="3" class="item-obs" style="${cancelStyle}">↳ Obs: ${window.escapeHtml(item.observacoes.trim())}</td>
             </tr>
           `;
         }
@@ -132,7 +170,7 @@
         html += `
           <div class="divider"></div>
           <div class="bold">OBSERVAÇÕES GERAIS:</div>
-          <div style="font-size: 12px;">${pedido.observacoes.trim()}</div>
+          <div style="font-size: 12px;">${window.escapeHtml(pedido.observacoes.trim())}</div>
         `;
       }
 
@@ -177,14 +215,40 @@
         totalGeral += Number(ped.total || 0);
         if (ped.pedido_itens) {
           ped.pedido_itens.forEach(item => {
+            const isCancelado = item.cancelado;
+            const isCortesia = item.cortesia_de_item_id ? true : false;
+            
             const subtotal = (Number(item.preco_unitario || 0) * (item.quantidade || 1)).toFixed(2).replace('.', ',');
+            
+            let cancelStyle = isCancelado ? 'text-decoration: line-through; color: #555;' : '';
+            let cancelLabel = isCancelado ? ' - CANCELADO' : '';
+            let cortesiaLabel = isCortesia && !isCancelado ? ' (CORTESIA)' : '';
+            
             html += `
               <tr>
-                <td class="qty">${item.quantidade}x</td>
-                <td>${item.nome_produto}</td>
-                <td class="price">R$ ${subtotal}</td>
+                <td class="qty" style="${cancelStyle}">${item.quantidade}x</td>
+                <td style="${cancelStyle}">${window.escapeHtml(item.nome_produto)}${cortesiaLabel}${cancelLabel}</td>
+                <td class="price" style="${cancelStyle}">R$ ${subtotal}</td>
               </tr>
             `;
+            
+            if (item.pedido_item_sabores && item.pedido_item_sabores.length === 2) {
+              html += `
+                <tr>
+                  <td colspan="3" class="item-obs" style="${cancelStyle}">
+                    ½ ${window.escapeHtml(item.pedido_item_sabores[0].nome)} / ½ ${window.escapeHtml(item.pedido_item_sabores[1].nome)}
+                  </td>
+                </tr>
+              `;
+            }
+
+            if (item.desconto > 0 && !isCancelado) {
+              html += `
+                <tr>
+                  <td colspan="3" class="item-obs">Desconto aplicado: - R$ ${Number(item.desconto).toFixed(2).replace('.', ',')}</td>
+                </tr>
+              `;
+            }
           });
         }
       });

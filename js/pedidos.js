@@ -54,6 +54,15 @@
   const modalObsClose = document.getElementById('modal-obs-close');
   const modalObsCancel = document.getElementById('modal-obs-cancel');
 
+  const modalMontagem = document.getElementById('modal-montagem');
+  const modalMontagemTitle = document.getElementById('modal-montagem-title');
+  const modalMontagemList = document.getElementById('montagem-adicionais-list');
+  const modalMontagemObs = document.getElementById('modal-montagem-obs');
+  const modalMontagemTotal = document.getElementById('montagem-total');
+  const modalMontagemCancel = document.getElementById('modal-montagem-cancel');
+  const modalMontagemSave = document.getElementById('modal-montagem-save');
+  const modalMontagemClose = document.getElementById('modal-montagem-close');
+
   const modalMesa = document.getElementById('modal-mesa');
   const modalMesaTitle = document.getElementById('modal-mesa-title');
   const modalMesaBody = document.getElementById('modal-mesa-body');
@@ -66,15 +75,19 @@
   // Estado
   let currentUser = null;
   let allProducts = [];
+  let allAdicionais = [];
   let currentCategory = '';
   let searchQuery = '';
-  let cart = []; // Array de { produto, quantidade, observacoes }
+  let cart = []; // Array de { produto, quantidade, observacoes, adicionaisSelecionados: [] }
   let mesas = [];
   let activePedidos = [];
   let currentFilterStatus = 'todos';
   let activeObsCartIndex = null;
+  let activeMontagemItem = null; // Guardará o item temporário da montagem
   let currentSelectedMesaParaConta = null;
   let pedidosEntreguesLocais = new Set();
+  let activePromos = [];
+  let cortesiasDisponiveis = [];
 
   // -----------------------------------------------------
   // 1. AUTENTICAÇÃO
@@ -85,6 +98,29 @@
       await loadProfile(data.session.user);
     }
   }
+
+  window.baristaLancarCortesia = async function(pedidoId, itemId, produtoCortesiaId) {
+    if (!confirm('Deseja lançar esta cortesia agora?')) return;
+    
+    const payload = [{
+      produto_id: produtoCortesiaId,
+      quantidade: 1,
+      observacoes: 'Cortesia lançada via mesa',
+      cortesia_de_item_id: itemId
+    }];
+    
+    const { data, error } = await window.cafeteriaSupabase.rpc('adicionar_itens_pedido', {
+      p_pedido_id: pedidoId,
+      p_itens: payload
+    });
+    
+    if (error) {
+      alert("Erro ao lançar cortesia: " + error.message);
+    } else {
+      fecharModalMesa();
+      loadActivePedidos();
+    }
+  };
 
   async function loadProfile(user) {
     const { data: perfil, error } = await window.cafeteriaSupabase
@@ -177,8 +213,29 @@
     await Promise.all([
       loadMesas(),
       loadProdutos(),
-      loadActivePedidos()
+      loadAdicionais(),
+      loadActivePedidos(),
+      loadPromocoes()
     ]);
+  }
+
+  async function loadPromocoes() {
+    const { data, error } = await window.cafeteriaSupabase.rpc('promocoes_do_dia');
+    if (!error && data) {
+      activePromos = data;
+    }
+  }
+
+  async function loadAdicionais() {
+    const { data } = await window.cafeteriaSupabase
+      .from('adicionais')
+      .select('*')
+      .eq('ativo', true)
+      .order('ordem', { ascending: true });
+    
+    if (data) {
+      allAdicionais = data;
+    }
   }
 
   async function loadMesas() {
@@ -237,6 +294,12 @@
     btnTodos.onclick = () => setCategory('');
     categoriesTabs.appendChild(btnTodos);
 
+    const btnPromos = document.createElement('button');
+    btnPromos.className = 'cat-tab' + (currentCategory === '__promos__' ? ' active' : '');
+    btnPromos.textContent = '🔥 Promos de hoje';
+    btnPromos.onclick = () => setCategory('__promos__');
+    categoriesTabs.appendChild(btnPromos);
+
     catIds.forEach(catId => {
       if (!catId) return;
       const btn = document.createElement('button');
@@ -252,6 +315,8 @@
     document.querySelectorAll('.cat-tab').forEach(t => {
       if (catId === '') {
         t.classList.toggle('active', t.textContent.includes('Todos'));
+      } else if (catId === '__promos__') {
+        t.classList.toggle('active', t.textContent.includes('Promos'));
       } else {
         t.classList.toggle('active', t.textContent.toLowerCase().replace(' ', '-') === catId.toLowerCase());
       }
@@ -269,7 +334,9 @@
     productsGrid.innerHTML = '';
     
     let filtered = allProducts;
-    if (currentCategory) {
+    if (currentCategory === '__promos__') {
+      filtered = filtered.filter(p => activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id));
+    } else if (currentCategory) {
       filtered = filtered.filter(p => p.categoria_id === currentCategory);
     }
     if (searchQuery) {
@@ -285,9 +352,12 @@
       const card = document.createElement('div');
       card.className = 'product-card';
       const descHtml = p.descricao ? `<p class="product-card__desc">${p.descricao}</p>` : '';
+      const isPromo = activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id);
+      const promoBadgeHtml = isPromo ? `<span style="background:#e74c3c; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">PROMO</span>` : '';
+      
       card.innerHTML = `
         <div class="product-card__header">
-          <h4>${p.nome}</h4>
+          <h4>${p.nome}${promoBadgeHtml}</h4>
           ${descHtml}
         </div>
         <div class="product-card__bottom">
@@ -295,13 +365,13 @@
           <span class="btn-add-badge">+ Adicionar</span>
         </div>
       `;
-      card.onclick = () => addToCart(p);
+      card.onclick = () => openMontagemModal(p);
       productsGrid.appendChild(card);
     });
   }
 
   // -----------------------------------------------------
-  // 4. CARRINHO & OBSERVAÇÃO POR ITEM
+  // 4. CARRINHO, MONTAGEM & OBSERVAÇÃO POR ITEM
   // -----------------------------------------------------
   mesaSelect.addEventListener('change', (e) => {
     const val = e.target.value;
@@ -309,12 +379,145 @@
     checkFormValidity();
   });
 
-  function addToCart(produto) {
-    const existingIndex = cart.findIndex(item => item.produto.id === produto.id && !item.observacoes);
+  // --- Modal de Montagem ---
+  function openMontagemModal(produto) {
+    activeMontagemItem = {
+      produto: produto,
+      adicionaisSelecionados: [],
+      sabores: null,
+      observacoes: ''
+    };
+    
+    modalMontagemTitle.textContent = produto.nome;
+    modalMontagemObs.value = '';
+    
+    const saboresContainer = document.getElementById('montagem-sabores-container');
+    const selectDoce = document.getElementById('modal-montagem-sabor-doce');
+    const selectSalgado = document.getElementById('modal-montagem-sabor-salgado');
+    
+    if (produto.tipo_montagem === 'meio_a_meio') {
+      saboresContainer.classList.remove('hidden');
+      
+      const doces = allProducts.filter(p => p.categoria_id === 'crepes-doces' && p.tipo_montagem !== 'meio_a_meio');
+      const salgados = allProducts.filter(p => p.categoria_id === 'crepes-salgados' && p.tipo_montagem !== 'meio_a_meio');
+      
+      selectDoce.innerHTML = doces.map(p => `<option value="${p.id}" data-preco="${p.preco}">${p.nome} (R$ ${Number(p.preco).toFixed(2).replace('.', ',')})</option>`).join('');
+      selectSalgado.innerHTML = salgados.map(p => `<option value="${p.id}" data-preco="${p.preco}">${p.nome} (R$ ${Number(p.preco).toFixed(2).replace('.', ',')})</option>`).join('');
+      
+      selectDoce.onchange = updateMontagemTotal;
+      selectSalgado.onchange = updateMontagemTotal;
+    } else {
+      saboresContainer.classList.add('hidden');
+      selectDoce.innerHTML = '';
+      selectSalgado.innerHTML = '';
+    }
+    
+    // Renderiza adicionais (todos disponíveis no momento)
+    if (allAdicionais.length === 0) {
+      modalMontagemList.innerHTML = '<p style="color:#888; font-size:14px;">Sem adicionais disponíveis.</p>';
+    } else {
+      modalMontagemList.innerHTML = allAdicionais.map(ad => `
+        <label class="adicional-checkbox">
+          <input type="checkbox" value="${ad.id}" data-preco="${ad.preco}" data-nome="${ad.nome}" class="chk-adicional">
+          <span class="adicional-checkbox__label">${ad.nome} (+ R$ ${Number(ad.preco).toFixed(2).replace('.', ',')})</span>
+        </label>
+      `).join('');
+      
+      // Adiciona listeners aos checkboxes para atualizar o total
+      const chks = modalMontagemList.querySelectorAll('.chk-adicional');
+      chks.forEach(chk => {
+        chk.addEventListener('change', updateMontagemTotal);
+      });
+    }
+
+    updateMontagemTotal();
+    modalMontagem.classList.remove('hidden');
+  }
+
+  function closeMontagemModal() {
+    modalMontagem.classList.add('hidden');
+    activeMontagemItem = null;
+  }
+
+  function updateMontagemTotal() {
+    if (!activeMontagemItem) return;
+    let total = 0;
+    
+    if (activeMontagemItem.produto.tipo_montagem === 'meio_a_meio') {
+      const selectDoce = document.getElementById('modal-montagem-sabor-doce');
+      const selectSalgado = document.getElementById('modal-montagem-sabor-salgado');
+      const optDoce = selectDoce.options[selectDoce.selectedIndex];
+      const optSalgado = selectSalgado.options[selectSalgado.selectedIndex];
+      
+      if (optDoce && optSalgado) {
+        total = (parseFloat(optDoce.dataset.preco) * 0.5) + (parseFloat(optSalgado.dataset.preco) * 0.5);
+      }
+    } else {
+      total = Number(activeMontagemItem.produto.preco);
+    }
+    
+    const chks = modalMontagemList.querySelectorAll('.chk-adicional:checked');
+    chks.forEach(chk => {
+      total += parseFloat(chk.dataset.preco);
+    });
+    modalMontagemTotal.textContent = `Total: R$ ${total.toFixed(2).replace('.', ',')}`;
+  }
+
+  if (modalMontagemClose) modalMontagemClose.addEventListener('click', closeMontagemModal);
+  if (modalMontagemCancel) modalMontagemCancel.addEventListener('click', closeMontagemModal);
+  if (modalMontagemSave) {
+    modalMontagemSave.addEventListener('click', () => {
+      if (!activeMontagemItem) return;
+      
+      const chks = modalMontagemList.querySelectorAll('.chk-adicional:checked');
+      activeMontagemItem.adicionaisSelecionados = Array.from(chks).map(chk => ({
+        id: chk.value,
+        nome: chk.dataset.nome,
+        preco: parseFloat(chk.dataset.preco)
+      }));
+      
+      if (activeMontagemItem.produto.tipo_montagem === 'meio_a_meio') {
+        const selectDoce = document.getElementById('modal-montagem-sabor-doce');
+        const selectSalgado = document.getElementById('modal-montagem-sabor-salgado');
+        activeMontagemItem.sabores = [
+          { lado: 'doce', produto_id: selectDoce.value },
+          { lado: 'salgado', produto_id: selectSalgado.value }
+        ];
+      }
+      
+      activeMontagemItem.observacoes = modalMontagemObs.value.trim();
+      
+      addToCartFromMontagem(activeMontagemItem);
+      closeMontagemModal();
+    });
+  }
+
+  function addToCartFromMontagem(item) {
+    // Para agrupar itens no carrinho, eles devem ter o mesmo produto, mesmas obs e mesmos adicionais.
+    // Como os adicionais podem variar, se não tiver adicionais nem obs, tentamos agrupar.
+    const hasAdicionais = item.adicionaisSelecionados.length > 0;
+    const hasObs = item.observacoes.length > 0;
+    
+    let existingIndex = -1;
+    
+    if (!hasAdicionais && !hasObs && (!item.sabores || item.sabores.length === 0)) {
+      existingIndex = cart.findIndex(c => c.produto.id === item.produto.id && c.adicionaisSelecionados.length === 0 && !c.observacoes && (!c.sabores || c.sabores.length === 0));
+    } else {
+      // Se tiver adicionais ou observações únicas, vamos apenas adicionar como um novo item separadamente
+      // (Poderia checar se o array de adicionais é exatamente igual, mas por simplicidade cria nova linha)
+    }
+
     if (existingIndex > -1) {
       cart[existingIndex].quantidade += 1;
     } else {
-      cart.push({ produto, quantidade: 1, observacoes: '' });
+      cart.push({
+        produto: item.produto,
+        quantidade: 1,
+        observacoes: item.observacoes,
+        adicionaisSelecionados: item.adicionaisSelecionados,
+        sabores: item.sabores,
+        cortesia_de_item_index: item.cortesia_de_item_index // Será preenchido quando for cortesia
+      });
     }
     renderCart();
   }
@@ -380,26 +583,120 @@
 
     cartItemsContainer.innerHTML = '';
     let total = 0;
+    
+    // --- Calculo simplificado de promos para preview ---
+    let groupedProduct = {};
+    let groupedCategory = {};
+    
+    cart.forEach((item, idx) => {
+      const pId = item.produto.id;
+      const cId = item.produto.categoria_id;
+      
+      let precoBase = Number(item.produto.preco);
+      if (item.produto.tipo_montagem === 'meio_a_meio' && item.sabores && item.sabores.length === 2) {
+        const pd = Number(allProducts.find(p => p.id === item.sabores[0].produto_id)?.preco || 0);
+        const ps = Number(allProducts.find(p => p.id === item.sabores[1].produto_id)?.preco || 0);
+        precoBase = (pd * 0.5) + (ps * 0.5);
+      }
+
+      if (!groupedProduct[pId]) groupedProduct[pId] = { qtd: 0, precoBase, indices: [] };
+      groupedProduct[pId].qtd += item.quantidade;
+      groupedProduct[pId].indices.push(idx);
+      
+      if (!groupedCategory[cId]) groupedCategory[cId] = { qtd: 0, precoBase, indices: [] };
+      groupedCategory[cId].qtd += item.quantidade;
+      groupedCategory[cId].indices.push(idx);
+    });
+
+    let promoLabels = {};
+    let promoDiscounts = {};
+
+    activePromos.forEach(promo => {
+      let g = null;
+      if (promo.produto_id && groupedProduct[promo.produto_id]) {
+        g = groupedProduct[promo.produto_id];
+      } else if (promo.categoria_id && groupedCategory[promo.categoria_id]) {
+        g = groupedCategory[promo.categoria_id];
+      }
+      
+      if (g) {
+        let desc = 0;
+        let label = '';
+        if (promo.tipo === 'percentual') {
+          desc = (g.qtd * g.precoBase) * (promo.percentual / 100.0);
+          label = `Promo: ${promo.percentual}% off`;
+        } else if (promo.tipo === 'compre_leve') {
+          let gratis = Math.floor(g.qtd / promo.qtd_leva) * (promo.qtd_leva - promo.qtd_compra);
+          desc = gratis * g.precoBase;
+          label = `Promo: Leve ${promo.qtd_leva} Pague ${promo.qtd_compra}`;
+        } else if (promo.tipo === 'segunda_unidade') {
+          desc = Math.floor(g.qtd / 2) * g.precoBase * (promo.percentual / 100.0);
+          label = `Promo: 2ª unid. ${promo.percentual}% off`;
+        }
+        
+        if (desc > 0) {
+          const targetIdx = g.indices[0]; // Aplica ao primeiro item no visual
+          if (!promoDiscounts[targetIdx] || desc > promoDiscounts[targetIdx]) {
+            promoDiscounts[targetIdx] = desc;
+            promoLabels[targetIdx] = label;
+          }
+        }
+      }
+    });
 
     cart.forEach((item, index) => {
-      const subtotal = item.produto.preco * item.quantidade;
+      let adicTotal = 0;
+      let adicHtml = '';
+      if (item.adicionaisSelecionados && item.adicionaisSelecionados.length > 0) {
+        item.adicionaisSelecionados.forEach(ad => {
+          adicTotal += ad.preco;
+          adicHtml += `<div style="font-size:12px; color:#666;">+ ${window.escapeHtml(ad.nome)} (R$ ${ad.preco.toFixed(2).replace('.', ',')})</div>`;
+        });
+      }
+
+      let precoBase = Number(item.produto.preco);
+      let saboresHtml = '';
+      
+      if (item.produto.tipo_montagem === 'meio_a_meio' && item.sabores && item.sabores.length === 2) {
+        const precoDoce = Number(allProducts.find(p => p.id === item.sabores[0].produto_id)?.preco || 0);
+        const precoSalgado = Number(allProducts.find(p => p.id === item.sabores[1].produto_id)?.preco || 0);
+        precoBase = (precoDoce * 0.5) + (precoSalgado * 0.5);
+        
+        const nomeDoce = allProducts.find(p => p.id === item.sabores[0].produto_id)?.nome || '';
+        const nomeSalgado = allProducts.find(p => p.id === item.sabores[1].produto_id)?.nome || '';
+        saboresHtml = `<div style="font-size:12px; color:#aaa;">½ ${window.escapeHtml(nomeDoce)} / ½ ${window.escapeHtml(nomeSalgado)}</div>`;
+      }
+
+      const precoUnitario = precoBase + adicTotal;
+      const subtotal = precoUnitario * item.quantidade;
       total += subtotal;
 
       const obsHtml = item.observacoes 
-        ? `<div class="cart-item-obs">↳ Obs: ${item.observacoes}</div>` 
+        ? `<div class="cart-item-obs">↳ Obs: ${window.escapeHtml(item.observacoes)}</div>` 
         : '';
+        
+      let promoHtml = '';
+      if (promoDiscounts[index]) {
+        total -= promoDiscounts[index];
+        promoHtml = `<div style="font-size:12px; color:#e74c3c; margin-top: 4px;">↳ ${promoLabels[index]} (- R$ ${promoDiscounts[index].toFixed(2).replace('.', ',')})</div>`;
+      }
 
       const div = document.createElement('div');
       div.className = 'cart-item';
       div.innerHTML = `
         <div class="cart-item-row">
           <div class="cart-item-info">
-            <div class="cart-item-name">${item.produto.nome}</div>
-            <div class="cart-item-price">R$ ${Number(item.produto.preco).toFixed(2).replace('.', ',')}</div>
+            <div class="cart-item-name">${window.escapeHtml(item.produto.nome)}</div>
+            ${saboresHtml}
+            <div class="cart-item-price">R$ ${precoUnitario.toFixed(2).replace('.', ',')}</div>
+            ${adicHtml}
             ${obsHtml}
+            ${promoHtml}
           </div>
           <div class="cart-item-actions">
-            <button class="cart-btn obs-btn" title="Adicionar Observação" onclick="window.baristaOpenObs(${index})">✏️</button>
+            <button class="cart-btn obs-btn" title="Adicionar/Editar Observação" onclick="window.baristaOpenObs(${index})" style="font-size:12px; width:auto; padding:0 8px;">
+              ${item.observacoes ? 'Editar obs' : '+ Obs'}
+            </button>
             <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, -1)">-</button>
             <span class="cart-qty">${item.quantidade}</span>
             <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, 1)">+</button>
@@ -446,44 +743,31 @@
     btnEnviarPedido.disabled = true;
     btnEnviarPedido.textContent = 'Enviando...';
 
-    // 1. Inserir Pedido com operador e pagamento
-    const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase
-      .from('pedidos')
-      .insert([{
-        mesa_codigo: mesaCodigo,
-        observacoes: obsGeral,
-        total: total,
-        criado_por: currentUser.id,
-        criado_por_nome: currentUser.perfil.nome,
-        forma_pagamento: formaPag,
-        status_pagamento: statusPag
-      }])
-      .select()
-      .single();
+    // Formatar itens para RPC
+    const itensParaRpc = cart.map(item => ({
+      produto_id: item.produto.id,
+      quantidade: item.quantidade,
+      observacoes: item.observacoes || null,
+      adicionais: (item.adicionaisSelecionados || []).map(ad => ad.id)
+    }));
+
+    const payload = {
+      mesa_codigo: mesaCodigo,
+      observacoes: obsGeral,
+      forma_pagamento: formaPag,
+      status_pagamento: statusPag,
+      itens: itensParaRpc
+    };
+
+    const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
+      p_payload: payload
+    });
 
     if (pedidoError) {
       alert('Erro ao criar pedido: ' + pedidoError.message);
       btnEnviarPedido.disabled = false;
       btnEnviarPedido.textContent = 'Enviar para Cozinha';
       return;
-    }
-
-    // 2. Inserir Itens com observações individuais
-    const itensToInsert = cart.map(item => ({
-      pedido_id: pedidoData.id,
-      produto_id: item.produto.id,
-      nome_produto: item.produto.nome,
-      quantidade: item.quantidade,
-      preco_unitario: item.produto.preco,
-      observacoes: item.observacoes || null
-    }));
-
-    const { error: itensError } = await window.cafeteriaSupabase
-      .from('pedido_itens')
-      .insert(itensToInsert);
-
-    if (itensError) {
-      alert('Aviso: Pedido registrado, mas erro ao salvar itens: ' + itensError.message);
     }
 
     // Limpeza e Sucesso
@@ -510,18 +794,30 @@
       .from('pedidos')
       .select(`
         *,
-        pedido_itens (*)
+        pedido_itens (
+          *,
+          pedido_item_adicionais (*)
+        )
       `)
       .in('status', ['pendente', 'em_preparo', 'concluido'])
       .order('created_at', { ascending: false });
 
     if (!error && data) {
       activePedidos = data;
+      await loadCortesiasDisponiveis();
       renderMesasSection();
       renderPedidosCards();
       updateProntosBadge();
       updateMesaSelectOptions();
     }
+  }
+
+  async function loadCortesiasDisponiveis() {
+    const { data } = await window.cafeteriaSupabase
+      .from('v_cortesias_disponiveis')
+      .select('*')
+      .gt('saldo_disponivel', 0);
+    if (data) cortesiasDisponiveis = data;
   }
 
   function updateProntosBadge() {
@@ -608,9 +904,17 @@
 
       let itensHtml = '';
       (pedido.pedido_itens || []).forEach(item => {
+        let adicHtml = '';
+        if (item.pedido_item_adicionais && item.pedido_item_adicionais.length > 0) {
+          adicHtml = item.pedido_item_adicionais.map(ad => 
+            `<div style="font-size:12px; color:#666; margin-left:14px;">+ ${window.escapeHtml(ad.nome_adicional)}</div>`
+          ).join('');
+        }
+
         itensHtml += `
           <div class="pedido-card-barista__item">
-            <span><strong>${item.quantidade}x</strong> ${item.nome_produto} ${item.observacoes ? '<em style="color:#D97706">(' + item.observacoes + ')</em>' : ''}</span>
+            <span><strong>${item.quantidade}x</strong> ${window.escapeHtml(item.nome_produto)} ${item.observacoes ? '<em style="color:#D97706">(' + window.escapeHtml(item.observacoes) + ')</em>' : ''}</span>
+            ${adicHtml}
           </div>
         `;
       });
@@ -677,7 +981,23 @@
       `;
 
       (p.pedido_itens || []).forEach(it => {
-        html += `<li>${it.quantidade}x ${it.nome_produto} ${it.observacoes ? '<em style="color:#D97706">(' + it.observacoes + ')</em>' : ''} — R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')}</li>`;
+        let adicText = '';
+        if (it.pedido_item_adicionais && it.pedido_item_adicionais.length > 0) {
+          adicText = it.pedido_item_adicionais.map(ad => `<div style="font-size:11px; color:#666; margin-left:16px;">+ ${window.escapeHtml(ad.nome_adicional)}</div>`).join('');
+        }
+        
+        let cortesiaHtml = '';
+        const disponiveis = cortesiasDisponiveis.filter(c => c.pedido_item_origem_id === it.id);
+        if (disponiveis.length > 0) {
+          disponiveis.forEach(d => {
+            const prod = allProducts.find(pr => pr.id === d.produto_cortesia_id);
+            if (prod) {
+              cortesiaHtml += `<button class="btn-ghost-small" style="font-size:11px; padding:2px 6px; margin-left:8px;" onclick="window.baristaLancarCortesia(${p.id}, ${it.id}, '${prod.id}')" title="Lançar ${prod.nome} como cortesia">🎁 ${prod.nome} (${d.saldo_disponivel})</button>`;
+            }
+          });
+        }
+
+        html += `<li>${it.quantidade}x ${window.escapeHtml(it.nome_produto)} ${it.observacoes ? '<em style="color:#D97706">(' + window.escapeHtml(it.observacoes) + ')</em>' : ''} — R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')} ${adicText} ${cortesiaHtml}</li>`;
       });
 
       html += '</ul></div>';
