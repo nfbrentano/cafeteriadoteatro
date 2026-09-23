@@ -37,6 +37,7 @@ Complementa o [TAREFAS.md](TAREFAS.md) (adicionais, cortesia, meio a meio e prom
 | [CAF-000017](CAF-000017-aba-promos-no-cardapio-publico.md) | Aba "Promos" no cardápio público | Cardápio | 🟢 Baixa | M |
 | [CAF-000018](CAF-000018-tolerancia-a-queda-de-internet.md) | Tolerância a queda de internet | PDV + cozinha | 🟢 Baixa | G |
 | [CAF-000019](CAF-000019-log-de-auditoria.md) | Log de auditoria (quem cancelou / alterou) | Banco + admin | 🟢 Baixa | M |
+| [CAF-000020](CAF-000020-vinculo-de-adicionais-por-produto.md) | Vínculo de adicionais por produto (mostrar no PDV só se permitido) | Admin + PDV + banco | 🔴 Alta | M |
 
 ---
 

@@ -32,7 +32,7 @@
         <div class="cat-item__icon">${c.icone}</div>
         <div class="cat-item__info">
           <div class="cat-item__name">${c.nome}</div>
-          <div class="cat-item__meta">${c.descricao || 'Sem descrição'}</div>
+          <div class="cat-item__meta">${c.descricao || 'Sem descrição'} • <strong>Estação:</strong> ${c.estacao === 'bar' ? 'Bar' : 'Cozinha'}</div>
         </div>
         ${c.ativo ? '<span class="status-pill status-pill--ativo">Ativa</span>' : '<span class="status-pill status-pill--inativo">Inativa</span>'}
         <div class="cat-item__actions">
@@ -58,11 +58,13 @@
         document.getElementById('cat-icone').value = c.icone;
         document.getElementById('cat-icone-preview').textContent = c.icone;
         document.getElementById('cat-descricao').value = c.descricao || '';
+        document.getElementById('cat-estacao').value = c.estacao || 'cozinha';
         document.getElementById('cat-ativo').checked = !!c.ativo;
       }
     } else {
       document.getElementById('cat-icone').value = '☕';
       document.getElementById('cat-icone-preview').textContent = '☕';
+      document.getElementById('cat-estacao').value = 'cozinha';
     }
     
     admin.openModal(el.modal);
@@ -74,6 +76,7 @@
     const nome = document.getElementById('cat-nome').value.trim();
     const icone = document.getElementById('cat-icone').value;
     const descricao = document.getElementById('cat-descricao').value;
+    const estacao = document.getElementById('cat-estacao').value;
     const ativo = document.getElementById('cat-ativo').checked;
 
     if (!nome) return admin.toast('Erro', 'Nome é obrigatório', 'error');
@@ -88,7 +91,7 @@
         : admin.appData.categorias.length;
 
       await window.cafeteriaDB.categories.upsert({
-        id, nome, icone, descricao, ativo, ordem,
+        id, nome, icone, descricao, estacao, ativo, ordem,
         updated_at: new Date().toISOString()
       });
 

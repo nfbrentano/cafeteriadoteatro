@@ -35,6 +35,11 @@
       urlInput:    document.getElementById('produto-imagem'),
       btnChange:   document.getElementById('btn-change-img'),
       btnRemove:   document.getElementById('btn-remove-img'),
+      // Adicionais
+      cbPermiteAdd: document.getElementById('produto-ativo-adicionais'),
+      fieldVinculos: document.getElementById('field-produto-vinculos-adicionais'),
+      wrapAdicionais: document.getElementById('produto-adicionais-wrap'),
+      selectCategoria: document.getElementById('produto-categoria')
     };
   }
 
@@ -47,15 +52,14 @@
   function populateFilters() {
     const el = productsEls();
     const cur = el.filterCat.value;
-    const cats = admin.appData.categorias;
+    const cats = admin.appData.categorias || [];
     el.filterCat.innerHTML = '<option value="">Todas as categorias</option>' + 
       cats.map(c => `<option value="${c.id}" ${cur === c.id ? 'selected' : ''}>${c.icone} ${c.nome}</option>`).join('');
     
     // Além do filtro, popular o select do modal
-    const modalSelect = document.getElementById('produto-categoria');
-    if (modalSelect) {
-      const curModal = modalSelect.value;
-      modalSelect.innerHTML = '<option value="">Selecione...</option>' + 
+    if (el.selectCategoria) {
+      const curModal = el.selectCategoria.value;
+      el.selectCategoria.innerHTML = '<option value="">Selecione...</option>' + 
         cats.map(c => `<option value="${c.id}" ${curModal === c.id ? 'selected' : ''}>${c.icone} ${c.nome}</option>`).join('');
     }
   }
@@ -66,7 +70,8 @@
     const statusF = el.filterStatus.value;
     const search  = (el.search.value || '').toLowerCase();
 
-    const filtered = admin.appData.produtos.filter(p => {
+    const produtos = admin.appData.produtos || [];
+    const filtered = produtos.filter(p => {
       const pCatId = p.categoria_id || p.categoriaId; // Compatibilidade
       if (catF    && pCatId !== catF) return false;
       if (statusF === 'ativo' && !p.ativo)  return false;
@@ -80,9 +85,10 @@
       return;
     }
 
+    const cats = admin.appData.categorias || [];
     el.tableBody.innerHTML = filtered.map(p => {
       const pCatId = p.categoria_id || p.categoriaId;
-      const cat = admin.appData.categorias.find(c => c.id === pCatId);
+      const cat = cats.find(c => c.id === pCatId);
       const preco = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       const badgesHTML = (p.badges || []).map(b => `<span class="badge-mini badge-mini--${b}">${b}</span>`).join(' ');
 
@@ -103,8 +109,60 @@
     }).join('');
   }
 
+  // --- Adicionais ---
+  async function renderAdicionaisCheckboxes(produtoId) {
+    const el = productsEls();
+    if (!el.wrapAdicionais) return;
+
+    // Assegurar dados
+    if (!admin.appData.adicionais || admin.appData.adicionais.length === 0) {
+      try { admin.appData.adicionais = await window.cafeteriaDB.adicionais.all(); } catch(e){}
+    }
+    if (!admin.appData.vinculos_adicionais || admin.appData.vinculos_adicionais.length === 0) {
+      try { admin.appData.vinculos_adicionais = await window.cafeteriaDB.adicionais.vinculos(); } catch(e){}
+    }
+
+    const allAds = admin.appData.adicionais || [];
+    const allVincs = admin.appData.vinculos_adicionais || [];
+    
+    const catId = el.selectCategoria.value;
+    
+    // Adicionais herdados da categoria
+    const inheritedAddons = allVincs.filter(v => v.categoria_id === catId).map(v => v.adicional_id);
+    // Adicionais marcados diretamente no produto
+    const directAddons = allVincs.filter(v => v.produto_id === produtoId).map(v => v.adicional_id);
+
+    el.wrapAdicionais.innerHTML = allAds.map(a => {
+      const isInherited = inheritedAddons.includes(a.id);
+      const isDirect = directAddons.includes(a.id);
+      
+      let checked = '';
+      let disabled = '';
+      let title = '';
+      let style = 'display: block; margin-bottom: 4px;';
+      let extraText = '';
+
+      if (isInherited) {
+        checked = 'checked';
+        disabled = 'disabled';
+        title = 'Herdado da categoria';
+        style += ' opacity: 0.7;';
+        extraText = ' <span style="font-size:0.8em; color:var(--text-muted)">(Herdado)</span>';
+      } else if (isDirect) {
+        checked = 'checked';
+      }
+
+      return `
+        <label class="badge-check" style="${style}" title="${title}">
+          <input type="checkbox" name="vinculo_adicional_produto" value="${a.id}" ${checked} ${disabled}>
+          ${window.escapeHtml(a.nome)} ${extraText}
+        </label>
+      `;
+    }).join('');
+  }
+
   // --- Modal e CRUD ---
-  window.openProdutoModal = function(id) {
+  window.openProdutoModal = async function(id) {
     const el = productsEls();
     const isEdit = !!id;
     document.getElementById('modal-produto-title').textContent = isEdit ? 'Editar Produto' : 'Novo Produto';
@@ -113,8 +171,9 @@
     resetUploadUI();
     populateFilters(); // Para garantir categorias atualizadas no select
 
+    let p = null;
     if (isEdit) {
-      const p = admin.appData.produtos.find(x => x.id === id);
+      p = admin.appData.produtos.find(x => x.id === id);
       if (p) {
         document.getElementById('produto-nome').value = p.nome;
         document.getElementById('produto-categoria').value = p.categoria_id || p.categoriaId;
@@ -122,6 +181,7 @@
         document.getElementById('produto-descricao').value = p.descricao || '';
         document.getElementById('produto-ativo').checked = !!p.ativo;
         document.getElementById('produto-disponivel').checked = p.disponivel !== false;
+        if (el.cbPermiteAdd) el.cbPermiteAdd.checked = !!p.permite_adicionais;
         
         // Badges
         (p.badges || []).forEach(b => {
@@ -139,7 +199,16 @@
           }
         }
       }
+    } else {
+      if (el.cbPermiteAdd) el.cbPermiteAdd.checked = false;
     }
+
+    if (el.cbPermiteAdd) {
+      el.cbPermiteAdd.dispatchEvent(new Event('change'));
+    }
+
+    await renderAdicionaisCheckboxes(id);
+
     admin.openModal(el.modal);
   };
 
@@ -152,6 +221,7 @@
     const descricao = document.getElementById('produto-descricao').value;
     const ativo = document.getElementById('produto-ativo').checked;
     const disponivel = document.getElementById('produto-disponivel').checked;
+    const permite_adicionais = el.cbPermiteAdd ? el.cbPermiteAdd.checked : false;
     
     if (!nome || !categoria_id || isNaN(preco)) {
       return admin.toast('Erro', 'Preencha os campos obrigatórios (*)', 'error');
@@ -168,10 +238,24 @@
     try {
       await window.cafeteriaDB.products.upsert({
         id, nome, categoria_id, preco, descricao, ativo, badges, disponivel,
+        permite_adicionais,
         imagem_url: isNewImage ? null : dataUrl,
         updated_at: new Date().toISOString()
       }, imageBlob);
       
+      // Salva Vínculos de Adicionais Diretos
+      if (permite_adicionais && el.wrapAdicionais) {
+        const directVinculos = [];
+        const checkboxes = el.wrapAdicionais.querySelectorAll('input[name="vinculo_adicional_produto"]:checked:not(:disabled)');
+        checkboxes.forEach(chk => {
+          directVinculos.push({ adicional_id: chk.value, produto_id: id });
+        });
+        await window.cafeteriaDB.products.upsertAdicionaisVinculos(id, directVinculos);
+        
+        // Atualiza cache de vinculos
+        try { admin.appData.vinculos_adicionais = await window.cafeteriaDB.adicionais.vinculos(); } catch(e){}
+      }
+
       admin.toast('Sucesso', 'Produto salvo com sucesso.', 'success');
       admin.closeModal(el.modal);
       await admin.loadData();
@@ -248,6 +332,19 @@
     els.search.addEventListener('input', renderTable);
     els.btnNew.addEventListener('click', () => window.openProdutoModal());
     els.btnSave.addEventListener('click', saveProduto);
+    
+    if (els.cbPermiteAdd && els.fieldVinculos) {
+      els.cbPermiteAdd.addEventListener('change', (e) => {
+        els.fieldVinculos.style.display = e.target.checked ? 'block' : 'none';
+      });
+    }
+
+    if (els.selectCategoria) {
+      els.selectCategoria.addEventListener('change', () => {
+        const pId = document.getElementById('produto-id').value;
+        renderAdicionaisCheckboxes(pId);
+      });
+    }
 
     // Upload zone
     els.zone.addEventListener('click', () => els.fileInput.click());

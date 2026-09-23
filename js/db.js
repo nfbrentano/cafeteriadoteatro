@@ -215,6 +215,19 @@
           db.logger.error('products.delete', error);
           throw error;
         }
+      },
+      async upsertAdicionaisVinculos(produtoId, vinculos) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        // Remove antigos
+        await window.cafeteriaSupabase.from('adicional_vinculos').delete().eq('produto_id', produtoId);
+        // Insere novos se houver
+        if (vinculos && vinculos.length > 0) {
+          const { error } = await window.cafeteriaSupabase.from('adicional_vinculos').insert(vinculos);
+          if (error) {
+            db.logger.error('products.upsertAdicionaisVinculos', error);
+            throw error;
+          }
+        }
       }
     },
 

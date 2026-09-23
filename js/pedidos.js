@@ -110,6 +110,7 @@
   let currentUser = null;
   let allProducts = [];
   let allAdicionais = [];
+  let allVinculosProduto = [];
   let currentCategory = '';
   let searchQuery = '';
   let cart = []; // Array de { produto, quantidade, observacoes, adicionaisSelecionados: [] }
@@ -381,14 +382,22 @@
   }
 
   async function loadAdicionais() {
-    const { data } = await window.cafeteriaSupabase
-      .from('adicionais')
-      .select('*')
-      .eq('ativo', true)
-      .order('ordem', { ascending: true });
+    const [{ data }, { data: vinculosData }] = await Promise.all([
+      window.cafeteriaSupabase
+        .from('adicionais')
+        .select('*')
+        .eq('ativo', true)
+        .order('ordem', { ascending: true }),
+      window.cafeteriaSupabase
+        .from('v_adicionais_produto')
+        .select('*')
+    ]);
     
     if (data) {
       allAdicionais = data;
+    }
+    if (vinculosData) {
+      allVinculosProduto = vinculosData;
     }
   }
 
@@ -523,7 +532,16 @@
       `;
       card.onclick = (e) => {
         if (p.disponivel === false) return;
-        openMontagemModal(p);
+        if (!p.permite_adicionais && p.tipo_montagem !== 'meio_a_meio') {
+          addToCartFromMontagem({
+            produto: p,
+            adicionaisSelecionados: [],
+            sabores: null,
+            observacoes: ''
+          });
+        } else {
+          openMontagemModal(p);
+        }
       };
 
       // Lógica de Esgotar (Pressionar e Segurar)
@@ -615,11 +633,18 @@
       selectSalgado.innerHTML = '';
     }
     
-    // Renderiza adicionais (todos disponíveis no momento)
-    if (allAdicionais.length === 0) {
-      modalMontagemList.innerHTML = '<p style="color:#888; font-size:14px;">Sem adicionais disponíveis.</p>';
+    // Renderiza adicionais (apenas os vinculados)
+    const adsDoProduto = allVinculosProduto
+      .filter(v => v.produto_id === produto.id)
+      .map(v => ({ id: v.adicional_id, nome: v.nome, preco: v.preco, ordem: v.ordem }))
+      .sort((a, b) => a.ordem - b.ordem);
+
+    if (!produto.permite_adicionais) {
+      modalMontagemList.innerHTML = '<p style="color:#888; font-size:14px;">Este produto não permite adicionais.</p>';
+    } else if (adsDoProduto.length === 0) {
+      modalMontagemList.innerHTML = '<p style="color:#888; font-size:14px;">Nenhum adicional vinculado.</p>';
     } else {
-      modalMontagemList.innerHTML = allAdicionais.map(ad => `
+      modalMontagemList.innerHTML = adsDoProduto.map(ad => `
         <label class="adicional-checkbox">
           <input type="checkbox" value="${ad.id}" data-preco="${ad.preco}" data-nome="${ad.nome}" class="chk-adicional">
           <span class="adicional-checkbox__label">${ad.nome} (+ R$ ${Number(ad.preco).toFixed(2).replace('.', ',')})</span>

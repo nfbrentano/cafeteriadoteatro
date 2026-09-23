@@ -419,12 +419,13 @@
                 <th>Nome</th>
                 <th>Preço</th>
                 <th>Ordem</th>
+                <th>Vínculos</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody id="tbody-adicionais">
-              <tr><td colspan="6" style="text-align:center; padding:20px;">Carregando...</td></tr>
+              <tr><td colspan="7" style="text-align:center; padding:20px;">Carregando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1143,6 +1144,24 @@
 
         <div class="field">
           <div class="toggle-wrap">
+            <label class="toggle" for="produto-ativo-adicionais">
+              <input type="checkbox" id="produto-ativo-adicionais" />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Permite Adicionais</span>
+          </div>
+        </div>
+
+        <div class="field" id="field-produto-vinculos-adicionais" style="display: none;">
+          <label class="field__label">Vínculos de Adicionais</label>
+          <div style="font-size:12px; color:#888; margin-bottom: 8px;">Adicionais herdados da categoria aparecem marcados e desabilitados.</div>
+          <div class="badges-wrap" id="produto-adicionais-wrap" style="max-height: 150px; overflow-y: auto; background: var(--bg-sec); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <!-- Carregado via JS -->
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
             <label class="toggle" for="produto-disponivel">
               <input type="checkbox" id="produto-disponivel" checked />
               <span class="toggle__slider"></span>
@@ -1276,6 +1295,14 @@
           <label class="field__label" for="cat-descricao">Descrição</label>
           <input class="field__input" type="text" id="cat-descricao"
                  placeholder="Breve descrição da categoria..." />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cat-estacao">Estação (Onde é preparado?)</label>
+          <select class="field__input" id="cat-estacao">
+            <option value="cozinha">Cozinha (Padrão)</option>
+            <option value="bar">Bar (Bebidas)</option>
+          </select>
         </div>
 
         <div class="field">
@@ -1421,8 +1448,17 @@
         </div>
 
         <div class="field" style="grid-column: 1/-1;">
-          <label class="field__label" for="adicional-vinculos">Vincular a Categorias/Produtos (Opcional, deixe vazio para vincular manualmente via BD)</label>
-          <div style="font-size:12px; color:#888;">Nesta versão, a vinculação avançada será configurada no DB, mas ele aceitará itens gerais se não especificado.</div>
+          <label class="field__label">Vincular a Categorias</label>
+          <div class="badges-wrap" id="adicional-categorias-wrap" style="max-height: 120px; overflow-y: auto; background: var(--bg-sec); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <!-- Carregado via JS -->
+          </div>
+        </div>
+
+        <div class="field" style="grid-column: 1/-1;">
+          <label class="field__label">Vincular a Produtos Específicos</label>
+          <div class="badges-wrap" id="adicional-produtos-wrap" style="max-height: 120px; overflow-y: auto; background: var(--bg-sec); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <!-- Carregado via JS -->
+          </div>
         </div>
 
         <div class="field" style="grid-column: 1/-1;">

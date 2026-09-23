@@ -43,6 +43,20 @@
   let pedidos = []; // array de pedidos com itens
   let somHabilitado = true;
   let audioDesbloqueado = false;
+  
+  // Cache de estacoes
+  let produtosCache = {}; // { produto_id: estacao }
+  let estacaoSelecionada = localStorage.getItem('kds_estacao') || 'todas';
+  const filtroEstacao = document.getElementById('filtro-estacao');
+  
+  if (filtroEstacao) {
+    filtroEstacao.value = estacaoSelecionada;
+    filtroEstacao.addEventListener('change', (e) => {
+      estacaoSelecionada = e.target.value;
+      localStorage.setItem('kds_estacao', estacaoSelecionada);
+      renderPedidos();
+    });
+  }
 
   // -----------------------------------------------------
   // 1. AUTENTICAÇÃO
@@ -87,8 +101,29 @@
     app.classList.remove('hidden');
     
     testAudioAutoplay();
+    await loadProdutosECategorias();
     await fetchPedidosIniciais();
     setupRealtime();
+  }
+
+  async function loadProdutosECategorias() {
+    try {
+      const [{ data: cats }, { data: prods }] = await Promise.all([
+        window.cafeteriaSupabase.from('categorias').select('id, estacao'),
+        window.cafeteriaSupabase.from('produtos').select('id, categoria_id')
+      ]);
+      
+      const catMap = {};
+      if (cats) cats.forEach(c => catMap[c.id] = c.estacao || 'cozinha');
+      
+      if (prods) {
+        prods.forEach(p => {
+          produtosCache[p.id] = catMap[p.categoria_id] || 'cozinha';
+        });
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar produtos/categorias para estacoes:', e);
+    }
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -320,10 +355,33 @@
       else if (diffMinutos < 1440) tempoStr = `${Math.floor(diffMinutos / 60)}h ${diffMinutos % 60}m atrás`;
       else tempoStr = `${Math.floor(diffMinutos / 1440)}d atrás`;
 
-      // Montar Itens com observações individuais
-      let itensHtml = '';
+      // Filtrar itens pela estação selecionada (se não for "todas")
+      let itensDaEstacao = [];
+      let itensOutraEstacaoCount = 0;
+      
       if (pedido.pedido_itens && pedido.pedido_itens.length > 0) {
         pedido.pedido_itens.forEach(item => {
+          const itemEstacao = produtosCache[item.produto_id] || 'cozinha';
+          
+          if (estacaoSelecionada === 'todas' || estacaoSelecionada === itemEstacao) {
+            itensDaEstacao.push(item);
+          } else {
+            itensOutraEstacaoCount++;
+          }
+        });
+      }
+
+      // Se estamos filtrando por estação e não há nenhum item para esta estação neste pedido,
+      // e o pedido está pendente ou em preparo, pulamos a renderização do card?
+      // Ou mostramos vazio? Vamos pular se não houver itens para esta estação, 
+      // exceto se for "todas".
+      if (estacaoSelecionada !== 'todas' && itensDaEstacao.length === 0 && tipo !== 'concluido') {
+        return; // não mostra o pedido se ele não tem itens para esta estação
+      }
+
+      let itensHtml = '';
+      if (itensDaEstacao.length > 0) {
+        itensDaEstacao.forEach(item => {
           const isCancelado = item.cancelado;
           const isCortesia = item.cortesia_de_item_id ? true : false;
           
@@ -362,8 +420,12 @@
             </div>
           `;
         });
+        
+        if (itensOutraEstacaoCount > 0) {
+          itensHtml += `<div style="color:#aaa; font-style:italic; font-size:12px; margin-top:8px;">+ ${itensOutraEstacaoCount} item(s) de outra estação</div>`;
+        }
       } else {
-        itensHtml = '<div style="color:#888;">Nenhum item...</div>';
+        itensHtml = '<div style="color:#888;">Nenhum item para esta estação...</div>';
       }
 
       const card = document.createElement('div');
@@ -475,10 +537,23 @@
     }
   };
 
+  function getItensDaEstacaoAtual(itens) {
+    if (estacaoSelecionada === 'todas') return itens;
+    return (itens || []).filter(item => {
+      const itemEstacao = produtosCache[item.produto_id] || 'cozinha';
+      return itemEstacao === estacaoSelecionada;
+    });
+  }
+
   window.cozinhaReimprimir = function (pedidoId) {
     const pedido = pedidos.find(p => p.id === pedidoId);
     if (pedido && window.cafeteriaPrint) {
-      window.cafeteriaPrint.printPedido(pedido, pedido.pedido_itens || []);
+      const itensFiltrados = getItensDaEstacaoAtual(pedido.pedido_itens || []);
+      if (itensFiltrados.length > 0 || estacaoSelecionada === 'todas') {
+        window.cafeteriaPrint.printPedido(pedido, itensFiltrados);
+      } else {
+        alert("Não há itens desta estação neste pedido para imprimir.");
+      }
     }
   };
 
@@ -501,7 +576,10 @@
           if (newPedido) {
             // Auto impressão da comanda
             if (window.cafeteriaPrint) {
-              window.cafeteriaPrint.printPedido(newPedido, newPedido.pedido_itens || []);
+              const itensFiltrados = getItensDaEstacaoAtual(newPedido.pedido_itens || []);
+              if (itensFiltrados.length > 0 || estacaoSelecionada === 'todas') {
+                window.cafeteriaPrint.printPedido(newPedido, itensFiltrados);
+              }
             }
           }
         } else if (payload.eventType === 'UPDATE') {
