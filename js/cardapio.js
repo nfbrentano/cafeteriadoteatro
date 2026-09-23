@@ -140,10 +140,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadDynamicHero();
 
+  /* ── Configurações (WhatsApp) ───────────────────────────── */
+  const loadSettings = async () => {
+    try {
+      const s = await window.cafeteriaDB.settings.all().catch(() => ({}));
+      const fabWhatsapp = document.getElementById('fab-whatsapp');
+      if (fabWhatsapp) {
+        const wppAtivo = s.whatsapp_ativo !== undefined ? String(s.whatsapp_ativo) !== 'false' : true;
+        if (!wppAtivo) {
+          fabWhatsapp.classList.add('hidden');
+          fabWhatsapp.style.display = 'none';
+        } else {
+          fabWhatsapp.classList.remove('hidden');
+          fabWhatsapp.style.display = 'flex';
+          if (s.whatsapp_numero) {
+            fabWhatsapp.href = `https://wa.me/${s.whatsapp_numero}`;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao carregar settings no cardápio:', err);
+    }
+  };
+
+  loadSettings();
+
   /* ── Sincronização em Tempo Real ────────────────────────── */
   window.cafeteriaDB.subscribeToChanges(() => {
     loadActivePromos();
     loadDynamicHero();
+    loadSettings();
   });
 
   /* ── Navegação sticky de categorias ─────────────────────── */
