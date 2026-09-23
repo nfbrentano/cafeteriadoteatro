@@ -99,8 +99,76 @@
     }
   }
 
+  // -----------------------------------------------------
+  // TOAST COMPONENT
+  // -----------------------------------------------------
+  window.showToast = function(message, actionText = null, actionCallback = null) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    
+    const msgSpan = document.createElement('span');
+    msgSpan.textContent = message;
+    toast.appendChild(msgSpan);
+    
+    let isRemoved = false;
+    const removeToast = () => {
+      if (isRemoved) return;
+      isRemoved = true;
+      toast.classList.add('fade-out');
+      toast.addEventListener('animationend', () => toast.remove());
+    };
+
+    if (actionText && actionCallback) {
+      const actionBtn = document.createElement('button');
+      actionBtn.className = 'toast-action';
+      actionBtn.textContent = actionText;
+      actionBtn.onclick = () => {
+        actionCallback();
+        removeToast();
+      };
+      toast.appendChild(actionBtn);
+    }
+    
+    container.appendChild(toast);
+    setTimeout(removeToast, 4000);
+  };
+
+  window.showConfirm = function(title, msg) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-confirm');
+      const titleEl = document.getElementById('modal-confirm-title');
+      const msgEl = document.getElementById('modal-confirm-msg');
+      const btnCancel = document.getElementById('modal-confirm-cancel');
+      const btnOk = document.getElementById('modal-confirm-ok');
+      
+      if (!modal) {
+        resolve(confirm(msg));
+        return;
+      }
+      
+      titleEl.textContent = title;
+      msgEl.textContent = msg;
+      
+      const close = (result) => {
+        modal.classList.add('hidden');
+        btnCancel.onclick = null;
+        btnOk.onclick = null;
+        resolve(result);
+      };
+      
+      btnCancel.onclick = () => close(false);
+      btnOk.onclick = () => close(true);
+      
+      modal.classList.remove('hidden');
+    });
+  };
+
   window.baristaLancarCortesia = async function(pedidoId, itemId, produtoCortesiaId) {
-    if (!confirm('Deseja lançar esta cortesia agora?')) return;
+    const confirmed = await showConfirm('Lançar Cortesia', 'Deseja lançar esta cortesia agora?');
+    if (!confirmed) return;
     
     const payload = [{
       produto_id: produtoCortesiaId,
@@ -115,7 +183,7 @@
     });
     
     if (error) {
-      alert("Erro ao lançar cortesia: " + error.message);
+      showToast("Erro ao lançar cortesia: " + error.message);
     } else {
       fecharModalMesa();
       loadActivePedidos();
@@ -520,13 +588,39 @@
       });
     }
     renderCart();
+
+    if (navigator.vibrate) navigator.vibrate(10);
+    const badge = document.getElementById('mobile-cart-count');
+    if (badge) {
+      badge.classList.remove('animate-pop');
+      void badge.offsetWidth;
+      badge.classList.add('animate-pop');
+    }
   }
 
   function updateQuantity(index, delta) {
     if (!cart[index]) return;
+
+    if (delta === -999) {
+      const removedItem = cart.splice(index, 1)[0];
+      renderCart();
+      showToast('Item removido', 'Desfazer', () => {
+        cart.splice(index, 0, removedItem);
+        renderCart();
+      });
+      return;
+    }
+
     cart[index].quantidade += delta;
     if (cart[index].quantidade <= 0) {
-      cart.splice(index, 1);
+      const removedItem = cart.splice(index, 1)[0];
+      renderCart();
+      showToast('Item removido', 'Desfazer', () => {
+        removedItem.quantidade = 1;
+        cart.splice(index, 0, removedItem);
+        renderCart();
+      });
+      return;
     }
     renderCart();
   }
@@ -560,11 +654,50 @@
   function openCartDrawer() {
     if (cartPanel) cartPanel.classList.add('open-mobile');
     if (cartBackdrop) cartBackdrop.classList.remove('hidden');
+    history.pushState({ cartOpen: true }, '', '#cart');
   }
 
   function closeCartDrawer() {
-    if (cartPanel) cartPanel.classList.remove('open-mobile');
-    if (cartBackdrop) cartBackdrop.classList.add('hidden');
+    if (history.state && history.state.cartOpen) {
+      history.back();
+    } else {
+      if (cartPanel) cartPanel.classList.remove('open-mobile');
+      if (cartBackdrop) cartBackdrop.classList.add('hidden');
+    }
+  }
+
+  window.addEventListener('popstate', (e) => {
+    if (!e.state || !e.state.cartOpen) {
+      if (cartPanel) cartPanel.classList.remove('open-mobile');
+      if (cartBackdrop) cartBackdrop.classList.add('hidden');
+    } else {
+      if (cartPanel) cartPanel.classList.add('open-mobile');
+      if (cartBackdrop) cartBackdrop.classList.remove('hidden');
+    }
+  });
+
+  // Swipe to close
+  let touchStartY = 0;
+  if (cartPanel) {
+    cartPanel.addEventListener('touchstart', e => {
+      const itemsContainer = e.target.closest('.cart-items');
+      if (itemsContainer && itemsContainer.scrollTop > 0) return;
+      touchStartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+    
+    cartPanel.addEventListener('touchmove', e => {
+      if (!touchStartY) return;
+      const currentY = e.changedTouches[0].screenY;
+      const diff = currentY - touchStartY;
+      if (diff > 50) {
+        closeCartDrawer();
+        touchStartY = 0;
+      }
+    }, {passive: true});
+    
+    cartPanel.addEventListener('touchend', () => {
+      touchStartY = 0;
+    });
   }
 
   if (btnOpenMobileCart) btnOpenMobileCart.addEventListener('click', openCartDrawer);
@@ -764,7 +897,7 @@
     });
 
     if (pedidoError) {
-      alert('Erro ao criar pedido: ' + pedidoError.message);
+      showToast('Erro ao criar pedido: ' + pedidoError.message);
       btnEnviarPedido.disabled = false;
       btnEnviarPedido.textContent = 'Enviar para Cozinha';
       return;

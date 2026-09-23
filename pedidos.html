@@ -86,6 +86,7 @@
 
       <!-- PAINEL DIREITO: CARRINHO -->
       <aside class="cart-panel" id="cart-panel">
+        <div class="drawer-handle"></div>
         <div class="cart-header">
           <div class="cart-header__title-wrap">
             <h2>Resumo do Pedido</h2>
@@ -194,9 +195,9 @@
       <div class="modal-body" id="modal-montagem-body">
         <div id="montagem-sabores-container" class="hidden" style="margin-bottom: 16px;">
           <label style="font-size:14px; color:#aaa; margin-bottom:4px; display:block;">Escolha os sabores (Metade Doce / Metade Salgada)</label>
-          <div style="display: flex; gap: 10px;">
-            <select id="modal-montagem-sabor-doce" style="flex:1; padding:8px; border-radius:4px; border:1px solid #333; background:#1c1c1c; color:#fff;"></select>
-            <select id="modal-montagem-sabor-salgado" style="flex:1; padding:8px; border-radius:4px; border:1px solid #333; background:#1c1c1c; color:#fff;"></select>
+          <div class="montagem-sabores-selects">
+            <select id="modal-montagem-sabor-doce" class="sabor-select"></select>
+            <select id="modal-montagem-sabor-salgado" class="sabor-select"></select>
           </div>
         </div>
         <div class="montagem-adicionais-list" id="montagem-adicionais-list">
@@ -255,6 +256,21 @@
       </div>
     </div>
   </div>
+
+  <!-- MODAL: CONFIRMACAO GENERICA -->
+  <div id="modal-confirm" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 320px; text-align: center;">
+      <h4 id="modal-confirm-title" style="margin-bottom: 12px;">Confirmar</h4>
+      <p id="modal-confirm-msg" style="margin-bottom: 20px; font-size: 14px; color: #555;"></p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button id="modal-confirm-cancel" class="btn-ghost">Cancelar</button>
+        <button id="modal-confirm-ok" class="btn-primary-small">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
 
   <!-- SOM DE NOTIFICAÇÃO (QUANDO PEDIDO FICA PRONTO) -->
   <audio id="audio-pronto" src="assets/audio/ding.wav" preload="auto"></audio>

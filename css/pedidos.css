@@ -996,6 +996,81 @@ body {
   resize: vertical;
 }
 
+.montagem-sabores-selects {
+  display: flex;
+  gap: 10px;
+}
+
+.sabor-select {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 14px;
+}
+
+/* Toast Component */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.toast {
+  background: #333;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-size: 14px;
+  animation: toastFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast.fade-out {
+  animation: toastFadeOut 0.3s forwards;
+}
+
+.toast-action {
+  color: var(--caramelo);
+  font-weight: bold;
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 10px;
+}
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(20px); }
+}
+
+@keyframes popScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.animate-pop {
+  animation: popScale 0.3s ease-out;
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -1044,12 +1119,24 @@ body {
   }
 
   .topbar__nav {
-    gap: 6px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    background: var(--marrom-escuro);
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)) 10px;
+    gap: 8px;
+    z-index: 95;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
   }
 
   .nav-tab {
-    padding: 6px 12px;
-    font-size: 12px;
+    flex: 1;
+    justify-content: center;
+    padding: 10px;
+    font-size: 13px;
     white-space: nowrap;
   }
 
@@ -1099,7 +1186,7 @@ body {
   .mesa-selector select {
     width: 100%;
     min-width: 0;
-    font-size: 14px;
+    font-size: 16px;
     padding: 9px 12px;
   }
 
@@ -1110,7 +1197,7 @@ body {
 
   .search-wrap input {
     width: 100%;
-    font-size: 14px;
+    font-size: 16px;
     padding: 9px 14px;
   }
 
@@ -1203,6 +1290,14 @@ body {
     overflow: hidden;
   }
 
+  .drawer-handle {
+    width: 40px;
+    height: 5px;
+    background: #ccc;
+    border-radius: 3px;
+    margin: 10px auto 4px auto;
+  }
+
   .cart-panel.open-mobile {
     transform: translateY(0);
   }
@@ -1216,7 +1311,8 @@ body {
   }
 
   .cart-items {
-    max-height: 38vh;
+    flex: 1;
+    max-height: none;
     overflow-y: auto;
     padding: 12px 16px;
   }
@@ -1225,11 +1321,25 @@ body {
     padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
   }
 
+  #pedido-obs {
+    font-size: 16px;
+  }
+
+  .cart-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .cart-btn.remove {
+    margin-right: 16px;
+  }
+
   /* Barra Flutuante Mobile do Carrinho */
   .mobile-cart-bar {
     display: flex !important;
     position: fixed;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     left: 12px;
     right: 12px;
     background: var(--marrom-escuro);
@@ -1383,11 +1493,27 @@ body {
 
   /* Modais no Mobile */
   .modal-card {
-    width: 95%;
+    width: 100%;
+    max-width: none;
     padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     max-height: 90vh;
     max-height: 90dvh;
     overflow-y: auto;
+    position: fixed;
+    bottom: 0;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .montagem-sabores-selects {
+    flex-direction: column;
   }
 }
 
