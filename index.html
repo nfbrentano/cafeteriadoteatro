@@ -594,17 +594,13 @@
             </div>
           </div>
 
-          <div class="chegar__map fade-in fade-in-delay-2" style="position: relative; border-radius: 12px; overflow: hidden; min-height: 300px; display: flex; align-items: center; justify-content: center; background: #e0e0e0;">
-            <img src="assets/images/mapa-estatico.webp" alt="Mapa de localização da Cafeteria" style="position: absolute; width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'" />
-            <a
-              href="https://maps.google.com/?q=Teatro+da+Univates,+Lajeado,+RS"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn btn--primary"
-              style="position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
-            >
-              📍 &nbsp;Abrir no Google Maps
-            </a>
+          <div class="chegar__map fade-in fade-in-delay-2" id="chegar-map-container">
+            <img src="assets/images/mapa-estatico.webp" alt="Mapa de localização da Cafeteria" width="1200" height="840" loading="lazy" class="chegar__map-img" id="chegar-map-img" onerror="window.loadInteractiveMap && window.loadInteractiveMap()" />
+            <div class="chegar__map-overlay" id="chegar-map-overlay">
+              <button type="button" class="btn btn--primary" id="chegar-map-load-btn" aria-label="Ver mapa interativo">
+                Ver mapa interativo
+              </button>
+            </div>
           </div>
 
         </div>

@@ -914,6 +914,38 @@
   gap: var(--space-4);
   text-align: center;
   border: 1px solid var(--bege-escuro);
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .chegar__map {
+    height: 300px;
+  }
+}
+
+.chegar__map-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.chegar__map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 16, 8, 0.2);
+  transition: opacity var(--transition-base);
+}
+
+.chegar__map:hover .chegar__map-overlay {
+  background: rgba(28, 16, 8, 0.3);
 }
 
 .chegar__map iframe {
@@ -921,6 +953,8 @@
   height: 100%;
   border: none;
   display: block;
+  position: relative;
+  z-index: 3;
 }
 
 .chegar__actions {
@@ -936,20 +970,6 @@
   min-width: 220px;
   justify-content: center;
   white-space: nowrap;
-}
-
-.chegar__map-placeholder {
-  color: var(--texto-claro);
-  text-align: center;
-}
-
-.chegar__map-placeholder p {
-  font-size: var(--size-sm);
-  color: var(--texto-claro);
-  max-width: none;
-  margin-bottom: var(--space-4);
-  text-align: center;
-  
 }
 
 /* ─── CTA CARDÁPIO ───────────────────────────────────────── */

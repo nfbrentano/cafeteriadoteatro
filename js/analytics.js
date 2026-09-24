@@ -52,4 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // 6. Carregar mapa interativo
+  const mapLoadBtn = document.getElementById('chegar-map-load-btn');
+  if (mapLoadBtn) {
+    mapLoadBtn.addEventListener('click', () => {
+      trackEvent('load_interactive_map', { button_id: mapLoadBtn.id });
+    });
+  }
 });

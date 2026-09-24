@@ -223,6 +223,38 @@
     if (window.cafeteriaDB && typeof window.cafeteriaDB.subscribeToChanges === 'function') {
       window.cafeteriaDB.subscribeToChanges(() => loadHomeData());
     }
+
+    const mapLoadBtn = document.getElementById('chegar-map-load-btn');
+    if (mapLoadBtn) {
+      mapLoadBtn.addEventListener('click', () => {
+        if (window.loadInteractiveMap) window.loadInteractiveMap();
+      });
+    }
   });
+
+  window.loadInteractiveMap = function() {
+    const container = document.getElementById('chegar-map-container');
+    const overlay = document.getElementById('chegar-map-overlay');
+    const img = document.getElementById('chegar-map-img');
+    
+    if (!container) return;
+
+    if (img) img.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+
+    const existingIframe = container.querySelector('iframe');
+    if (!existingIframe) {
+      const iframe = document.createElement('iframe');
+      iframe.title = "Mapa — Teatro da Univates, Lajeado RS";
+      iframe.setAttribute('role', 'application');
+      iframe.setAttribute('tabindex', '0');
+      iframe.setAttribute('aria-label', "Mapa interativo com a localização da Cafeteria do Teatro no Teatro da Univates, Lajeado RS");
+      iframe.src = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3474.4275380205204!2d-51.9534421!3d-29.445523500000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951c61412f6b9c4d%3A0x8d991831e9f82bb7!2sCafeteria%20do%20Teatro!5e0!3m2!1spt-BR!2sbr!4v1777667704382!5m2!1spt-BR!2sbr";
+      iframe.allowFullscreen = "";
+      iframe.loading = "lazy";
+      iframe.referrerPolicy = "no-referrer-when-downgrade";
+      container.appendChild(iframe);
+    }
+  };
 
 })();
