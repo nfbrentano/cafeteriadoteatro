@@ -50,9 +50,9 @@
           <option value="cozinha">Cozinha</option>
           <option value="bar">Bar</option>
         </select>
-        <div class="status-indicator">
-          <span class="pulse-dot"></span>
-          Conectado (Tempo Real)
+        <div id="cozinha-status-indicator" class="status-indicator">
+          <span id="cozinha-pulse-dot" class="pulse-dot"></span>
+          <span id="cozinha-status-text">Conectado (Tempo Real)</span>
         </div>
       </div>
 
@@ -64,6 +64,12 @@
         <button id="btn-logout" class="btn-logout">Sair</button>
       </div>
     </header>
+
+    <!-- FAIXA VERMELHA DE ALERTA DE CONEXÃO (CAF-000018) -->
+    <div id="cozinha-offline-banner" class="cozinha-offline-banner hidden" role="alert">
+      <span class="offline-icon">⚠️</span>
+      <span class="offline-text"><strong>Sem conexão com a internet</strong> — Pedidos novos podem não aparecer até que a rede retorne.</span>
+    </div>
 
     <!-- NAVEGAÇÃO SEGMENTADA MOBILE (KDS) -->
     <nav class="kds-mobile-tabs" id="kds-mobile-tabs">

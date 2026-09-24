@@ -23,6 +23,30 @@
   const filterStatus = document.getElementById('filter-pedido-status');
   const filterPeriodo = document.getElementById('filter-pedido-periodo');
   const filterPagamento = document.getElementById('filter-pedido-pagamento');
+  const filterUsuario = document.getElementById('filter-pedido-usuario');
+
+  async function loadUsuariosFilter() {
+    if (!filterUsuario) return;
+    try {
+      const { data, error } = await window.cafeteriaSupabase
+        .from('perfis')
+        .select('id, nome, role')
+        .order('nome', { ascending: true });
+      if (!error && data) {
+        const currentVal = filterUsuario.value;
+        filterUsuario.innerHTML = '<option value="">Todos os atendentes / operadores</option>';
+        data.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.id;
+          opt.textContent = `${u.nome} (${u.role})`;
+          filterUsuario.appendChild(opt);
+        });
+        filterUsuario.value = currentVal;
+      }
+    } catch (err) {
+      console.error('Erro ao carregar filtro de usuários:', err);
+    }
+  }
 
   // KPIs
   const statFaturamento = document.getElementById('stat-pedidos-faturamento');
@@ -154,6 +178,16 @@
       query = query.eq('forma_pagamento', pagamentoVal);
     }
 
+    // Filtro Usuário / Atendente
+    const usuarioVal = filterUsuario ? filterUsuario.value : '';
+    if (usuarioVal) {
+      if (statusVal === 'cancelado') {
+        query = query.or(`cancelado_por.eq.${usuarioVal},criado_por.eq.${usuarioVal}`);
+      } else {
+        query = query.or(`criado_por.eq.${usuarioVal},cancelado_por.eq.${usuarioVal},concluido_por.eq.${usuarioVal},entregue_por.eq.${usuarioVal}`);
+      }
+    }
+
     return { query, inicio, fim };
   }
 
@@ -195,6 +229,13 @@
       const total = Number(pedido.total).toFixed(2).replace('.', ',');
       const qtdItens = pedido.pedido_itens ? pedido.pedido_itens.reduce((acc, item) => acc + item.quantidade, 0) : 0;
       
+      let statusExtra = '';
+      if (pedido.status === 'cancelado') {
+        const cancelador = pedido.cancelado_por_nome ? ` por ${window.escapeHtml(pedido.cancelado_por_nome)}` : '';
+        const motivo = pedido.motivo_cancelamento ? `<div style="font-size:11px; color:#c62828; margin-top:3px; max-width:180px; line-height:1.2;">↳ Motivo: ${window.escapeHtml(pedido.motivo_cancelamento)}</div>` : '';
+        statusExtra = `<div style="font-size:10px; color:#888; margin-top:2px;">${cancelador}</div>${motivo}`;
+      }
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>#${pedido.numero_pedido || pedido.id}</strong></td>
@@ -202,7 +243,7 @@
         <td>${qtdItens} un</td>
         <td><strong style="color:var(--admin-primary, #C07F43);">R$ ${total}</strong></td>
         <td>${formatPagamento(pedido.forma_pagamento, pedido.status_pagamento)}</td>
-        <td>${formatStatus(pedido.status)}</td>
+        <td>${formatStatus(pedido.status)}${statusExtra}</td>
         <td>${pedido.criado_por_nome || '—'}</td>
         <td style="font-size:12px; color:#555;">${dataCriacao}</td>
         <td class="table-actions">
@@ -301,6 +342,13 @@
         </div>
         
         ${obsHtml}
+
+        <div style="margin-top: 18px; border-top: 1px solid #EEE; padding-top: 14px;">
+          <h4 style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            🕒 Linha do Tempo & Auditoria
+          </h4>
+          <div id="pedido-timeline-container" style="min-height: 40px;"></div>
+        </div>
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
           <button class="btn btn--secondary btn-small" id="btn-print-admin">🖨 Imprimir Comanda</button>
@@ -337,8 +385,8 @@
           if (error) throw error;
           
           alert('Item cancelado com sucesso!');
-          fecharModal();
-          await fetchPedidos('hoje'); // Recarrega a lista
+          closeModal();
+          loadPedidos();
         } catch (err) {
           console.error(err);
           alert('Erro ao cancelar item: ' + err.message);
@@ -351,14 +399,30 @@
     const btnCancelar = modalBody.querySelector('#btn-cancelar-pedido');
     if (btnCancelar) {
       btnCancelar.addEventListener('click', async () => {
-        if (!confirm(`Tem certeza que deseja CANCELAR o pedido #${pedido.numero_pedido || pedido.id}?`)) return;
-        
+        const motivo = prompt(`Informe o motivo do cancelamento do pedido #${pedido.numero_pedido || pedido.id} (obrigatório):`);
+        if (motivo === null) return;
+        const motivoTrimmed = motivo.trim();
+        if (!motivoTrimmed) {
+          alert('É obrigatório informar o motivo do cancelamento.');
+          return;
+        }
+
         btnCancelar.disabled = true;
         btnCancelar.textContent = 'Cancelando...';
-        
+
+        const currentUser = window.cafeteriaAdmin?.session?.user;
+        const userNome = currentUser?.user_metadata?.nome || currentUser?.email?.split('@')[0] || 'Administrador';
+
         const { error } = await window.cafeteriaSupabase
           .from('pedidos')
-          .update({ status: 'cancelado', updated_at: new Date().toISOString() })
+          .update({
+            status: 'cancelado',
+            motivo_cancelamento: motivoTrimmed,
+            cancelado_por: currentUser?.id || null,
+            cancelado_por_nome: userNome,
+            cancelado_em: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
           .eq('id', pedido.id);
           
         if (error) {
@@ -374,6 +438,114 @@
     }
 
     openModal();
+
+    // Carregar eventos de auditoria após abrir modal
+    const timelineContainer = modalBody.querySelector('#pedido-timeline-container');
+    if (timelineContainer) {
+      carregarTimeline(pedido.id, timelineContainer);
+    }
+  }
+
+  async function carregarTimeline(pedidoId, container) {
+    if (!container) return;
+    container.innerHTML = '<div style="font-size:12px; color:#888; padding:8px 0;">Carregando histórico de auditoria...</div>';
+    try {
+      const { data: eventos, error } = await window.cafeteriaSupabase
+        .from('pedido_eventos')
+        .select('*')
+        .eq('pedido_id', pedidoId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        container.innerHTML = `<div style="font-size:12px; color:#c62828;">Erro ao carregar auditoria: ${error.message}</div>`;
+        return;
+      }
+
+      if (!eventos || eventos.length === 0) {
+        container.innerHTML = '<div style="font-size:12px; color:#888; font-style:italic; padding:6px 0;">Nenhum evento registrado para este pedido.</div>';
+        return;
+      }
+
+      const mapAcao = {
+        'criado': { icon: '🆕', label: 'Pedido Criado', markerClass: 'timeline-marker--criado' },
+        'status_alterado': { icon: '🔄', label: 'Status Alterado', markerClass: 'timeline-marker--status_alterado' },
+        'cancelado': { icon: '🚫', label: 'Pedido Cancelado', markerClass: 'timeline-marker--cancelado' },
+        'pagamento': { icon: '💳', label: 'Pagamento Concluído', markerClass: 'timeline-marker--pagamento' },
+        'mesa_transferida': { icon: '🪑', label: 'Mesa Transferida', markerClass: 'timeline-marker--mesa' },
+        'item_adicionado': { icon: '➕', label: 'Item Adicionado', markerClass: 'timeline-marker--item' },
+        'item_cancelado': { icon: '❌', label: 'Item Cancelado', markerClass: 'timeline-marker--cancelado' }
+      };
+
+      let html = '<div class="pedido-timeline">';
+      eventos.forEach(ev => {
+        let markerClass = 'timeline-marker';
+        let label = ev.acao;
+        let icon = '📌';
+
+        if (ev.acao === 'status_alterado') {
+          if (ev.para === 'concluido' || ev.para === 'entregue') {
+            markerClass = 'timeline-marker--concluido';
+            icon = '✅';
+            label = ev.para === 'entregue' ? 'Pedido Entregue' : 'Pedido Pronto';
+          } else {
+            markerClass = 'timeline-marker--status_alterado';
+            icon = '🍳';
+            label = 'Em Preparo';
+          }
+        } else if (mapAcao[ev.acao]) {
+          const cfg = mapAcao[ev.acao];
+          markerClass = cfg.markerClass;
+          label = cfg.label;
+          icon = cfg.icon;
+        }
+
+        const d = new Date(ev.created_at).toLocaleString('pt-BR');
+
+        let detalheStr = '';
+        if (ev.acao === 'status_alterado') {
+          detalheStr = `De: <strong>${ev.de}</strong> ➔ Para: <strong>${ev.para}</strong>`;
+        } else if (ev.acao === 'mesa_transferida') {
+          detalheStr = `De mesa: <strong>${ev.de}</strong> ➔ Para mesa: <strong>${ev.para}</strong>`;
+        } else if (ev.acao === 'pagamento') {
+          detalheStr = `${ev.motivo || ''}`;
+        } else if (ev.acao === 'item_adicionado') {
+          detalheStr = `Item: <strong>${window.escapeHtml(ev.para || '')}</strong>`;
+        } else if (ev.acao === 'item_cancelado') {
+          detalheStr = `Item: <strong>${window.escapeHtml(ev.de || '')}</strong>`;
+        } else if (ev.acao === 'criado') {
+          detalheStr = `Status inicial: <strong>${ev.para}</strong>`;
+        }
+
+        let motivoHtml = '';
+        if (ev.motivo && ev.acao !== 'pagamento') {
+          motivoHtml = `<div class="timeline-motivo"><strong>Motivo:</strong> ${window.escapeHtml(ev.motivo)}</div>`;
+        }
+
+        const userNome = ev.usuario_nome || 'Sistema';
+
+        html += `
+          <div class="timeline-item">
+            <div class="timeline-marker ${markerClass}"></div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-title">${icon} ${label}</span>
+                <span class="timeline-time">${d}</span>
+              </div>
+              ${detalheStr ? `<div class="timeline-detail">${detalheStr}</div>` : ''}
+              ${motivoHtml}
+              <div>
+                <span class="timeline-user">👤 ${window.escapeHtml(userNome)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = `<div style="font-size:12px; color:#c62828;">Erro ao buscar eventos: ${err.message}</div>`;
+    }
   }
 
   let fetchTimeout = null;
@@ -440,9 +612,11 @@
   if (filterStatus) filterStatus.addEventListener('change', loadPedidos);
   if (filterPeriodo) filterPeriodo.addEventListener('change', loadPedidos);
   if (filterPagamento) filterPagamento.addEventListener('change', loadPedidos);
+  if (filterUsuario) filterUsuario.addEventListener('change', loadPedidos);
 
   // Expor init
   window.initAdminPedidos = () => {
+    loadUsuariosFilter();
     loadPedidos();
     setupRealtime();
   };

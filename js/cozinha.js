@@ -413,7 +413,6 @@
           
           let actionClass = (!isCancelado && tipo !== 'concluido') ? 'is-clickable' : '';
           let onClick = (!isCancelado && tipo !== 'concluido') ? `onclick="window.toggleItemPronto(${pedido.id}, ${item.id}, ${item.pronto_em ? 'true' : 'false'})"` : '';
-          let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
 
           const obsItemHtml = item.observacoes 
             ? `<div class="item-obs-badge">⚠️ Obs: ${window.escapeHtml(item.observacoes)}</div>` 
@@ -662,18 +661,34 @@
     }, 300);
   }
 
+  const offlineBanner = document.getElementById('cozinha-offline-banner');
+  let isCurrentlyConnected = true;
+
   function updateConnectionStatus(isConnected) {
-    const indicator = document.querySelector('.status-indicator');
-    if (!indicator) return;
-    
+    isCurrentlyConnected = isConnected;
+    const indicator = document.getElementById('cozinha-status-indicator') || document.querySelector('.status-indicator');
+    const pulseDot = document.getElementById('cozinha-pulse-dot') || indicator?.querySelector('.pulse-dot');
+    const statusText = document.getElementById('cozinha-status-text');
+
     if (isConnected) {
-      indicator.innerHTML = '<span class="pulse-dot"></span>Conectado (Tempo Real)';
-      indicator.style.color = '#fff';
+      if (offlineBanner) offlineBanner.classList.add('hidden');
+      if (pulseDot) pulseDot.style.background = '#4CAF50';
+      if (statusText) statusText.textContent = 'Conectado (Tempo Real)';
+      if (indicator) indicator.style.color = '#fff';
     } else {
-      indicator.innerHTML = '<span class="pulse-dot" style="background:#e74c3c;"></span>Reconectando...';
-      indicator.style.color = '#e74c3c';
+      if (offlineBanner) offlineBanner.classList.remove('hidden');
+      if (pulseDot) pulseDot.style.background = '#e74c3c';
+      if (statusText) statusText.textContent = 'Sem Conexão';
+      if (indicator) indicator.style.color = '#e74c3c';
     }
   }
+
+  // Monitoramento periódico de conectividade (detecta queda em até 4 segundos)
+  setInterval(() => {
+    if (!navigator.onLine && isCurrentlyConnected) {
+      updateConnectionStatus(false);
+    }
+  }, 4000);
 
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-cozinha-realtime')
@@ -768,6 +783,7 @@
   });
 
   // Init
+  updateConnectionStatus(navigator.onLine);
   checkSession();
 
 })();

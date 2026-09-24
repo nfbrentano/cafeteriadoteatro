@@ -3,7 +3,7 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const STATIC_CACHE = `cafeteria-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cafeteria-runtime-${CACHE_VERSION}`;
 const MAX_RUNTIME_ITEMS = 60;
@@ -27,6 +27,7 @@ const STATIC_ASSETS = [
   '/css/curtain.css',
   '/css/pedidos.css',
   '/css/cozinha.css',
+  '/css/cozinha-itens-prontos.css',
   '/js/supabase-client.js',
   '/js/db.js',
   '/js/home-dynamic.js',
@@ -37,9 +38,12 @@ const STATIC_ASSETS = [
   '/js/pedidos.js',
   '/js/cozinha.js',
   '/js/pedido-print.js',
+  '/assets/audio/ding.wav',
   '/assets/icons/favicon.png',
   '/assets/icons/icon-192.png',
-  '/assets/icons/icon-512.png'
+  '/assets/icons/icon-512.png',
+  '/images/logo-dark.png',
+  '/images/logo.png'
 ];
 
 /**

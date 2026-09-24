@@ -37,13 +37,25 @@
   const productsGrid = document.getElementById('products-grid');
   const cartItemsContainer = document.getElementById('cart-items');
   const cartTotalValue = document.getElementById('cart-total-value');
+  const cartTotalLabel = document.getElementById('cart-total-label');
+  const cartOfflineNote = document.getElementById('cart-offline-note');
   const cartMesaBadge = document.getElementById('cart-mesa-badge');
   const btnEnviarPedido = document.getElementById('btn-enviar-pedido');
+  const btnOfflineQueue = document.getElementById('btn-offline-queue');
+  const modalOfflineQueue = document.getElementById('modal-offline-queue');
+  const modalOfflineClose = document.getElementById('modal-offline-close');
+  const modalOfflineCloseBtn = document.getElementById('modal-offline-close-btn');
+  const btnSyncOfflineNow = document.getElementById('btn-sync-offline-now');
+  const offlineQueueList = document.getElementById('offline-queue-list');
+  const offlineQueueCount = document.getElementById('offline-queue-count');
   const pedidoObs = document.getElementById('pedido-obs');
   const pedidoClienteNome = document.getElementById('pedido-cliente-nome');
   const pedidoParaViagem = document.getElementById('pedido-para-viagem');
   const pedidoPagamento = document.getElementById('pedido-pagamento');
   const pedidoPago = document.getElementById('pedido-pago');
+
+  let isPdvOnline = navigator.onLine;
+  let isSyncingQueue = false;
 
   // Refs Mobile Carrinho & Drawer
   const mobileCartBar = document.getElementById('mobile-cart-bar');
@@ -255,6 +267,351 @@
     });
   };
 
+  // -----------------------------------------------------
+  // INDEXEDDB — Fila Local de Pedidos Offline (CAF-000018)
+  // -----------------------------------------------------
+  const IDB_NAME = 'CafeteriaPDV_DB';
+  const IDB_VERSION = 1;
+  const IDB_STORE = 'pedidos_offline';
+
+  function openOfflineDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) {
+        console.warn('[OfflineDB] IndexedDB não suportado.');
+        return resolve(null);
+      }
+      try {
+        const request = indexedDB.open(IDB_NAME, IDB_VERSION);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            const store = db.createObjectStore(IDB_STORE, { keyPath: 'client_id' });
+            store.createIndex('created_at', 'created_at', { unique: false });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (e) => {
+          console.error('[OfflineDB] Erro ao abrir IndexedDB:', e);
+          resolve(null);
+        };
+      } catch (err) {
+        console.error('[OfflineDB] Falha crítica no IndexedDB:', err);
+        resolve(null);
+      }
+    });
+  }
+
+  async function dbSalvarPedidoOffline(pedidoData) {
+    const db = await openOfflineDB();
+    if (!db) {
+      try {
+        const list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
+        const idx = list.findIndex(p => p.client_id === pedidoData.client_id);
+        if (idx >= 0) list[idx] = pedidoData;
+        else list.push(pedidoData);
+        localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(list));
+      } catch (e) {
+        console.error('Fallback localStorage falhou:', e);
+      }
+      return true;
+    }
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        store.put(pedidoData);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = (e) => {
+          console.error('[OfflineDB] Erro ao gravar pedido:', e);
+          reject(e);
+        };
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  async function dbObterFilaOffline() {
+    const db = await openOfflineDB();
+    if (!db) {
+      try {
+        const list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
+        list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        return list;
+      } catch {
+        return [];
+      }
+    }
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const store = tx.objectStore(IDB_STORE);
+        const req = store.getAll();
+        req.onsuccess = () => {
+          const items = req.result || [];
+          items.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+          resolve(items);
+        };
+        req.onerror = () => resolve([]);
+      } catch {
+        resolve([]);
+      }
+    });
+  }
+
+  async function dbRemoverPedidoOffline(clientId) {
+    const db = await openOfflineDB();
+    if (!db) {
+      try {
+        let list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
+        list = list.filter(item => item.client_id !== clientId);
+        localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(list));
+      } catch {}
+      return true;
+    }
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        store.delete(clientId);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch {
+        resolve(false);
+      }
+    });
+  }
+
+  async function dbAtualizarStatusPedidoOffline(clientId, status, ultimoErro = null) {
+    const db = await openOfflineDB();
+    if (!db) return;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        const req = store.get(clientId);
+        req.onsuccess = () => {
+          if (req.result) {
+            const item = req.result;
+            item.status = status;
+            if (ultimoErro !== null) item.ultimo_erro = ultimoErro;
+            item.tentativas = (item.tentativas || 0) + 1;
+            store.put(item);
+          }
+        };
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch {
+        resolve(false);
+      }
+    });
+  }
+
+  function atualizarModoConexaoCarrinho() {
+    if (cartTotalLabel) {
+      cartTotalLabel.textContent = isPdvOnline ? 'Total:' : 'Total estimado:';
+    }
+    if (cartOfflineNote) {
+      if (!isPdvOnline) {
+        cartOfflineNote.classList.remove('hidden');
+      } else {
+        cartOfflineNote.classList.add('hidden');
+      }
+    }
+    if (btnEnviarPedido && !btnEnviarPedido.disabled) {
+      btnEnviarPedido.textContent = isPdvOnline ? 'Enviar para Cozinha' : 'Salvar na Fila (Offline)';
+    }
+  }
+
+  async function atualizarContadorFilaOffline() {
+    const fila = await dbObterFilaOffline();
+    const count = fila.length;
+    if (offlineQueueCount) offlineQueueCount.textContent = count;
+    
+    if (btnOfflineQueue) {
+      if (count > 0) {
+        btnOfflineQueue.textContent = `⏳ ${count} Pendente${count > 1 ? 's' : ''}`;
+        btnOfflineQueue.classList.remove('hidden');
+        btnOfflineQueue.classList.add('pulse-queue');
+      } else {
+        btnOfflineQueue.classList.add('hidden');
+        btnOfflineQueue.classList.remove('pulse-queue');
+      }
+    }
+    return fila;
+  }
+
+  async function processarFilaOffline() {
+    if (isSyncingQueue) return;
+    if (!navigator.onLine) {
+      await atualizarContadorFilaOffline();
+      return;
+    }
+
+    const fila = await dbObterFilaOffline();
+    if (fila.length === 0) {
+      await atualizarContadorFilaOffline();
+      return;
+    }
+
+    isSyncingQueue = true;
+    if (btnSyncOfflineNow) {
+      btnSyncOfflineNow.disabled = true;
+      btnSyncOfflineNow.textContent = '🔄 Enviando...';
+    }
+    if (btnOfflineQueue) {
+      btnOfflineQueue.textContent = `🔄 Enviando (${fila.length})...`;
+    }
+
+    let enviadosComSucesso = 0;
+
+    for (const pedido of fila) {
+      if (!navigator.onLine) break;
+
+      try {
+        await dbAtualizarStatusPedidoOffline(pedido.client_id, 'enviando');
+        
+        const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
+          p_payload: pedido.payload
+        });
+
+        if (pedidoError) {
+          console.error('[OfflineQueue] Erro ao sincronizar pedido:', pedido.client_id, pedidoError);
+          if (pedidoError.message && (pedidoError.message.includes('fetch') || pedidoError.message.includes('network') || pedidoError.message.includes('Failed'))) {
+            await dbAtualizarStatusPedidoOffline(pedido.client_id, 'aguardando_envio', 'Erro de conexão');
+            break;
+          } else {
+            await dbAtualizarStatusPedidoOffline(pedido.client_id, 'falha', pedidoError.message);
+          }
+        } else {
+          await dbRemoverPedidoOffline(pedido.client_id);
+          enviadosComSucesso++;
+          const mesaStr = pedido.mesa_codigo ? (pedido.mesa_codigo === 'BALCAO' ? 'Balcão' : `Mesa ${pedido.mesa_codigo}`) : 'Balcão';
+          showToast(`✅ Pedido (${mesaStr}) sincronizado com a cozinha!`);
+        }
+      } catch (err) {
+        console.error('[OfflineQueue] Exceção durante envio:', err);
+        await dbAtualizarStatusPedidoOffline(pedido.client_id, 'aguardando_envio', err.message);
+        break;
+      }
+    }
+
+    isSyncingQueue = false;
+    if (btnSyncOfflineNow) {
+      btnSyncOfflineNow.disabled = false;
+      btnSyncOfflineNow.textContent = '🔄 Sincronizar Fila Agora';
+    }
+
+    await atualizarContadorFilaOffline();
+
+    if (enviadosComSucesso > 0) {
+      await loadActivePedidos();
+    }
+
+    if (modalOfflineQueue && !modalOfflineQueue.classList.contains('hidden')) {
+      renderOfflineQueueModal();
+    }
+  }
+
+  async function renderOfflineQueueModal() {
+    const fila = await dbObterFilaOffline();
+    if (offlineQueueCount) offlineQueueCount.textContent = fila.length;
+    if (!offlineQueueList) return;
+
+    if (fila.length === 0) {
+      offlineQueueList.innerHTML = '<div style="text-align:center; padding: 30px; color: #888;">Nenhum pedido pendente na fila. Tudo sincronizado! 🎉</div>';
+      return;
+    }
+
+    offlineQueueList.innerHTML = '';
+    fila.forEach((p) => {
+      const card = document.createElement('div');
+      card.className = 'offline-card';
+      
+      const horaStr = p.created_at ? new Date(p.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+      const mesaNome = p.mesa_codigo ? (p.mesa_codigo === 'BALCAO' ? '🥡 Balcão / Viagem' : `Mesa ${p.mesa_codigo}`) : 'Balcão';
+      const clienteStr = p.cliente_nome ? ` · Cliente: ${window.escapeHtml(p.cliente_nome)}` : '';
+      const totalStr = (p.total_estimado || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      
+      let statusHtml = '';
+      if (p.status === 'enviando') {
+        statusHtml = '<span style="color: #1976d2; font-size: 11px; font-weight: bold;">🔄 Enviando...</span>';
+      } else if (p.status === 'falha') {
+        statusHtml = `<span style="color: #d32f2f; font-size: 11px; font-weight: bold;" title="${window.escapeHtml(p.ultimo_erro || '')}">⚠️ Falha: ${window.escapeHtml(p.ultimo_erro || '')}</span>`;
+      } else {
+        statusHtml = '<span style="color: #f57c00; font-size: 11px; font-weight: bold;">⏳ Aguardando conexão</span>';
+      }
+
+      card.innerHTML = `
+        <div class="offline-card__header">
+          <div class="offline-card__title">${mesaNome}${clienteStr}</div>
+          <div class="offline-card__time">${horaStr}</div>
+        </div>
+        <div class="offline-card__items">
+          ${window.escapeHtml(p.itens_resumo || 'Itens do pedido')}
+        </div>
+        <div class="offline-card__footer">
+          <div>
+            <span class="offline-card__total">Estimado: ${totalStr}</span>
+            <div style="margin-top: 2px;">${statusHtml}</div>
+          </div>
+          <div class="offline-card__actions">
+            <button class="btn-queue-action btn-queue-action--retry" onclick="window.baristaReenviarPedidoOffline('${p.client_id}')">Reenviar</button>
+            <button class="btn-queue-action btn-queue-action--discard" onclick="window.baristaDescartarPedidoOffline('${p.client_id}')">Descartar</button>
+          </div>
+        </div>
+      `;
+      offlineQueueList.appendChild(card);
+    });
+  }
+
+  window.baristaReenviarPedidoOffline = async function(clientId) {
+    if (!navigator.onLine) {
+      showToast('Aparelho ainda sem internet. O envio ocorrerá automaticamente na reconexão.');
+      return;
+    }
+    await processarFilaOffline();
+  };
+
+  window.baristaDescartarPedidoOffline = async function(clientId) {
+    const confirmed = await showConfirm('Descartar Pedido?', 'Deseja realmente descartar este pedido da fila offline? Ele NÃO será enviado à cozinha.');
+    if (!confirmed) return;
+    await dbRemoverPedidoOffline(clientId);
+    showToast('Pedido descartado da fila.');
+    await atualizarContadorFilaOffline();
+    renderOfflineQueueModal();
+  };
+
+  // Listeners do Modal Offline
+  if (btnOfflineQueue) {
+    btnOfflineQueue.addEventListener('click', () => {
+      renderOfflineQueueModal();
+      if (modalOfflineQueue) modalOfflineQueue.classList.remove('hidden');
+    });
+  }
+  if (modalOfflineClose) {
+    modalOfflineClose.addEventListener('click', () => {
+      if (modalOfflineQueue) modalOfflineQueue.classList.add('hidden');
+    });
+  }
+  if (modalOfflineCloseBtn) {
+    modalOfflineCloseBtn.addEventListener('click', () => {
+      if (modalOfflineQueue) modalOfflineQueue.classList.add('hidden');
+    });
+  }
+  if (btnSyncOfflineNow) {
+    btnSyncOfflineNow.addEventListener('click', () => {
+      processarFilaOffline();
+    });
+  }
+
+  // Monitor de verificação da fila periódica (a cada 15s)
+  setInterval(() => {
+    if (navigator.onLine && !isSyncingQueue) {
+      processarFilaOffline();
+    }
+  }, 15000);
+
   window.baristaCancelarItem = async function(itemId, pedidoId, mesaCodigo) {
     const motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
     if (!motivo) return;
@@ -279,7 +636,14 @@
         if (confirm('Todos os itens deste pedido foram cancelados. Deseja cancelar o pedido inteiro também?')) {
           await window.cafeteriaSupabase
             .from('pedidos')
-            .update({ status: 'cancelado', updated_at: new Date().toISOString() })
+            .update({ 
+              status: 'cancelado', 
+              motivo_cancelamento: 'Todos os itens foram cancelados',
+              cancelado_por: currentUser ? currentUser.id : null,
+              cancelado_por_nome: currentUser ? (currentUser.nome || 'Barista') : 'Barista',
+              cancelado_em: new Date().toISOString(),
+              updated_at: new Date().toISOString() 
+            })
             .eq('id', pedidoId);
           alert('Pedido cancelado!');
         }
@@ -322,17 +686,34 @@
   };
 
   async function loadProfile(user) {
-    const { data: perfil, error } = await window.cafeteriaSupabase
-      .from('perfis')
-      .select('nome, role, pode_dar_desconto')
-      .eq('id', user.id)
-      .maybeSingle();
+    let perfil = null;
+    try {
+      const { data, error } = await window.cafeteriaSupabase
+        .from('perfis')
+        .select('nome, role, pode_dar_desconto')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Erro ao buscar perfil:', error);
-      alert('Erro ao consultar banco de dados: ' + error.message);
-      await window.cafeteriaSupabase.auth.signOut();
-      return;
+      if (!error && data) {
+        perfil = data;
+        localStorage.setItem('cafeteria_pdv_perfil_' + user.id, JSON.stringify(perfil));
+      } else if (error) {
+        throw error;
+      }
+    } catch (err) {
+      console.warn('[PDV Cache] Falha ao consultar perfil na rede, buscando cache:', err);
+      const cached = localStorage.getItem('cafeteria_pdv_perfil_' + user.id);
+      if (cached) {
+        try {
+          perfil = JSON.parse(cached);
+        } catch {}
+      }
+      if (!perfil) {
+        console.error('Erro ao buscar perfil:', err);
+        alert('Erro ao consultar perfil: ' + (err.message || 'Verifique a conexão'));
+        await window.cafeteriaSupabase.auth.signOut();
+        return;
+      }
     }
 
     if (!perfil) {
@@ -353,8 +734,11 @@
     loginScreen.classList.add('hidden');
     app.classList.remove('hidden');
     
+    atualizarModoConexaoCarrinho();
+    await atualizarContadorFilaOffline();
     await loadInitialData();
     setupRealtime();
+    processarFilaOffline();
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -419,42 +803,81 @@
   }
 
   async function loadPromocoes() {
-    const { data, error } = await window.cafeteriaSupabase.rpc('promocoes_do_dia');
-    if (!error && data) {
-      activePromos = data;
+    try {
+      const { data, error } = await window.cafeteriaSupabase.rpc('promocoes_do_dia');
+      if (!error && data) {
+        activePromos = data;
+        localStorage.setItem('cafeteria_cache_pdv_promos', JSON.stringify(data));
+      } else {
+        throw error || new Error('Falha ao carregar promoções');
+      }
+    } catch (e) {
+      console.warn('[PDV Cache] Carregando promoções do cache local:', e);
+      const cached = localStorage.getItem('cafeteria_cache_pdv_promos');
+      if (cached) {
+        try { activePromos = JSON.parse(cached); } catch {}
+      }
     }
   }
 
   async function loadAdicionais() {
-    const [{ data }, { data: vinculosData }] = await Promise.all([
-      window.cafeteriaSupabase
-        .from('adicionais')
-        .select('*')
-        .eq('ativo', true)
-        .order('ordem', { ascending: true }),
-      window.cafeteriaSupabase
-        .from('v_adicionais_produto')
-        .select('*')
-    ]);
-    
-    if (data) {
-      allAdicionais = data;
-    }
-    if (vinculosData) {
-      allVinculosProduto = vinculosData;
+    try {
+      const [{ data, error: errAdic }, { data: vinculosData, error: errVinc }] = await Promise.all([
+        window.cafeteriaSupabase
+          .from('adicionais')
+          .select('*')
+          .eq('ativo', true)
+          .order('ordem', { ascending: true }),
+        window.cafeteriaSupabase
+          .from('v_adicionais_produto')
+          .select('*')
+      ]);
+      
+      if (!errAdic && data) {
+        allAdicionais = data;
+        localStorage.setItem('cafeteria_cache_pdv_adicionais', JSON.stringify(data));
+      }
+      if (!errVinc && vinculosData) {
+        allVinculosProduto = vinculosData;
+        localStorage.setItem('cafeteria_cache_pdv_vinculos', JSON.stringify(vinculosData));
+      }
+    } catch (e) {
+      console.warn('[PDV Cache] Carregando adicionais do cache local:', e);
+      const cachedAdic = localStorage.getItem('cafeteria_cache_pdv_adicionais');
+      if (cachedAdic) {
+        try { allAdicionais = JSON.parse(cachedAdic); } catch {}
+      }
+      const cachedVinc = localStorage.getItem('cafeteria_cache_pdv_vinculos');
+      if (cachedVinc) {
+        try { allVinculosProduto = JSON.parse(cachedVinc); } catch {}
+      }
     }
   }
 
   async function loadMesas() {
-    const { data: mesasData } = await window.cafeteriaSupabase
-      .from('mesas')
-      .select('*')
-      .eq('ativo', true)
-      .order('codigo');
-    
-    if (mesasData) {
-      mesas = mesasData;
-      updateMesaSelectOptions();
+    try {
+      const { data: mesasData, error } = await window.cafeteriaSupabase
+        .from('mesas')
+        .select('*')
+        .eq('ativo', true)
+        .order('codigo');
+      
+      if (!error && mesasData) {
+        mesas = mesasData;
+        localStorage.setItem('cafeteria_cache_pdv_mesas', JSON.stringify(mesasData));
+        updateMesaSelectOptions();
+      } else {
+        throw error || new Error('Falha ao carregar mesas');
+      }
+    } catch (e) {
+      console.warn('[PDV Cache] Carregando mesas do cache local:', e);
+      const cached = localStorage.getItem('cafeteria_cache_pdv_mesas');
+      if (cached) {
+        try {
+          mesas = JSON.parse(cached);
+          updateMesaSelectOptions();
+        } catch {}
+      }
     }
   }
 
@@ -477,17 +900,32 @@
   }
 
   async function loadProdutos() {
-    const { data: produtosData } = await window.cafeteriaSupabase
-      .from('produtos')
-      .select('*')
-      .eq('ativo', true)
-      .order('ordem');
+    try {
+      const { data: produtosData, error } = await window.cafeteriaSupabase
+        .from('produtos')
+        .select('*')
+        .eq('ativo', true)
+        .order('ordem');
 
-    if (produtosData) {
-      allProducts = produtosData;
+      if (!error && produtosData) {
+        allProducts = produtosData;
+        localStorage.setItem('cafeteria_cache_pdv_produtos', JSON.stringify(produtosData));
+      } else {
+        throw error || new Error('Falha ao carregar produtos');
+      }
+    } catch (e) {
+      console.warn('[PDV Cache] Carregando produtos do cache local:', e);
+      const cached = localStorage.getItem('cafeteria_cache_pdv_produtos');
+      if (cached) {
+        try { allProducts = JSON.parse(cached); } catch {}
+      }
+    }
+
+    if (allProducts && allProducts.length > 0) {
       renderCategories();
       const firstCat = [...new Set(allProducts.map(p => p.categoria_id))][0];
-      if (firstCat) setCategory(firstCat);
+      if (firstCat && !currentCategory) setCategory(firstCat);
+      else renderProducts();
     }
   }
 
@@ -511,21 +949,22 @@
       if (!catId) return;
       const btn = document.createElement('button');
       btn.className = 'cat-tab' + (currentCategory === catId ? ' active' : '');
-      btn.textContent = (catId.charAt(0).toUpperCase() + catId.slice(1)).replace('-', ' ');
+      btn.textContent = (catId.charAt(0).toUpperCase() + catId.slice(1)).replace(/-/g, ' ');
       btn.onclick = () => setCategory(catId);
       categoriesTabs.appendChild(btn);
     });
   }
 
   function setCategory(catId) {
-    currentCategory = catId;
+    currentCategory = catId || '';
     document.querySelectorAll('.cat-tab').forEach(t => {
-      if (catId === '') {
+      if (!currentCategory) {
         t.classList.toggle('active', t.textContent.includes('Todos'));
-      } else if (catId === '__promos__') {
+      } else if (currentCategory === '__promos__') {
         t.classList.toggle('active', t.textContent.includes('Promos'));
       } else {
-        t.classList.toggle('active', t.textContent.toLowerCase().replace(' ', '-') === catId.toLowerCase());
+        const textNorm = (t.textContent || '').toLowerCase().replace(/\s+/g, '-');
+        t.classList.toggle('active', textNorm === currentCategory.toLowerCase());
       }
     });
     renderProducts();
@@ -1067,13 +1506,14 @@
     // Pode enviar se tiver mesa selecionada OU se for para viagem/tiver nome (pois usaremos BALCAO).
     const canSend = (hasMesa || isParaViagem || hasNome) && hasItems;
     btnEnviarPedido.disabled = !canSend;
+    atualizarModoConexaoCarrinho();
   }
   
   if (pedidoClienteNome) pedidoClienteNome.addEventListener('input', checkFormValidity);
   if (pedidoParaViagem) pedidoParaViagem.addEventListener('change', checkFormValidity);
 
   // -----------------------------------------------------
-  // 5. ENVIAR PEDIDO
+  // 5. ENVIAR PEDIDO (COM IDEMPOTÊNCIA & FILA OFFLINE)
   // -----------------------------------------------------
   btnEnviarPedido.addEventListener('click', async () => {
     if (btnEnviarPedido.disabled) return;
@@ -1088,7 +1528,15 @@
     const total = cart.reduce((acc, item) => acc + (item.produto.preco * item.quantidade), 0);
 
     btnEnviarPedido.disabled = true;
-    btnEnviarPedido.textContent = 'Enviando...';
+    btnEnviarPedido.textContent = isPdvOnline ? 'Enviando...' : 'Gravando na fila...';
+
+    // Gerar UUID de idempotência no aparelho (CAF-000018)
+    const clientId = (window.crypto && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
 
     // Formatar itens para RPC
     const itensParaRpc = cart.map(item => ({
@@ -1101,6 +1549,7 @@
     }));
 
     const payload = {
+      client_id: clientId,
       mesa_codigo: mesaCodigo,
       observacoes: obsGeral,
       cliente_nome: clienteNome,
@@ -1110,61 +1559,176 @@
       itens: itensParaRpc
     };
 
-    const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
-      p_payload: payload
-    });
+    const itensResumo = cart.map(item => {
+      let desc = `${item.quantidade}x ${item.produto.nome}`;
+      if (item.adicionaisSelecionados && item.adicionaisSelecionados.length > 0) {
+        desc += ` (+${item.adicionaisSelecionados.map(a => a.nome).join(', ')})`;
+      }
+      return desc;
+    }).join(', ');
 
-    if (pedidoError) {
-      showToast('Erro ao criar pedido: ' + pedidoError.message);
-      btnEnviarPedido.disabled = false;
-      btnEnviarPedido.textContent = 'Enviar para Cozinha';
+    const offlineOrderData = {
+      client_id: clientId,
+      mesa_codigo: mesaCodigo,
+      cliente_nome: clienteNome,
+      para_viagem: paraViagem,
+      total_estimado: total,
+      itens_resumo: itensResumo,
+      payload: payload,
+      status: 'aguardando_envio',
+      created_at: new Date().toISOString(),
+      tentativas: 0,
+      ultimo_erro: null
+    };
+
+    // Caso offline declarado: grava direto na fila local sem travar
+    if (!navigator.onLine || !isPdvOnline) {
+      await dbSalvarPedidoOffline(offlineOrderData);
+      
+      cart = [];
+      pedidoObs.value = '';
+      pedidoClienteNome.value = '';
+      pedidoParaViagem.checked = false;
+      pedidoPagamento.value = '';
+      pedidoPago.checked = false;
+      resetarModoAdicao();
+      mesaSelect.value = '';
+      renderCart();
+
+      btnEnviarPedido.textContent = 'Salvo na Fila! ⏳';
+      showToast('⚡ Pedido salvo na fila offline! Será enviado automaticamente quando a internet voltar.');
+      await atualizarContadorFilaOffline();
+
+      setTimeout(() => {
+        checkFormValidity();
+        atualizarModoConexaoCarrinho();
+      }, 1500);
       return;
     }
 
-    // Limpeza e Sucesso
-    cart = [];
-    pedidoObs.value = '';
-    pedidoClienteNome.value = '';
-    pedidoParaViagem.checked = false;
-    pedidoPagamento.value = '';
-    pedidoPago.checked = false;
-    resetarModoAdicao();
-    mesaSelect.value = '';
-    renderCart();
+    // Caso online: tenta enviar para a RPC
+    try {
+      const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
+        p_payload: payload
+      });
 
-    btnEnviarPedido.textContent = 'Enviado! ✅';
-    setTimeout(() => {
-      btnEnviarPedido.textContent = 'Enviar para Cozinha';
-      checkFormValidity();
-    }, 1500);
+      if (pedidoError) {
+        const isNetError = !navigator.onLine || (pedidoError.message && (
+          pedidoError.message.includes('fetch') ||
+          pedidoError.message.includes('network') ||
+          pedidoError.message.includes('Failed') ||
+          pedidoError.message.includes('timeout')
+        ));
 
-    await loadActivePedidos();
+        if (isNetError) {
+          // Erro de rede durante o envio: guarda na fila offline
+          await dbSalvarPedidoOffline(offlineOrderData);
+          cart = [];
+          pedidoObs.value = '';
+          pedidoClienteNome.value = '';
+          pedidoParaViagem.checked = false;
+          pedidoPagamento.value = '';
+          pedidoPago.checked = false;
+          resetarModoAdicao();
+          mesaSelect.value = '';
+          renderCart();
+
+          showToast('⚠️ Conexão oscilou. Pedido guardado na fila local para envio automático!');
+          await atualizarContadorFilaOffline();
+          btnEnviarPedido.textContent = 'Guardado Offline ⏳';
+          setTimeout(() => {
+            checkFormValidity();
+            atualizarModoConexaoCarrinho();
+          }, 1500);
+          return;
+        }
+
+        showToast('Erro ao criar pedido: ' + pedidoError.message);
+        btnEnviarPedido.disabled = false;
+        atualizarModoConexaoCarrinho();
+        return;
+      }
+
+      // Limpeza e Sucesso
+      cart = [];
+      pedidoObs.value = '';
+      pedidoClienteNome.value = '';
+      pedidoParaViagem.checked = false;
+      pedidoPagamento.value = '';
+      pedidoPago.checked = false;
+      resetarModoAdicao();
+      mesaSelect.value = '';
+      renderCart();
+
+      btnEnviarPedido.textContent = 'Enviado! ✅';
+      setTimeout(() => {
+        checkFormValidity();
+        atualizarModoConexaoCarrinho();
+      }, 1500);
+
+      await loadActivePedidos();
+    } catch (err) {
+      console.error('[PDV Enviar] Exceção na chamada RPC:', err);
+      await dbSalvarPedidoOffline(offlineOrderData);
+      cart = [];
+      pedidoObs.value = '';
+      pedidoClienteNome.value = '';
+      pedidoParaViagem.checked = false;
+      pedidoPagamento.value = '';
+      pedidoPago.checked = false;
+      resetarModoAdicao();
+      mesaSelect.value = '';
+      renderCart();
+
+      showToast('⚠️ Falha de comunicação. Pedido guardado na fila offline!');
+      await atualizarContadorFilaOffline();
+      btnEnviarPedido.textContent = 'Guardado Offline ⏳';
+      setTimeout(() => {
+        checkFormValidity();
+        atualizarModoConexaoCarrinho();
+      }, 1500);
+    }
   });
 
   // -----------------------------------------------------
   // 6. MESAS & ACOMPANHAMENTO DE ENTREGAS
   // -----------------------------------------------------
   async function loadActivePedidos() {
-    const inicioDoDia = window.getInicioDoDiaSaoPaulo();
-    const { data, error } = await window.cafeteriaSupabase
-      .from('pedidos')
-      .select(`
-        *,
-        pedido_itens (
+    try {
+      const inicioDoDia = window.getInicioDoDiaSaoPaulo();
+      const { data, error } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select(`
           *,
-          pedido_item_adicionais (*)
-        )
-      `)
-      .or(`status.in.(pendente,em_preparo),status_pagamento.eq.pendente,status_pagamento.is.null,and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
-      .order('created_at', { ascending: false });
+          pedido_itens (
+            *,
+            pedido_item_adicionais (*)
+          )
+        `)
+        .or(`status.in.(pendente,em_preparo),status_pagamento.eq.pendente,status_pagamento.is.null,and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
+        .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      activePedidos = data;
-      await loadCortesiasDisponiveis();
-      renderMesasSection();
-      renderPedidosCards();
-      updateProntosBadge();
-      updateMesaSelectOptions();
+      if (!error && data) {
+        activePedidos = data;
+        localStorage.setItem('cafeteria_cache_pdv_active_pedidos', JSON.stringify(data));
+        await loadCortesiasDisponiveis();
+        renderMesasSection();
+        renderPedidosCards();
+        updateProntosBadge();
+        updateMesaSelectOptions();
+      }
+    } catch (e) {
+      console.warn('[PDV Cache] Falha ao carregar pedidos ativos:', e);
+      const cached = localStorage.getItem('cafeteria_cache_pdv_active_pedidos');
+      if (cached) {
+        try {
+          activePedidos = JSON.parse(cached);
+          renderMesasSection();
+          renderPedidosCards();
+          updateProntosBadge();
+          updateMesaSelectOptions();
+        } catch {}
+      }
     }
   }
 
@@ -2162,18 +2726,20 @@
   }
 
   function updateConnectionStatus(isConnected) {
-    const indicator = document.querySelector('.status-indicator');
+    isPdvOnline = isConnected;
+    const indicator = document.getElementById('conn-status-indicator') || document.querySelector('.status-indicator');
     if (!indicator) return;
-    const dot = indicator.querySelector('.pulse-dot');
-    const text = indicator.querySelector('.status-text');
+    const dot = document.getElementById('conn-pulse-dot') || indicator.querySelector('.pulse-dot');
+    const text = document.getElementById('conn-status-text') || indicator.querySelector('.status-text');
     
     if (isConnected) {
-      if(dot) dot.style.backgroundColor = '#4CAF50';
-      if(text) { text.textContent = 'Conectado'; text.style.color = '#fff'; }
+      if (dot) dot.style.backgroundColor = '#4CAF50';
+      if (text) { text.textContent = 'Conectado'; text.style.color = '#fff'; }
     } else {
-      if(dot) dot.style.backgroundColor = '#e74c3c';
-      if(text) { text.textContent = 'Reconectando...'; text.style.color = '#e74c3c'; }
+      if (dot) dot.style.backgroundColor = '#e74c3c';
+      if (text) { text.textContent = 'Modo Offline'; text.style.color = '#e74c3c'; }
     }
+    atualizarModoConexaoCarrinho();
   }
 
   function setupRealtime() {
@@ -2206,6 +2772,8 @@
   window.addEventListener('online', () => {
     updateConnectionStatus(true);
     debouncedLoadActivePedidos();
+    loadInitialData();
+    processarFilaOffline();
   });
   window.addEventListener('offline', () => {
     updateConnectionStatus(false);
@@ -2215,6 +2783,7 @@
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       debouncedLoadActivePedidos();
+      if (navigator.onLine) processarFilaOffline();
     }
   });
 
@@ -2258,7 +2827,32 @@
 
   window.baristaChamarPedido = chamarPedidoVoz;
 
+  async function loadConfiguracoes() {
+    try {
+      if (window.cafeteriaDB && window.cafeteriaDB.settings) {
+        const settings = await window.cafeteriaDB.settings.all();
+        if (settings && settings.taxa_servico_ativa !== undefined) {
+          configTaxaServico.ativa = String(settings.taxa_servico_ativa) === 'true';
+          configTaxaServico.percentual = parseFloat(settings.taxa_servico_percentual) || 10;
+        }
+      } else if (window.cafeteriaSupabase) {
+        const { data } = await window.cafeteriaSupabase.from('site_settings').select('*');
+        if (data) {
+          const map = data.reduce((acc, curr) => { acc[curr.key] = curr.value; return acc; }, {});
+          if (map.taxa_servico_ativa !== undefined) {
+            configTaxaServico.ativa = String(map.taxa_servico_ativa) === 'true';
+            configTaxaServico.percentual = parseFloat(map.taxa_servico_percentual) || 10;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar configurações de taxa:', e);
+    }
+  }
+
   // Inicializar
+  updateConnectionStatus(navigator.onLine);
+  atualizarContadorFilaOffline();
   checkSession();
   loadConfiguracoes();
 

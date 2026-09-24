@@ -48,9 +48,12 @@
       </div>
 
       <div class="topbar__user" style="display: flex; align-items: center; gap: 16px;">
-        <div class="status-indicator" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
-          <span class="pulse-dot" style="width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block;"></span>
-          <span class="status-text" style="color: #fff;">Conectado</span>
+        <button id="btn-offline-queue" class="btn-ghost-small hidden" style="background-color: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">
+          0 Pendentes
+        </button>
+        <div id="conn-status-indicator" class="status-indicator" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
+          <span id="conn-pulse-dot" class="pulse-dot" style="width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block;"></span>
+          <span id="conn-status-text" class="status-text" style="color: #fff;">Conectado</span>
         </div>
         <span id="user-name">Carregando...</span>
         <button id="btn-logout" class="btn-logout">Sair</button>
@@ -143,8 +146,11 @@
           </div>
           
           <div class="cart-total">
-            <span>Total:</span>
+            <span id="cart-total-label">Total:</span>
             <span id="cart-total-value">R$ 0,00</span>
+          </div>
+          <div id="cart-offline-note" class="hidden" style="font-size: 11px; color: #d32f2f; margin-top: -6px; margin-bottom: 8px; text-align: right; font-weight: 500;">
+            ⚡ Modo Offline: valor estimado (confirmado no envio)
           </div>
           
           <button id="btn-enviar-pedido" class="btn-primary" disabled>
@@ -449,6 +455,32 @@
       <div style="display: flex; gap: 10px; justify-content: center;">
         <button id="modal-confirm-cancel" class="btn-ghost">Cancelar</button>
         <button id="modal-confirm-ok" class="btn-primary-small">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FILA DE PEDIDOS OFFLINE (CAF-000018) -->
+  <div id="modal-offline-queue" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 550px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 12px;">
+        <h4 style="margin: 0; font-size: 18px; color: var(--marrom-escuro);">
+          ⏳ Pedidos Pendentes de Envio (<span id="offline-queue-count">0</span>)
+        </h4>
+        <button id="modal-offline-close" class="btn-ghost-small" style="font-size: 18px; line-height: 1; padding: 4px 8px; cursor: pointer;">✕</button>
+      </div>
+      <p style="font-size: 13px; color: #666; margin-top: 0; margin-bottom: 12px;">
+        Estes pedidos foram guardados localmente durante instabilidades de internet. Quando a rede voltar, eles serão enviados automaticamente à cozinha.
+      </p>
+      
+      <div id="offline-queue-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; padding-right: 4px; min-height: 80px;">
+        <!-- Lista de pedidos pendentes renderizada via JS -->
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 12px; margin-top: 0;">
+        <button id="modal-offline-close-btn" class="btn-ghost">Fechar</button>
+        <button id="btn-sync-offline-now" class="btn-primary-small" style="background: #2e7d32; color: #fff;">
+          🔄 Sincronizar Fila Agora
+        </button>
       </div>
     </div>
   </div>

@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Banco + admin | 🟢 Baixa | M | A fazer |
+| Banco + admin | 🟢 Baixa | M | Concluído |
 
 ---
 
@@ -18,16 +18,16 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Tabela `pedido_eventos (id, pedido_id, item_id, acao, de, para, motivo, usuario_id, usuario_nome, created_at)`.
-- [ ] Triggers em `pedidos` e `pedido_itens` registrando: criado, mudança de status, item adicionado, item cancelado, pagamento, mudança de mesa.
-- [ ] Motivo gravado quando a ação tiver (cancelamento, desconto).
-- [ ] Linha do tempo nos detalhes do pedido no admin (`js/admin/pedidos-admin.js:179`).
-- [ ] Filtro no admin: "cancelamentos por usuário" no período.
+- [x] Tabela `pedido_eventos (id, pedido_id, item_id, acao, de, para, motivo, usuario_id, usuario_nome, created_at)`.
+- [x] Triggers em `pedidos` e `pedido_itens` registrando: criado, mudança de status, item adicionado, item cancelado, pagamento, mudança de mesa.
+- [x] Motivo gravado quando a ação tiver (cancelamento, desconto).
+- [x] Linha do tempo nos detalhes do pedido no admin (`js/admin/pedidos-admin.js:179`).
+- [x] Filtro no admin: "cancelamentos por usuário" no período.
 
 ### Requisitos não funcionais
-- [ ] Log só pode ser inserido por trigger (sem `INSERT`/`UPDATE`/`DELETE` direto pela API).
-- [ ] Leitura só para `admin`.
-- [ ] Não impactar o tempo de criação do pedido de forma perceptível.
+- [x] Log só pode ser inserido por trigger (sem `INSERT`/`UPDATE`/`DELETE` direto pela API).
+- [x] Leitura só para `admin`.
+- [x] Não impactar o tempo de criação do pedido de forma perceptível.
 
 ### Dependências técnicas
 - Enriquecido por [CAF-000001](CAF-000001-status-entregue-persistido-no-banco.md), [CAF-000002](CAF-000002-fechamento-de-conta-da-mesa.md), [CAF-000004](CAF-000004-cancelar-item-individual.md) e [CAF-000011](CAF-000011-transferir-juntar-mesas.md), mas pode ser feito antes.
@@ -39,10 +39,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um pedido foi criado, preparado e concluído, **quando** o admin abre os detalhes, **então** vê os três eventos com usuário e horário.
-- [ ] **Dado que** a cozinha voltou um pedido de "pronto" para "em preparo", **quando** o admin consulta o histórico, **então** o evento aparece com quem fez.
-- [ ] **Dado que** o admin cancelou um pedido com motivo, **quando** filtra "cancelamentos" no período, **então** o cancelamento aparece com o motivo.
-- [ ] **Dado que** um barista tenta apagar um evento pela API, **quando** a requisição chega, **então** o banco recusa.
+- [x] **Dado que** um pedido foi criado, preparado e concluído, **quando** o admin abre os detalhes, **então** vê os três eventos com usuário e horário.
+- [x] **Dado que** a cozinha voltou um pedido de "pronto" para "em preparo", **quando** o admin consulta o histórico, **então** o evento aparece com quem fez.
+- [x] **Dado que** o admin cancelou um pedido com motivo, **quando** filtra "cancelamentos" no período, **então** o cancelamento aparece com o motivo.
+- [x] **Dado que** um barista tenta apagar um evento pela API, **quando** a requisição chega, **então** o banco recusa.
 
 ---
 

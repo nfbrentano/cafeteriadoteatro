@@ -521,6 +521,9 @@
               <option value="cartao_credito">Cartão Crédito</option>
               <option value="outros">Outros</option>
             </select>
+            <select class="filter-select" id="filter-pedido-usuario" title="Filtrar por atendente/operador">
+              <option value="">Todos os atendentes</option>
+            </select>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button class="btn btn--ghost" id="btn-export-pedidos">⬇ Exportar Pedidos CSV</button>
@@ -1789,7 +1792,7 @@
      MODAL DETALHES DO PEDIDO
 ════════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-pedido-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pedido-title">
-  <div class="modal" id="modal-pedido" style="max-width: 600px;">
+  <div class="modal" id="modal-pedido" style="max-width: 680px;">
     <div class="modal__header">
       <span class="modal__title" id="modal-pedido-title">Detalhes do Pedido</span>
       <button class="modal__close" id="modal-pedido-close" aria-label="Fechar modal">✕</button>
