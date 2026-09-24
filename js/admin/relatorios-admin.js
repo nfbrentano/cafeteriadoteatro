@@ -105,14 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const { data, error } = await window.cafeteriaSupabase.rpc('get_admin_reports', {
-        p_start_date: p_start,
-        p_end_date: p_end,
+        p_inicio: p_start,
+        p_fim: p_end,
         p_categoria_id: p_categoria_id
       });
 
       if (error) throw error;
-      if (data && data.length > 0) {
-        renderRelatorio(data[0]);
+      if (data) {
+        renderRelatorio(data);
       }
     } catch (err) {
       console.error('Erro ao carregar relatórios:', err);
@@ -125,14 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderRelatorio(data) {
     // 1. KPIs
-    document.getElementById('relatorio-faturamento').textContent = formatarDinheiro(data.kpis.faturamento_total);
-    document.getElementById('relatorio-ticket').textContent = formatarDinheiro(data.kpis.ticket_medio);
-    document.getElementById('relatorio-fila').textContent = data.kpis.tempo_medio_fila ? Math.round(data.kpis.tempo_medio_fila) + ' min' : '0 min';
-    document.getElementById('relatorio-preparo').textContent = data.kpis.tempo_medio_preparo ? Math.round(data.kpis.tempo_medio_preparo) + ' min' : '0 min';
+    document.getElementById('relatorio-faturamento').textContent = formatarDinheiro(data.resumo?.faturamento_total || 0);
+    document.getElementById('relatorio-ticket').textContent = formatarDinheiro(data.resumo?.ticket_medio || 0);
+    document.getElementById('relatorio-fila').textContent = data.tempo_preparo?.media_fila_minutos ? Math.round(data.tempo_preparo.media_fila_minutos) + ' min' : '0 min';
+    document.getElementById('relatorio-preparo').textContent = data.tempo_preparo?.media_preparo_minutos ? Math.round(data.tempo_preparo.media_preparo_minutos) + ' min' : '0 min';
 
     // 2. Charts
-    renderChartHorariosHora(data.vendas_por_hora);
-    renderChartHorariosDia(data.vendas_por_dia_semana);
+    renderChartHorariosHora(data.horarios_pico_hora);
+    renderChartHorariosDia(data.horarios_pico_dia);
     renderChartPagamentos(data.pagamentos);
 
     // 3. Tables
