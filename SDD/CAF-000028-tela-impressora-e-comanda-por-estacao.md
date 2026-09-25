@@ -17,6 +17,7 @@
 
 - **SAIPOS:** impressão por **setor de produção**. Cada produto é vinculado a um setor e cada setor tem a sua impressora, então a comanda do bar sai no bar e a da cozinha na cozinha.
 - **Padrão de mercado:** fila de impressão com status (impresso / pendente / erro) e reimpressão pela fila.
+- **Suitable:** roteamento de pedidos para cozinha, bar ou caixa por regras, várias impressoras, layout das vias personalizável e QR Code na via para mudar o status do pedido. Fonte: https://suitable.com.br/produto/impressoes/
 
 ---
 

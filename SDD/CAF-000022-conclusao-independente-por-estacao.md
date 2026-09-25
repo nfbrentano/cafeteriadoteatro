@@ -26,6 +26,7 @@
 
 - **SAIPOS:** a tela KDS trabalha por etapas de produção. Cada produto é selecionado e avançado de etapa individualmente (seta verde) e a tela de expedição só mostra a senha quando o pedido está completo.
 - **Padrão de mercado (Food Sistemas, Teknisa e outros):** um monitor por praça (quente, frios, bar, sobremesa) e uma **tela consolidada do expedidor** que mostra quando cada componente ficou pronto.
+- **Suitable:** KDS com três cores por etapa, visão por pedido completo ou por produto e ordenação por sequência, status ou prioridade. Fonte: https://suitable.com.br/produto/kds/
 
 ---
 

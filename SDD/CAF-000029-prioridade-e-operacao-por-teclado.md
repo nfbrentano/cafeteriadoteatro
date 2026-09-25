@@ -19,6 +19,7 @@
 
 - **Padrão de mercado em KDS:** pedidos "VIP" ou "urgentes" no topo com cor própria, e suporte a **bump bar** (teclado físico de 10 teclas) para selecionar e avançar pedidos.
 - **SAIPOS:** a tela KDS funciona em monitores touch ou em TVs comuns. Em TVs sem toque, a navegação depende de dispositivo externo.
+- **Suitable:** ordenação do KDS por prioridade e teclado digital integrado para executar comandos rapidamente. Fonte: https://suitable.com.br/produto/kds/
 
 ---
 

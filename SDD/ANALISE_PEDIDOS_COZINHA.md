@@ -5,7 +5,9 @@ Continua o [FEATURES_PENDENTES.md](CONCLUIDAS/FEATURES_PENDENTES.md), onde as CA
 
 > **Sobre os concorrentes:**
 > - **SAIPOS** é a referência principal (maior base de restaurantes do Brasil). Os recursos citados vêm da central de ajuda e do site oficial.
-> - **"SUITABLE" não foi encontrado** nas buscas públicas como sistema de gestão para restaurantes. Nesta análise, ele foi substituído pelo **padrão de mercado de KDS** (Food Sistemas, Teknisa, Consumer, OlaClick). Se "Suitable" for um produto específico (nome comercial, sistema regional ou interno), envie o link para eu complementar a comparação.
+> - **Padrão de mercado de KDS:** Food Sistemas, Teknisa, Consumer e OlaClick.
+> - **Suitable** (https://suitable.com.br) também tem KDS com cores por etapa, visão por produto, ordenação por prioridade, teclado e roteamento de impressão por setor, o que confirma as CAF-000022, 026, 028 e 029.
+> - A comparação com **Kyte, Jarbas, Garfo, Simpliza e Suitable** (gestão: estoque, clientes, financeiro, pedido pelo cliente) está em [ANALISE_CONCORRENTES_GESTAO.md](ANALISE_CONCORRENTES_GESTAO.md) (CAF-000031 a 000044).
 
 ---
 
@@ -39,8 +41,8 @@ Continua o [FEATURES_PENDENTES.md](CONCLUIDAS/FEATURES_PENDENTES.md), onde as CA
 | Prioridade/urgência e bump bar | ⚠️ | ✅ | ❌ | [CAF-000029](CAF-000029-prioridade-e-operacao-por-teclado.md) |
 | Expedição (*bump*) e recall de pedidos | ✅ | ✅ | ⚠️ "Prontos" acumula o dia todo; recarga completa a cada evento | [CAF-000030](CAF-000030-atualizacao-incremental-do-kds.md) |
 | Integração com delivery (iFood etc.) | ✅ | ✅ | ❌ | Fora do escopo (ver abaixo) |
-| Cardápio digital / autoatendimento por QR | ✅ | ✅ | ❌ | Fora do escopo (ver abaixo) |
-| Ficha técnica, estoque e CMV | ✅ | ⚠️ | ❌ | Fora do escopo (ver abaixo) |
+| Cardápio digital / autoatendimento por QR | ✅ | ✅ | ❌ | [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md) |
+| Ficha técnica, estoque e CMV | ✅ | ⚠️ | ❌ | [CAF-000031](CAF-000031-controle-de-estoque.md) / [CAF-000032](CAF-000032-ficha-tecnica-custo-e-lucro.md) |
 | NFC-e | ✅ | ✅ | ❌ | Fora do escopo (ver abaixo) |
 
 Legenda: ✅ tem · ⚠️ parcial ou não confirmado · ❌ não tem
@@ -90,8 +92,8 @@ Legenda: ✅ tem · ⚠️ parcial ou não confirmado · ❌ não tem
 Esses itens aparecem entre os principais diferenciais da SAIPOS, mas são projetos grandes e com dependências externas. Ficam registrados para decisão do cliente:
 
 - **Integração com delivery (iFood, 99Food, cardápio próprio com entrega):** exige homologação e credenciais do parceiro.
-- **Autoatendimento por QR Code na mesa:** já listado em "Ideias para o futuro" do FEATURES_PENDENTES. Reaproveita `criar_pedido` com aprovação do barista.
-- **Ficha técnica, estoque e CMV:** baixa de insumos por venda e alerta de estoque mínimo. Combina com "produto esgotado" (CAF-000006).
+- **Autoatendimento por QR Code na mesa:** especificado na [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md).
+- **Ficha técnica, estoque e CMV:** especificados na [CAF-000031](CAF-000031-controle-de-estoque.md) e na [CAF-000032](CAF-000032-ficha-tecnica-custo-e-lucro.md).
 - **NFC-e:** exige certificado digital e integração com provedor fiscal.
 - **Impressão ESC/POS direta** (sem o diálogo do navegador): exige um app ou ponte local.
 

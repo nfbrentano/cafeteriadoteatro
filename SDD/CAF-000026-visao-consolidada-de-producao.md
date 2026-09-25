@@ -17,6 +17,7 @@
 
 - **Padrão de mercado em KDS (Food Sistemas, Teknisa, Consumer):** a tela consolidada ou "resumo de produção", que agrupa os itens iguais de todos os pedidos abertos por praça.
 - **SAIPOS:** produção organizada por etapas, com os produtos selecionáveis individualmente para avançar em lote.
+- **Suitable:** o KDS permite ver por pedido completo **ou por produto**, além dos modos cards, colunas e "zen". Fonte: https://suitable.com.br/produto/kds/
 
 ---
 
