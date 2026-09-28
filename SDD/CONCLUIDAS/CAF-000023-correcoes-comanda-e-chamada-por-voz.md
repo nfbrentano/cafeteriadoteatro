@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + PDV + impressão | 🔴 Alta | P | Especificação · aguardando revisão |
+| Cozinha (KDS) + PDV + impressão | 🔴 Alta | P | ✅ Concluído |
 
 ---
 
@@ -46,15 +46,15 @@ onclick="window.cozinhaChamarPedido('12', 'Mesa 3', '${window.escapeHtml(pedido.
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Extrair a consulta de pedido completo para uma constante única, `PEDIDO_SELECT_COMPLETO` (itens, adicionais e sabores), usada em `fetchPedidosIniciais` e no realtime de `INSERT`.
-- [ ] `updateStatus` passa `p.cliente_nome` para `chamarPedidoVoz`.
-- [ ] Trocar os `onclick` com dados interpolados dos botões "Chamar" (KDS e PDV) por `data-pedido-id` com listener (`addEventListener` ou delegação no container), buscando os dados do pedido no estado em memória.
-- [ ] Revisar os outros `onclick` com interpolação de **texto** em `js/cozinha.js` e `js/pedidos.js`. Os que passam só IDs numéricos podem ficar.
-- [ ] Unificar o texto da chamada entre KDS e PDV ("pronto para retirada" × "pronto para ser servido") numa função compartilhada que respeita `para_viagem`.
+- [x] Extrair a consulta de pedido completo para uma constante única, `PEDIDO_SELECT_COMPLETO` (itens, adicionais e sabores), usada em `fetchPedidosIniciais` e no realtime de `INSERT`.
+- [x] `updateStatus` passa `p.cliente_nome` para `chamarPedidoVoz`.
+- [x] Trocar os `onclick` com dados interpolados dos botões "Chamar" (KDS e PDV) por `data-pedido-id` com listener (`addEventListener` ou delegação no container), buscando os dados do pedido no estado em memória.
+- [x] Revisar os outros `onclick` com interpolação de **texto** em `js/cozinha.js` e `js/pedidos.js`. Os que passam só IDs numéricos podem ficar.
+- [x] Unificar o texto da chamada entre KDS e PDV ("pronto para retirada" × "pronto para ser servido") numa função compartilhada que respeita `para_viagem`.
 
 ### Requisitos não funcionais
-- [ ] **Segurança:** nenhum dado digitado pelo usuário (nome do cliente, observações) é interpolado em atributo de evento.
-- [ ] **Regressão:** a impressão de teste (`btnTesteImpressao`) e a reimpressão manual continuam idênticas.
+- [x] **Segurança:** nenhum dado digitado pelo usuário (nome do cliente, observações) é interpolado em atributo de evento.
+- [x] **Regressão:** a impressão de teste (`btnTesteImpressao`) e a reimpressão manual continuam idênticas.
 
 ### Dependências técnicas
 - [CAF-000010](CONCLUIDAS/CAF-000010-nome-do-cliente-pedido-para-viagem.md) (`cliente_nome`, `para_viagem`) e a tabela `pedido_item_sabores` (meio a meio, TAREFAS.md seção 6).
@@ -66,10 +66,10 @@ onclick="window.cozinhaChamarPedido('12', 'Mesa 3', '${window.escapeHtml(pedido.
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o barista lança um crepe meio a meio, **quando** a cozinha recebe o pedido, **então** a comanda impressa automaticamente mostra os dois "½ sabor".
-- [ ] **Dado que** um pedido para viagem tem o nome "Ana", **quando** a cozinha toca em "Pronto!", **então** a voz diz "Pedido da Ana…".
-- [ ] **Dado que** o cliente se chama "D'Ávila", **quando** alguém toca em "📢 Chamar" no KDS ou no PDV, **então** a chamada acontece e o console não mostra erro.
-- [ ] **Dado que** o nome do cliente é `');alert(1);//`, **quando** o card é renderizado e o botão tocado, **então** nenhum script é executado.
+- [x] **Dado que** o barista lança um crepe meio a meio, **quando** a cozinha recebe o pedido, **então** a comanda impressa automaticamente mostra os dois "½ sabor".
+- [x] **Dado que** um pedido para viagem tem o nome "Ana", **quando** a cozinha toca em "Pronto!", **então** a voz diz "Pedido da Ana…".
+- [x] **Dado que** o cliente se chama "D'Ávila", **quando** alguém toca em "📢 Chamar" no KDS ou no PDV, **então** a chamada acontece e o console não mostra erro.
+- [x] **Dado que** o nome do cliente é `');alert(1);//`, **quando** o card é renderizado e o botão tocado, **então** nenhum script é executado.
 
 ---
 

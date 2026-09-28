@@ -1889,7 +1889,7 @@
 
       const btnAcaoHtml = isPronto
         ? `<div class="pedido-card-barista__actions">
-            <button class="btn-chamar-voz" onclick="window.baristaChamarPedido('${pedido.numero_pedido || pedido.id}', '${pedido.mesa_codigo}', '${window.escapeHtml(pedido.cliente_nome || '')}')" title="Fazer chamada por voz">
+            <button class="btn-chamar-voz" data-pedido-id="${pedido.id}" title="Fazer chamada por voz">
               📢 Chamar
             </button>
             <button class="btn-entregar" onclick="window.baristaMarcarEntregue(${pedido.id})">
@@ -1919,6 +1919,18 @@
       `;
 
       pedidosCardsGrid.appendChild(card);
+    });
+  }
+
+  if (pedidosCardsGrid) {
+    pedidosCardsGrid.addEventListener('click', (e) => {
+      const btnChamar = e.target.closest('.btn-chamar-voz');
+      if (!btnChamar) return;
+      const pedidoId = Number(btnChamar.dataset.pedidoId);
+      const pedido = activePedidos.find(p => p.id === pedidoId);
+      if (pedido) {
+        chamarPedidoVoz(pedido.numero_pedido || pedido.id, pedido.mesa_codigo, pedido.cliente_nome, pedido.para_viagem);
+      }
     });
   }
 
@@ -2748,7 +2760,7 @@
         if (payload.eventType === 'UPDATE') {
           if (payload.new && payload.new.status === 'concluido' && payload.old && payload.old.status !== 'concluido') {
             tocarAlertaPronto();
-            chamarPedidoVoz(payload.new.numero_pedido || payload.new.id, payload.new.mesa_codigo, payload.new.cliente_nome);
+            chamarPedidoVoz(payload.new.numero_pedido || payload.new.id, payload.new.mesa_codigo, payload.new.cliente_nome, payload.new.para_viagem);
           }
         }
         debouncedLoadActivePedidos();
@@ -2794,17 +2806,26 @@
     } catch (e) {}
   }
 
-  function chamarPedidoVoz(numeroPedido, mesaCodigo, clienteNome) {
+  function chamarPedidoVoz(numeroPedido, mesaCodigo, clienteNome, paraViagem) {
     tocarAlertaPronto();
     if (!('speechSynthesis' in window)) return;
 
     try {
       window.speechSynthesis.cancel();
       let frase = '';
-      if (clienteNome) {
-        frase = `Atenção! Pedido da ${clienteNome}, está pronto para ser servido!`;
+      if (typeof numeroPedido === 'object' && numeroPedido !== null) {
+        frase = window.formatarChamadaVozPedido ? window.formatarChamadaVozPedido(numeroPedido) : '';
+      } else if (window.formatarChamadaVozPedido) {
+        frase = window.formatarChamadaVozPedido({
+          numeroPedido,
+          mesaCodigo,
+          clienteNome,
+          paraViagem
+        });
       } else {
-        frase = `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para ser servido!`;
+        frase = clienteNome
+          ? `Atenção! Pedido da ${clienteNome}, está pronto para ser servido!`
+          : `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, está pronto para ser servido!`;
       }
       const utterance = new SpeechSynthesisUtterance(frase);
       utterance.lang = 'pt-BR';
@@ -2825,7 +2846,15 @@
     }
   }
 
-  window.baristaChamarPedido = chamarPedidoVoz;
+  window.baristaChamarPedido = function(numeroOuId, mesaCodigo, clienteNome, paraViagem) {
+    if (typeof numeroOuId === 'number' && !mesaCodigo && !clienteNome) {
+      const pedido = activePedidos.find(p => p.id === numeroOuId);
+      if (pedido) {
+        return chamarPedidoVoz(pedido.numero_pedido || pedido.id, pedido.mesa_codigo, pedido.cliente_nome, pedido.para_viagem);
+      }
+    }
+    chamarPedidoVoz(numeroOuId, mesaCodigo, clienteNome, paraViagem);
+  };
 
   async function loadConfiguracoes() {
     try {

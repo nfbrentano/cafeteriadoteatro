@@ -450,6 +450,61 @@ body {
   gap: 8px;
 }
 
+.estacao-status-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin: 4px 16px 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+.estacao-status-tag.tag--aguardando {
+  background: #FFF8E1;
+  color: #B78103;
+  border: 1px solid #FFE082;
+}
+
+.estacao-status-tag.tag--aviso {
+  background: #E3F2FD;
+  color: #0D47A1;
+  border: 1px solid #BBDEFB;
+}
+
+.estacao-status-tag.tag--sucesso {
+  background: #E8F5E9;
+  color: #1B5E20;
+  border: 1px solid #C8E6C9;
+}
+
+.estacao-status-tag.tag--misto {
+  background: #F3E5F5;
+  color: #4A148C;
+  border: 1px solid #E1BEE7;
+}
+
+.estacao-status-tag.tag--info {
+  background: #ECEFF1;
+  color: #37474F;
+  border: 1px solid #CFD8DC;
+}
+
+.badge-aguardando-estacao {
+  background: #FFF3CD;
+  color: #856404;
+  border: 1px solid #FFEEBA;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-left: 6px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .footer-actions {
   display: flex;
   gap: 8px;
