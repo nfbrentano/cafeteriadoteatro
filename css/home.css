@@ -7,9 +7,9 @@
 .hero {
   position: relative;
   height: 100dvh;
-  min-height: 600px;
+  min-height: 520px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   text-align: center;
   overflow: hidden;
@@ -33,9 +33,10 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(28, 16, 8, 0.55) 0%,
-    rgba(28, 16, 8, 0.35) 50%,
-    rgba(28, 16, 8, 0.72) 100%
+    rgba(28, 16, 8, 0.45) 0%,
+    rgba(28, 16, 8, 0.08) 25%,
+    rgba(28, 16, 8, 0.25) 55%,
+    rgba(28, 16, 8, 0.82) 100%
   );
 }
 
@@ -43,13 +44,13 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  padding-top: var(--nav-height);
+  padding-top: 0;
+  padding-bottom: clamp(1.75rem, 5vh, 3.5rem);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
-
 
 .hero__actions {
   display: flex;
@@ -67,20 +68,7 @@
 }
 
 .hero__scroll {
-  position: absolute;
-  bottom: var(--space-8);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  z-index: 2;
-  color: rgba(245, 236, 215, 0.6);
-  font-size: var(--size-xs);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  animation: bounce 2.5s ease-in-out infinite 1.5s;
+  display: none;
 }
 
 .hero__scroll-line {
@@ -226,7 +214,7 @@
 
 .hero-carousel__caption {
   text-align: center;
-  margin: 0 auto var(--space-8);
+  margin: 0 auto var(--space-6);
   max-width: 55ch;
   opacity: 0;
   animation: fadeUp 0.8s 0.7s forwards;
@@ -311,8 +299,11 @@
   .hero__gallery-content {
     padding-bottom: 20px;
   }
+  .hero__content {
+    padding-bottom: clamp(1.25rem, 4vh, 2rem);
+  }
   .hero-carousel__caption {
-    margin-bottom: 0;
+    margin-bottom: var(--space-4);
   }
 }
 
