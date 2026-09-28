@@ -71,11 +71,34 @@
 
   // Expõe globalmente as funções de impressão
   window.cafeteriaPrint = {
-    printPedido: function (pedido, itens) {
-      const date = new Date(pedido.created_at || new Date()).toLocaleString('pt-BR');
+    printPedido: function (pedido, itens, options = {}) {
+      const isComplementar = Boolean(options && options.isComplementar);
+      const printDate = new Date().toLocaleString('pt-BR');
+      const orderDate = new Date(pedido.created_at || new Date()).toLocaleString('pt-BR');
       const total = Number(pedido.total || 0).toFixed(2).replace('.', ',');
       const pagamento = pedido.forma_pagamento ? formatFormaPagamento(pedido.forma_pagamento) : null;
       const statusPag = pedido.status_pagamento === 'pago' ? 'PAGO ✅' : 'A PAGAR ⏳';
+
+      let totalAdicionais = 0;
+      (itens || []).forEach(it => {
+        if (!it.cancelado) {
+          totalAdicionais += (Number(it.preco_unitario || 0) * (it.quantidade || 1)) - (Number(it.desconto || 0));
+        }
+      });
+      const totalAdicionaisStr = Math.max(0, totalAdicionais).toFixed(2).replace('.', ',');
+
+      let cabecalhoHtml = `
+        <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
+        <div class="center">COMANDA DE COZINHA / BAR</div>
+      `;
+
+      if (isComplementar) {
+        cabecalhoHtml = `
+          <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
+          <div class="center bold" style="background: #000; color: #fff; padding: 4px 0; margin: 4px 0; font-size: 13px; letter-spacing: 1px;">*** COMANDA COMPLEMENTAR ***</div>
+          <div class="center bold" style="font-size: 12px; margin-bottom: 2px;">⚠️ ACRÉSCIMO AO PEDIDO</div>
+        `;
+      }
 
       let html = `
         <!DOCTYPE html>
@@ -85,15 +108,14 @@
           <style>${baseStyles}</style>
         </head>
         <body>
-          <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
-          <div class="center">COMANDA DE COZINHA / BAR</div>
+          ${cabecalhoHtml}
           
           <div class="divider"></div>
           
           <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${pedido.mesa_codigo}</span> ${pedido.para_viagem ? ' <strong>(🥡 VIAGEM)</strong>' : ''}</div>
           ${pedido.cliente_nome ? `<div><span class="bold">CLIENTE:</span> ${window.escapeHtml(pedido.cliente_nome)}</div>` : ''}
           <div><span class="bold">PEDIDO:</span> #${pedido.numero_pedido || pedido.id}</div>
-          <div><span class="bold">HORA:</span> ${date}</div>
+          <div><span class="bold">${isComplementar ? 'HORA ACRÉSCIMO:' : 'HORA PEDIDO:'}</span> ${isComplementar ? printDate : orderDate}</div>
           <div><span class="bold">STATUS PAG.:</span> ${statusPag} ${pagamento ? '(' + pagamento + ')' : ''}</div>
           
           <div class="divider"></div>
@@ -104,17 +126,19 @@
       (itens || []).forEach(item => {
         const isCancelado = item.cancelado;
         const isCortesia = item.cortesia_de_item_id ? true : false;
+        const isLancadoDepois = Boolean(item.lancado_depois);
         
         const preco = (Number(item.preco_unitario || 0) * (item.quantidade || 1)).toFixed(2).replace('.', ',');
         
         let cancelStyle = isCancelado ? 'text-decoration: line-through; color: #555;' : '';
         let cancelLabel = isCancelado ? ' - CANCELADO' : '';
         let cortesiaLabel = isCortesia && !isCancelado ? ' (CORTESIA)' : '';
+        let adicionalLabel = (isLancadoDepois && !isComplementar && !isCancelado) ? ' [NOVO]' : '';
         
         html += `
           <tr>
             <td class="qty" style="${cancelStyle}">${item.quantidade}x</td>
-            <td style="${cancelStyle}"><strong>${window.escapeHtml(item.nome_produto)}</strong>${cortesiaLabel}${cancelLabel}</td>
+            <td style="${cancelStyle}"><strong>${window.escapeHtml(item.nome_produto)}</strong>${cortesiaLabel}${adicionalLabel}${cancelLabel}</td>
             <td class="price" style="${cancelStyle}">R$ ${preco}</td>
           </tr>
         `;
@@ -161,11 +185,24 @@
           </table>
           
           <div class="divider"></div>
-          
+      `;
+
+      if (isComplementar) {
+        html += `
+          <div class="bold" style="font-size: 15px; text-align: right;">
+            TOTAL ACRÉSCIMO: R$ ${totalAdicionaisStr}
+          </div>
+          <div style="font-size: 12px; text-align: right; color: #555;">
+            Total Acumulado do Pedido: R$ ${total}
+          </div>
+        `;
+      } else {
+        html += `
           <div class="bold" style="font-size: 16px; text-align: right;">
             TOTAL: R$ ${total}
           </div>
-      `;
+        `;
+      }
 
       if (pedido.observacoes && pedido.observacoes.trim()) {
         html += `
@@ -183,6 +220,10 @@
       `;
 
       executePrint(html);
+    },
+
+    printComandaAdicional: function (pedido, itensNovos) {
+      return this.printPedido(pedido, itensNovos, { isComplementar: true });
     },
 
     // Conferência de Mesa (Prévia da Conta para o cliente)

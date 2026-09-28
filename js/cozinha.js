@@ -315,9 +315,20 @@
 
   function showCancelToast(msg) {
     cancelToastMsg.textContent = msg;
+    cancelToast.classList.remove('toast--novo-item');
     cancelToast.classList.remove('hidden');
     setTimeout(() => {
       cancelToast.classList.add('hidden');
+    }, 8000);
+  }
+
+  function showNovoItemToast(msg) {
+    cancelToastMsg.textContent = msg;
+    cancelToast.classList.add('toast--novo-item');
+    cancelToast.classList.remove('hidden');
+    setTimeout(() => {
+      cancelToast.classList.add('hidden');
+      cancelToast.classList.remove('toast--novo-item');
     }, 8000);
   }
 
@@ -541,15 +552,25 @@
       }
 
       let itensHtml = '';
+      let novosPendentesCount = 0;
+
       if (itensDaEstacao.length > 0) {
         itensDaEstacao.forEach(item => {
           const isCancelado = item.cancelado;
           const isCortesia = item.cortesia_de_item_id ? true : false;
+          const isLancadoDepois = Boolean(item.lancado_depois);
+          const isNovoNaoPronto = isLancadoDepois && !item.pronto_em && !isCancelado;
+
+          if (isNovoNaoPronto) {
+            novosPendentesCount++;
+          }
           
           let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
           let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
           let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
+          let novoLabel = isNovoNaoPronto ? '<span class="badge-item-novo" title="Item adicionado após o envio">NOVO</span>' : '';
           let prontoClass = item.pronto_em ? 'is-pronto' : '';
+          let lancadoDepoisClass = isNovoNaoPronto ? 'is-lancado-depois' : '';
           let checkHtml = item.pronto_em ? '<span class="check-icon">✓</span>' : '';
           
           const isClickable = !isCancelado && (tipo !== 'concluido' || aguardandoOutraEstacao);
@@ -576,10 +597,10 @@
           }
 
           itensHtml += `
-            <div class="item-row ${actionClass} ${prontoClass}" ${onClick}>
+            <div class="item-row ${actionClass} ${prontoClass} ${lancadoDepoisClass}" ${onClick}>
               <div class="item-main" ${cancelClass}>
                 <span class="item-qty">${item.quantidade}x</span>
-                <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${cancelLabel}</span>
+                <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${novoLabel} ${cancelLabel}</span>
               </div>
               ${saboresHtml}
               ${adicHtml}
@@ -604,7 +625,7 @@
           <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda">🖨 Comanda</button>
           <div class="footer-actions">
             <button class="btn-card btn-card--preparo" onclick="window.iniciarPreparoEstacao(${pedido.id})">
-              Iniciar Preparo
+               Iniciar Preparo
             </button>
             <button class="btn-card btn-card--concluir" onclick="window.concluirPreparoEstacao(${pedido.id})">
               Pronto!
@@ -662,9 +683,13 @@
         ? `<span class="badge-aguardando-estacao">⏳ Aguardando ${isBar ? 'Cozinha' : 'Bar'}</span>`
         : '';
 
+      const badgeNovos = novosPendentesCount > 0 
+        ? `<span class="badge-itens-novos" title="${novosPendentesCount} item(ns) adicionado(s) após o envio">+${novosPendentesCount} novo${novosPendentesCount > 1 ? 's' : ''}</span>`
+        : '';
+
       card.innerHTML = `
         <div class="pedido-header">
-          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando}</div>
+          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando} ${badgeNovos}</div>
           ${progressHtml}
           <div class="pedido-tempo ${atrasadoClass}">⏱ ${tempoStr}</div>
         </div>
@@ -905,6 +930,77 @@
     }
   }, 4000);
 
+  // Fila e debounce de ~1.5s para impressão de itens adicionais / complementares
+  let debouncePrintAdicionaisTimer = null;
+  const pendingAdicionaisPedidos = new Set();
+
+  function agendarImpressaoComplementar(pedidoId) {
+    if (!pedidoId || !window.cafeteriaPrint) return;
+    pendingAdicionaisPedidos.add(pedidoId);
+    
+    if (debouncePrintAdicionaisTimer) {
+      clearTimeout(debouncePrintAdicionaisTimer);
+    }
+    
+    debouncePrintAdicionaisTimer = setTimeout(async () => {
+      const pedidosParaProcessar = Array.from(pendingAdicionaisPedidos);
+      pendingAdicionaisPedidos.clear();
+      
+      for (const pId of pedidosParaProcessar) {
+        await processarImpressaoComplementar(pId);
+      }
+    }, 1500);
+  }
+
+  async function processarImpressaoComplementar(pedidoId) {
+    try {
+      // 1. Buscar pedido completo com itens
+      const { data: pedidoData, error: errPed } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select(PEDIDO_SELECT_COMPLETO)
+        .eq('id', pedidoId)
+        .single();
+        
+      if (errPed || !pedidoData) return;
+
+      const todosItens = pedidoData.pedido_itens || [];
+      // Filtrar itens lançados depois que ainda não foram impressos e não estão cancelados
+      const itensNovosNaoImpressos = todosItens.filter(i => 
+        i.lancado_depois === true && !i.impresso_em && !i.cancelado
+      );
+
+      if (itensNovosNaoImpressos.length === 0) return;
+
+      // 2. Filtrar pela estação ativa da tela
+      let itensAlvo = itensNovosNaoImpressos;
+      if (estacaoSelecionada !== 'todas') {
+        itensAlvo = itensNovosNaoImpressos.filter(i => getItemEstacao(i) === estacaoSelecionada);
+      }
+
+      if (itensAlvo.length === 0) return;
+
+      const itemIds = itensAlvo.map(i => i.id);
+
+      // 3. Marcar atomicamente como impresso no banco para evitar duplicidade entre múltiplas telas
+      const { data: markedIds, error: errRpc } = await window.cafeteriaSupabase.rpc('marcar_itens_impressos', {
+        p_item_ids: itemIds
+      });
+
+      if (errRpc || !markedIds || markedIds.length === 0) {
+        // Outra tela já imprimiu ou nenhum foi retornado
+        return;
+      }
+
+      // 4. Imprimir comanda complementar contendo apenas os itens reservados para impressão
+      const itensParaImprimir = itensAlvo.filter(i => markedIds.includes(i.id));
+      if (itensParaImprimir.length > 0 && window.cafeteriaPrint) {
+        window.cafeteriaPrint.printComandaAdicional(pedidoData, itensParaImprimir);
+      }
+    } catch (err) {
+      console.error('[KDS Print] Erro ao processar impressão complementar:', err);
+    }
+  }
+
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-cozinha-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, async payload => {
@@ -947,8 +1043,16 @@
           playAlert();
         } else if (payload.eventType === 'INSERT') {
           const isCortesia = payload.new.cortesia_de_item_id ? true : false;
-          if (isCortesia) {
+          const isLancadoDepois = Boolean(payload.new.lancado_depois);
+
+          if (isCortesia || isLancadoDepois) {
             playAlert();
+            const nomeProd = payload.new.nome_produto || 'Item';
+            showNovoItemToast(`➕ Item adicionado: ${payload.new.quantidade || 1}x ${nomeProd}`);
+          }
+
+          if (isLancadoDepois && payload.new.pedido_id) {
+            agendarImpressaoComplementar(payload.new.pedido_id);
           }
         }
         debouncedFetchPedidos();
