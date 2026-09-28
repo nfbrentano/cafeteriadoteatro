@@ -15,9 +15,6 @@
   if (!carousel) return; // bail if not on home page
 
   const slides      = carousel.querySelectorAll('.hero-carousel__slide');
-  const dots        = document.querySelectorAll('.hero-carousel__dot');
-  const prevBtn     = document.getElementById('carousel-prev');
-  const nextBtn     = document.getElementById('carousel-next');
   const captionEl   = document.getElementById('carousel-caption');
   const captionText = captionEl?.querySelector('.hero-carousel__caption-text');
   const captionSub  = captionEl?.querySelector('.hero-carousel__caption-sub');
@@ -39,12 +36,6 @@
     // Crossfade slides
     slides[prev].classList.remove('hero-carousel__slide--active');
     slides[current].classList.add('hero-carousel__slide--active');
-
-    // Update dots
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('hero-carousel__dot--active', i === current);
-      dot.setAttribute('aria-selected', i === current ? 'true' : 'false');
-    });
 
     // Animate caption
     updateCaption();
@@ -121,30 +112,6 @@
   }
 
   // ─── Event Listeners ──────────────────────────
-  // Navigation buttons
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-      prevSlide();
-      startAutoplay();
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-      nextSlide();
-      startAutoplay();
-    });
-  }
-
-  // Dot navigation
-  dots.forEach((dot) => {
-    dot.addEventListener('click', () => {
-      const slideIndex = parseInt(dot.dataset.slide, 10);
-      goToSlide(slideIndex);
-      startAutoplay();
-    });
-  });
-
   // Keyboard navigation
   document.addEventListener('keydown', (e) => {
     // Only respond when hero is in viewport

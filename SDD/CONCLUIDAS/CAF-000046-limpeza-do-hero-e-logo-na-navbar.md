@@ -1,7 +1,7 @@
 # [UI] Limpeza do hero da home e logo na navbar
 
-> **Status:** Rascunho
-> **Autor:** Natanael Fernando Gatti Brentano · **Revisor:** · **Criada em:** 2026-09-28 · **Atualizada em:** 2026-09-28
+> **Status:** Concluída
+> **Autor:** Natanael Fernando Gatti Brentano · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-09-28 · **Atualizada em:** 2026-09-28
 
 ## Detalhes da Atividade
 
@@ -79,16 +79,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que abro `index.html`, quando o hero carrega, então os textos "Cafeteria do Teatro" (tag), "Onde o café encontra a cultura." e "No coração do Teatro da Univates…" **não** aparecem na tela.
-- [ ] **CA02:** Dado que abro a home no desktop e no mobile, quando olho o hero, então não aparecem as setas de anterior/próximo nem os indicadores (dots) do carrossel.
-- [ ] **CA03:** Dado que os controles foram removidos, quando a página fica aberta por mais de 2 ciclos de slide, então as artes continuam trocando sozinhas, a legenda e a barra de progresso acompanham, o swipe funciona no mobile, as setas ← → do teclado funcionam e não há erros no console.
-- [ ] **CA04:** Dado que abro qualquer página com navbar, quando ela carrega, então a logo aparece no lugar do texto "Cafeteria do Teatro", sem distorção e sem deslocamento de layout (CLS ≤ 0,1).
-- [ ] **CA05:** Dado que a navbar está transparente sobre o hero, quando rolo a página e ela passa a `navbar--solid`, então a logo continua visível e legível nos dois estados. Com leitor de tela, o link é anunciado como "Cafeteria do Teatro - Início".
-- [ ] **CA06:** Dado que inspeciono o HTML da home, quando procuro por `<h1>`, então existe exatamente um, com "Cafeteria do Teatro em Lajeado", visualmente oculto. (Caso negativo: a página **não** pode ficar sem `<h1>`.)
-- [ ] **CA07:** Dado que abro `cardapio.html` e uma URL inexistente (404), quando a navbar carrega, então a mesma logo aparece.
-- [ ] **CA08:** Dado uma tela de 375 px de largura, quando a navbar carrega, então a logo e o botão hambúrguer cabem na mesma linha, sem sobreposição e sem scroll horizontal.
-- [ ] **CA10:** Dado os WebP gerados, quando confiro os arquivos, então cada um tem no máximo 15 KB, 144 px de altura, fundo transparente e nenhuma margem vazia em volta do texto. No DevTools > Network, a home carrega os `.webp` e **não** carrega os `.png` das logos.
-- [ ] **CA09:** Os CTAs "Ver Cardápio" e "Como Chegar" e a legenda do slide continuam visíveis e funcionando. (Caso negativo: esses elementos **não** podem ser removidos junto com o resto.)
+- [x] **CA01:** Dado que abro `index.html`, quando o hero carrega, então os textos "Cafeteria do Teatro" (tag), "Onde o café encontra a cultura." e "No coração do Teatro da Univates…" **não** aparecem na tela.
+- [x] **CA02:** Dado que abro a home no desktop e no mobile, quando olho o hero, então não aparecem as setas de anterior/próximo nem os indicadores (dots) do carrossel.
+- [x] **CA03:** Dado que os controles foram removidos, quando a página fica aberta por mais de 2 ciclos de slide, então as artes continuam trocando sozinhas, a legenda e a barra de progresso acompanham, o swipe funciona no mobile, as setas ← → do teclado funcionam e não há erros no console.
+- [x] **CA04:** Dado que abro qualquer página com navbar, quando ela carrega, então a logo aparece no lugar do texto "Cafeteria do Teatro", sem distorção e sem deslocamento de layout (CLS ≤ 0,1).
+- [x] **CA05:** Dado que a navbar está transparente sobre o hero, quando rolo a página e ela passa a `navbar--solid`, então a logo continua visível e legível nos dois estados. Com leitor de tela, o link é anunciado como "Cafeteria do Teatro - Início".
+- [x] **CA06:** Dado que inspeciono o HTML da home, quando procuro por `<h1>`, então existe exatamente um, com "Cafeteria do Teatro em Lajeado", visualmente oculto. (Caso negativo: a página **não** pode ficar sem `<h1>`.)
+- [x] **CA07:** Dado que abro `cardapio.html` e uma URL inexistente (404), quando a navbar carrega, então a mesma logo aparece.
+- [x] **CA08:** Dado uma tela de 375 px de largura, quando a navbar carrega, então a logo e o botão hambúrguer cabem na mesma linha, sem sobreposição e sem scroll horizontal.
+- [x] **CA10:** Dado os WebP gerados, quando confiro os arquivos, então cada um tem no máximo 15 KB, 144 px de altura, fundo transparente e nenhuma margem vazia em volta do texto. No DevTools > Network, a home carrega os `.webp` e **não** carrega os `.png` das logos.
+- [x] **CA09:** Os CTAs "Ver Cardápio" e "Como Chegar" e a legenda do slide continuam visíveis e funcionando. (Caso negativo: esses elementos **não** podem ser removidos junto com o resto.)
 
 ## O que a atividade não inclui
 

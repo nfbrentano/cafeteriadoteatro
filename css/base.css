@@ -276,3 +276,17 @@ p {
   .container { padding: 0 var(--space-4); }
   .section   { padding: var(--space-12) 0; }
 }
+
+/* ─── UTILITÁRIOS DE ACESSIBILIDADE ─────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+

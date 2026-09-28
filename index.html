@@ -135,7 +135,8 @@
   <nav class="navbar navbar--transparent" id="navbar" role="navigation" aria-label="Navegação principal">
     <div class="navbar__inner">
       <a href="index.html" class="navbar__logo" aria-label="Cafeteria do Teatro - Início">
-        Cafeteria <span>do Teatro</span>
+        <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Cafeteria do Teatro" class="navbar__logo-img navbar__logo-img--clara" width="328" height="144" fetchpriority="high">
+        <img src="assets/images/logo-cafeteria-do-teatro-escura.webp" alt="Cafeteria do Teatro" class="navbar__logo-img navbar__logo-img--escura" width="328" height="144" fetchpriority="low">
       </a>
 
       <ul class="navbar__links" role="list">
@@ -197,18 +198,7 @@
       <div class="hero__overlay"></div>
 
       <div class="hero__content container">
-        <div class="hero__tag">
-          Cafeteria do Teatro
-        </div>
-
-        <h1 class="hero__title">
-          <span style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">Cafeteria do Teatro em Lajeado: </span>Onde o café<br>encontra a <em>cultura.</em>
-        </h1>
-
-        <p class="hero__subtitle">
-          No coração do Teatro da Univates, uma pausa que vale o ato.
-          Café de qualidade, ambiente acolhedor e a energia única de um espaço cultural.
-        </p>
+        <h1 class="sr-only">Cafeteria do Teatro em Lajeado</h1>
 
         <!-- Caption dinâmico do slide atual -->
         <div class="hero-carousel__caption hero-carousel__caption--fullscreen" id="carousel-caption" aria-live="polite">
@@ -226,27 +216,6 @@
         </div>
       </div>
 
-      <!-- Navegação do carrossel -->
-      <div class="hero-carousel__nav hero-carousel__nav--fullscreen" aria-label="Controles do carrossel">
-        <button class="hero-carousel__arrow hero-carousel__arrow--prev" id="carousel-prev" aria-label="Slide anterior">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-
-        <div class="hero-carousel__dots" role="tablist" aria-label="Indicadores de slides">
-          <button class="hero-carousel__dot hero-carousel__dot--active" role="tab" aria-selected="true" aria-label="Ir para slide 1" data-slide="0"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 2" data-slide="1"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 3" data-slide="2"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 4" data-slide="3"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 5" data-slide="4"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 6" data-slide="5"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 7" data-slide="6"></button>
-          <button class="hero-carousel__dot" role="tab" aria-selected="false" aria-label="Ir para slide 8" data-slide="7"></button>
-        </div>
-
-        <button class="hero-carousel__arrow hero-carousel__arrow--next" id="carousel-next" aria-label="Próximo slide">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
-      </div>
 
       <!-- Barra de progresso automática -->
       <div class="hero-carousel__progress hero-carousel__progress--fullscreen" aria-hidden="true">
