@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + admin + banco | 🟡 Média | M | Especificação · aguardando revisão |
+| Cozinha (KDS) + admin + banco | 🟡 Média | M | 🟡 Em andamento |
 
 ---
 

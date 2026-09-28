@@ -54,8 +54,82 @@
     )
   `;
   
-  // Cache de estacoes
+  // Cache de estacoes e tempos alvo (CAF-000025)
   let produtosCache = {}; // { produto_id: estacao }
+  let produtosInfo = {}; // { produto_id: { estacao, tempo_alvo_min, categoria_id } }
+  let categoriasInfo = {}; // { categoria_id: { estacao, tempo_alvo_min, nome } }
+  let tempoAlvoPadraoMin = 15;
+  let serverClockSkewMs = 0; // offset = serverTime - localTime
+  const pedidosAvisadosAtraso = new Set();
+  let audioCtx = null;
+
+  async function syncServerClock() {
+    try {
+      const t0 = Date.now();
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/health`, { method: 'GET' }).catch(() => null);
+      const dateHeader = res?.headers?.get('date');
+      if (dateHeader) {
+        const serverDate = new Date(dateHeader).getTime();
+        const roundTrip = Date.now() - t0;
+        serverClockSkewMs = (serverDate + roundTrip / 2) - Date.now();
+        console.log(`[KDS] Sincronização de relógio: skew = ${Math.round(serverClockSkewMs)}ms`);
+      }
+    } catch (e) {
+      console.warn('[KDS] Falha na sincronização de relógio com servidor:', e);
+      serverClockSkewMs = 0;
+    }
+  }
+
+  function getNowAdjusted() {
+    return new Date(Date.now() + serverClockSkewMs);
+  }
+
+  function playAlertaAtrasoBeep() {
+    if (!somHabilitado) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+      // Tom 1
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(880, now);
+      gain1.gain.setValueAtTime(0.18, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.15);
+
+      // Tom 2 (agudo, indicando alerta)
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1174.66, now + 0.18);
+      gain2.gain.setValueAtTime(0.18, now + 0.18);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.18);
+      osc2.stop(now + 0.38);
+    } catch (e) {
+      console.warn('[KDS] Falha ao tocar beep sonoro de atraso:', e);
+    }
+  }
+
+  // Desbloqueia AudioContext em qualquer clique na tela
+  document.addEventListener('click', () => {
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }, { once: false, passive: true });
+
   let estacaoSelecionada = localStorage.getItem('kds_estacao') || 'todas';
   const filtroEstacao = document.getElementById('filtro-estacao');
   
@@ -111,6 +185,7 @@
     app.classList.remove('hidden');
     
     testAudioAutoplay();
+    await syncServerClock();
     await loadProdutosECategorias();
     await fetchPedidosIniciais();
     setupRealtime();
@@ -118,21 +193,46 @@
 
   async function loadProdutosECategorias() {
     try {
-      const [{ data: cats }, { data: prods }] = await Promise.all([
-        window.cafeteriaSupabase.from('categorias').select('id, estacao'),
-        window.cafeteriaSupabase.from('produtos').select('id, categoria_id')
+      const [{ data: cats }, { data: prods }, { data: settings }] = await Promise.all([
+        window.cafeteriaSupabase.from('categorias').select('id, estacao, tempo_alvo_min, nome'),
+        window.cafeteriaSupabase.from('produtos').select('id, categoria_id, tempo_alvo_min'),
+        window.cafeteriaSupabase.from('site_settings').select('key, value').eq('key', 'tempo_alvo_padrao_min').maybeSingle()
       ]);
       
-      const catMap = {};
-      if (cats) cats.forEach(c => catMap[c.id] = c.estacao || 'cozinha');
+      if (settings && settings.value) {
+        const val = parseInt(settings.value, 10);
+        if (!isNaN(val) && val > 0) tempoAlvoPadraoMin = val;
+      }
+
+      categoriasInfo = {};
+      if (cats) {
+        cats.forEach(c => {
+          categoriasInfo[c.id] = {
+            estacao: c.estacao || 'cozinha',
+            tempo_alvo_min: (c.tempo_alvo_min !== null && c.tempo_alvo_min !== undefined) ? Number(c.tempo_alvo_min) : tempoAlvoPadraoMin,
+            nome: c.nome
+          };
+        });
+      }
       
+      produtosCache = {};
+      produtosInfo = {};
       if (prods) {
         prods.forEach(p => {
-          produtosCache[p.id] = catMap[p.categoria_id] || 'cozinha';
+          const cat = categoriasInfo[p.categoria_id];
+          const estacao = cat ? cat.estacao : 'cozinha';
+          produtosCache[p.id] = estacao;
+          produtosInfo[p.id] = {
+            estacao: estacao,
+            categoria_id: p.categoria_id,
+            tempo_alvo_min: (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined)
+              ? Number(p.tempo_alvo_min)
+              : (cat ? cat.tempo_alvo_min : tempoAlvoPadraoMin)
+          };
         });
       }
     } catch (e) {
-      console.warn('Erro ao carregar produtos/categorias para estacoes:', e);
+      console.warn('Erro ao carregar produtos/categorias para estacoes e tempos alvo:', e);
     }
   }
 

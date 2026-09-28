@@ -378,6 +378,29 @@
           </div>
         </div>
 
+        <!-- Tempo de Preparo x Meta por Categoria (CAF-000025) -->
+        <div class="section-card" style="margin-top: 24px;">
+          <div class="section-card__header">
+            <span class="section-card__title">⏱️ Tempo Médio de Preparo × Meta / Tempo Alvo (Por Categoria)</span>
+          </div>
+          <div class="table-scroll" style="max-height: 350px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoria</th>
+                  <th>Meta (Tempo Alvo)</th>
+                  <th>Média Real de Preparo</th>
+                  <th>Status do Semáforo</th>
+                  <th>Itens Finalizados</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-tempo-categorias">
+                <tr><td colspan="5" class="text-center">Sem dados no período</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </section>
 
       <!-- ── CAIXA ────────────────────────────────────── -->
@@ -620,6 +643,7 @@
                 <th>Nome</th>
                 <th>Categoria</th>
                 <th>Preço</th>
+                <th>Tempo Alvo</th>
                 <th>Badges</th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -1338,6 +1362,12 @@
         </div>
 
         <div class="field">
+          <label class="field__label" for="produto-tempo-alvo">Tempo Alvo de Preparo (minutos) <span style="font-weight:normal;color:var(--admin-text-dim);">(Opcional)</span></label>
+          <input class="field__input" type="number" id="produto-tempo-alvo" min="1" max="180" step="1" placeholder="Herda da categoria" />
+          <p class="hint" style="margin-top:4px" id="hint-produto-tempo-alvo">Se vazio, herdará o tempo alvo padrão da categoria selecionada.</p>
+        </div>
+
+        <div class="field">
           <label class="field__label" for="produto-descricao">Descrição</label>
           <textarea class="field__textarea" id="produto-descricao"
                     placeholder="Descreva o produto de forma apetitosa..." rows="3"></textarea>
@@ -1572,6 +1602,12 @@
             <option value="cozinha">Cozinha (Padrão)</option>
             <option value="bar">Bar (Bebidas)</option>
           </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cat-tempo-alvo">Tempo Alvo Padrão (minutos) *</label>
+          <input class="field__input" type="number" id="cat-tempo-alvo" min="1" max="180" step="1" placeholder="Ex: 10" value="15" required />
+          <p class="hint" style="margin-top:4px">Tempo estimado para sinalização no painel da cozinha (semáforo verde/amarelo/vermelho).</p>
         </div>
 
         <div class="field">

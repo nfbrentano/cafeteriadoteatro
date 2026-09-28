@@ -364,18 +364,85 @@ body {
   color: var(--marrom-escuro);
 }
 
+/* --- Semáforo de Produção e Tempos (CAF-000025) --- */
+.pedido-card.semaforo-verde {
+  border-left: 6px solid #27ae60;
+}
+
+.pedido-card.semaforo-amarelo {
+  border-left: 6px solid #f39c12;
+}
+
+.pedido-card.semaforo-vermelho {
+  border-left: 6px solid #e74c3c;
+  border-color: rgba(231, 76, 60, 0.4);
+}
+
+.pedido-card.pulso-alerta {
+  animation: bordaPulsando 1.5s infinite ease-in-out;
+}
+
+@keyframes bordaPulsando {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5);
+    border-color: #e74c3c;
+  }
+  50% {
+    box-shadow: 0 0 14px 4px rgba(231, 76, 60, 0.7);
+    border-color: #c0392b;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    border-color: #e74c3c;
+  }
+}
+
 .pedido-tempo {
   font-size: 13px;
-  color: #666;
-  font-weight: 600;
+  color: #555;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f0f0f0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
 }
 
+.pedido-tempo.semaforo-verde {
+  background: rgba(39, 174, 96, 0.12);
+  color: #1e8449;
+}
+
+.pedido-tempo.semaforo-amarelo {
+  background: rgba(243, 156, 18, 0.15);
+  color: #b9770e;
+}
+
+.pedido-tempo.semaforo-vermelho,
 .pedido-tempo.atrasado {
-  color: var(--vermelho);
-  animation: blink 1s infinite;
+  background: rgba(231, 76, 60, 0.15);
+  color: #c0392b;
 }
 
-@keyframes blink { 50% { opacity: 0.5; } }
+.badge-atrasado {
+  background: #e74c3c;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: blinkAtrasado 1.2s infinite ease-in-out;
+}
+
+@keyframes blinkAtrasado {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
 
 .pedido-operador {
   padding: 4px 16px;
