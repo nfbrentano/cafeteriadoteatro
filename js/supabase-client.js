@@ -48,3 +48,26 @@ if (!window.getInicioDoDiaSaoPaulo) {
     return d.toISOString();
   };
 }
+
+// Utilitário para formatar texto de chamada por voz de pedidos
+if (!window.formatarChamadaVozPedido) {
+  window.formatarChamadaVozPedido = function(params) {
+    if (!params) return '';
+    const numeroPedido = params.numeroPedido || params.id || '';
+    const mesaCodigo = params.mesaCodigo || '';
+    const clienteNome = (params.clienteNome || '').trim();
+    const paraViagem = Boolean(params.paraViagem || (mesaCodigo && String(mesaCodigo).toUpperCase() === 'BALCAO'));
+
+    const acao = paraViagem ? 'está pronto para retirada!' : 'está pronto para ser servido!';
+
+    if (clienteNome) {
+      return `Atenção! Pedido da ${clienteNome}, ${acao}`;
+    }
+
+    if (mesaCodigo && String(mesaCodigo).toUpperCase() !== 'BALCAO') {
+      return `Atenção! Pedido número ${numeroPedido}, da mesa ${mesaCodigo}, ${acao}`;
+    }
+
+    return `Atenção! Pedido número ${numeroPedido}, ${acao}`;
+  };
+}

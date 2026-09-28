@@ -3,7 +3,7 @@
    Performance · Estratégia Híbrida de Cache · Suporte Offline
    ========================================================= */
 
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v11';
 const STATIC_CACHE = `cafeteria-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cafeteria-runtime-${CACHE_VERSION}`;
 const MAX_RUNTIME_ITEMS = 60;
@@ -42,8 +42,8 @@ const STATIC_ASSETS = [
   '/assets/icons/favicon.png',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
-  '/images/logo-dark.png',
-  '/images/logo.png'
+  '/assets/images/logo-cafeteria-do-teatro.webp',
+  '/assets/images/logo-cafeteria-do-teatro-escura.webp'
 ];
 
 /**

@@ -2,15 +2,15 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + banco | 🔴 Alta | M | Especificação · aguardando revisão |
+| Cozinha (KDS) + banco | 🔴 Alta | M | Concluído |
 
 ---
 
 ## Detalhes da Atividade
 
 - **O que precisa ser feito:** fazer cada estação (bar e cozinha) concluir **só os próprios itens**. O pedido passa para "Pronto" apenas quando **todas** as estações envolvidas terminarem.
-- **Por que é necessário:** a [CAF-000007](CONCLUIDAS/CAF-000007-separacao-por-estacao-bar-cozinha.md) criou o filtro de estação, mas as ações do card continuam valendo para o pedido inteiro. Quando o bar toca em "Pronto!" num pedido com 1 café e 1 baguete, a baguete também é marcada como pronta e o pedido é chamado por voz enquanto a cozinha ainda está preparando.
-- **Qual valor será agregado:** o salão só é avisado quando o pedido está completo, o barista para de levar pedidos pela metade e o tempo de preparo nos relatórios ([CAF-000014](CONCLUIDAS/CAF-000014-relatorios-no-admin.md)) passa a refletir a realidade.
+- **Por que é necessário:** a [CAF-000007](CAF-000007-separacao-por-estacao-bar-cozinha.md) criou o filtro de estação, mas as ações do card continuam valendo para o pedido inteiro. Quando o bar toca em "Pronto!" num pedido com 1 café e 1 baguete, a baguete também é marcada como pronta e o pedido é chamado por voz enquanto a cozinha ainda está preparando.
+- **Qual valor será agregado:** o salão só é avisado quando o pedido está completo, o barista para de levar pedidos pela metade e o tempo de preparo nos relatórios ([CAF-000014](CAF-000014-relatorios-no-admin.md)) passa a refletir a realidade.
 - **Para quem é destinado:** equipe de cozinha e bar e baristas do salão.
 
 ### Análise da causa
@@ -33,42 +33,42 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Gravar a estação no item no momento do pedido: `pedido_itens.estacao TEXT CHECK (estacao IN ('bar','cozinha'))`, preenchida por `criar_pedido` e `adicionar_itens_pedido` a partir de `categorias.estacao`, com backfill dos itens existentes.
-- [ ] Nova RPC `concluir_estacao(p_pedido_id BIGINT, p_estacao TEXT)` que marca `pronto_em`/`pronto_por` só nos itens daquela estação. Com `p_estacao = NULL` (filtro "Todas"), mantém o comportamento atual e conclui tudo.
-- [ ] Nova RPC `iniciar_estacao(p_pedido_id, p_estacao)` que grava `pedido_itens.iniciado_em` nos itens da estação e muda o pedido para `em_preparo` se ainda estiver `pendente`. `pedidos.iniciado_em` continua sendo o primeiro início de qualquer estação.
-- [ ] Trigger `AFTER UPDATE OF pronto_em, cancelado ON pedido_itens` que muda o pedido para `concluido` (com `concluido_em`) quando todos os itens não cancelados tiverem `pronto_em`, e o devolve para `em_preparo` quando algum item for desmarcado. A regra sai do navegador.
-- [ ] No KDS com estação filtrada:
+- [x] Gravar a estação no item no momento do pedido: `pedido_itens.estacao TEXT CHECK (estacao IN ('bar','cozinha'))`, preenchida por `criar_pedido` e `adicionar_itens_pedido` a partir de `categorias.estacao`, com backfill dos itens existentes.
+- [x] Nova RPC `concluir_estacao(p_pedido_id BIGINT, p_estacao TEXT)` que marca `pronto_em`/`pronto_por` só nos itens daquela estação. Com `p_estacao = NULL` (filtro "Todas"), mantém o comportamento atual e conclui tudo.
+- [x] Nova RPC `iniciar_estacao(p_pedido_id, p_estacao)` que grava `pedido_itens.iniciado_em` nos itens da estação e muda o pedido para `em_preparo` se ainda estiver `pendente`. `pedidos.iniciado_em` continua sendo o primeiro início de qualquer estação.
+- [x] Trigger `AFTER UPDATE OF pronto_em, cancelado ON pedido_itens` que muda o pedido para `concluido` (com `concluido_em`) quando todos os itens não cancelados tiverem `pronto_em`, e o devolve para `em_preparo` quando algum item for desmarcado. A regra sai do navegador.
+- [x] No KDS com estação filtrada:
   - O card mostra o status **da estação** ("Bar: pronto ✓ · aguardando Cozinha").
   - Um pedido cuja estação terminou sai da coluna "Em preparo" **daquela tela** e vai para "Prontos", com o selo "Aguardando outra estação" até o pedido ser concluído.
-- [ ] Voz e alerta de pronto (KDS e PDV) disparam **uma vez**, quando o pedido fica `concluido` (evento de realtime do banco), e não a cada clique local.
-- [ ] "Desfazer" limpa `pronto_em` dos itens da estação e o trigger devolve o pedido para `em_preparo`.
-- [ ] O filtro "Todas" continua funcionando como hoje (conclui o pedido inteiro).
+- [x] Voz e alerta de pronto (KDS e PDV) disparam **uma vez**, quando o pedido fica `concluido` (evento de realtime do banco), e não a cada clique local.
+- [x] "Desfazer" limpa `pronto_em` dos itens da estação e o trigger devolve o pedido para `em_preparo`.
+- [x] O filtro "Todas" continua funcionando como hoje (conclui o pedido inteiro).
 
 ### Requisitos não funcionais
-- [ ] **Concorrência:** duas telas concluindo estações diferentes ao mesmo tempo resultam em exatamente **um** evento `concluido` no `pedido_eventos` ([CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
-- [ ] **Segurança:** as RPCs são `SECURITY DEFINER` e validam `get_user_role() IN ('cozinha','admin')`.
-- [ ] **Compatibilidade:** pedidos criados antes da migration (sem `estacao` no item) caem no backfill; se a categoria não existir mais, usar `'cozinha'`.
-- [ ] **Desempenho:** a trigger faz um único `SELECT count(*)` por pedido e não recarrega itens de outros pedidos.
+- [x] **Concorrência:** duas telas concluindo estações diferentes ao mesmo tempo resultam em exatamente **um** evento `concluido` no `pedido_eventos` ([CAF-000019](CAF-000019-log-de-auditoria.md)).
+- [x] **Segurança:** as RPCs são `SECURITY DEFINER` e validam `get_user_role() IN ('cozinha','admin')`.
+- [x] **Compatibilidade:** pedidos criados antes da migration (sem `estacao` no item) caem no backfill; se a categoria não existir mais, usar `'cozinha'`.
+- [x] **Desempenho:** a trigger faz um único `SELECT count(*)` por pedido e não recarrega itens de outros pedidos.
 
 ### Dependências técnicas
-- [CAF-000007](CONCLUIDAS/CAF-000007-separacao-por-estacao-bar-cozinha.md) (coluna `categorias.estacao`) e [CAF-000008](CONCLUIDAS/CAF-000008-marcar-item-a-item-como-pronto.md) (coluna `pedido_itens.pronto_em`).
+- [CAF-000007](CAF-000007-separacao-por-estacao-bar-cozinha.md) (coluna `categorias.estacao`) e [CAF-000008](CAF-000008-marcar-item-a-item-como-pronto.md) (coluna `pedido_itens.pronto_em`).
 - RPCs `criar_pedido` (`supabase/migration_caf_000026_idempotencia.sql`) e `adicionar_itens_pedido` (`supabase/migration_caf_000020_vinculo_adicionais.sql`).
 - Os eventos da trigger de auditoria (`supabase/migration_caf_000019_log_auditoria.sql`) precisam continuar registrando quem concluiu.
 
 ### Recursos necessários
-- Acesso ao Supabase para a nova migration (próximo número livre em `supabase/`, hoje `migration_caf_000027_*.sql`).
+- Acesso ao Supabase para a nova migration (`supabase/migration_caf_000027_conclusao_estacao.sql`).
 - Dois dispositivos (ou duas abas) para testar bar e cozinha ao mesmo tempo.
 
 ---
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um pedido tem 1 cappuccino (bar) e 1 baguete (cozinha), **quando** o bar toca em "Pronto!", **então** só o cappuccino fica pronto, o pedido continua em preparo na tela da cozinha e ninguém é chamado por voz.
-- [ ] **Dado que** o bar já terminou, **quando** a cozinha toca em "Pronto!" na baguete, **então** o pedido fica `concluido` e o PDV toca o alerta e chama o pedido **uma vez**.
-- [ ] **Dado que** o filtro está em "Todas", **quando** alguém toca em "Pronto!", **então** o pedido inteiro é concluído, como hoje.
-- [ ] **Dado que** um pedido `pendente` tem um único item, **quando** a cozinha toca no item, **então** o pedido vai direto para "Prontos".
-- [ ] **Dado que** a cozinha desfaz um pedido concluído, **quando** a ação termina, **então** os itens da cozinha ficam desmarcados e o pedido volta para "Em preparo".
-- [ ] **Dado que** o admin muda uma categoria de "cozinha" para "bar", **quando** a cozinha recarrega a tela, **então** os pedidos já lançados continuam na estação original.
+- [x] **Dado que** um pedido tem 1 cappuccino (bar) e 1 baguete (cozinha), **quando** o bar toca em "Pronto!", **então** só o cappuccino fica pronto, o pedido continua em preparo na tela da cozinha e ninguém é chamado por voz.
+- [x] **Dado que** o bar já terminou, **quando** a cozinha toca em "Pronto!" na baguete, **então** o pedido fica `concluido` e o PDV toca o alerta e chama o pedido **uma vez**.
+- [x] **Dado que** o filtro está em "Todas", **quando** alguém toca em "Pronto!", **então** o pedido inteiro é concluído, como hoje.
+- [x] **Dado que** um pedido `pendente` tem um único item, **quando** a cozinha toca no item, **então** o pedido vai direto para "Prontos".
+- [x] **Dado que** a cozinha desfaz um pedido concluído, **quando** a ação termina, **então** os itens da cozinha ficam desmarcados e o pedido volta para "Em preparo".
+- [x] **Dado que** o admin muda uma categoria de "cozinha" para "bar", **quando** a cozinha recarrega a tela, **então** os pedidos já lançados continuam na estação original.
 
 ---
 
@@ -101,7 +101,7 @@
 ## URL Complementar
 
 - Código: `js/cozinha.js:537-631` (`toggleItemPronto`, `updateStatus`), `js/cozinha.js:109-127` (`produtosCache`), `js/cozinha.js:363-385` (filtro de estação), `js/pedidos.js:2745-2755` (voz no PDV)
-- Schema: `supabase/migration_caf_000006_estacoes.sql`, `supabase/migration_caf_000008_pronto.sql`
-- Requisito original: [CAF-000007](CONCLUIDAS/CAF-000007-separacao-por-estacao-bar-cozinha.md) · "Status do pedido 'pronto' só quando todas as estações terminarem"
+- Schema: `supabase/migration_caf_000006_estacoes.sql`, `supabase/migration_caf_000008_pronto.sql`, `supabase/migration_caf_000027_conclusao_estacao.sql`
+- Requisito original: [CAF-000007](CAF-000007-separacao-por-estacao-bar-cozinha.md) · "Status do pedido 'pronto' só quando todas as estações terminarem"
 - Análise de mercado: [ANALISE_PEDIDOS_COZINHA.md](ANALISE_PEDIDOS_COZINHA.md)
 - SAIPOS — Tela KDS: https://meajuda.saipos.com/hc/pt-br/articles/20211492079252-Tela-KDS-Sistema-de-Display-para-Cozinha
