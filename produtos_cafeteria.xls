@@ -1,0 +1,2134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#333333"/>
+  </Style>
+  <Style ss:ID="Header">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#633918"/>
+   </Borders>
+   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#6F3F19" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="Currency">
+   <NumberFormat ss:Format="&quot;R$&quot;\ #,##0.00"/>
+   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+  </Style>
+  <Style ss:ID="Center">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+  </Style>
+  <Style ss:ID="Bold">
+   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#111111"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Produtos">
+  <Table>
+   <Column ss:Width="130"/>
+   <Column ss:Width="160"/>
+   <Column ss:Width="200"/>
+   <Column ss:Width="90"/>
+   <Column ss:Width="70"/>
+   <Column ss:Width="70"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="120"/>
+   <Column ss:Width="300"/>
+   <Column ss:Width="250"/>
+   <Column ss:Width="50"/>
+   <Row ss:Height="26" ss:StyleID="Header">
+    <Cell><Data ss:Type="String">ID</Data></Cell>
+    <Cell><Data ss:Type="String">Categoria</Data></Cell>
+    <Cell><Data ss:Type="String">Nome do Produto</Data></Cell>
+    <Cell><Data ss:Type="String">Preço</Data></Cell>
+    <Cell><Data ss:Type="String">Disponível</Data></Cell>
+    <Cell><Data ss:Type="String">Ativo</Data></Cell>
+    <Cell><Data ss:Type="String">Tipo Montagem</Data></Cell>
+    <Cell><Data ss:Type="String">Permite Adicionais</Data></Cell>
+    <Cell><Data ss:Type="String">Badges</Data></Cell>
+    <Cell><Data ss:Type="String">Descrição</Data></Cell>
+    <Cell><Data ss:Type="String">URL da Imagem</Data></Cell>
+    <Cell><Data ss:Type="String">Ordem</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cafe-passado-leite</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Café Passado ou Passado com Leite</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">6.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Opção tradicional de café passado puro ou com leite quente.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espresso-simples</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espresso Simples 50ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">6.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Dose tradicional de café espresso concentrado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espresso-duplo</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espresso Duplo 120ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">8.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Dose dupla de café espresso encorpado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espresso-com-leite</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espresso com Leite 120ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">8.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Espresso com leite vaporizado cremoso.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espresso-com-chantilly</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espresso com Chantilly</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Espresso coberto com generosa camada de chantilly fresco.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espresso-leite-nutella</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espresso com Leite e Borda de Nutella</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Espresso com leite vaporizado servido em taça com borda de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">carioquinha-50ml</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Carioquinha 50ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">6.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Café espresso mais suave com adição de água quente.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">carioca-duplo-120ml</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Carioca Duplo 120ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">8.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Café carioca duplo em dose de 120ml, sabor suave.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cafe-descafeinado-120ml</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Café Descafeinado 120ml (solúvel)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">7.00</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Café descafeinado solúvel servido quentinho.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">refil-cafe-coado</Data></Cell>
+    <Cell><Data ss:Type="String">☕ Cafés Quentes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Refil de Café Coado (Café à Vontade)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Refil de café coado para você ter mais energia. Café à vontade!</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">10</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-brasileiro-pequeno</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Brasileiro Pequeno 120ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">10.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Mistura docinha de cacau, café, leite em pó e canela.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-brasileiro-grande</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Brasileiro Grande 240ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Mistura docinha de cacau, café, leite em pó e canela.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-brasileiro-nutella</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Brasileiro Grande c/ Borda de Nutella 240ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino brasileiro em taça decorada com borda de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-brasileiro-doce-de-leite</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Brasileiro Grande c/ Borda de Doce de Leite 240ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino brasileiro em taça decorada com borda de doce de leite.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-italiano-pequeno</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Italiano Pequeno 120ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">10.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Espresso com leite vaporizado e crema de leite (sem açúcar).</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-italiano-grande</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Italiano Grande 240ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Espresso com leite vaporizado e crema de leite (sem açúcar).</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mocca-tradicional</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mocca</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">15.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Leite vaporizado, chocolate meio amargo e dose de espresso.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mocca-com-nutella</Data></Cell>
+    <Cell><Data ss:Type="String">✨ Cafés Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mocca com Borda de Nutella</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Leite vaporizado, chocolate meio amargo, dose de espresso e borda de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">chocolate-quente-pequeno</Data></Cell>
+    <Cell><Data ss:Type="String">🍫 Chocolate Quente</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Chocolate Quente Cremoso Pequeno 100ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate quente artesanal cremoso e aveludado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">chocolate-quente-grande</Data></Cell>
+    <Cell><Data ss:Type="String">🍫 Chocolate Quente</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Chocolate Quente Cremoso Grande 240ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate quente cremoso servido em taça de 240ml.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">chocolate-quente-chantilly</Data></Cell>
+    <Cell><Data ss:Type="String">🍫 Chocolate Quente</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Chocolate Quente Grande com Chantilly 240ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">18.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate quente cremoso finalizado com generosa cobertura de chantilly.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-gelado</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Gelado</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Nosso cappuccino cremoso servido gelado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-gelado-nutella</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Gelado com Borda de Nutella</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino gelado servido com generosa borda de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-gelado-nutella-amendoim</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Gelado c/ Borda de Nutella e Amendoim</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">18.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino gelado com borda de Nutella coberta de amendoim crocante.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-gelado-doce-leite</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Gelado com Borda de Doce de Leite</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino gelado servido com borda de doce de leite.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cappuccino-gelado-doce-leite-amendoim</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cappuccino Gelado c/ Doce de Leite e Amendoim</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">18.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino gelado com borda de doce de leite e amendoim crocante.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cafe-gelado-crema</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Café Gelado</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Espresso, crema de leite e pedras de gelo.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espresso-tonica</Data></Cell>
+    <Cell><Data ss:Type="String">🧊 Cafés Gelados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espresso Tônica</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">novo</Data></Cell>
+    <Cell><Data ss:Type="String">Combinação refrescante de água tônica e dose de espresso.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pink-lemonade</Data></Cell>
+    <Cell><Data ss:Type="String">🍹 Bebidas Geladas &amp; Sodas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pink Lemonade 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Limão, essência de frutas vermelhas, açúcar e água.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">soda-maca-verde</Data></Cell>
+    <Cell><Data ss:Type="String">🍹 Bebidas Geladas &amp; Sodas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Soda Italiana Maçã Verde 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Refrescante soda italiana de maçã verde com gelo.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">soda-frutas-vermelhas</Data></Cell>
+    <Cell><Data ss:Type="String">🍹 Bebidas Geladas &amp; Sodas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Soda Italiana Frutas Vermelhas 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Soda italiana artesanal sabor frutas vermelhas.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">soda-melancia</Data></Cell>
+    <Cell><Data ss:Type="String">🍹 Bebidas Geladas &amp; Sodas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Soda Italiana Melancia 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Soda italiana refrescante sabor melancia.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">soda-blueberry</Data></Cell>
+    <Cell><Data ss:Type="String">🍹 Bebidas Geladas &amp; Sodas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Soda Italiana Blueberry 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Soda italiana refrescante sabor blueberry (mirtilo).</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cha-gelado-pessego</Data></Cell>
+    <Cell><Data ss:Type="String">🍹 Bebidas Geladas &amp; Sodas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Chá Gelado de Pêssego 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Chá gelado refrescante sabor pêssego.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">milkshake-chocolate-nutella</Data></Cell>
+    <Cell><Data ss:Type="String">🥤 Milk Shakes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Milk Shake de Chocolate com Borda de Nutella</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Batido cremoso de sorvete de chocolate com generosa borda de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">milkshake-creme-doce-leite</Data></Cell>
+    <Cell><Data ss:Type="String">🥤 Milk Shakes</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Milk Shake Sorvete de Creme com Borda de Doce de Leite</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Sorvete de creme batido servido em taça com borda de doce de leite.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-laranja</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural de Laranja 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Suco natural feito na hora, sem adição de açúcar.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-abacaxi</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural de Abacaxi 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Suco natural feito na hora, sem adição de açúcar.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-mamao</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural de Mamão 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Suco natural feito na hora, sem adição de açúcar.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural de Morango 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Suco da fruta de morango 400ml sem adição de açúcar.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-verde</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural Verde 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Laranja, abacaxi e folha fresca de couve batidos na hora.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-laranja-mamao</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural Laranja com Mamão 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Combinação natural de laranja com mamão sem açúcar.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">suco-laranja-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Suco Natural Laranja com Morango 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Combinação refrescante de laranja com morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">vitamina-banana</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Vitamina de Banana 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">10.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Vitamina cremosa de leite com banana fresca.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">vitamina-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🧃 Sucos &amp; Vitaminas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Vitamina de Morango 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">10.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Vitamina cremosa de leite com morangos selecionados.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-calabresa</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Calabresa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">27.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Calabresa fatiada, mussarela, tomate cereja, tempero verde e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-carne-panela</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Carne de Panela</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">31.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Carne de panela desfiada bem temperada, queijo e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-carne-panela-cheddar</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Carne de Panela com Cheddar</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">34.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Carne de panela desfiada, queijo, cheddar cremoso e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-carne-panela-doritos</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Carne de Panela com Doritos</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">34.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">novo</Data></Cell>
+    <Cell><Data ss:Type="String">Carne de panela desfiada, queijo, cobertura crocante de Doritos e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-chester</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Chester</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">26.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Tomate fresco, queijo mussarela, requeijão, chester defumado e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-presunto</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Presunto</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">26.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Tomate fresco, queijo mussarela, requeijão, presunto e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-frango-cremoso</Data></Cell>
+    <Cell><Data ss:Type="String">🥞 Crepes Salgados</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe de Frango Cremoso</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">28.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Queijo mussarela, frango desfiado temperado, requeijão e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-doce-confetes</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Doce Confetes</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Base à sua escolha (chocolate ao leite ou branco) com cobertura de confetes.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-doce-amendoim</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Doce Amendoim</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Base de chocolate ao leite ou branco com amendoim crocante.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-doce-ouro-branco</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Doce Ouro Branco</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Base de chocolate ao leite ou branco com bombom Ouro Branco picado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-doce-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Doce Morango</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Base à sua escolha (chocolate ao leite ou branco) com morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-doce-leite-banana</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Doce de Leite com Banana</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Recheado com doce de leite cremoso e fatias de banana.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-meio-a-meio</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Meio a Meio</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">29.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Escolha um sabor doce e outro sabor salgado para seu crepe.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-frutas-vermelhas</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Frutas Vermelhas com Sorvete</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate branco, morango, amora, calda de frutas vermelhas e sorvete de creme.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-crocante</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Crocante com Sorvete</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite, amendoim crocante e bola de sorvete de creme.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Morango com Sorvete</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite, morangos frescos fatiados e sorvete de creme.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-confetes</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Confetes com Sorvete</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Confetes coloridos, chocolate ao leite e sorvete de creme.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">10</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-doce-leite</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Doce de Leite com Sorvete</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Doce de leite, fatias de banana e bola de sorvete de creme.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">11</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-panqueca-morango-granola</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Panqueca Morango com Granola</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Morangos frescos, granola crocante, mel e fatias de banana.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">12</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-panqueca-kit-kat</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Panqueca Kit Kat</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite derretido coberto com pedaços de Kit Kat.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">13</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-panqueca-chocolate-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Panqueca Chocolate com Morango</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite cremoso com morangos frescos fatiados.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">14</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-panqueca-doce-de-leite</Data></Cell>
+    <Cell><Data ss:Type="String">🍓 Crepes Doces &amp; Panquecas</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Panqueca Doce de Leite com Banana</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Doce de leite macio com fatias de banana fresca.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">15</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">baguete-frango</Data></Cell>
+    <Cell><Data ss:Type="String">🥖 Baguetes Artesanais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Baguete de Frango</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">28.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, frango desfiado, cebola roxa, tempero verde e azeite de oliva.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">baguete-vegetariano</Data></Cell>
+    <Cell><Data ss:Type="String">🥖 Baguetes Artesanais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Baguete Vegetariano</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">25.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, abobrinha grelhada, cebola roxa, tomate cereja, parmesão e azeite.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">baguete-chester</Data></Cell>
+    <Cell><Data ss:Type="String">🥖 Baguetes Artesanais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Baguete de Chester</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">27.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, chester defumado, cebola roxa e tempero verde.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">baguete-calabresa</Data></Cell>
+    <Cell><Data ss:Type="String">🥖 Baguetes Artesanais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Baguete de Calabresa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">27.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, calabresa fatiada, cebola roxa e tempero verde.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">baguete-carne-panela</Data></Cell>
+    <Cell><Data ss:Type="String">🥖 Baguetes Artesanais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Baguete de Carne de Panela</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">31.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, carne de panela suculenta, cebola roxa, azeite e tempero verde.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">baguete-carne-italiano</Data></Cell>
+    <Cell><Data ss:Type="String">🥖 Baguetes Artesanais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Baguete de Carne Italiano</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">31.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, carne de panela, rúcula fresca, tomate cereja, azeite e tempero verde.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-sanduiche</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Sanduíche</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">18.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cream cheese, presunto nobre e queijo mussarela derretido.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-ovos-mexidos</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Ovos Mexidos</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Ovos mexidos cremosos, queijo mussarela, parmesão ralado e tempero verde.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-carne-panela</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Carne de Panela</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">26.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, carne de panela, parmesão, orégano e tomate cereja.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-frango-3-queijos</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Frango aos 3 Queijos</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, cream cheese, frango desfiado temperado e tomate cereja.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-tomate-seco</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Tomate Seco</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Requeijão, mussarela, tomate seco selecionado, rúcula fresca e parmesão.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-sensacao</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce Sensação</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite com morangos frescos fatiados.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-duetto</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce Duetto</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite, chocolate branco e morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-chocolate-branco</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce Chocolate Branco</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate branco cremoso com morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-de-leite</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce de Leite</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Doce de leite Uruguaio autêntico e fatias de banana fresca.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-prestigio</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce Prestígio</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite com generoso recheio de coco tipo Prestígio.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">10</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-ferrero</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce Ferrero Rocher</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite, bombom Ferrero Rocher e castanha triturada.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">11</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croissant-doce-kinder-bueno</Data></Cell>
+    <Cell><Data ss:Type="String">🥐 Croissants Salgados &amp; Doces</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croissant Doce Kinder Bueno</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Chocolate ao leite, chocolate branco e pedaços de Kinder Bueno.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">12</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torrada-simples</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torrada Simples</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">10.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Queijo mussarela, requeijão cremoso, presunto e orégano no pão tostado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torrada-completa</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torrada Completa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">15.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Queijo, requeijão, presunto, ovo, tomate fatiado, alface crocante e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torrada-salame-italiano</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torrada de Salame Italiano</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Queijo, requeijão, salamito colonial fatiado, ovo, tomate, alface e orégano.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">sanduiche-frango-natural</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Sanduíche Natural de Frango</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pão integral, alface, tomate, cebola roxa, cenoura ralada, requeijão, queijo e frango.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">ovos-mexidos-opcao-1</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Ovos Mexidos - Opção 1</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">4 ovos mexidos servidos com alface fresca, tomate cereja e molho rosé.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">ovos-mexidos-opcao-2</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Ovos Mexidos - Opção 2</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">4 ovos mexidos acompanhados de pão torrado quentinho, manteiga e geleia de uva.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">croque-madame</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Croque Madame à Moda da Casa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Clássico francês em pão artesanal, presunto, queijo gratinado, bechamel, ovo e tempero.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">queijo-quente</Data></Cell>
+    <Cell><Data ss:Type="String">🥪 Torradas &amp; Lanches</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Queijo Quente com Doce de Leite</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Pão tostado com generosa porção de queijo derretido. Acompanha doce de leite.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mix-de-saladas</Data></Cell>
+    <Cell><Data ss:Type="String">🥗 Saladas Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mix de Saladas</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Alface, rúcula, tomate cereja, ovo de codorna, croutons crocantes e molho rosé.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">salada-com-frango</Data></Cell>
+    <Cell><Data ss:Type="String">🥗 Saladas Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Salada com Frango 120g</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">31.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Alface, rúcula, tomate cereja, ovo de codorna, croutons, molho rosé e 120g de frango.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">salada-com-carne</Data></Cell>
+    <Cell><Data ss:Type="String">🥗 Saladas Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Salada com Carne 120g</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">34.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Alface, rúcula, tomate cereja, ovo de codorna, croutons, molho rosé e 120g de carne.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">salada-ceasar-da-casa</Data></Cell>
+    <Cell><Data ss:Type="String">🥗 Saladas Especiais</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Salada Ceasar da Casa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">29.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Alface crocante, croutons, cenoura, molho Ceasar especial, parmesão e frango (120g).</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">taca-especial-ferrero</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Taça Especial de Ferrero</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">27.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Sorvete de chocolate, ganache de chocolate, castanha e bombom Ferrero Rocher.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">taca-especial-flocos</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Taça Especial Flocos</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Sorvetes de flocos cremosos e ganache generosa de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">taca-3-amores</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Taça 3 Amores</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Sorvete de creme, morangos frescos fatiados e ganache de Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">floccotino</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Floccotino</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino gelado, sorvete de flocos cremoso e cobertura de chantilly.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">floccotino-borda-nutella</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Floccotino com Borda de Nutella</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Cappuccino gelado, sorvete de flocos, borda farta de Nutella e chantilly.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">acai-taca-opcao-01</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Açaí na Taça 300ml - Opção 01</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Açaí batido puro servido com granola, morangos e fatias de banana.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">acai-taca-opcao-02</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Açaí na Taça 300ml - Opção 02</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Açaí batido na taça com leite Ninho em pó e morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">acai-taca-opcao-03</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Açaí na Taça 300ml - Opção 03</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Açaí batido servido com Nutella e morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">acai-taca-opcao-04</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Açaí na Taça 300ml - Opção 04</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Açaí cremoso na taça com doce de leite e morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">acai-taca-opcao-05</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Açaí na Taça 300ml - Opção 05</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">24.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Açaí batido servido com leite Ninho em pó e Nutella.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">10</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">salada-frutas-simples</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Salada de Frutas</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">13.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Mix refrescante de frutas frescas selecionadas da estação.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">11</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">salada-frutas-com-sorvete</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Salada de Frutas com Sorvete</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Mix de frutas da estação servido com bola de sorvete de creme.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">12</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">panelinha-de-frutas</Data></Cell>
+    <Cell><Data ss:Type="String">🍨 Taças Especiais &amp; Açaí</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Panelinha de Frutas</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Mix de frutas da estação servido com iogurte grego cremoso e granola.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">13</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">bolo-da-india</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Bolo da Índia</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Fatia do tradicional e perfumado bolo da Índia. Consulte sabores do dia.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-tortas-vitrine</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Tortas Finas</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">18.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Mini tortas artesanais individuais. Consulte os sabores disponíveis na vitrine.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pastel-forno-carne-cheddar</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pastel de Forno Carne com Cheddar</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pastel assado no forno recheado com carne e queijo cheddar.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pastel-forno-frango-catupiry</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pastel de Forno Frango com Catupiry</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pastel assado no forno com frango desfiado e catupiry cremoso.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pao-de-calabresa</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pão de Calabresa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pão artesanal recheado com calabresa e queijo.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pao-de-queijo</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pão de Queijo Tradicional</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">6.50</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Pão de queijo mineiro assado quentinho na hora.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pao-a-portuguesa</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pão à Portuguesa</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pão recheado especial à moda portuguesa.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">pao-de-frango</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Pão de Frango</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">11.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pão artesanal fofinho recheado com frango cremoso.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torta-frango-cremosa</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torta de Frango Cremosa (Fatia)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Fatia de torta salgada artesanal com recheio cremoso de frango.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torta-de-legumes</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torta de Legumes (Fatia)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">15.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Fatia de torta salgada vegetariana de legumes frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">10</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">tortas-doces-fatia</Data></Cell>
+    <Cell><Data ss:Type="String">🍰 Balcão &amp; Confeitaria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Tortas Doces Tradicionais (Fatia)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">18.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Fatia de torta doce artesanal. Consulte sabores disponíveis na vitrine.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">11</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">panqueca-sem-lactose-granola</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Panqueca de Granola e Mel (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Mini panqueca sem lactose, mel, banana, morango e granola.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">panqueca-sem-lactose-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Panqueca Americana de Morango (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Mini panquecas, chocolate 0% lactose e morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-sem-lactose-crocante</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Crocante com Sorvete (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Massa sem lactose, chocolate 0% lactose, sorvete 0% lactose e amendoim.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">mini-crepe-sem-lactose-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Crepe Morango com Sorvete (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Massa sem lactose, chocolate 0% lactose, sorvete 0% lactose e morango.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-sem-lactose-crocante</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Crocante (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Crepe de chocolate 0% lactose e amendoim.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">crepe-sem-lactose-morango</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Crepe Chocolate e Morango (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Crepe com chocolate 0% lactose e morangos frescos.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torta-soft-gateau-sem-lactose</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torta Soft Gateau (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Gateau de chocolate e mousse de chocolate 0% lactose.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torrada-simples-sem-lactose</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torrada Simples (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">12.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pão 0% lactose, presunto e queijo 0% lactose.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">torrada-completa-sem-lactose</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Torrada Completa (Sem Lactose)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">17.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Pão 0% lactose, presunto, queijo 0% lactose, alface, tomate e ovo.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">calzone-frango-sem-gluten</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Calzone de Frango (Sem Glúten)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Calzone sem glúten recheado com frango. Atenção: pode conter traços/resquícios.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">10</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">calzone-marguerita-sem-gluten</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Calzone Marguerita Vegetariano (Sem Glúten)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Calzone sem glúten de queijo, tomate e manjericão. Pode conter resquícios.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">11</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">acai-tigela-sem-gluten</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Açaí na Tigela (Sem Glúten)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">19.50</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Açaí servido na tigela com banana, morango e granola sem glúten.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">12</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">milkshake-sem-gluten</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Milkshake de Chocolate (Sem Glúten)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">22.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Milkshake cremoso de chocolate preparado sem glúten.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">13</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cheiro-verde-calzone-frango</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Calzone de Frango Cheiro Verde (Celíacos - 0% Glúten e Leite)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Produzido em cozinha estéril, livre de glúten e leite. Servido lacrado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">14</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cheiro-verde-calzone-marguerita</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Calzone Marguerita Cheiro Verde (Celíacos - 0% Glúten e Leite)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">14.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Produzido em cozinha estéril, livre de glúten e leite. Servido lacrado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">15</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cheiro-verde-crepioca-frango</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Panqueca de Crepioca c/ Frango Cheiro Verde (3 un/300g)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">25.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">3 unidades (300g). Cozinha estéril, segura para celíacos. Servido lacrado.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">16</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cheiro-verde-brigadeiro</Data></Cell>
+    <Cell><Data ss:Type="String">🌾 Sem Lactose &amp; Sem Glúten</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Brigadeiro Funcional Cheiro Verde (Celíacos)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">3.50</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Brigadeiro funcional seguro para celíacos e intolerantes a lactose.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">17</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">espumante-750ml</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Espumante 750ml (Brut ou Moscatel)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">75.00</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Garrafa 750ml Salton Brut ou Moscatel. Promoção 50% OFF na 2ª unidade.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">1</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">taca-espumante-170ml</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Taça de Espumante 170ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Taça de espumante refrescante. Promoção 50% OFF na 2ª unidade.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">drink-mimosa</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Drink Mimosa 170ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">16.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Clássico espumante Brut com suco de laranja natural. 50% OFF na 2ª unidade.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">aperol-spritz</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Aperol Spritz 400ml</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">27.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Água com gás, Espumante Brut e dose generosa de Aperol. 50% OFF na 2ª unidade.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">4</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">dose-whisky-jameson</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Dose de Whisky Jameson</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">21.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Dose de whisky irlandês Jameson original.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">5</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cerveja-tradicional</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cerveja Long Neck (Consulte opções)</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">15.00</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cervejas long neck disponíveis no balcão.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">6</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">cerveja-zero-alcool</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Cerveja Long Neck 0.0% Álcool</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">15.00</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cerveja long neck sem álcool.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">7</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">gin-tonica-frutas-vermelhas</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Gin Tônica de Frutas Vermelhas</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String">popular</Data></Cell>
+    <Cell><Data ss:Type="String">Gin premium, água tônica e infusão de frutas vermelhas.</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">8</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">gin-tonica-blueberry</Data></Cell>
+    <Cell><Data ss:Type="String">🥂 Bebidas com Álcool</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Gin Tônica de Blueberry</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">23.90</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Gin premium, água tônica e mirtilos (blueberry).</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">9</Data></Cell>
+   </Row>
+   <Row ss:Height="20">
+    <Cell><Data ss:Type="String">prod-mini-cappuccino-cortesia</Data></Cell>
+    <Cell><Data ss:Type="String">Sem Categoria</Data></Cell>
+    <Cell ss:StyleID="Bold"><Data ss:Type="String">Mini Cappuccino Cortesia</Data></Cell>
+    <Cell ss:StyleID="Currency"><Data ss:Type="Number">0.00</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Sim</Data></Cell>
+    <Cell><Data ss:Type="String">simples</Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="String">Não</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell><Data ss:Type="String">Cortesia servida após o prato</Data></Cell>
+    <Cell><Data ss:Type="String"></Data></Cell>
+    <Cell ss:StyleID="Center"><Data ss:Type="Number">999</Data></Cell>
+   </Row>
+  </Table>
+ </Worksheet>
+</Workbook>

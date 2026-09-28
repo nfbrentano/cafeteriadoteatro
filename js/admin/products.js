@@ -368,63 +368,230 @@
       processFile(e.dataTransfer.files[0]);
     });
 
+    // --- Exportação Avançada de Produtos (Excel e CSV) ---
+    function getExportData() {
+      const el = productsEls();
+      const catF    = el.filterCat.value;
+      const statusF = el.filterStatus.value;
+      const search  = (el.search.value || '').toLowerCase();
+
+      const produtos = admin.appData.produtos || [];
+      const cats = admin.appData.categorias || [];
+      const catMap = {};
+      cats.forEach(c => { catMap[c.id] = c; });
+
+      const filtered = produtos.filter(p => {
+        const pCatId = p.categoria_id || p.categoriaId;
+        if (catF    && pCatId !== catF) return false;
+        if (statusF === 'ativo' && !p.ativo)  return false;
+        if (statusF === 'inativo' && p.ativo) return false;
+        if (search  && !p.nome.toLowerCase().includes(search)) return false;
+        return true;
+      });
+
+      // Ordenar por categoria e ordem do produto
+      filtered.sort((a, b) => {
+        const catA = catMap[a.categoria_id || a.categoriaId]?.ordem ?? 999;
+        const catB = catMap[b.categoria_id || b.categoriaId]?.ordem ?? 999;
+        if (catA !== catB) return catA - catB;
+        return (a.ordem || 0) - (b.ordem || 0);
+      });
+
+      return { filtered, catMap };
+    }
+
+    function exportProductsCSV() {
+      const { filtered, catMap } = getExportData();
+      if (filtered.length === 0) {
+        admin.toast('Aviso', 'Nenhum produto para exportar com os filtros atuais.', 'warn');
+        return;
+      }
+
+      const headers = [
+        'ID',
+        'Categoria',
+        'Nome do Produto',
+        'Preço (R$)',
+        'Preço Numérico',
+        'Disponível',
+        'Ativo',
+        'Tipo de Montagem',
+        'Permite Adicionais',
+        'Badges / Destaques',
+        'Descrição',
+        'URL da Imagem',
+        'Ordem'
+      ];
+
+      const escapeCSV = (val) => {
+        if (val === null || val === undefined) return '';
+        const str = String(val);
+        if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const rows = [headers.map(escapeCSV).join(';')];
+
+      filtered.forEach(p => {
+        const catObj = catMap[p.categoria_id || p.categoriaId];
+        const catNome = catObj ? (catObj.icone ? catObj.icone + ' ' : '') + catObj.nome : (p.categoria_id || 'Sem Categoria');
+        const precoFormatado = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const precoNum = Number(p.preco || 0).toFixed(2);
+        const disponivel = p.disponivel !== false ? 'Sim' : 'Não';
+        const ativo = p.ativo !== false ? 'Sim' : 'Não';
+        const permiteAdd = p.permite_adicionais ? 'Sim' : 'Não';
+        const badges = Array.isArray(p.badges) ? p.badges.join(', ') : (p.badges || '');
+
+        rows.push([
+          escapeCSV(p.id),
+          escapeCSV(catNome),
+          escapeCSV(p.nome),
+          escapeCSV(precoFormatado),
+          escapeCSV(precoNum),
+          escapeCSV(disponivel),
+          escapeCSV(ativo),
+          escapeCSV(p.tipo_montagem || 'simples'),
+          escapeCSV(permiteAdd),
+          escapeCSV(badges),
+          escapeCSV(p.descricao || ''),
+          escapeCSV(p.imagem_url || ''),
+          escapeCSV(p.ordem ?? '')
+        ].join(';'));
+      });
+
+      const dataHoje = new Date().toISOString().split('T')[0];
+      admin.downloadCSV(`produtos_${dataHoje}.csv`, rows.join('\r\n'));
+      admin.toast('Sucesso', `${filtered.length} produtos exportados para CSV!`, 'success');
+    }
+
+    function exportProductsExcel() {
+      const { filtered, catMap } = getExportData();
+      if (filtered.length === 0) {
+        admin.toast('Aviso', 'Nenhum produto para exportar com os filtros atuais.', 'warn');
+        return;
+      }
+
+      const escapeXml = (str) => {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      };
+
+      const xmlParts = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<?mso-application progid="Excel.Sheet"?>',
+        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
+        ' xmlns:o="urn:schemas-microsoft-com:office:office"',
+        ' xmlns:x="urn:schemas-microsoft-com:office:excel"',
+        ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"',
+        ' xmlns:html="http://www.w3.org/TR/REC-html40">',
+        ' <Styles>',
+        '  <Style ss:ID="Default" ss:Name="Normal">',
+        '   <Alignment ss:Vertical="Center"/>',
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#333333"/>',
+        '  </Style>',
+        '  <Style ss:ID="Header">',
+        '   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>',
+        '   <Borders>',
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#633918"/>',
+        '   </Borders>',
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>',
+        '   <Interior ss:Color="#6F3F19" ss:Pattern="Solid"/>',
+        '  </Style>',
+        '  <Style ss:ID="Currency">',
+        '   <NumberFormat ss:Format="&quot;R$&quot;\\ #,##0.00"/>',
+        '   <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>',
+        '  </Style>',
+        '  <Style ss:ID="Center">',
+        '   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>',
+        '  </Style>',
+        '  <Style ss:ID="Bold">',
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#111111"/>',
+        '  </Style>',
+        ' </Styles>',
+        ' <Worksheet ss:Name="Produtos">',
+        '  <Table>',
+        '   <Column ss:Width="130"/>',
+        '   <Column ss:Width="160"/>',
+        '   <Column ss:Width="200"/>',
+        '   <Column ss:Width="90"/>',
+        '   <Column ss:Width="70"/>',
+        '   <Column ss:Width="70"/>',
+        '   <Column ss:Width="100"/>',
+        '   <Column ss:Width="100"/>',
+        '   <Column ss:Width="120"/>',
+        '   <Column ss:Width="300"/>',
+        '   <Column ss:Width="250"/>',
+        '   <Column ss:Width="50"/>',
+        '   <Row ss:Height="26" ss:StyleID="Header">'
+      ];
+
+      const headersList = [
+        'ID', 'Categoria', 'Nome do Produto', 'Preço', 'Disponível',
+        'Ativo', 'Tipo Montagem', 'Permite Adicionais', 'Badges',
+        'Descrição', 'URL da Imagem', 'Ordem'
+      ];
+      headersList.forEach(h => {
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(h)}</Data></Cell>`);
+      });
+      xmlParts.push('   </Row>');
+
+      for (const p of filtered) {
+        const catObj = catMap[p.categoria_id || p.categoriaId];
+        const catNome = catObj ? (catObj.icone ? catObj.icone + ' ' : '') + catObj.nome : (p.categoria_id || 'Sem Categoria');
+        const preco = Number(p.preco || 0);
+        const disponivel = p.disponivel !== false ? 'Sim' : 'Não';
+        const ativo = p.ativo !== false ? 'Sim' : 'Não';
+        const permiteAdd = p.permite_adicionais ? 'Sim' : 'Não';
+        const badges = Array.isArray(p.badges) ? p.badges.join(', ') : (p.badges || '');
+
+        xmlParts.push('   <Row ss:Height="20">');
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(p.id)}</Data></Cell>`);
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(catNome)}</Data></Cell>`);
+        xmlParts.push(`    <Cell ss:StyleID="Bold"><Data ss:Type="String">${escapeXml(p.nome)}</Data></Cell>`);
+        xmlParts.push(`    <Cell ss:StyleID="Currency"><Data ss:Type="Number">${preco.toFixed(2)}</Data></Cell>`);
+        xmlParts.push(`    <Cell ss:StyleID="Center"><Data ss:Type="String">${escapeXml(disponivel)}</Data></Cell>`);
+        xmlParts.push(`    <Cell ss:StyleID="Center"><Data ss:Type="String">${escapeXml(ativo)}</Data></Cell>`);
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(p.tipo_montagem || 'simples')}</Data></Cell>`);
+        xmlParts.push(`    <Cell ss:StyleID="Center"><Data ss:Type="String">${escapeXml(permiteAdd)}</Data></Cell>`);
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(badges)}</Data></Cell>`);
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(p.descricao || '')}</Data></Cell>`);
+        xmlParts.push(`    <Cell><Data ss:Type="String">${escapeXml(p.imagem_url || '')}</Data></Cell>`);
+        xmlParts.push(`    <Cell ss:StyleID="Center"><Data ss:Type="Number">${p.ordem ?? 0}</Data></Cell>`);
+        xmlParts.push('   </Row>');
+      }
+
+      xmlParts.push('  </Table>');
+      xmlParts.push(' </Worksheet>');
+      xmlParts.push('</Workbook>');
+
+      const dataHoje = new Date().toISOString().split('T')[0];
+      if (typeof admin.downloadExcel === 'function') {
+        admin.downloadExcel(`produtos_${dataHoje}.xls`, xmlParts.join('\r\n'));
+      } else {
+        const blob = new Blob([xmlParts.join('\r\n')], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `produtos_${dataHoje}.xls`;
+        link.click();
+      }
+      admin.toast('Sucesso', `${filtered.length} produtos exportados para Excel!`, 'success');
+    }
+
     const btnExportProdutos = document.getElementById('btn-export-produtos');
     if (btnExportProdutos) {
-      btnExportProdutos.addEventListener('click', () => {
-        const el = productsEls();
-        const catF    = el.filterCat.value;
-        const statusF = el.filterStatus.value;
-        const search  = (el.search.value || '').toLowerCase();
+      btnExportProdutos.addEventListener('click', exportProductsCSV);
+    }
 
-        const produtos = admin.appData.produtos || [];
-        const filtered = produtos.filter(p => {
-          const pCatId = p.categoria_id || p.categoriaId; // Compatibilidade
-          if (catF    && pCatId !== catF) return false;
-          if (statusF === 'ativo' && !p.ativo)  return false;
-          if (statusF === 'inativo' && p.ativo) return false;
-          if (search  && !p.nome.toLowerCase().includes(search)) return false;
-          return true;
-        });
-
-        if (filtered.length === 0) {
-          admin.toast('Aviso', 'Nenhum produto para exportar com os filtros atuais.', 'warn');
-          return;
-        }
-
-        const cats = admin.appData.categorias || [];
-        const escapeCSV = (val) => {
-          if (val === null || val === undefined) return '""';
-          const str = String(val);
-          if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-            return `"${str.replace(/"/g, '""')}"`;
-          }
-          return str;
-        };
-
-        const linhas = [];
-        // Cabeçalho
-        linhas.push(['ID', 'Nome', 'Categoria', 'Preço', 'Ativo', 'Disponível', 'Descrição'].join(';'));
-        
-        filtered.forEach(p => {
-          const pCatId = p.categoria_id || p.categoriaId;
-          const cat = cats.find(c => c.id === pCatId);
-          const catName = cat ? cat.nome : pCatId;
-          const preco = Number(p.preco || 0).toFixed(2).replace('.', ',');
-          
-          linhas.push([
-            escapeCSV(p.id),
-            escapeCSV(p.nome),
-            escapeCSV(catName),
-            escapeCSV(preco),
-            escapeCSV(p.ativo ? 'Sim' : 'Não'),
-            escapeCSV(p.disponivel !== false ? 'Sim' : 'Não'),
-            escapeCSV(p.descricao || '')
-          ].join(';'));
-        });
-
-        const dataHoje = new Date().toISOString().split('T')[0];
-        admin.downloadCSV(`produtos_${dataHoje}.csv`, linhas.join('\n'));
-      });
+    const btnExportExcel = document.getElementById('btn-export-excel');
+    if (btnExportExcel) {
+      btnExportExcel.addEventListener('click', exportProductsExcel);
     }
   });
 

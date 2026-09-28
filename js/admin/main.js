@@ -101,6 +101,19 @@
         document.body.removeChild(link);
       }
     },
+    downloadExcel(filename, xmlContent) {
+      const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    },
 
     // --- Navegação ---
     navigateTo(pageId) {

@@ -1,0 +1,149 @@
+﻿ID;Categoria;Nome do Produto;Preço (R$);Preço Numérico;Disponível;Ativo;Tipo de Montagem;Permite Adicionais;Badges / Destaques;Descrição;URL da Imagem;Ordem
+cafe-passado-leite;☕ Cafés Quentes;Café Passado ou Passado com Leite;6,90;6.90;Sim;Sim;simples;Sim;;Opção tradicional de café passado puro ou com leite quente.;;1
+espresso-simples;☕ Cafés Quentes;Espresso Simples 50ml;6,90;6.90;Sim;Sim;simples;Sim;popular;Dose tradicional de café espresso concentrado.;;2
+espresso-duplo;☕ Cafés Quentes;Espresso Duplo 120ml;8,90;8.90;Sim;Sim;simples;Sim;;Dose dupla de café espresso encorpado.;;3
+espresso-com-leite;☕ Cafés Quentes;Espresso com Leite 120ml;8,90;8.90;Sim;Sim;simples;Sim;;Espresso com leite vaporizado cremoso.;;4
+espresso-com-chantilly;☕ Cafés Quentes;Espresso com Chantilly;12,90;12.90;Sim;Sim;simples;Sim;;Espresso coberto com generosa camada de chantilly fresco.;;5
+espresso-leite-nutella;☕ Cafés Quentes;Espresso com Leite e Borda de Nutella;12,90;12.90;Sim;Sim;simples;Sim;popular;Espresso com leite vaporizado servido em taça com borda de Nutella.;;6
+carioquinha-50ml;☕ Cafés Quentes;Carioquinha 50ml;6,90;6.90;Sim;Sim;simples;Sim;;Café espresso mais suave com adição de água quente.;;7
+carioca-duplo-120ml;☕ Cafés Quentes;Carioca Duplo 120ml;8,90;8.90;Sim;Sim;simples;Sim;;Café carioca duplo em dose de 120ml, sabor suave.;;8
+cafe-descafeinado-120ml;☕ Cafés Quentes;Café Descafeinado 120ml (solúvel);7,00;7.00;Sim;Sim;simples;Sim;;Café descafeinado solúvel servido quentinho.;;9
+refil-cafe-coado;☕ Cafés Quentes;Refil de Café Coado (Café à Vontade);13,90;13.90;Sim;Sim;simples;Sim;popular;Refil de café coado para você ter mais energia. Café à vontade!;;10
+cappuccino-brasileiro-pequeno;✨ Cafés Especiais;Cappuccino Brasileiro Pequeno 120ml;10,90;10.90;Sim;Sim;simples;Sim;;Mistura docinha de cacau, café, leite em pó e canela.;;1
+cappuccino-brasileiro-grande;✨ Cafés Especiais;Cappuccino Brasileiro Grande 240ml;12,90;12.90;Sim;Sim;simples;Sim;popular;Mistura docinha de cacau, café, leite em pó e canela.;;2
+cappuccino-brasileiro-nutella;✨ Cafés Especiais;Cappuccino Brasileiro Grande c/ Borda de Nutella 240ml;16,90;16.90;Sim;Sim;simples;Sim;popular;Cappuccino brasileiro em taça decorada com borda de Nutella.;;3
+cappuccino-brasileiro-doce-de-leite;✨ Cafés Especiais;Cappuccino Brasileiro Grande c/ Borda de Doce de Leite 240ml;16,90;16.90;Sim;Sim;simples;Sim;;Cappuccino brasileiro em taça decorada com borda de doce de leite.;;4
+cappuccino-italiano-pequeno;✨ Cafés Especiais;Cappuccino Italiano Pequeno 120ml;10,90;10.90;Sim;Sim;simples;Sim;;Espresso com leite vaporizado e crema de leite (sem açúcar).;;5
+cappuccino-italiano-grande;✨ Cafés Especiais;Cappuccino Italiano Grande 240ml;12,90;12.90;Sim;Sim;simples;Sim;;Espresso com leite vaporizado e crema de leite (sem açúcar).;;6
+mocca-tradicional;✨ Cafés Especiais;Mocca;15,90;15.90;Sim;Sim;simples;Sim;popular;Leite vaporizado, chocolate meio amargo e dose de espresso.;;7
+mocca-com-nutella;✨ Cafés Especiais;Mocca com Borda de Nutella;17,90;17.90;Sim;Sim;simples;Sim;popular;Leite vaporizado, chocolate meio amargo, dose de espresso e borda de Nutella.;;8
+chocolate-quente-pequeno;🍫 Chocolate Quente;Chocolate Quente Cremoso Pequeno 100ml;11,90;11.90;Sim;Sim;simples;Sim;;Chocolate quente artesanal cremoso e aveludado.;;1
+chocolate-quente-grande;🍫 Chocolate Quente;Chocolate Quente Cremoso Grande 240ml;16,90;16.90;Sim;Sim;simples;Não;popular;Chocolate quente cremoso servido em taça de 240ml.;;2
+chocolate-quente-chantilly;🍫 Chocolate Quente;Chocolate Quente Grande com Chantilly 240ml;18,90;18.90;Sim;Sim;simples;Não;popular;Chocolate quente cremoso finalizado com generosa cobertura de chantilly.;;3
+cappuccino-gelado;🧊 Cafés Gelados;Cappuccino Gelado;13,90;13.90;Sim;Sim;simples;Sim;popular;Nosso cappuccino cremoso servido gelado.;;1
+cappuccino-gelado-nutella;🧊 Cafés Gelados;Cappuccino Gelado com Borda de Nutella;17,90;17.90;Sim;Sim;simples;Sim;popular;Cappuccino gelado servido com generosa borda de Nutella.;;2
+cappuccino-gelado-nutella-amendoim;🧊 Cafés Gelados;Cappuccino Gelado c/ Borda de Nutella e Amendoim;18,90;18.90;Sim;Sim;simples;Sim;;Cappuccino gelado com borda de Nutella coberta de amendoim crocante.;;3
+cappuccino-gelado-doce-leite;🧊 Cafés Gelados;Cappuccino Gelado com Borda de Doce de Leite;17,90;17.90;Sim;Sim;simples;Sim;;Cappuccino gelado servido com borda de doce de leite.;;4
+cappuccino-gelado-doce-leite-amendoim;🧊 Cafés Gelados;Cappuccino Gelado c/ Doce de Leite e Amendoim;18,90;18.90;Sim;Sim;simples;Sim;;Cappuccino gelado com borda de doce de leite e amendoim crocante.;;5
+cafe-gelado-crema;🧊 Cafés Gelados;Café Gelado;14,90;14.90;Sim;Sim;simples;Sim;;Espresso, crema de leite e pedras de gelo.;;6
+espresso-tonica;🧊 Cafés Gelados;Espresso Tônica;14,90;14.90;Sim;Sim;simples;Sim;novo;Combinação refrescante de água tônica e dose de espresso.;;7
+pink-lemonade;🍹 Bebidas Geladas & Sodas;Pink Lemonade 400ml;13,90;13.90;Sim;Sim;simples;Não;popular;Limão, essência de frutas vermelhas, açúcar e água.;;1
+soda-maca-verde;🍹 Bebidas Geladas & Sodas;Soda Italiana Maçã Verde 400ml;13,90;13.90;Sim;Sim;simples;Não;;Refrescante soda italiana de maçã verde com gelo.;;2
+soda-frutas-vermelhas;🍹 Bebidas Geladas & Sodas;Soda Italiana Frutas Vermelhas 400ml;13,90;13.90;Sim;Sim;simples;Não;popular;Soda italiana artesanal sabor frutas vermelhas.;;3
+soda-melancia;🍹 Bebidas Geladas & Sodas;Soda Italiana Melancia 400ml;13,90;13.90;Sim;Sim;simples;Não;;Soda italiana refrescante sabor melancia.;;4
+soda-blueberry;🍹 Bebidas Geladas & Sodas;Soda Italiana Blueberry 400ml;13,90;13.90;Sim;Sim;simples;Não;;Soda italiana refrescante sabor blueberry (mirtilo).;;5
+cha-gelado-pessego;🍹 Bebidas Geladas & Sodas;Chá Gelado de Pêssego 400ml;13,90;13.90;Sim;Sim;simples;Não;;Chá gelado refrescante sabor pêssego.;;6
+milkshake-chocolate-nutella;🥤 Milk Shakes;Milk Shake de Chocolate com Borda de Nutella;24,90;24.90;Sim;Sim;simples;Sim;popular;Batido cremoso de sorvete de chocolate com generosa borda de Nutella.;;1
+milkshake-creme-doce-leite;🥤 Milk Shakes;Milk Shake Sorvete de Creme com Borda de Doce de Leite;23,90;23.90;Sim;Sim;simples;Não;;Sorvete de creme batido servido em taça com borda de doce de leite.;;2
+suco-laranja;🧃 Sucos & Vitaminas;Suco Natural de Laranja 400ml;11,90;11.90;Sim;Sim;simples;Não;popular;Suco natural feito na hora, sem adição de açúcar.;;1
+suco-abacaxi;🧃 Sucos & Vitaminas;Suco Natural de Abacaxi 400ml;11,90;11.90;Sim;Sim;simples;Não;;Suco natural feito na hora, sem adição de açúcar.;;2
+suco-mamao;🧃 Sucos & Vitaminas;Suco Natural de Mamão 400ml;11,90;11.90;Sim;Sim;simples;Não;;Suco natural feito na hora, sem adição de açúcar.;;3
+suco-morango;🧃 Sucos & Vitaminas;Suco Natural de Morango 400ml;13,90;13.90;Sim;Sim;simples;Não;popular;Suco da fruta de morango 400ml sem adição de açúcar.;;4
+suco-verde;🧃 Sucos & Vitaminas;Suco Natural Verde 400ml;13,90;13.90;Sim;Sim;simples;Não;popular;Laranja, abacaxi e folha fresca de couve batidos na hora.;;5
+suco-laranja-mamao;🧃 Sucos & Vitaminas;Suco Natural Laranja com Mamão 400ml;13,90;13.90;Sim;Sim;simples;Não;;Combinação natural de laranja com mamão sem açúcar.;;6
+suco-laranja-morango;🧃 Sucos & Vitaminas;Suco Natural Laranja com Morango 400ml;13,90;13.90;Sim;Sim;simples;Não;;Combinação refrescante de laranja com morangos frescos.;;7
+vitamina-banana;🧃 Sucos & Vitaminas;Vitamina de Banana 400ml;10,90;10.90;Sim;Sim;simples;Não;;Vitamina cremosa de leite com banana fresca.;;8
+vitamina-morango;🧃 Sucos & Vitaminas;Vitamina de Morango 400ml;10,90;10.90;Sim;Sim;simples;Não;;Vitamina cremosa de leite com morangos selecionados.;;9
+crepe-calabresa;🥞 Crepes Salgados;Crepe de Calabresa;27,90;27.90;Sim;Sim;simples;Não;;Calabresa fatiada, mussarela, tomate cereja, tempero verde e orégano.;;1
+crepe-carne-panela;🥞 Crepes Salgados;Crepe de Carne de Panela;31,90;31.90;Sim;Sim;simples;Não;popular;Carne de panela desfiada bem temperada, queijo e orégano.;;2
+crepe-carne-panela-cheddar;🥞 Crepes Salgados;Crepe de Carne de Panela com Cheddar;34,90;34.90;Sim;Sim;simples;Não;popular;Carne de panela desfiada, queijo, cheddar cremoso e orégano.;;3
+crepe-carne-panela-doritos;🥞 Crepes Salgados;Crepe de Carne de Panela com Doritos;34,90;34.90;Sim;Sim;simples;Não;novo;Carne de panela desfiada, queijo, cobertura crocante de Doritos e orégano.;;4
+crepe-chester;🥞 Crepes Salgados;Crepe de Chester;26,90;26.90;Sim;Sim;simples;Não;;Tomate fresco, queijo mussarela, requeijão, chester defumado e orégano.;;5
+crepe-presunto;🥞 Crepes Salgados;Crepe de Presunto;26,90;26.90;Sim;Sim;simples;Não;;Tomate fresco, queijo mussarela, requeijão, presunto e orégano.;;6
+crepe-frango-cremoso;🥞 Crepes Salgados;Crepe de Frango Cremoso;28,90;28.90;Sim;Sim;simples;Não;popular;Queijo mussarela, frango desfiado temperado, requeijão e orégano.;;7
+crepe-doce-confetes;🍓 Crepes Doces & Panquecas;Crepe Doce Confetes;22,90;22.90;Sim;Sim;simples;Não;;Base à sua escolha (chocolate ao leite ou branco) com cobertura de confetes.;;1
+crepe-doce-amendoim;🍓 Crepes Doces & Panquecas;Crepe Doce Amendoim;21,90;21.90;Sim;Sim;simples;Não;;Base de chocolate ao leite ou branco com amendoim crocante.;;2
+crepe-doce-ouro-branco;🍓 Crepes Doces & Panquecas;Crepe Doce Ouro Branco;22,90;22.90;Sim;Sim;simples;Não;popular;Base de chocolate ao leite ou branco com bombom Ouro Branco picado.;;3
+crepe-doce-morango;🍓 Crepes Doces & Panquecas;Crepe Doce Morango;23,90;23.90;Sim;Sim;simples;Não;popular;Base à sua escolha (chocolate ao leite ou branco) com morangos frescos.;;4
+crepe-doce-leite-banana;🍓 Crepes Doces & Panquecas;Crepe Doce de Leite com Banana;21,90;21.90;Sim;Sim;simples;Não;;Recheado com doce de leite cremoso e fatias de banana.;;5
+crepe-meio-a-meio;🍓 Crepes Doces & Panquecas;Crepe Meio a Meio;29,90;29.90;Sim;Sim;simples;Não;popular;Escolha um sabor doce e outro sabor salgado para seu crepe.;;6
+mini-crepe-frutas-vermelhas;🍓 Crepes Doces & Panquecas;Mini Crepe Frutas Vermelhas com Sorvete;19,90;19.90;Sim;Sim;simples;Não;popular;Chocolate branco, morango, amora, calda de frutas vermelhas e sorvete de creme.;;7
+mini-crepe-crocante;🍓 Crepes Doces & Panquecas;Mini Crepe Crocante com Sorvete;19,90;19.90;Sim;Sim;simples;Não;;Chocolate ao leite, amendoim crocante e bola de sorvete de creme.;;8
+mini-crepe-morango;🍓 Crepes Doces & Panquecas;Mini Crepe Morango com Sorvete;19,90;19.90;Sim;Sim;simples;Não;popular;Chocolate ao leite, morangos frescos fatiados e sorvete de creme.;;9
+mini-crepe-confetes;🍓 Crepes Doces & Panquecas;Mini Crepe Confetes com Sorvete;19,90;19.90;Sim;Sim;simples;Não;;Confetes coloridos, chocolate ao leite e sorvete de creme.;;10
+mini-crepe-doce-leite;🍓 Crepes Doces & Panquecas;Mini Crepe Doce de Leite com Sorvete;19,90;19.90;Sim;Sim;simples;Não;;Doce de leite, fatias de banana e bola de sorvete de creme.;;11
+mini-panqueca-morango-granola;🍓 Crepes Doces & Panquecas;Mini Panqueca Morango com Granola;19,90;19.90;Sim;Sim;simples;Não;;Morangos frescos, granola crocante, mel e fatias de banana.;;12
+mini-panqueca-kit-kat;🍓 Crepes Doces & Panquecas;Mini Panqueca Kit Kat;19,90;19.90;Sim;Sim;simples;Não;popular;Chocolate ao leite derretido coberto com pedaços de Kit Kat.;;13
+mini-panqueca-chocolate-morango;🍓 Crepes Doces & Panquecas;Mini Panqueca Chocolate com Morango;19,90;19.90;Sim;Sim;simples;Não;popular;Chocolate ao leite cremoso com morangos frescos fatiados.;;14
+mini-panqueca-doce-de-leite;🍓 Crepes Doces & Panquecas;Mini Panqueca Doce de Leite com Banana;19,90;19.90;Sim;Sim;simples;Não;;Doce de leite macio com fatias de banana fresca.;;15
+baguete-frango;🥖 Baguetes Artesanais;Baguete de Frango;28,90;28.90;Sim;Sim;simples;Sim;popular;Requeijão, mussarela, frango desfiado, cebola roxa, tempero verde e azeite de oliva.;;1
+baguete-vegetariano;🥖 Baguetes Artesanais;Baguete Vegetariano;25,90;25.90;Sim;Sim;simples;Sim;;Requeijão, mussarela, abobrinha grelhada, cebola roxa, tomate cereja, parmesão e azeite.;;2
+baguete-chester;🥖 Baguetes Artesanais;Baguete de Chester;27,90;27.90;Sim;Sim;simples;Sim;;Requeijão, mussarela, chester defumado, cebola roxa e tempero verde.;;3
+baguete-calabresa;🥖 Baguetes Artesanais;Baguete de Calabresa;27,90;27.90;Sim;Sim;simples;Sim;;Requeijão, mussarela, calabresa fatiada, cebola roxa e tempero verde.;;4
+baguete-carne-panela;🥖 Baguetes Artesanais;Baguete de Carne de Panela;31,90;31.90;Sim;Sim;simples;Sim;popular;Requeijão, mussarela, carne de panela suculenta, cebola roxa, azeite e tempero verde.;;5
+baguete-carne-italiano;🥖 Baguetes Artesanais;Baguete de Carne Italiano;31,90;31.90;Sim;Sim;simples;Sim;popular;Requeijão, mussarela, carne de panela, rúcula fresca, tomate cereja, azeite e tempero verde.;;6
+croissant-sanduiche;🥐 Croissants Salgados & Doces;Croissant Sanduíche;18,90;18.90;Sim;Sim;simples;Não;;Cream cheese, presunto nobre e queijo mussarela derretido.;;1
+croissant-ovos-mexidos;🥐 Croissants Salgados & Doces;Croissant Ovos Mexidos;19,90;19.90;Sim;Sim;simples;Não;;Ovos mexidos cremosos, queijo mussarela, parmesão ralado e tempero verde.;;2
+croissant-carne-panela;🥐 Croissants Salgados & Doces;Croissant Carne de Panela;26,90;26.90;Sim;Sim;simples;Não;popular;Requeijão, mussarela, carne de panela, parmesão, orégano e tomate cereja.;;3
+croissant-frango-3-queijos;🥐 Croissants Salgados & Doces;Croissant Frango aos 3 Queijos;24,90;24.90;Sim;Sim;simples;Não;popular;Requeijão, mussarela, cream cheese, frango desfiado temperado e tomate cereja.;;4
+croissant-tomate-seco;🥐 Croissants Salgados & Doces;Croissant Tomate Seco;24,90;24.90;Sim;Sim;simples;Não;;Requeijão, mussarela, tomate seco selecionado, rúcula fresca e parmesão.;;5
+croissant-doce-sensacao;🥐 Croissants Salgados & Doces;Croissant Doce Sensação;22,90;22.90;Sim;Sim;simples;Não;popular;Chocolate ao leite com morangos frescos fatiados.;;6
+croissant-doce-duetto;🥐 Croissants Salgados & Doces;Croissant Doce Duetto;22,90;22.90;Sim;Sim;simples;Não;;Chocolate ao leite, chocolate branco e morangos frescos.;;7
+croissant-doce-chocolate-branco;🥐 Croissants Salgados & Doces;Croissant Doce Chocolate Branco;22,90;22.90;Sim;Sim;simples;Não;;Chocolate branco cremoso com morangos frescos.;;8
+croissant-doce-de-leite;🥐 Croissants Salgados & Doces;Croissant Doce de Leite;22,90;22.90;Sim;Sim;simples;Não;;Doce de leite Uruguaio autêntico e fatias de banana fresca.;;9
+croissant-doce-prestigio;🥐 Croissants Salgados & Doces;Croissant Doce Prestígio;22,90;22.90;Sim;Sim;simples;Não;;Chocolate ao leite com generoso recheio de coco tipo Prestígio.;;10
+croissant-doce-ferrero;🥐 Croissants Salgados & Doces;Croissant Doce Ferrero Rocher;24,90;24.90;Sim;Sim;simples;Não;popular;Chocolate ao leite, bombom Ferrero Rocher e castanha triturada.;;11
+croissant-doce-kinder-bueno;🥐 Croissants Salgados & Doces;Croissant Doce Kinder Bueno;24,90;24.90;Sim;Sim;simples;Não;popular;Chocolate ao leite, chocolate branco e pedaços de Kinder Bueno.;;12
+torrada-simples;🥪 Torradas & Lanches;Torrada Simples;10,90;10.90;Sim;Sim;simples;Não;;Queijo mussarela, requeijão cremoso, presunto e orégano no pão tostado.;;1
+torrada-completa;🥪 Torradas & Lanches;Torrada Completa;15,90;15.90;Sim;Sim;simples;Não;popular;Queijo, requeijão, presunto, ovo, tomate fatiado, alface crocante e orégano.;;2
+torrada-salame-italiano;🥪 Torradas & Lanches;Torrada de Salame Italiano;17,90;17.90;Sim;Sim;simples;Não;popular;Queijo, requeijão, salamito colonial fatiado, ovo, tomate, alface e orégano.;;3
+sanduiche-frango-natural;🥪 Torradas & Lanches;Sanduíche Natural de Frango;17,90;17.90;Sim;Sim;simples;Não;;Pão integral, alface, tomate, cebola roxa, cenoura ralada, requeijão, queijo e frango.;;4
+ovos-mexidos-opcao-1;🥪 Torradas & Lanches;Ovos Mexidos - Opção 1;19,90;19.90;Sim;Sim;simples;Não;;4 ovos mexidos servidos com alface fresca, tomate cereja e molho rosé.;;5
+ovos-mexidos-opcao-2;🥪 Torradas & Lanches;Ovos Mexidos - Opção 2;19,90;19.90;Sim;Sim;simples;Não;;4 ovos mexidos acompanhados de pão torrado quentinho, manteiga e geleia de uva.;;6
+croque-madame;🥪 Torradas & Lanches;Croque Madame à Moda da Casa;22,90;22.90;Sim;Sim;simples;Não;popular;Clássico francês em pão artesanal, presunto, queijo gratinado, bechamel, ovo e tempero.;;7
+queijo-quente;🥪 Torradas & Lanches;Queijo Quente com Doce de Leite;19,90;19.90;Sim;Sim;simples;Não;popular;Pão tostado com generosa porção de queijo derretido. Acompanha doce de leite.;;8
+mix-de-saladas;🥗 Saladas Especiais;Mix de Saladas;23,90;23.90;Sim;Sim;simples;Não;;Alface, rúcula, tomate cereja, ovo de codorna, croutons crocantes e molho rosé.;;1
+salada-com-frango;🥗 Saladas Especiais;Salada com Frango 120g;31,90;31.90;Sim;Sim;simples;Não;popular;Alface, rúcula, tomate cereja, ovo de codorna, croutons, molho rosé e 120g de frango.;;2
+salada-com-carne;🥗 Saladas Especiais;Salada com Carne 120g;34,90;34.90;Sim;Sim;simples;Não;;Alface, rúcula, tomate cereja, ovo de codorna, croutons, molho rosé e 120g de carne.;;3
+salada-ceasar-da-casa;🥗 Saladas Especiais;Salada Ceasar da Casa;29,90;29.90;Sim;Sim;simples;Não;popular;Alface crocante, croutons, cenoura, molho Ceasar especial, parmesão e frango (120g).;;4
+taca-especial-ferrero;🍨 Taças Especiais & Açaí;Taça Especial de Ferrero;27,90;27.90;Sim;Sim;simples;Não;popular;Sorvete de chocolate, ganache de chocolate, castanha e bombom Ferrero Rocher.;;1
+taca-especial-flocos;🍨 Taças Especiais & Açaí;Taça Especial Flocos;24,90;24.90;Sim;Sim;simples;Não;;Sorvetes de flocos cremosos e ganache generosa de Nutella.;;2
+taca-3-amores;🍨 Taças Especiais & Açaí;Taça 3 Amores;24,90;24.90;Sim;Sim;simples;Não;popular;Sorvete de creme, morangos frescos fatiados e ganache de Nutella.;;3
+floccotino;🍨 Taças Especiais & Açaí;Floccotino;21,90;21.90;Sim;Sim;simples;Não;popular;Cappuccino gelado, sorvete de flocos cremoso e cobertura de chantilly.;;4
+floccotino-borda-nutella;🍨 Taças Especiais & Açaí;Floccotino com Borda de Nutella;23,90;23.90;Sim;Sim;simples;Não;popular;Cappuccino gelado, sorvete de flocos, borda farta de Nutella e chantilly.;;5
+acai-taca-opcao-01;🍨 Taças Especiais & Açaí;Açaí na Taça 300ml - Opção 01;21,90;21.90;Sim;Sim;simples;Não;;Açaí batido puro servido com granola, morangos e fatias de banana.;;6
+acai-taca-opcao-02;🍨 Taças Especiais & Açaí;Açaí na Taça 300ml - Opção 02;21,90;21.90;Sim;Sim;simples;Não;;Açaí batido na taça com leite Ninho em pó e morangos frescos.;;7
+acai-taca-opcao-03;🍨 Taças Especiais & Açaí;Açaí na Taça 300ml - Opção 03;24,90;24.90;Sim;Sim;simples;Não;popular;Açaí batido servido com Nutella e morangos frescos.;;8
+acai-taca-opcao-04;🍨 Taças Especiais & Açaí;Açaí na Taça 300ml - Opção 04;24,90;24.90;Sim;Sim;simples;Não;;Açaí cremoso na taça com doce de leite e morangos frescos.;;9
+acai-taca-opcao-05;🍨 Taças Especiais & Açaí;Açaí na Taça 300ml - Opção 05;24,90;24.90;Sim;Sim;simples;Não;popular;Açaí batido servido com leite Ninho em pó e Nutella.;;10
+salada-frutas-simples;🍨 Taças Especiais & Açaí;Salada de Frutas;13,90;13.90;Sim;Sim;simples;Não;;Mix refrescante de frutas frescas selecionadas da estação.;;11
+salada-frutas-com-sorvete;🍨 Taças Especiais & Açaí;Salada de Frutas com Sorvete;16,90;16.90;Sim;Sim;simples;Não;popular;Mix de frutas da estação servido com bola de sorvete de creme.;;12
+panelinha-de-frutas;🍨 Taças Especiais & Açaí;Panelinha de Frutas;17,90;17.90;Sim;Sim;simples;Não;;Mix de frutas da estação servido com iogurte grego cremoso e granola.;;13
+bolo-da-india;🍰 Balcão & Confeitaria;Bolo da Índia;14,90;14.90;Sim;Sim;simples;Não;;Fatia do tradicional e perfumado bolo da Índia. Consulte sabores do dia.;;1
+mini-tortas-vitrine;🍰 Balcão & Confeitaria;Mini Tortas Finas;18,90;18.90;Sim;Sim;simples;Não;popular;Mini tortas artesanais individuais. Consulte os sabores disponíveis na vitrine.;;2
+pastel-forno-carne-cheddar;🍰 Balcão & Confeitaria;Pastel de Forno Carne com Cheddar;12,90;12.90;Sim;Sim;simples;Não;;Pastel assado no forno recheado com carne e queijo cheddar.;;3
+pastel-forno-frango-catupiry;🍰 Balcão & Confeitaria;Pastel de Forno Frango com Catupiry;12,90;12.90;Sim;Sim;simples;Não;;Pastel assado no forno com frango desfiado e catupiry cremoso.;;4
+pao-de-calabresa;🍰 Balcão & Confeitaria;Pão de Calabresa;11,90;11.90;Sim;Sim;simples;Não;;Pão artesanal recheado com calabresa e queijo.;;5
+pao-de-queijo;🍰 Balcão & Confeitaria;Pão de Queijo Tradicional;6,50;6.50;Sim;Sim;simples;Não;popular;Pão de queijo mineiro assado quentinho na hora.;;6
+pao-a-portuguesa;🍰 Balcão & Confeitaria;Pão à Portuguesa;11,90;11.90;Sim;Sim;simples;Não;;Pão recheado especial à moda portuguesa.;;7
+pao-de-frango;🍰 Balcão & Confeitaria;Pão de Frango;11,90;11.90;Sim;Sim;simples;Não;;Pão artesanal fofinho recheado com frango cremoso.;;8
+torta-frango-cremosa;🍰 Balcão & Confeitaria;Torta de Frango Cremosa (Fatia);16,90;16.90;Sim;Sim;simples;Não;popular;Fatia de torta salgada artesanal com recheio cremoso de frango.;;9
+torta-de-legumes;🍰 Balcão & Confeitaria;Torta de Legumes (Fatia);15,90;15.90;Sim;Sim;simples;Não;;Fatia de torta salgada vegetariana de legumes frescos.;;10
+tortas-doces-fatia;🍰 Balcão & Confeitaria;Tortas Doces Tradicionais (Fatia);18,90;18.90;Sim;Sim;simples;Não;popular;Fatia de torta doce artesanal. Consulte sabores disponíveis na vitrine.;;11
+panqueca-sem-lactose-granola;🌾 Sem Lactose & Sem Glúten;Mini Panqueca de Granola e Mel (Sem Lactose);19,90;19.90;Sim;Sim;simples;Não;;Mini panqueca sem lactose, mel, banana, morango e granola.;;1
+panqueca-sem-lactose-morango;🌾 Sem Lactose & Sem Glúten;Mini Panqueca Americana de Morango (Sem Lactose);21,90;21.90;Sim;Sim;simples;Não;;Mini panquecas, chocolate 0% lactose e morangos frescos.;;2
+mini-crepe-sem-lactose-crocante;🌾 Sem Lactose & Sem Glúten;Mini Crepe Crocante com Sorvete (Sem Lactose);21,90;21.90;Sim;Sim;simples;Não;;Massa sem lactose, chocolate 0% lactose, sorvete 0% lactose e amendoim.;;3
+mini-crepe-sem-lactose-morango;🌾 Sem Lactose & Sem Glúten;Mini Crepe Morango com Sorvete (Sem Lactose);21,90;21.90;Sim;Sim;simples;Não;;Massa sem lactose, chocolate 0% lactose, sorvete 0% lactose e morango.;;4
+crepe-sem-lactose-crocante;🌾 Sem Lactose & Sem Glúten;Crepe Crocante (Sem Lactose);21,90;21.90;Sim;Sim;simples;Não;;Crepe de chocolate 0% lactose e amendoim.;;5
+crepe-sem-lactose-morango;🌾 Sem Lactose & Sem Glúten;Crepe Chocolate e Morango (Sem Lactose);23,90;23.90;Sim;Sim;simples;Não;;Crepe com chocolate 0% lactose e morangos frescos.;;6
+torta-soft-gateau-sem-lactose;🌾 Sem Lactose & Sem Glúten;Torta Soft Gateau (Sem Lactose);16,90;16.90;Sim;Sim;simples;Não;popular;Gateau de chocolate e mousse de chocolate 0% lactose.;;7
+torrada-simples-sem-lactose;🌾 Sem Lactose & Sem Glúten;Torrada Simples (Sem Lactose);12,90;12.90;Sim;Sim;simples;Não;;Pão 0% lactose, presunto e queijo 0% lactose.;;8
+torrada-completa-sem-lactose;🌾 Sem Lactose & Sem Glúten;Torrada Completa (Sem Lactose);17,90;17.90;Sim;Sim;simples;Não;;Pão 0% lactose, presunto, queijo 0% lactose, alface, tomate e ovo.;;9
+calzone-frango-sem-gluten;🌾 Sem Lactose & Sem Glúten;Calzone de Frango (Sem Glúten);14,90;14.90;Sim;Sim;simples;Não;;Calzone sem glúten recheado com frango. Atenção: pode conter traços/resquícios.;;10
+calzone-marguerita-sem-gluten;🌾 Sem Lactose & Sem Glúten;Calzone Marguerita Vegetariano (Sem Glúten);14,90;14.90;Sim;Sim;simples;Não;;Calzone sem glúten de queijo, tomate e manjericão. Pode conter resquícios.;;11
+acai-tigela-sem-gluten;🌾 Sem Lactose & Sem Glúten;Açaí na Tigela (Sem Glúten);19,50;19.50;Sim;Sim;simples;Não;;Açaí servido na tigela com banana, morango e granola sem glúten.;;12
+milkshake-sem-gluten;🌾 Sem Lactose & Sem Glúten;Milkshake de Chocolate (Sem Glúten);22,90;22.90;Sim;Sim;simples;Não;;Milkshake cremoso de chocolate preparado sem glúten.;;13
+cheiro-verde-calzone-frango;🌾 Sem Lactose & Sem Glúten;Calzone de Frango Cheiro Verde (Celíacos - 0% Glúten e Leite);14,90;14.90;Sim;Sim;simples;Não;popular;Produzido em cozinha estéril, livre de glúten e leite. Servido lacrado.;;14
+cheiro-verde-calzone-marguerita;🌾 Sem Lactose & Sem Glúten;Calzone Marguerita Cheiro Verde (Celíacos - 0% Glúten e Leite);14,90;14.90;Sim;Sim;simples;Não;;Produzido em cozinha estéril, livre de glúten e leite. Servido lacrado.;;15
+cheiro-verde-crepioca-frango;🌾 Sem Lactose & Sem Glúten;Panqueca de Crepioca c/ Frango Cheiro Verde (3 un/300g);25,90;25.90;Sim;Sim;simples;Não;;3 unidades (300g). Cozinha estéril, segura para celíacos. Servido lacrado.;;16
+cheiro-verde-brigadeiro;🌾 Sem Lactose & Sem Glúten;Brigadeiro Funcional Cheiro Verde (Celíacos);3,50;3.50;Sim;Sim;simples;Não;;Brigadeiro funcional seguro para celíacos e intolerantes a lactose.;;17
+espumante-750ml;🥂 Bebidas com Álcool;Espumante 750ml (Brut ou Moscatel);75,00;75.00;Sim;Sim;simples;Não;;Garrafa 750ml Salton Brut ou Moscatel. Promoção 50% OFF na 2ª unidade.;;1
+taca-espumante-170ml;🥂 Bebidas com Álcool;Taça de Espumante 170ml;16,90;16.90;Sim;Sim;simples;Não;;Taça de espumante refrescante. Promoção 50% OFF na 2ª unidade.;;2
+drink-mimosa;🥂 Bebidas com Álcool;Drink Mimosa 170ml;16,90;16.90;Sim;Sim;simples;Não;popular;Clássico espumante Brut com suco de laranja natural. 50% OFF na 2ª unidade.;;3
+aperol-spritz;🥂 Bebidas com Álcool;Aperol Spritz 400ml;27,90;27.90;Sim;Sim;simples;Não;popular;Água com gás, Espumante Brut e dose generosa de Aperol. 50% OFF na 2ª unidade.;;4
+dose-whisky-jameson;🥂 Bebidas com Álcool;Dose de Whisky Jameson;21,90;21.90;Sim;Sim;simples;Não;;Dose de whisky irlandês Jameson original.;;5
+cerveja-tradicional;🥂 Bebidas com Álcool;Cerveja Long Neck (Consulte opções);15,00;15.00;Sim;Sim;simples;Não;;Cervejas long neck disponíveis no balcão.;;6
+cerveja-zero-alcool;🥂 Bebidas com Álcool;Cerveja Long Neck 0.0% Álcool;15,00;15.00;Sim;Sim;simples;Não;;Cerveja long neck sem álcool.;;7
+gin-tonica-frutas-vermelhas;🥂 Bebidas com Álcool;Gin Tônica de Frutas Vermelhas;23,90;23.90;Sim;Sim;simples;Não;popular;Gin premium, água tônica e infusão de frutas vermelhas.;;8
+gin-tonica-blueberry;🥂 Bebidas com Álcool;Gin Tônica de Blueberry;23,90;23.90;Sim;Sim;simples;Não;;Gin premium, água tônica e mirtilos (blueberry).;;9
+prod-mini-cappuccino-cortesia;Sem Categoria;Mini Cappuccino Cortesia;0,00;0.00;Sim;Sim;simples;Não;;Cortesia servida após o prato;;999
