@@ -1,7 +1,7 @@
 # [UI] Melhoria dos botões do hero da home
 
-> **Status:** Rascunho
-> **Autor:** Natanael Fernando Gatti Brentano · **Revisor:** · **Criada em:** 2026-09-28 · **Atualizada em:** 2026-09-28
+> **Status:** Concluída
+> **Autor:** Natanael Fernando Gatti Brentano · **Revisor:** Natanael Fernando Gatti Brentano · **Criada em:** 2026-09-28 · **Atualizada em:** 2026-09-28
 
 ## Detalhes da Atividade
 
@@ -76,18 +76,18 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado cada um dos 8 slides, quando o slide está ativo, então o texto dos dois botões tem contraste ≥ 4,5:1 e o contorno/fundo do "Como Chegar" tem contraste ≥ 3:1 contra a arte atrás dele.
-- [ ] **CA02:** Dado que navego com Tab a partir da navbar, quando o foco chega em cada CTA, então aparece um anel de foco nítido, que não se confunde com a cor do botão nem com o fundo.
-- [ ] **CA03:** Dado o desktop com mouse, quando passo o mouse e clico nos dois botões, então os dois têm a mesma altura, raio e tipografia, reagem com a mesma animação e o "Ver Cardápio" continua como ação principal.
-- [ ] **CA04:** Dado uma tela de 375 px (e 320 px), quando o hero carrega, então os botões ficam empilhados, com a mesma largura, "Ver Cardápio" em cima, ≥ 48 px de altura, ≥ 12 px de espaço entre eles e sem scroll horizontal.
-- [ ] **CA05:** Dado uma tela de 600 px e outra de 768 px, quando o hero carrega, então os dois botões ficam na mesma linha, com a mesma largura, sem quebra.
-- [ ] **CA06:** Dado um iPhone com home indicator, quando o hero carrega, então os botões ficam acima da área segura inferior, sem sobrepor o indicador nem a barra de progresso.
-- [ ] **CA07:** Dado o desktop, quando olho a legenda e os botões, então os dois estão no mesmo alinhamento (conforme D01).
-- [ ] **CA08:** Dado que clico em "Como Chegar", quando o scroll termina, então o título da seção `#chegar` aparece inteiro abaixo da navbar fixa.
-- [ ] **CA09:** Dado o GA4 DebugView aberto, quando clico em "Como Chegar", então chega um evento `click_como_chegar` com `button_id: "hero-cta-chegar"`. O clique em "Ver Cardápio" continua gerando `click_ver_cardapio`.
-- [ ] **CA10:** Dado um carregamento normal da home, quando a página abre, então os botões ficam totalmente visíveis em até 0,6 s depois da primeira pintura, sem deslocar o layout.
-- [ ] **CA11:** Dado `prefers-reduced-motion: reduce` ativo, quando a página carrega e passo o mouse nos botões, então eles já aparecem visíveis e não sobem com `translateY`.
-- [ ] **CA12 (negativo):** Dado `cardapio.html`, `404.html` e a seção CTA da home, quando comparo antes e depois, então os botões dessas áreas **não** mudam de forma indesejada.
+- [x] **CA01:** Dado cada um dos 8 slides, quando o slide está ativo, então o texto dos dois botões tem contraste ≥ 4,5:1 e o contorno/fundo do "Como Chegar" tem contraste ≥ 3:1 contra a arte atrás dele.
+- [x] **CA02:** Dado que navego com Tab a partir da navbar, quando o foco chega em cada CTA, então aparece um anel de foco nítido, que não se confunde com a cor do botão nem com o fundo.
+- [x] **CA03:** Dado o desktop com mouse, quando passo o mouse e clico nos dois botões, então os dois têm a mesma altura, raio e tipografia, reagem com a mesma animação e o "Ver Cardápio" continua como ação principal.
+- [x] **CA04:** Dado uma tela de 375 px (e 320 px), quando o hero carrega, então os botões ficam empilhados, com a mesma largura, "Ver Cardápio" em cima, ≥ 48 px de altura, ≥ 12 px de espaço entre eles e sem scroll horizontal.
+- [x] **CA05:** Dado uma tela de 600 px e outra de 768 px, quando o hero carrega, então os dois botões ficam na mesma linha, com a mesma largura, sem quebra.
+- [x] **CA06:** Dado um iPhone com home indicator, quando o hero carrega, então os botões ficam acima da área segura inferior, sem sobrepor o indicador nem a barra de progresso.
+- [x] **CA07:** Dado o desktop, quando olho a legenda e os botões, então os dois estão no mesmo alinhamento (conforme D01).
+- [x] **CA08:** Dado que clico em "Como Chegar", quando o scroll termina, então o título da seção `#chegar` aparece inteiro abaixo da navbar fixa.
+- [x] **CA09:** Dado o GA4 DebugView aberto, quando clico em "Como Chegar", então chega um evento `click_como_chegar` com `button_id: "hero-cta-chegar"`. O clique em "Ver Cardápio" continua gerando `click_ver_cardapio`.
+- [x] **CA10:** Dado um carregamento normal da home, quando a página abre, então os botões ficam totalmente visíveis em até 0,6 s depois da primeira pintura, sem deslocar o layout.
+- [x] **CA11:** Dado `prefers-reduced-motion: reduce` ativo, quando a página carrega e passo o mouse nos botões, então eles já aparecem visíveis e não sobem com `translateY`.
+- [x] **CA12 (negativo):** Dado `cardapio.html`, `404.html` e a seção CTA da home, quando comparo antes e depois, então os botões dessas áreas **não** mudam de forma indesejada.
 
 ## O que a atividade não inclui
 
@@ -106,10 +106,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Legenda e botões: centralizar os dois ou alinhar os dois à esquerda no desktop (estilo editorial)? No mobile a sugestão é centralizar. | Design/PO | Sim | |
-| D02 | Os botões devem ganhar ícones (RF11), ou manter só texto? | Design/PO | Não | |
-| D03 | O secundário fica em outline com fundo translúcido ("vidro") ou vira botão sólido claro (marfim com texto espresso)? | Design | Não | |
-| D04 | Manter o texto em caixa alta com espaçamento de 0,08em, ou passar para capitalização normal, que lê melhor no mobile? | Design | Não | |
+| D01 | Legenda e botões: centralizar os dois ou alinhar os dois à esquerda no desktop (estilo editorial)? No mobile a sugestão é centralizar. | Design/PO | Sim | **Centralizar ambos no desktop e mobile**, com caixa de texto da legenda mais estreita (420px) e acabamento refinado. |
+| D02 | Os botões devem ganhar ícones (RF11), ou manter só texto? | Design/PO | Não | **Manter apenas texto** (visual limpo, elegante e direto ao ponto). |
+| D03 | O secundário fica em outline com fundo translúcido ("vidro") ou vira botão sólido claro (marfim com texto espresso)? | Design | Não | **Vidro fosco translúcido** (`backdrop-filter: blur`, fundo escuro translúcido com borda suave). |
+| D04 | Manter o texto em caixa alta com espaçamento de 0,08em, ou passar para capitalização normal, que lê melhor no mobile? | Design | Não | **Manter em caixa alta** (`text-transform: uppercase` com `letter-spacing: 0.08em`), alinhado ao design system existente. |
 
 ## Sugestões de casos de teste
 

@@ -35,8 +35,8 @@
     to bottom,
     rgba(28, 16, 8, 0.45) 0%,
     rgba(28, 16, 8, 0.08) 25%,
-    rgba(28, 16, 8, 0.25) 55%,
-    rgba(28, 16, 8, 0.82) 100%
+    rgba(28, 16, 8, 0.28) 55%,
+    rgba(28, 16, 8, 0.85) 100%
   );
 }
 
@@ -45,7 +45,7 @@
   z-index: 2;
   width: 100%;
   padding-top: 0;
-  padding-bottom: clamp(1.75rem, 5vh, 3.5rem);
+  padding-bottom: calc(clamp(1.75rem, 5vh, 3.5rem) + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -59,12 +59,75 @@
   gap: var(--space-4);
   flex-wrap: wrap;
   opacity: 0;
-  animation: fadeUp 0.8s 0.9s forwards;
+  transform: translateY(16px);
+  animation: heroActionsFadeUp 0.35s 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero__actions .btn {
   min-height: 56px;
   padding: 0 32px;
+  font-family: var(--font-sans);
+  font-size: var(--size-base);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  transition: transform 0.15s ease, background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+/* Foco visível WCAG 2.4.7 com alto contraste e anel duplo */
+.hero__actions .btn:focus-visible {
+  outline: 2px solid var(--accent-light, #E5B874);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(20, 10, 5, 0.85);
+}
+
+/* Botão Primário do Hero: Ver Cardápio */
+.hero__actions .btn--primary {
+  background: var(--caramelo);
+  color: var(--marfim);
+  border: 2px solid var(--caramelo);
+  box-shadow: 0 4px 14px rgba(20, 10, 5, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@media (hover: hover) {
+  .hero__actions .btn--primary:hover {
+    background: var(--caramelo-light);
+    border-color: var(--caramelo-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 94, 60, 0.45);
+  }
+}
+
+.hero__actions .btn--primary:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 6px rgba(20, 10, 5, 0.3);
+}
+
+/* Botão Secundário do Hero: Como Chegar (Vidro fosco translúcido) */
+.hero__actions .btn--outline {
+  background: rgba(20, 10, 5, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--marfim);
+  border: 2px solid rgba(250, 246, 238, 0.78);
+  box-shadow: 0 4px 14px rgba(20, 10, 5, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+@media (hover: hover) {
+  .hero__actions .btn--outline:hover {
+    background: rgba(35, 18, 10, 0.88);
+    border-color: var(--marfim);
+    color: var(--marfim);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(20, 10, 5, 0.5);
+  }
+}
+
+.hero__actions .btn--outline:active {
+  transform: translateY(1px) scale(0.98);
+  background: rgba(20, 10, 5, 0.9);
+  box-shadow: 0 2px 6px rgba(20, 10, 5, 0.3);
 }
 
 .hero__scroll {
@@ -77,9 +140,35 @@
   background: linear-gradient(to bottom, rgba(245,236,215,0.5), transparent);
 }
 
+@keyframes heroActionsFadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeUp {
-  to { opacity: 1; transform: translateY(0); }
-  from { opacity: 0; transform: translateY(20px); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__actions,
+  .hero-carousel__caption {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .hero__actions .btn {
+    transform: none !important;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+  }
 }
 
 @keyframes bounce {
@@ -217,7 +306,7 @@
   margin: 0 auto var(--space-6);
   max-width: 55ch;
   opacity: 0;
-  animation: fadeUp 0.8s 0.7s forwards;
+  animation: fadeUp 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero-carousel__caption-text {
@@ -300,10 +389,18 @@
     padding-bottom: 20px;
   }
   .hero__content {
-    padding-bottom: clamp(1.25rem, 4vh, 2rem);
+    align-items: center;
+    text-align: center;
+    padding-bottom: calc(clamp(1.25rem, 4vh, 2rem) + env(safe-area-inset-bottom, 0px));
   }
   .hero-carousel__caption {
     margin-bottom: var(--space-4);
+  }
+  .hero-carousel__caption--fullscreen {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 400px;
+    text-align: center;
   }
 }
 
@@ -678,6 +775,7 @@
 .chegar {
   background: var(--creme);
   text-align: center;
+  scroll-margin-top: calc(var(--nav-height) + 1.5rem);
 }
 
 .chegar__grid {
@@ -924,7 +1022,31 @@
   }
 }
 
+@media (min-width: 481px) and (max-width: 768px) {
+  .hero__actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    gap: var(--space-4);
+    flex-wrap: nowrap;
+  }
+  .hero__actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+    padding: 0 var(--space-3);
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 480px) {
+  .hero-carousel__caption--fullscreen {
+    max-width: 340px;
+    margin-bottom: var(--space-4);
+    padding: 1rem 1.25rem;
+  }
   .hero__actions {
     flex-direction: column;
     align-items: center;
@@ -933,7 +1055,9 @@
   }
   .hero__actions .btn {
     width: 100%;
-    max-width: 320px;
+    max-width: 360px;
+    min-height: 52px;
+    padding: 0 var(--space-4);
   }
   .galeria__grid {
     grid-template-columns: 1fr;
@@ -999,16 +1123,18 @@
 
 .hero-carousel__caption--fullscreen {
   position: relative;
-  text-align: left;
-  margin-top: 2rem;
-  margin-bottom: 2.5rem;
-  padding: 1.5rem;
+  text-align: center;
+  margin: 1.5rem auto 2rem;
+  padding: 1.25rem 1.75rem;
   background: rgba(20, 10, 5, 0.85);
-  border-left: 3px solid var(--accent-light);
+  border: 1px solid rgba(245, 236, 215, 0.12);
+  border-top: 2px solid var(--accent-light);
   border-radius: var(--radius-sm);
-  max-width: 500px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 

@@ -53,6 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 5.1 Clique no CTA "Como Chegar" do Hero
+  const heroChegarBtn = document.getElementById('hero-cta-chegar');
+  if (heroChegarBtn) {
+    heroChegarBtn.addEventListener('click', () => {
+      trackEvent('click_como_chegar', { button_id: 'hero-cta-chegar' });
+    });
+  }
+
   // 6. Carregar mapa interativo
   const mapLoadBtn = document.getElementById('chegar-map-load-btn');
   if (mapLoadBtn) {
