@@ -542,22 +542,30 @@
         statusHtml = '<span style="color: #f57c00; font-size: 11px; font-weight: bold;">⏳ Aguardando conexão</span>';
       }
 
+      const safeMesaNome = window.escapeHtml(mesaNome || '');
+      const safeClienteStr = window.escapeHtml(clienteStr || '');
+      const safeHoraStr = window.escapeHtml(horaStr || '--:--');
+      const safeItensResumo = window.escapeHtml(p.itens_resumo || 'Itens do pedido');
+      const safeTotalStr = window.escapeHtml(totalStr || '');
+      const safeStatusText = window.escapeHtml(statusHtml || '');
+      const safeClientId = window.escapeHtml((p.client_id || '').toString());
+
       card.innerHTML = `
         <div class="offline-card__header">
-          <div class="offline-card__title">${mesaNome}${clienteStr}</div>
-          <div class="offline-card__time">${horaStr}</div>
+          <div class="offline-card__title">${safeMesaNome}${safeClienteStr}</div>
+          <div class="offline-card__time">${safeHoraStr}</div>
         </div>
         <div class="offline-card__items">
-          ${window.escapeHtml(p.itens_resumo || 'Itens do pedido')}
+          ${safeItensResumo}
         </div>
         <div class="offline-card__footer">
           <div>
-            <span class="offline-card__total">Estimado: ${totalStr}</span>
-            <div style="margin-top: 2px;">${statusHtml}</div>
+            <span class="offline-card__total">Estimado: ${safeTotalStr}</span>
+            <div style="margin-top: 2px;">${safeStatusText}</div>
           </div>
           <div class="offline-card__actions">
-            <button class="btn-queue-action btn-queue-action--retry" onclick="window.baristaReenviarPedidoOffline('${p.client_id}')">Reenviar</button>
-            <button class="btn-queue-action btn-queue-action--discard" onclick="window.baristaDescartarPedidoOffline('${p.client_id}')">Descartar</button>
+            <button class="btn-queue-action btn-queue-action--retry" onclick="window.baristaReenviarPedidoOffline('${safeClientId}')">Reenviar</button>
+            <button class="btn-queue-action btn-queue-action--discard" onclick="window.baristaDescartarPedidoOffline('${safeClientId}')">Descartar</button>
           </div>
         </div>
       `;
