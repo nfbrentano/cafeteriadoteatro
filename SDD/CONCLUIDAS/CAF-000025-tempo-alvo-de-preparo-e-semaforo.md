@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + admin + banco | 🟡 Média | M | Especificação · aguardando revisão |
+| Cozinha (KDS) + admin + banco | 🟡 Média | M | 🟢 Concluído |
 
 ---
 
@@ -23,22 +23,22 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Colunas `categorias.tempo_alvo_min INT` e `produtos.tempo_alvo_min INT` (nulo = herda da categoria). Padrão global em `configuracoes` (ex.: 15 min).
-- [ ] Campo "Tempo alvo (min)" nos formulários de categoria (`js/admin/categories.js`) e de produto (`js/admin/products.js`).
-- [ ] O tempo alvo do pedido **na estação** é o maior tempo alvo entre os seus itens não cancelados daquela estação.
-- [ ] Semáforo no card:
+- [x] Colunas `categorias.tempo_alvo_min INT` e `produtos.tempo_alvo_min INT` (nulo = herda da categoria). Padrão global em `configuracoes` (ex.: 15 min).
+- [x] Campo "Tempo alvo (min)" nos formulários de categoria (`js/admin/categories.js`) e de produto (`js/admin/products.js`).
+- [x] O tempo alvo do pedido **na estação** é o maior tempo alvo entre os seus itens não cancelados daquela estação.
+- [x] Semáforo no card:
   - 🟢 abaixo de 70% do alvo.
   - 🟡 entre 70% e 100%.
   - 🔴 acima de 100%, com borda pulsando. O vermelho só pisca nos primeiros 2 minutos, para não cansar a vista.
-- [ ] Cronômetro em `mm:ss`, atualizado a cada segundo **apenas no texto do tempo** (sem re-renderizar o board inteiro).
-- [ ] Mostrar "⏱ 07:32 / 10 min" e, nas colunas "Pendentes" e "Em preparo", ordenar pelo tempo restante (quem estoura antes aparece primeiro).
-- [ ] Alerta sonoro curto e opcional (configurável) quando um pedido fica vermelho.
-- [ ] No relatório do admin, acrescentar "tempo médio de preparo × tempo alvo" por categoria, usando `pedido_itens.pronto_em - pedidos.created_at`.
+- [x] Cronômetro em `mm:ss`, atualizado a cada segundo **apenas no texto do tempo** (sem re-renderizar o board inteiro).
+- [x] Mostrar "⏱ 07:32 / 10 min" e, nas colunas "Pendentes" e "Em preparo", ordenar pelo tempo restante (quem estoura antes aparece primeiro).
+- [x] Alerta sonoro curto e opcional (configurável) quando um pedido fica vermelho.
+- [x] No relatório do admin, acrescentar "tempo médio de preparo × tempo alvo" por categoria, usando `pedido_itens.pronto_em - pedidos.created_at`.
 
 ### Requisitos não funcionais
-- [ ] **Desempenho:** o timer de 1 s atualiza no máximo os elementos `.pedido-tempo` visíveis. Nada de `renderPedidos()` a cada segundo.
-- [ ] **Relógio:** usar a diferença entre o relógio do dispositivo e o do servidor (calculada no login a partir da resposta do Supabase) para os tempos não ficarem negativos em tablets com hora errada.
-- [ ] **Acessibilidade:** o estado não depende só da cor (ícone ou texto "ATRASADO").
+- [x] **Desempenho:** o timer de 1 s atualiza no máximo os elementos `.pedido-tempo` visíveis. Nada de `renderPedidos()` a cada segundo.
+- [x] **Relógio:** usar a diferença entre o relógio do dispositivo e o do servidor (calculada no login a partir da resposta do Supabase) para os tempos não ficarem negativos em tablets com hora errada.
+- [x] **Acessibilidade:** o estado não depende só da cor (ícone ou texto "ATRASADO").
 
 ### Dependências técnicas
 - Medição de `iniciado_em` e `concluido_em` ([CAF-000014](CONCLUIDAS/CAF-000014-relatorios-no-admin.md), `supabase/migration_caf_000024_relatorios.sql`).
@@ -51,11 +51,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a categoria "Cafés" tem alvo de 5 min, **quando** um espresso espera 4 min, **então** o card fica amarelo.
-- [ ] **Dado que** o mesmo pedido passa de 5 min, **quando** o cronômetro vira, **então** o card fica vermelho com o texto "ATRASADO".
-- [ ] **Dado que** um produto tem alvo próprio de 25 min numa categoria de 10 min, **quando** ele é pedido, **então** vale o alvo de 25 min.
-- [ ] **Dado que** nenhum alvo foi configurado, **quando** o pedido chega, **então** vale o padrão global.
-- [ ] **Dado que** há 30 pedidos abertos, **quando** o cronômetro atualiza a cada segundo, **então** o board não pisca nem perde a rolagem.
+- [x] **Dado que** a categoria "Cafés" tem alvo de 5 min, **quando** um espresso espera 4 min, **então** o card fica amarelo.
+- [x] **Dado que** o mesmo pedido passa de 5 min, **quando** o cronômetro vira, **então** o card fica vermelho com o texto "ATRASADO".
+- [x] **Dado que** um produto tem alvo próprio de 25 min numa categoria de 10 min, **quando** ele é pedido, **então** vale o alvo de 25 min.
+- [x] **Dado que** nenhum alvo foi configurado, **quando** o pedido chega, **então** vale o padrão global.
+- [x] **Dado que** há 30 pedidos abertos, **quando** o cronômetro atualiza a cada segundo, **então** o board não pisca nem perde a rolagem.
 
 ---
 

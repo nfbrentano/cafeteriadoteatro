@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableMaisVendidos(data.mais_vendidos);
     renderTableCortesias(data.cortesias);
     renderTablePromocoes(data.promocoes);
+    renderTableTempoCategorias(data.tempo_por_categoria);
   }
 
   function renderChartHorariosHora(dados) {
@@ -254,6 +255,44 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${d.promocao_nome}</td>
         <td>${d.aplicacoes}</td>
         <td>${formatarDinheiro(d.desconto_total)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderTableTempoCategorias(dados) {
+    const tbody = document.getElementById('relatorio-tempo-categorias');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!dados || dados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center">Sem itens finalizados no período</td></tr>';
+      return;
+    }
+    dados.forEach(d => {
+      const tr = document.createElement('tr');
+      const media = Number(d.media_preparo_minutos || 0);
+      const alvo = Number(d.tempo_alvo_min || 15);
+      const ratio = alvo > 0 ? (media / alvo) : 0;
+      
+      let statusHtml = '';
+      if (ratio <= 0.7) {
+        statusHtml = '<span class="status-pill status-pill--ativo" style="background:#27ae60;color:#fff;">🟢 No Prazo</span>';
+      } else if (ratio <= 1.0) {
+        statusHtml = '<span class="status-pill" style="background:#f39c12;color:#fff;">🟡 Próximo ao Limite</span>';
+      } else {
+        const excesso = (media - alvo).toFixed(1);
+        statusHtml = `<span class="status-pill" style="background:#e74c3c;color:#fff;">🔴 Acima da Meta (+${excesso} min)</span>`;
+      }
+
+      const icone = d.categoria_icone || '🏷️';
+      const nome = d.categoria_nome || d.categoria_id;
+
+      tr.innerHTML = `
+        <td><strong>${icone} ${nome}</strong></td>
+        <td>⏱️ ${alvo} min</td>
+        <td><strong>${media.toFixed(1)} min</strong></td>
+        <td>${statusHtml}</td>
+        <td>${d.total_itens_concluidos} item(ns)</td>
       `;
       tbody.appendChild(tr);
     });

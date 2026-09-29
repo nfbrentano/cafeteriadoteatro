@@ -54,8 +54,82 @@
     )
   `;
   
-  // Cache de estacoes
+  // Cache de estacoes e tempos alvo (CAF-000025)
   let produtosCache = {}; // { produto_id: estacao }
+  let produtosInfo = {}; // { produto_id: { estacao, tempo_alvo_min, categoria_id } }
+  let categoriasInfo = {}; // { categoria_id: { estacao, tempo_alvo_min, nome } }
+  let tempoAlvoPadraoMin = 15;
+  let serverClockSkewMs = 0; // offset = serverTime - localTime
+  const pedidosAvisadosAtraso = new Set();
+  let audioCtx = null;
+
+  async function syncServerClock() {
+    try {
+      const t0 = Date.now();
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/health`, { method: 'GET' }).catch(() => null);
+      const dateHeader = res?.headers?.get('date');
+      if (dateHeader) {
+        const serverDate = new Date(dateHeader).getTime();
+        const roundTrip = Date.now() - t0;
+        serverClockSkewMs = (serverDate + roundTrip / 2) - Date.now();
+        console.log(`[KDS] Sincronização de relógio: skew = ${Math.round(serverClockSkewMs)}ms`);
+      }
+    } catch (e) {
+      console.warn('[KDS] Falha na sincronização de relógio com servidor:', e);
+      serverClockSkewMs = 0;
+    }
+  }
+
+  function getNowAdjusted() {
+    return new Date(Date.now() + serverClockSkewMs);
+  }
+
+  function playAlertaAtrasoBeep() {
+    if (!somHabilitado) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+      // Tom 1
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(880, now);
+      gain1.gain.setValueAtTime(0.18, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.15);
+
+      // Tom 2 (agudo, indicando alerta)
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1174.66, now + 0.18);
+      gain2.gain.setValueAtTime(0.18, now + 0.18);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.18);
+      osc2.stop(now + 0.38);
+    } catch (e) {
+      console.warn('[KDS] Falha ao tocar beep sonoro de atraso:', e);
+    }
+  }
+
+  // Desbloqueia AudioContext em qualquer clique na tela
+  document.addEventListener('click', () => {
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }, { once: false, passive: true });
+
   let estacaoSelecionada = localStorage.getItem('kds_estacao') || 'todas';
   const filtroEstacao = document.getElementById('filtro-estacao');
   
@@ -111,6 +185,7 @@
     app.classList.remove('hidden');
     
     testAudioAutoplay();
+    await syncServerClock();
     await loadProdutosECategorias();
     await fetchPedidosIniciais();
     setupRealtime();
@@ -118,21 +193,46 @@
 
   async function loadProdutosECategorias() {
     try {
-      const [{ data: cats }, { data: prods }] = await Promise.all([
-        window.cafeteriaSupabase.from('categorias').select('id, estacao'),
-        window.cafeteriaSupabase.from('produtos').select('id, categoria_id')
+      const [{ data: cats }, { data: prods }, { data: settings }] = await Promise.all([
+        window.cafeteriaSupabase.from('categorias').select('id, estacao, tempo_alvo_min, nome'),
+        window.cafeteriaSupabase.from('produtos').select('id, categoria_id, tempo_alvo_min'),
+        window.cafeteriaSupabase.from('site_settings').select('key, value').eq('key', 'tempo_alvo_padrao_min').maybeSingle()
       ]);
       
-      const catMap = {};
-      if (cats) cats.forEach(c => catMap[c.id] = c.estacao || 'cozinha');
+      if (settings && settings.value) {
+        const val = parseInt(settings.value, 10);
+        if (!isNaN(val) && val > 0) tempoAlvoPadraoMin = val;
+      }
+
+      categoriasInfo = {};
+      if (cats) {
+        cats.forEach(c => {
+          categoriasInfo[c.id] = {
+            estacao: c.estacao || 'cozinha',
+            tempo_alvo_min: (c.tempo_alvo_min !== null && c.tempo_alvo_min !== undefined) ? Number(c.tempo_alvo_min) : tempoAlvoPadraoMin,
+            nome: c.nome
+          };
+        });
+      }
       
+      produtosCache = {};
+      produtosInfo = {};
       if (prods) {
         prods.forEach(p => {
-          produtosCache[p.id] = catMap[p.categoria_id] || 'cozinha';
+          const cat = categoriasInfo[p.categoria_id];
+          const estacao = cat ? cat.estacao : 'cozinha';
+          produtosCache[p.id] = estacao;
+          produtosInfo[p.id] = {
+            estacao: estacao,
+            categoria_id: p.categoria_id,
+            tempo_alvo_min: (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined)
+              ? Number(p.tempo_alvo_min)
+              : (cat ? cat.tempo_alvo_min : tempoAlvoPadraoMin)
+          };
         });
       }
     } catch (e) {
-      console.warn('Erro ao carregar produtos/categorias para estacoes:', e);
+      console.warn('Erro ao carregar produtos/categorias para estacoes e tempos alvo:', e);
     }
   }
 
@@ -315,9 +415,20 @@
 
   function showCancelToast(msg) {
     cancelToastMsg.textContent = msg;
+    cancelToast.classList.remove('toast--novo-item');
     cancelToast.classList.remove('hidden');
     setTimeout(() => {
       cancelToast.classList.add('hidden');
+    }, 8000);
+  }
+
+  function showNovoItemToast(msg) {
+    cancelToastMsg.textContent = msg;
+    cancelToast.classList.add('toast--novo-item');
+    cancelToast.classList.remove('hidden');
+    setTimeout(() => {
+      cancelToast.classList.add('hidden');
+      cancelToast.classList.remove('toast--novo-item');
     }, 8000);
   }
 
@@ -349,6 +460,87 @@
 
   function getItemEstacao(item) {
     return item.estacao || produtosCache[item.produto_id] || 'cozinha';
+  }
+
+  function getItemTempoAlvoMin(item) {
+    const pInfo = produtosInfo[item.produto_id];
+    if (pInfo && pInfo.tempo_alvo_min !== null && pInfo.tempo_alvo_min !== undefined) {
+      return Number(pInfo.tempo_alvo_min);
+    }
+    const catId = pInfo?.categoria_id || item.categoria_id;
+    if (catId && categoriasInfo[catId]?.tempo_alvo_min !== null && categoriasInfo[catId]?.tempo_alvo_min !== undefined) {
+      return Number(categoriasInfo[catId].tempo_alvo_min);
+    }
+    return tempoAlvoPadraoMin;
+  }
+
+  function getPedidoTempoAlvoMin(pedido, estacaoFiltro) {
+    const itens = (pedido.pedido_itens || []).filter(i => !i.cancelado);
+    let itensEstacao = itens;
+    if (estacaoFiltro && estacaoFiltro !== 'todas') {
+      itensEstacao = itens.filter(i => getItemEstacao(i) === estacaoFiltro);
+    }
+    if (itensEstacao.length === 0) itensEstacao = itens;
+    if (itensEstacao.length === 0) return tempoAlvoPadraoMin;
+
+    let maxAlvo = 0;
+    itensEstacao.forEach(i => {
+      const alvo = getItemTempoAlvoMin(i);
+      if (alvo > maxAlvo) maxAlvo = alvo;
+    });
+    return maxAlvo || tempoAlvoPadraoMin;
+  }
+
+  function calcularEstadoTempoPedido(pedido, agora = getNowAdjusted()) {
+    const alvoMin = getPedidoTempoAlvoMin(pedido, estacaoSelecionada);
+    const alvoMs = alvoMin * 60 * 1000;
+    const criacao = new Date(pedido.created_at);
+
+    let decorridoMs = 0;
+    if (pedido.status === 'concluido' || pedido.status === 'entregue') {
+      const fim = new Date(pedido.concluido_em || pedido.updated_at || criacao);
+      decorridoMs = Math.max(0, fim - criacao);
+    } else {
+      decorridoMs = Math.max(0, agora - criacao);
+    }
+
+    const restanteMs = alvoMs - decorridoMs;
+    const ratio = alvoMs > 0 ? (decorridoMs / alvoMs) : 0;
+
+    const totalSegundos = Math.floor(decorridoMs / 1000);
+    const minutos = Math.floor(totalSegundos / 60);
+    const segundos = totalSegundos % 60;
+    const mm = String(minutos).padStart(2, '0');
+    const ss = String(segundos).padStart(2, '0');
+
+    let semaforo = 'semaforo-verde';
+    let isAtrasado = false;
+    let isPulsing = false;
+
+    if (pedido.status !== 'concluido' && pedido.status !== 'entregue') {
+      if (ratio >= 1.0) {
+        semaforo = 'semaforo-vermelho';
+        isAtrasado = true;
+        const excessoMs = decorridoMs - alvoMs;
+        if (excessoMs <= 120000) { // Primeiros 2 minutos
+          isPulsing = true;
+        }
+      } else if (ratio >= 0.7) {
+        semaforo = 'semaforo-amarelo';
+      }
+    }
+
+    return {
+      alvoMin,
+      decorridoMs,
+      restanteMs,
+      ratio,
+      mm,
+      ss,
+      semaforo,
+      isAtrasado,
+      isPulsing
+    };
   }
 
   function getPedidoEstacaoInfo(pedido) {
@@ -429,7 +621,24 @@
       }
     });
 
+    const agora = getNowAdjusted();
+    const sortFn = (a, b) => {
+      const tA = calcularEstadoTempoPedido(a, agora).restanteMs;
+      const tB = calcularEstadoTempoPedido(b, agora).restanteMs;
+      if (tA !== tB) return tA - tB; // quem estoura antes (ou já estourou mais) aparece primeiro
+      return new Date(a.created_at) - new Date(b.created_at);
+    };
+
+    pendentes.sort(sortFn);
+    preparo.sort(sortFn);
+
     concluidos.sort((a, b) => new Date(b.concluido_em || b.updated_at || b.created_at) - new Date(a.concluido_em || a.updated_at || a.created_at));
+
+    // Limpa avisos de pedidos que já saíram do board
+    const activeIds = new Set(pedidos.map(p => String(p.id)));
+    for (const id of pedidosAvisadosAtraso) {
+      if (!activeIds.has(id)) pedidosAvisadosAtraso.delete(id);
+    }
 
     countPendentes.textContent = pendentes.length;
     countPreparo.textContent = preparo.length;
@@ -456,18 +665,15 @@
     }
 
     container.innerHTML = '';
+    const agora = getNowAdjusted();
     
     list.forEach(pedido => {
-      const criacao = new Date(pedido.created_at);
-      const agora = new Date();
-      const diffMinutos = Math.floor((agora - criacao) / 60000);
-      
-      const atrasadoClass = (diffMinutos > 15 && tipo !== 'concluido') ? 'atrasado' : '';
-      let tempoStr;
-      if (diffMinutos < 1) tempoStr = 'Agora';
-      else if (diffMinutos < 60) tempoStr = `${diffMinutos}m atrás`;
-      else if (diffMinutos < 1440) tempoStr = `${Math.floor(diffMinutos / 60)}h ${diffMinutos % 60}m atrás`;
-      else tempoStr = `${Math.floor(diffMinutos / 1440)}d atrás`;
+      const estadoTempo = calcularEstadoTempoPedido(pedido, agora);
+      const atrasadoClass = estadoTempo.isAtrasado ? 'atrasado' : '';
+      let tempoStr = `⏱ ${estadoTempo.mm}:${estadoTempo.ss} / ${estadoTempo.alvoMin} min`;
+      if (estadoTempo.isAtrasado) {
+        tempoStr += ` <span class="badge-atrasado">ATRASADO</span>`;
+      }
 
       // Filtrar itens pela estação selecionada (se não for "todas")
       let itensDaEstacao = [];
@@ -541,15 +747,25 @@
       }
 
       let itensHtml = '';
+      let novosPendentesCount = 0;
+
       if (itensDaEstacao.length > 0) {
         itensDaEstacao.forEach(item => {
           const isCancelado = item.cancelado;
           const isCortesia = item.cortesia_de_item_id ? true : false;
+          const isLancadoDepois = Boolean(item.lancado_depois);
+          const isNovoNaoPronto = isLancadoDepois && !item.pronto_em && !isCancelado;
+
+          if (isNovoNaoPronto) {
+            novosPendentesCount++;
+          }
           
           let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
           let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
           let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
+          let novoLabel = isNovoNaoPronto ? '<span class="badge-item-novo" title="Item adicionado após o envio">NOVO</span>' : '';
           let prontoClass = item.pronto_em ? 'is-pronto' : '';
+          let lancadoDepoisClass = isNovoNaoPronto ? 'is-lancado-depois' : '';
           let checkHtml = item.pronto_em ? '<span class="check-icon">✓</span>' : '';
           
           const isClickable = !isCancelado && (tipo !== 'concluido' || aguardandoOutraEstacao);
@@ -576,10 +792,10 @@
           }
 
           itensHtml += `
-            <div class="item-row ${actionClass} ${prontoClass}" ${onClick}>
+            <div class="item-row ${actionClass} ${prontoClass} ${lancadoDepoisClass}" ${onClick}>
               <div class="item-main" ${cancelClass}>
                 <span class="item-qty">${item.quantidade}x</span>
-                <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${cancelLabel}</span>
+                <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${novoLabel} ${cancelLabel}</span>
               </div>
               ${saboresHtml}
               ${adicHtml}
@@ -596,7 +812,13 @@
       }
 
       const card = document.createElement('div');
-      card.className = 'pedido-card';
+      card.className = `pedido-card ${estadoTempo.semaforo} ${estadoTempo.isPulsing ? 'pulso-alerta' : ''}`;
+      card.setAttribute('data-pedido-id', pedido.id);
+      card.setAttribute('data-created-at', pedido.created_at);
+      card.setAttribute('data-alvo-min', estadoTempo.alvoMin);
+      card.setAttribute('data-tipo', tipo);
+      card.setAttribute('data-status', pedido.status);
+      card.setAttribute('data-concluido-em', pedido.concluido_em || pedido.updated_at || '');
       
       let botoesHtml = '';
       if (tipo === 'pendente') {
@@ -604,7 +826,7 @@
           <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda">🖨 Comanda</button>
           <div class="footer-actions">
             <button class="btn-card btn-card--preparo" onclick="window.iniciarPreparoEstacao(${pedido.id})">
-              Iniciar Preparo
+               Iniciar Preparo
             </button>
             <button class="btn-card btn-card--concluir" onclick="window.concluirPreparoEstacao(${pedido.id})">
               Pronto!
@@ -662,11 +884,15 @@
         ? `<span class="badge-aguardando-estacao">⏳ Aguardando ${isBar ? 'Cozinha' : 'Bar'}</span>`
         : '';
 
+      const badgeNovos = novosPendentesCount > 0 
+        ? `<span class="badge-itens-novos" title="${novosPendentesCount} item(ns) adicionado(s) após o envio">+${novosPendentesCount} novo${novosPendentesCount > 1 ? 's' : ''}</span>`
+        : '';
+
       card.innerHTML = `
         <div class="pedido-header">
-          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando}</div>
+          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando} ${badgeNovos}</div>
           ${progressHtml}
-          <div class="pedido-tempo ${atrasadoClass}">⏱ ${tempoStr}</div>
+          <div class="pedido-tempo ${estadoTempo.semaforo} ${atrasadoClass}">${tempoStr}</div>
         </div>
         ${estacaoStatusHtml}
         ${nomeClienteHtml}
@@ -684,10 +910,83 @@
     });
   }
 
-  // Atualizar contadores de tempo a cada 60s
+  // --- Cronômetro de Alta Performance (1s) e Semáforo (CAF-000025) ---
+  function updateTimers() {
+    if (!currentUser) return;
+    const agora = getNowAdjusted();
+    const cards = document.querySelectorAll('.pedido-card[data-tipo="pendente"], .pedido-card[data-tipo="em_preparo"]');
+    if (!cards || cards.length === 0) return;
+
+    cards.forEach(card => {
+      const createdAtStr = card.getAttribute('data-created-at');
+      const alvoMin = parseFloat(card.getAttribute('data-alvo-min')) || tempoAlvoPadraoMin;
+      const pedidoId = card.getAttribute('data-pedido-id');
+      if (!createdAtStr) return;
+
+      const criacao = new Date(createdAtStr);
+      const decorridoMs = Math.max(0, agora - criacao);
+      const alvoMs = alvoMin * 60 * 1000;
+      const ratio = alvoMs > 0 ? (decorridoMs / alvoMs) : 0;
+
+      const totalSegundos = Math.floor(decorridoMs / 1000);
+      const minutos = Math.floor(totalSegundos / 60);
+      const segundos = totalSegundos % 60;
+      const mm = String(minutos).padStart(2, '0');
+      const ss = String(segundos).padStart(2, '0');
+
+      let semaforo = 'semaforo-verde';
+      let isAtrasado = false;
+      let isPulsing = false;
+
+      if (ratio >= 1.0) {
+        semaforo = 'semaforo-vermelho';
+        isAtrasado = true;
+        const excessoMs = decorridoMs - alvoMs;
+        if (excessoMs <= 120000) { // Primeiros 2 minutos pulsando
+          isPulsing = true;
+        }
+      } else if (ratio >= 0.7) {
+        semaforo = 'semaforo-amarelo';
+      }
+
+      // Beep sonoro opcional apenas ao estourar o prazo
+      if (isAtrasado && !pedidosAvisadosAtraso.has(pedidoId)) {
+        pedidosAvisadosAtraso.add(pedidoId);
+        playAlertaAtrasoBeep();
+      }
+
+      // Atualiza classes do card sem re-renderizar
+      if (!card.classList.contains(semaforo)) {
+        card.classList.remove('semaforo-verde', 'semaforo-amarelo', 'semaforo-vermelho');
+        card.classList.add(semaforo);
+      }
+      if (isPulsing) {
+        if (!card.classList.contains('pulso-alerta')) card.classList.add('pulso-alerta');
+      } else {
+        if (card.classList.contains('pulso-alerta')) card.classList.remove('pulso-alerta');
+      }
+
+      const elTempo = card.querySelector('.pedido-tempo');
+      if (elTempo) {
+        const atrasadoBadge = isAtrasado ? '<span class="badge-atrasado">ATRASADO</span>' : '';
+        const novoTexto = `⏱ ${mm}:${ss} / ${alvoMin} min ${atrasadoBadge}`;
+        if (elTempo.innerHTML !== novoTexto) {
+          elTempo.className = `pedido-tempo ${semaforo} ${isAtrasado ? 'atrasado' : ''}`;
+          elTempo.innerHTML = novoTexto;
+        }
+      }
+    });
+  }
+
+  // 1. Atualizar contadores de tempo (mm:ss) a cada 1 segundo (ultra leve)
+  setInterval(() => {
+    if (currentUser) updateTimers();
+  }, 1000);
+
+  // 2. Re-ordenação periódica do board por tempo restante a cada 30 segundos
   setInterval(() => {
     if (currentUser) renderPedidos();
-  }, 60000);
+  }, 30000);
 
   // -----------------------------------------------------
   // 5. AÇÕES (Atualizar Status e Reimpressão)
@@ -905,6 +1204,77 @@
     }
   }, 4000);
 
+  // Fila e debounce de ~1.5s para impressão de itens adicionais / complementares
+  let debouncePrintAdicionaisTimer = null;
+  const pendingAdicionaisPedidos = new Set();
+
+  function agendarImpressaoComplementar(pedidoId) {
+    if (!pedidoId || !window.cafeteriaPrint) return;
+    pendingAdicionaisPedidos.add(pedidoId);
+    
+    if (debouncePrintAdicionaisTimer) {
+      clearTimeout(debouncePrintAdicionaisTimer);
+    }
+    
+    debouncePrintAdicionaisTimer = setTimeout(async () => {
+      const pedidosParaProcessar = Array.from(pendingAdicionaisPedidos);
+      pendingAdicionaisPedidos.clear();
+      
+      for (const pId of pedidosParaProcessar) {
+        await processarImpressaoComplementar(pId);
+      }
+    }, 1500);
+  }
+
+  async function processarImpressaoComplementar(pedidoId) {
+    try {
+      // 1. Buscar pedido completo com itens
+      const { data: pedidoData, error: errPed } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select(PEDIDO_SELECT_COMPLETO)
+        .eq('id', pedidoId)
+        .single();
+        
+      if (errPed || !pedidoData) return;
+
+      const todosItens = pedidoData.pedido_itens || [];
+      // Filtrar itens lançados depois que ainda não foram impressos e não estão cancelados
+      const itensNovosNaoImpressos = todosItens.filter(i => 
+        i.lancado_depois === true && !i.impresso_em && !i.cancelado
+      );
+
+      if (itensNovosNaoImpressos.length === 0) return;
+
+      // 2. Filtrar pela estação ativa da tela
+      let itensAlvo = itensNovosNaoImpressos;
+      if (estacaoSelecionada !== 'todas') {
+        itensAlvo = itensNovosNaoImpressos.filter(i => getItemEstacao(i) === estacaoSelecionada);
+      }
+
+      if (itensAlvo.length === 0) return;
+
+      const itemIds = itensAlvo.map(i => i.id);
+
+      // 3. Marcar atomicamente como impresso no banco para evitar duplicidade entre múltiplas telas
+      const { data: markedIds, error: errRpc } = await window.cafeteriaSupabase.rpc('marcar_itens_impressos', {
+        p_item_ids: itemIds
+      });
+
+      if (errRpc || !markedIds || markedIds.length === 0) {
+        // Outra tela já imprimiu ou nenhum foi retornado
+        return;
+      }
+
+      // 4. Imprimir comanda complementar contendo apenas os itens reservados para impressão
+      const itensParaImprimir = itensAlvo.filter(i => markedIds.includes(i.id));
+      if (itensParaImprimir.length > 0 && window.cafeteriaPrint) {
+        window.cafeteriaPrint.printComandaAdicional(pedidoData, itensParaImprimir);
+      }
+    } catch (err) {
+      console.error('[KDS Print] Erro ao processar impressão complementar:', err);
+    }
+  }
+
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-cozinha-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, async payload => {
@@ -947,8 +1317,16 @@
           playAlert();
         } else if (payload.eventType === 'INSERT') {
           const isCortesia = payload.new.cortesia_de_item_id ? true : false;
-          if (isCortesia) {
+          const isLancadoDepois = Boolean(payload.new.lancado_depois);
+
+          if (isCortesia || isLancadoDepois) {
             playAlert();
+            const nomeProd = payload.new.nome_produto || 'Item';
+            showNovoItemToast(`➕ Item adicionado: ${payload.new.quantidade || 1}x ${nomeProd}`);
+          }
+
+          if (isLancadoDepois && payload.new.pedido_id) {
+            agendarImpressaoComplementar(payload.new.pedido_id);
           }
         }
         debouncedFetchPedidos();

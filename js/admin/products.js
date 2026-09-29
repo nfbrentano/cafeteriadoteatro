@@ -81,7 +81,7 @@
     });
 
     if (filtered.length === 0) {
-      el.tableBody.innerHTML = `<tr><td colspan="6"><div class="empty-state">🍽️<br>Nenhum produto encontrado</div></td></tr>`;
+      el.tableBody.innerHTML = `<tr><td colspan="7"><div class="empty-state">🍽️<br>Nenhum produto encontrado</div></td></tr>`;
       return;
     }
 
@@ -92,11 +92,18 @@
       const preco = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       const badgesHTML = (p.badges || []).map(b => `<span class="badge-mini badge-mini--${b}">${b}</span>`).join(' ');
 
+      const tempoProprio = (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined && p.tempo_alvo_min !== '');
+      const tempoVal = tempoProprio ? p.tempo_alvo_min : (cat?.tempo_alvo_min || 15);
+      const tempoAlvoHtml = tempoProprio
+        ? `<strong title="Tempo alvo específico deste produto">⏱️ ${tempoVal} min</strong>`
+        : `<span style="color:var(--admin-text-dim)" title="Herdado da categoria ${cat ? cat.nome : ''}">⏱️ ${tempoVal} min <small>(cat)</small></span>`;
+
       return `
         <tr>
           <td class="td-name">${p.nome}</td>
           <td><span style="color:var(--admin-text-dim)">${cat ? cat.icone + ' ' + cat.nome : pCatId}</span></td>
           <td class="td-price">R$ ${preco}</td>
+          <td>${tempoAlvoHtml}</td>
           <td><div class="td-badges">${badgesHTML || '—'}</div></td>
           <td>${p.ativo ? '<span class="status-pill status-pill--ativo">Ativo</span>' : '<span class="status-pill status-pill--inativo">Inativo</span>'} ${p.disponivel === false ? '<span class="status-pill" style="background:#e74c3c;color:white;font-size:0.7em;">Esgotado</span>' : ''}</td>
           <td>
@@ -172,6 +179,22 @@
     populateFilters(); // Para garantir categorias atualizadas no select
 
     let p = null;
+    const inputTempoAlvo = document.getElementById('produto-tempo-alvo');
+
+    function updateTempoAlvoPlaceholder() {
+      if (!inputTempoAlvo) return;
+      const catId = document.getElementById('produto-categoria')?.value;
+      const cat = (admin.appData.categorias || []).find(c => c.id === catId);
+      const catTempo = cat ? (cat.tempo_alvo_min || 15) : 15;
+      inputTempoAlvo.placeholder = `Herda da categoria (${catTempo} min)`;
+      const hint = document.getElementById('hint-produto-tempo-alvo');
+      if (hint) {
+        hint.textContent = catId 
+          ? `Se vazio, herdará ${catTempo} min da categoria "${cat ? cat.nome : ''}".` 
+          : 'Se vazio, herdará o tempo alvo padrão da categoria selecionada.';
+      }
+    }
+
     if (isEdit) {
       p = admin.appData.produtos.find(x => x.id === id);
       if (p) {
@@ -181,6 +204,9 @@
         document.getElementById('produto-descricao').value = p.descricao || '';
         document.getElementById('produto-ativo').checked = !!p.ativo;
         document.getElementById('produto-disponivel').checked = p.disponivel !== false;
+        if (inputTempoAlvo) {
+          inputTempoAlvo.value = (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined) ? p.tempo_alvo_min : '';
+        }
         if (el.cbPermiteAdd) el.cbPermiteAdd.checked = !!p.permite_adicionais;
         
         // Badges
@@ -200,7 +226,16 @@
         }
       }
     } else {
+      if (inputTempoAlvo) inputTempoAlvo.value = '';
       if (el.cbPermiteAdd) el.cbPermiteAdd.checked = false;
+    }
+
+    updateTempoAlvoPlaceholder();
+    if (el.selectCategoria) {
+      el.selectCategoria.onchange = () => {
+        updateTempoAlvoPlaceholder();
+        renderAdicionaisCheckboxes(id);
+      };
     }
 
     if (el.cbPermiteAdd) {
@@ -222,6 +257,9 @@
     const ativo = document.getElementById('produto-ativo').checked;
     const disponivel = document.getElementById('produto-disponivel').checked;
     const permite_adicionais = el.cbPermiteAdd ? el.cbPermiteAdd.checked : false;
+
+    const tempoAlvoStr = document.getElementById('produto-tempo-alvo')?.value.trim();
+    const tempo_alvo_min = tempoAlvoStr ? parseInt(tempoAlvoStr, 10) : null;
     
     if (!nome || !categoria_id || isNaN(preco)) {
       return admin.toast('Erro', 'Preencha os campos obrigatórios (*)', 'error');
@@ -239,6 +277,7 @@
       await window.cafeteriaDB.products.upsert({
         id, nome, categoria_id, preco, descricao, ativo, badges, disponivel,
         permite_adicionais,
+        tempo_alvo_min,
         imagem_url: isNewImage ? null : dataUrl,
         updated_at: new Date().toISOString()
       }, imageBlob);

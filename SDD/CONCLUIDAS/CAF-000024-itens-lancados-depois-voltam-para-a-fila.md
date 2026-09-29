@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + banco + impressão | 🔴 Alta | M | Especificação · aguardando revisão |
+| Cozinha (KDS) + banco + impressão | 🔴 Alta | M | Concluído |
 
 ---
 
@@ -28,19 +28,19 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Coluna `pedido_itens.lancado_depois BOOLEAN NOT NULL DEFAULT false`, gravada como `true` por `adicionar_itens_pedido`, e `pedido_itens.impresso_em TIMESTAMPTZ`.
-- [ ] Em `adicionar_itens_pedido`: se o pedido estiver `concluido` ou `entregue`, voltar o status para `em_preparo` (ou `pendente`), limpar `concluido_em` e registrar o evento "reaberto por item adicionado" no log ([CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
-- [ ] Recusar a adição em pedidos `cancelado`, com mensagem clara.
-- [ ] No KDS:
+- [x] Coluna `pedido_itens.lancado_depois BOOLEAN NOT NULL DEFAULT false`, gravada como `true` por `adicionar_itens_pedido`, e `pedido_itens.impresso_em TIMESTAMPTZ`.
+- [x] Em `adicionar_itens_pedido`: se o pedido estiver `concluido` ou `entregue`, voltar o status para `em_preparo` (ou `pendente`), limpar `concluido_em` e registrar o evento "reaberto por item adicionado" no log ([CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
+- [x] Recusar a adição em pedidos `cancelado`, com mensagem clara.
+- [x] No KDS:
   - Itens com `lancado_depois = true` e sem `pronto_em` aparecem em destaque (fundo amarelo e selo **NOVO**, com horário do acréscimo).
   - O card mostra no cabeçalho "+2 itens novos".
-- [ ] Impressão complementar: no realtime de `INSERT` em `pedido_itens` com `lancado_depois = true`, a tela responsável pela impressão imprime uma comanda **"ADICIONAL — Pedido #X"** só com os itens novos daquela estação e grava `impresso_em`.
+- [x] Impressão complementar: no realtime de `INSERT` em `pedido_itens` com `lancado_depois = true`, a tela responsável pela impressão imprime uma comanda **"ADICIONAL — Pedido #X"** só com os itens novos daquela estação e grava `impresso_em`.
   - Agrupar com um *debounce* de ~1,5 s, para que vários itens do mesmo acréscimo saiam numa comanda só.
-- [ ] No PDV, o card do pedido reaberto volta para "🔵 Em Preparo" e o selo "pronto" some até concluir de novo.
+- [x] No PDV, o card do pedido reaberto volta para "🔵 Em Preparo" e o selo "pronto" some até concluir de novo.
 
 ### Requisitos não funcionais
-- [ ] **Sem duplicidade:** a comanda complementar é impressa uma única vez por item, mesmo com várias telas abertas (checagem por `impresso_em IS NULL` na atualização).
-- [ ] **Consistência:** a reabertura do pedido e a inserção dos itens acontecem na mesma transação da RPC.
+- [x] **Sem duplicidade:** a comanda complementar é impressa uma única vez por item, mesmo com várias telas abertas (checagem por `impresso_em IS NULL` na atualização).
+- [x] **Consistência:** a reabertura do pedido e a inserção dos itens acontecem na mesma transação da RPC.
 
 ### Dependências técnicas
 - [CAF-000005](CONCLUIDAS/CAF-000005-adicionar-itens-a-um-pedido-ja-enviado.md) (fluxo de adicionar itens) e [CAF-000009](CONCLUIDAS/CAF-000009-realtime-da-cozinha-tambem-em-pedido-itens.md) (realtime em `pedido_itens`).
@@ -54,11 +54,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um pedido já está em "Prontos", **quando** o barista lança uma cortesia nele, **então** o pedido volta para "Em preparo" na estação da cortesia, com o item destacado como NOVO.
-- [ ] **Dado que** um pedido está em preparo, **quando** o barista adiciona 2 itens pelo modal da mesa, **então** sai **uma** comanda "ADICIONAL" com os 2 itens, e os itens antigos não são reimpressos.
-- [ ] **Dado que** duas telas da cozinha estão abertas, **quando** um item é adicionado, **então** a comanda complementar sai uma única vez.
-- [ ] **Dado que** um pedido foi cancelado, **quando** alguém tenta adicionar itens, **então** a RPC recusa com mensagem clara.
-- [ ] **Dado que** o item novo foi marcado como pronto, **quando** o card é renderizado, **então** o destaque amarelo some e fica só o ✓.
+- [x] **Dado que** um pedido já está em "Prontos", **quando** o barista lança uma cortesia nele, **então** o pedido volta para "Em preparo" na estação da cortesia, com o item destacado como NOVO.
+- [x] **Dado que** um pedido está em preparo, **quando** o barista adiciona 2 itens pelo modal da mesa, **então** sai **uma** comanda "ADICIONAL" com os 2 itens, e os itens antigos não são reimpressos.
+- [x] **Dado que** duas telas da cozinha estão abertas, **quando** um item é adicionado, **então** a comanda complementar sai uma única vez.
+- [x] **Dado que** um pedido foi cancelado, **quando** alguém tenta adicionar itens, **então** a RPC recusa com mensagem clara.
+- [x] **Dado que** o item novo foi marcado como pronto, **quando** o card é renderizado, **então** o destaque amarelo some e fica só o ✓.
 
 ---
 
