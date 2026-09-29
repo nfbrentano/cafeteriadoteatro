@@ -2516,11 +2516,12 @@
       if (pt.valor_devido === 0 && fecharContaModo.value === 'item') statusColor = '#999';
       
       let isActive = pt.id === parteAtivaId;
+      const nomeSeguro = window.escapeHtml(pt.nome || '');
       
       htmlPartes += `
         <div onclick="window.selecionarParte(${pt.id})" style="border: 2px solid ${isActive ? 'var(--marrom)' : '#E5E5E5'}; padding: 8px 12px; border-radius: 8px; cursor: pointer; background: ${isActive ? '#fdf7f1' : '#fff'};">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong style="color: ${isActive ? 'var(--marrom-escuro)' : '#333'}">${pt.nome}</strong>
+            <strong style="color: ${isActive ? 'var(--marrom-escuro)' : '#333'}">${nomeSeguro}</strong>
             <span style="font-size:12px; font-weight:bold; color: ${statusColor}">
               ${faltaParte > 0 ? 'Falta: R$ ' + faltaParte.toFixed(2).replace('.', ',') : (pt.valor_devido > 0 ? 'Pago!' : '')}
             </span>
