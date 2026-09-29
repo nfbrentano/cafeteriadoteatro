@@ -25,8 +25,19 @@
   const mcountPendentes = document.getElementById('mcount-pendentes');
   const mcountPreparo = document.getElementById('mcount-preparo');
   const mcountConcluidos = document.getElementById('mcount-concluidos');
+  const mcountProducao = document.getElementById('mcount-producao');
   const btnTesteVoz = document.getElementById('btn-teste-voz');
   const kdsTabBtns = document.querySelectorAll('.kds-tab-btn');
+
+  // CAF-000026: Elementos da Visão Consolidada de Produção
+  const pedidosBoard = document.getElementById('pedidos-board');
+  const viewProducao = document.getElementById('view-producao');
+  const listProducao = document.getElementById('list-producao');
+  const btnViewBoard = document.getElementById('btn-view-board');
+  const btnViewProducao = document.getElementById('btn-view-producao');
+  const topbarBadgeProducao = document.getElementById('topbar-badge-producao');
+  const producaoEstacaoBadge = document.getElementById('producao-estacao-badge');
+  const producaoTotalItensBadge = document.getElementById('producao-total-itens-badge');
 
   const audioAlert = document.getElementById('audio-alert');
   const audioBanner = document.getElementById('audio-banner');
@@ -385,18 +396,53 @@
   }
 
   // -----------------------------------------------------
-  // 2.1 NAVEGAÇÃO SEGMENTADA MOBILE (KDS)
+  // 2.1 NAVEGAÇÃO SEGMENTADA & VIEW SWITCHER (KDS) (CAF-000026)
   // -----------------------------------------------------
   let activeMobileCol = 'pendentes';
+  let activeDesktopView = 'board';
+
+  function setDesktopView(viewName) {
+    activeDesktopView = viewName;
+    if (btnViewBoard) btnViewBoard.classList.toggle('active', viewName === 'board');
+    if (btnViewProducao) btnViewProducao.classList.toggle('active', viewName === 'producao');
+
+    if (window.innerWidth > 860) {
+      if (viewName === 'board') {
+        if (pedidosBoard) pedidosBoard.classList.remove('hidden');
+        if (viewProducao) viewProducao.classList.add('hidden');
+      } else {
+        if (pedidosBoard) pedidosBoard.classList.add('hidden');
+        if (viewProducao) viewProducao.classList.remove('hidden');
+      }
+    }
+  }
 
   function setMobileCol(colName) {
     activeMobileCol = colName;
     kdsTabBtns.forEach(b => {
       b.classList.toggle('active', b.dataset.col === colName);
     });
-    if (colPendentes) colPendentes.classList.toggle('active-col', colName === 'pendentes');
-    if (colPreparo) colPreparo.classList.toggle('active-col', colName === 'preparo');
-    if (colConcluidos) colConcluidos.classList.toggle('active-col', colName === 'concluidos');
+
+    if (colName === 'producao') {
+      if (pedidosBoard) pedidosBoard.classList.add('hidden');
+      if (viewProducao) viewProducao.classList.remove('hidden');
+      if (colPendentes) colPendentes.classList.remove('active-col');
+      if (colPreparo) colPreparo.classList.remove('active-col');
+      if (colConcluidos) colConcluidos.classList.remove('active-col');
+    } else {
+      if (pedidosBoard) pedidosBoard.classList.remove('hidden');
+      if (viewProducao) viewProducao.classList.add('hidden');
+      if (colPendentes) colPendentes.classList.toggle('active-col', colName === 'pendentes');
+      if (colPreparo) colPreparo.classList.toggle('active-col', colName === 'preparo');
+      if (colConcluidos) colConcluidos.classList.toggle('active-col', colName === 'concluidos');
+    }
+  }
+
+  if (btnViewBoard) {
+    btnViewBoard.addEventListener('click', () => setDesktopView('board'));
+  }
+  if (btnViewProducao) {
+    btnViewProducao.addEventListener('click', () => setDesktopView('producao'));
   }
 
   kdsTabBtns.forEach(btn => {
@@ -405,8 +451,20 @@
     });
   });
 
-  // Inicializar coluna ativa no mobile
-  setMobileCol('pendentes');
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 860) {
+      setMobileCol(activeMobileCol);
+    } else {
+      setDesktopView(activeDesktopView);
+    }
+  });
+
+  // Inicializar estado visual de acordo com o tamanho da tela
+  if (window.innerWidth <= 860) {
+    setMobileCol('pendentes');
+  } else {
+    setDesktopView('board');
+  }
 
   // Toast de Cancelamento
   cancelToastClose.addEventListener('click', () => {
@@ -651,6 +709,9 @@
     renderList(pendentes, listPendentes, 'pendente');
     renderList(preparo, listPreparo, 'em_preparo');
     renderList(concluidos, listConcluidos, 'concluido');
+
+    // CAF-000026: Renderizar visão consolidada de produção (totais por produto)
+    renderProducaoConsolidada();
   }
 
   function renderList(list, container, tipo) {
@@ -812,6 +873,7 @@
       }
 
       const card = document.createElement('div');
+      card.id = `pedido-card-${pedido.id}`;
       card.className = `pedido-card ${estadoTempo.semaforo} ${estadoTempo.isPulsing ? 'pulso-alerta' : ''}`;
       card.setAttribute('data-pedido-id', pedido.id);
       card.setAttribute('data-created-at', pedido.created_at);
@@ -987,6 +1049,288 @@
   setInterval(() => {
     if (currentUser) renderPedidos();
   }, 30000);
+
+  // -----------------------------------------------------
+  // 4.1 VISÃO CONSOLIDADA DE PRODUÇÃO (CAF-000026)
+  // -----------------------------------------------------
+  let gruposProducaoAtivos = new Map();
+
+  function renderProducaoConsolidada() {
+    if (!listProducao) return;
+
+    gruposProducaoAtivos.clear();
+
+    // 1. Filtrar pedidos em aberto (pendente e em_preparo)
+    const pedidosAbertos = pedidos.filter(p => 
+      p.status === 'pendente' || p.status === 'em_preparo'
+    );
+
+    let totalItensEmAberto = 0;
+
+    pedidosAbertos.forEach(pedido => {
+      const itens = (pedido.pedido_itens || []).filter(item => {
+        if (item.cancelado) return false;
+        if (item.pronto_em) return false;
+        if (estacaoSelecionada !== 'todas') {
+          const itemEstacao = getItemEstacao(item);
+          if (itemEstacao !== estacaoSelecionada) return false;
+        }
+        return true;
+      });
+
+      itens.forEach(item => {
+        const qty = Number(item.quantidade) || 1;
+        totalItensEmAberto += qty;
+
+        // Chave: produto_id + adicionais ordenados + sabores + observação
+        const produtoId = String(item.produto_id || item.nome_produto || 'item');
+
+        // Adicionais ordenados
+        const adicList = (item.pedido_item_adicionais || [])
+          .map(a => (a.nome_adicional || a.adicional_id || '').trim())
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+        const adicKey = adicList.join('|');
+
+        // Sabores ordenados (meio a meio)
+        const saborList = (item.pedido_item_sabores || [])
+          .map(s => (s.nome || s.produto_id || '').trim())
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+        const saborKey = saborList.join('|');
+
+        // Observação limpa (segrega se houver obs específica)
+        const obs = (item.observacoes || '').trim();
+        const obsKey = obs.toLowerCase();
+
+        const groupKey = `${produtoId}:::${adicKey}:::${saborKey}:::${obsKey}`;
+
+        if (!gruposProducaoAtivos.has(groupKey)) {
+          gruposProducaoAtivos.set(groupKey, {
+            key: groupKey,
+            produtoId: item.produto_id,
+            nomeProduto: item.nome_produto || 'Produto',
+            adicionais: item.pedido_item_adicionais || [],
+            sabores: item.pedido_item_sabores || [],
+            observacao: obs,
+            quantidadeTotal: 0,
+            itemIds: [],
+            pedidosOrigemMap: new Map(),
+            maisAntigoCreatedAt: new Date(pedido.created_at).getTime()
+          });
+        }
+
+        const group = gruposProducaoAtivos.get(groupKey);
+        group.quantidadeTotal += qty;
+        group.itemIds.push(item.id);
+
+        const pTime = new Date(pedido.created_at).getTime();
+        if (pTime < group.maisAntigoCreatedAt) {
+          group.maisAntigoCreatedAt = pTime;
+        }
+
+        if (!group.pedidosOrigemMap.has(pedido.id)) {
+          group.pedidosOrigemMap.set(pedido.id, {
+            pedidoId: pedido.id,
+            mesaCodigo: pedido.mesa_codigo,
+            clienteNome: pedido.cliente_nome,
+            paraViagem: pedido.para_viagem,
+            numeroPedido: pedido.numero_pedido || pedido.id,
+            status: pedido.status,
+            quantidade: 0
+          });
+        }
+        const pOrigem = group.pedidosOrigemMap.get(pedido.id);
+        pOrigem.quantidade += qty;
+      });
+    });
+
+    // Atualizar badges de quantidade
+    if (topbarBadgeProducao) topbarBadgeProducao.textContent = totalItensEmAberto;
+    if (mcountProducao) mcountProducao.textContent = totalItensEmAberto;
+    if (producaoTotalItensBadge) {
+      producaoTotalItensBadge.textContent = `${totalItensEmAberto} item${totalItensEmAberto === 1 ? '' : 's'} a fazer`;
+    }
+
+    if (producaoEstacaoBadge) {
+      const mapaEstacao = {
+        'todas': 'Todas as Estações',
+        'bar': 'Estação: Bar',
+        'cozinha': 'Estação: Cozinha'
+      };
+      producaoEstacaoBadge.textContent = mapaEstacao[estacaoSelecionada] || 'Todas as Estações';
+    }
+
+    // Ordenar grupos pelo pedido mais antigo (FIFO)
+    const gruposOrdenados = Array.from(gruposProducaoAtivos.values()).sort((a, b) => {
+      return a.maisAntigoCreatedAt - b.maisAntigoCreatedAt;
+    });
+
+    if (gruposOrdenados.length === 0) {
+      listProducao.innerHTML = `
+        <div class="producao-empty">
+          <span class="producao-empty-icon">🎉</span>
+          <h3 class="producao-empty-title">Tudo pronto na produção!</h3>
+          <p class="producao-empty-desc">Nenhum item pendente de preparo para a estação selecionada no momento.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listProducao.innerHTML = '';
+
+    gruposOrdenados.forEach(group => {
+      const card = document.createElement('div');
+      card.className = 'producao-card';
+
+      // Sabores (meio a meio)
+      let saboresHtml = '';
+      if (group.sabores && group.sabores.length === 2) {
+        saboresHtml = `
+          <div class="producao-sabores">
+            ½ ${window.escapeHtml(group.sabores[0].nome)} · ½ ${window.escapeHtml(group.sabores[1].nome)}
+          </div>
+        `;
+      }
+
+      // Adicionais
+      let adicionaisHtml = '';
+      if (group.adicionais && group.adicionais.length > 0) {
+        adicionaisHtml = `
+          <div class="producao-adicionais">
+            ${group.adicionais.map(ad => `<span class="producao-adicional-tag">+ ${window.escapeHtml(ad.nome_adicional || '')}</span>`).join('')}
+          </div>
+        `;
+      }
+
+      // Observação
+      let obsHtml = '';
+      if (group.observacao) {
+        obsHtml = `
+          <div class="producao-obs-box">
+            ⚠️ <strong>Obs:</strong> ${window.escapeHtml(group.observacao)}
+          </div>
+        `;
+      }
+
+      // Chips de pedidos de origem
+      const chipsHtml = Array.from(group.pedidosOrigemMap.values()).map(orig => {
+        let desc = orig.paraViagem 
+          ? `🥡 ${orig.clienteNome ? window.escapeHtml(orig.clienteNome) + ' ' : ''}#${orig.numeroPedido}`
+          : `${orig.mesaCodigo} #${orig.numeroPedido}`;
+        if (orig.quantidade > 1) {
+          desc += ` (${orig.quantidade}x)`;
+        }
+        return `<button type="button" class="origem-chip" onclick="window.focarPedidoDoChip(${orig.pedidoId})" title="Ver pedido #${orig.numeroPedido}">${desc}</button>`;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="producao-qty-box" title="${group.quantidadeTotal} unidade(s) no total">
+          ${group.quantidadeTotal}×
+        </div>
+        <div class="producao-details">
+          <div class="producao-prod-nome">${window.escapeHtml(group.nomeProduto)}</div>
+          ${saboresHtml}
+          ${adicionaisHtml}
+          ${obsHtml}
+          <div class="producao-origens-box">
+            <span class="producao-origens-label">Pedidos de origem (${group.pedidosOrigemMap.size}):</span>
+            <div class="producao-origens-chips">
+              ${chipsHtml}
+            </div>
+          </div>
+        </div>
+        <div class="producao-action">
+          <button type="button" class="btn-marcar-grupo" data-group-key="${window.escapeHtml(group.key)}" onclick="window.marcarGrupoPronto('${encodeURIComponent(group.key)}')">
+            ✓ Marcar ${group.quantidadeTotal} como pronto${group.quantidadeTotal > 1 ? 's' : ''}
+          </button>
+        </div>
+      `;
+
+      listProducao.appendChild(card);
+    });
+  }
+
+  window.focarPedidoDoChip = function(pedidoId) {
+    const p = pedidos.find(item => item.id === pedidoId);
+    if (!p) return;
+
+    if (window.innerWidth <= 860) {
+      const colName = p.status === 'pendente' ? 'pendentes' : 'preparo';
+      setMobileCol(colName);
+    } else {
+      setDesktopView('board');
+    }
+
+    setTimeout(() => {
+      const card = document.getElementById(`pedido-card-${pedidoId}`) || document.querySelector(`.pedido-card[data-pedido-id="${pedidoId}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('pedido-card--focus-highlight');
+        setTimeout(() => {
+          card.classList.remove('pedido-card--focus-highlight');
+        }, 2500);
+      }
+    }, 60);
+  };
+
+  window.marcarGrupoPronto = async function(encodedKey) {
+    const groupKey = decodeURIComponent(encodedKey);
+    const group = gruposProducaoAtivos.get(groupKey);
+    if (!group || !group.itemIds || group.itemIds.length === 0) return;
+
+    const itemIds = [...group.itemIds];
+    const nowIso = new Date().toISOString();
+
+    const btn = document.querySelector(`.btn-marcar-grupo[data-group-key="${CSS.escape(groupKey)}"]`);
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Gravando...';
+    }
+
+    // 1. Atualização otimista em memória dos itens
+    itemIds.forEach(itemId => {
+      pedidos.forEach(p => {
+        const it = (p.pedido_itens || []).find(i => i.id === itemId);
+        if (it) {
+          it.pronto_em = nowIso;
+          it.pronto_por = currentUser ? currentUser.id : null;
+        }
+      });
+    });
+
+    // 2. Atualização otimista dos pedidos
+    pedidos.forEach(p => {
+      const info = getPedidoEstacaoInfo(p);
+      if (info.totalItens > 0 && info.totalProntos === info.totalItens) {
+        if (p.status !== 'concluido' && p.status !== 'entregue') {
+          p.status = 'concluido';
+          p.concluido_em = nowIso;
+        }
+      } else if (p.status === 'pendente' && info.totalProntos > 0) {
+        p.status = 'em_preparo';
+        if (!p.iniciado_em) p.iniciado_em = nowIso;
+      }
+    });
+
+    // 3. Re-renderizar board e producao imediatamente
+    renderPedidos();
+
+    // 4. Persistir no Supabase em lote
+    const { error } = await window.cafeteriaSupabase
+      .from('pedido_itens')
+      .update({
+        pronto_em: nowIso,
+        pronto_por: currentUser ? currentUser.id : null
+      })
+      .in('id', itemIds);
+
+    if (error) {
+      alert('Erro ao marcar itens como prontos: ' + error.message);
+      debouncedFetchPedidos();
+      return;
+    }
+  };
 
   // -----------------------------------------------------
   // 5. AÇÕES (Atualizar Status e Reimpressão)

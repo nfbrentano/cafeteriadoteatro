@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) | 🟡 Média | P | Especificação · aguardando revisão |
+| Cozinha (KDS) | 🟡 Média | P | 🟢 Concluído |
 
 ---
 
@@ -24,21 +24,21 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Botão ou aba "📊 Produção" no topo do KDS (e uma quarta aba no mobile), respeitando o filtro de estação.
-- [ ] Agrupar os itens **não cancelados e sem `pronto_em`** de pedidos `pendente` e `em_preparo` pela chave `produto_id + adicionais ordenados + sabores + observação`.
+- [x] Botão ou aba "📊 Produção" no topo do KDS (e uma quarta aba no mobile), respeitando o filtro de estação.
+- [x] Agrupar os itens **não cancelados e sem `pronto_em`** de pedidos `pendente` e `em_preparo` pela chave `produto_id + adicionais ordenados + sabores + observação`.
   - Itens com observação ficam em linha separada, com a obs visível.
-- [ ] Cada linha mostra a quantidade total e os chips dos pedidos de origem ("M3 #41", "Ana #44"). Tocar num chip rola até o card.
-- [ ] Ação "✓ Marcar N como prontos" por linha, que marca `pronto_em` em todos os itens do grupo (reusa a RPC da [CAF-000022](CAF-000022-conclusao-independente-por-estacao.md), ou `update` em lote).
-- [ ] Ordenar as linhas pelo pedido mais antigo do grupo.
-- [ ] A visão atualiza com o mesmo realtime do board.
+- [x] Cada linha mostra a quantidade total e os chips dos pedidos de origem ("M3 #41", "Ana #44"). Tocar num chip rola até o card.
+- [x] Ação "✓ Marcar N como prontos" por linha, que marca `pronto_em` em todos os itens do grupo (reusa a RPC da [CAF-000022](CONCLUIDAS/CAF-000022-conclusao-independente-por-estacao.md), ou `update` em lote).
+- [x] Ordenar as linhas pelo pedido mais antigo do grupo.
+- [x] A visão atualiza com o mesmo realtime do board.
 
 ### Requisitos não funcionais
-- [ ] **Desempenho:** agrupamento em memória sobre o array `pedidos` já carregado, sem consulta extra.
-- [ ] **Legibilidade:** fonte grande (≥ 20 px para a quantidade), legível a 1,5 m num tablet.
+- [x] **Desempenho:** agrupamento em memória sobre o array `pedidos` já carregado, sem consulta extra.
+- [x] **Legibilidade:** fonte grande (≥ 20 px para a quantidade), legível a 1,5 m num tablet.
 
 ### Dependências técnicas
 - Estado `pedidos` e `produtosCache` de `js/cozinha.js`.
-- Melhor depois da [CAF-000022](CAF-000022-conclusao-independente-por-estacao.md) (a conclusão em lote dispara a regra de conclusão no banco).
+- Melhor depois da [CAF-000022](CONCLUIDAS/CAF-000022-conclusao-independente-por-estacao.md) (a conclusão em lote dispara a regra de conclusão no banco).
 
 ### Recursos necessários
 - Nenhum além do ambiente de desenvolvimento.
@@ -47,10 +47,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** há 3 pedidos abertos com 2, 1 e 3 cappuccinos simples, **quando** o bar abre "Produção", **então** vê "6× Cappuccino" com 3 chips de pedido.
-- [ ] **Dado que** um dos cappuccinos tem leite vegetal, **quando** a visão é montada, **então** ele aparece numa linha própria.
-- [ ] **Dado que** o bar toca em "Marcar 6 como prontos", **quando** a ação termina, **então** os pedidos que ficaram completos vão para "Prontos".
-- [ ] **Dado que** o filtro está em "Cozinha", **quando** a visão é aberta, **então** não aparecem bebidas do bar.
+- [x] **Dado que** há 3 pedidos abertos com 2, 1 e 3 cappuccinos simples, **quando** o bar abre "Produção", **então** vê "6× Cappuccino" com 3 chips de pedido.
+- [x] **Dado que** um dos cappuccinos tem leite vegetal, **quando** a visão é montada, **então** ele aparece numa linha própria.
+- [x] **Dado que** o bar toca em "Marcar 6 como prontos", **quando** a ação termina, **então** os pedidos que ficaram completos vão para "Prontos".
+- [x] **Dado que** o filtro está em "Cozinha", **quando** a visão é aberta, **então** não aparecem bebidas do bar.
 
 ---
 

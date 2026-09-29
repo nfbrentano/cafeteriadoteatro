@@ -50,6 +50,16 @@
           <option value="cozinha">Cozinha</option>
           <option value="bar">Bar</option>
         </select>
+
+        <div class="kds-view-switcher" id="kds-view-switcher">
+          <button id="btn-view-board" class="btn-view-tab active" type="button" title="Visão de Pedidos (Colunas)">
+            📋 Pedidos
+          </button>
+          <button id="btn-view-producao" class="btn-view-tab" type="button" title="Visão Consolidada de Produção">
+            📊 Produção <span class="tab-badge" id="topbar-badge-producao">0</span>
+          </button>
+        </div>
+
         <div id="cozinha-status-indicator" class="status-indicator">
           <span id="cozinha-pulse-dot" class="pulse-dot"></span>
           <span id="cozinha-status-text">Conectado (Tempo Real)</span>
@@ -82,6 +92,9 @@
       <button class="kds-tab-btn" data-col="concluidos">
         🟢 Prontos <span class="tab-badge" id="mcount-concluidos">0</span>
       </button>
+      <button class="kds-tab-btn" data-col="producao">
+        📊 Produção <span class="tab-badge" id="mcount-producao">0</span>
+      </button>
     </nav>
 
     <!-- TOAST DE CANCELAMENTO -->
@@ -91,7 +104,7 @@
     </div>
 
     <!-- GRID DE PEDIDOS (3 COLUNAS) -->
-    <main class="pedidos-board">
+    <main class="pedidos-board" id="pedidos-board">
       <!-- 1. PENDENTES -->
       <div class="column" id="col-pendentes">
         <h2 class="column-header">
@@ -125,6 +138,23 @@
         </div>
       </div>
     </main>
+
+    <!-- PAINEL DE PRODUÇÃO CONSOLIDADA (CAF-000026) -->
+    <section class="producao-board hidden" id="view-producao" aria-label="Visão Consolidada de Produção">
+      <div class="producao-header">
+        <div class="producao-title-box">
+          <h2 class="producao-title">📊 Resumo de Produção em Lote</h2>
+          <span class="producao-subtitle">Itens em aberto agrupados por produto e variação para preparo em lote</span>
+        </div>
+        <div class="producao-meta">
+          <span class="producao-meta-badge" id="producao-estacao-badge">Estação: Todas</span>
+          <span class="producao-meta-total" id="producao-total-itens-badge">0 itens a fazer</span>
+        </div>
+      </div>
+      <div class="producao-list" id="list-producao">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </section>
   </div>
 
   <!-- IFRAME OCULTO PARA IMPRESSÃO -->
