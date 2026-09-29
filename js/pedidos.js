@@ -2475,7 +2475,7 @@
             atribuido += a.perc;
             const pt = currentPartes.find(x => x.id === a.parteId);
             if (pt) {
-              badges += `<span style="font-size:10px; background:#ddd; padding:2px 4px; border-radius:4px; margin-right:4px;">${pt.nome} (${a.perc}%)</span>`;
+              badges += `<span style="font-size:10px; background:#ddd; padding:2px 4px; border-radius:4px; margin-right:4px;">${window.escapeHtml(pt.nome)} (${a.perc}%)</span>`;
             }
           });
         }
