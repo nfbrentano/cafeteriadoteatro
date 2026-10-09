@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardapioBtns = document.querySelectorAll('a[href="cardapio.html"]');
   cardapioBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      if (btn.classList.contains('btn')) {
+      if (btn.classList.contains('btn') || btn.classList.contains('navbar__btn-cardapio')) {
         trackEvent('click_ver_cardapio', { button_id: btn.id || 'cta_cardapio' });
       }
     });

@@ -117,6 +117,66 @@
   display: flex;
   align-items: center;
   gap: var(--space-8);
+  margin-left: auto;
+  margin-right: var(--space-6);
+}
+
+.navbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Botão discreto estilo pílula no header */
+.navbar__btn-cardapio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-family: var(--font-body, 'Jost', sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all var(--transition-base);
+  /* Estado transparente inicial (sobre o hero) */
+  color: var(--marfim, #FAF6EE);
+  background: rgba(250, 246, 238, 0.08);
+  border: 1px solid rgba(250, 246, 238, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.navbar__btn-cardapio:hover {
+  background: rgba(250, 246, 238, 0.2);
+  border-color: rgba(250, 246, 238, 0.7);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.navbar__btn-cardapio:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* Estado quando a navbar ganha fundo sólido (após scroll) */
+.navbar--solid .navbar__btn-cardapio {
+  color: var(--espresso, #2B1810);
+  background: rgba(92, 61, 46, 0.04);
+  border: 1px solid rgba(92, 61, 46, 0.3);
+}
+
+.navbar--solid .navbar__btn-cardapio:hover {
+  background: var(--cafe, #5C3D2E);
+  border-color: var(--cafe, #5C3D2E);
+  color: var(--marfim, #FAF6EE);
+  box-shadow: 0 2px 8px rgba(92, 61, 46, 0.2);
+}
+
+.navbar__cta {
+  margin-left: var(--space-4);
 }
 
 .navbar__link {
@@ -590,6 +650,11 @@
   .navbar__logo-img { height: 36px; }
   .navbar__links { display: none; }
   .navbar__hamburger { display: flex; }
+  .navbar__btn-cardapio {
+    height: 34px;
+    padding: 0 13px;
+    font-size: 0.775rem;
+  }
 
   .footer__grid {
     grid-template-columns: 1fr;
