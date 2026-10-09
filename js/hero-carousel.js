@@ -1,6 +1,7 @@
 /* =========================================================
    HERO-CAROUSEL.JS — Carrossel Cinematográfico "Galeria de Artes"
-   Auto-rotate, crossfade, swipe, keyboard, progress bar
+   Auto-rotate, crossfade (mobile), 3D side-by-side showcase (desktop),
+   swipe, keyboard, nav buttons, progress bar
    ========================================================= */
 
 (function () {
@@ -19,23 +20,76 @@
   const captionText = captionEl?.querySelector('.hero-carousel__caption-text');
   const captionSub  = captionEl?.querySelector('.hero-carousel__caption-sub');
   const progressBar = document.getElementById('carousel-progress');
+  const prevBtn     = document.getElementById('carousel-prev');
+  const nextBtn     = document.getElementById('carousel-next');
 
   let current       = 0;
-  let autoplayTimer = null;
   let progressTimer = null;
   let progressValue = 0;
   let isPaused      = false;
 
+  // ─── Desktop Multi-Card Showcase Positioning ────
+  function updateDesktopSlides() {
+    const isDesktop = window.innerWidth >= 1024;
+    const N = slides.length;
+
+    slides.forEach((slide, i) => {
+      if (!isDesktop) {
+        // Modo Mobile/Tablet: remove estilos inline para usar regras CSS padrão
+        slide.style.transform = '';
+        slide.style.opacity = '';
+        slide.style.zIndex = '';
+        slide.style.pointerEvents = '';
+        slide.style.filter = '';
+        return;
+      }
+
+      let diff = (i - current) % N;
+      if (diff > N / 2) diff -= N;
+      if (diff < -N / 2) diff += N;
+
+      const absDiff = Math.abs(diff);
+
+      if (diff === 0) {
+        slide.style.opacity = '1';
+        slide.style.pointerEvents = 'auto';
+        slide.style.zIndex = '10';
+        slide.style.filter = 'none';
+        slide.style.transform = 'translate(-50%, -50%) scale(1)';
+      } else if (absDiff === 1) {
+        slide.style.opacity = '0.55';
+        slide.style.pointerEvents = 'auto';
+        slide.style.zIndex = '5';
+        slide.style.filter = 'brightness(0.7) blur(0.5px)';
+        slide.style.transform = `translate(calc(-50% + ${diff * 105}%), -50%) scale(0.88)`;
+      } else if (absDiff === 2) {
+        slide.style.opacity = '0.22';
+        slide.style.pointerEvents = 'auto';
+        slide.style.zIndex = '2';
+        slide.style.filter = 'brightness(0.4) blur(1.5px)';
+        slide.style.transform = `translate(calc(-50% + ${diff * 105}%), -50%) scale(0.76)`;
+      } else {
+        slide.style.opacity = '0';
+        slide.style.pointerEvents = 'none';
+        slide.style.zIndex = '1';
+        slide.style.transform = `translate(calc(-50% + ${diff * 115}%), -50%) scale(0.65)`;
+      }
+    });
+  }
+
   // ─── Core: Go to slide ─────────────────────────
-  function goToSlide(index, direction) {
+  function goToSlide(index) {
     if (index === current) return;
 
     const prev = current;
     current = ((index % slides.length) + slides.length) % slides.length;
 
-    // Crossfade slides
+    // Crossfade classes
     slides[prev].classList.remove('hero-carousel__slide--active');
     slides[current].classList.add('hero-carousel__slide--active');
+
+    // Posicionamento do showcase desktop
+    updateDesktopSlides();
 
     // Animate caption
     updateCaption();
@@ -45,11 +99,11 @@
   }
 
   function nextSlide() {
-    goToSlide(current + 1, 'next');
+    goToSlide(current + 1);
   }
 
   function prevSlide() {
-    goToSlide(current - 1, 'prev');
+    goToSlide(current - 1);
   }
 
   // ─── Caption animation ─────────────────────────
@@ -71,7 +125,7 @@
       // Fade in
       captionEl.classList.remove('fade-out');
       captionEl.classList.add('fade-in');
-    }, 400);
+    }, 350);
   }
 
   // ─── Progress bar ──────────────────────────────
@@ -99,8 +153,10 @@
   }
 
   function stopAutoplay() {
-    clearInterval(progressTimer);
-    progressTimer = null;
+    if (progressTimer) {
+      clearInterval(progressTimer);
+      progressTimer = null;
+    }
   }
 
   function pauseAutoplay() {
@@ -112,9 +168,38 @@
   }
 
   // ─── Event Listeners ──────────────────────────
+  // Clique direto nas obras vizinhas para trazê-las ao centro no Desktop
+  slides.forEach((slide, idx) => {
+    slide.addEventListener('click', () => {
+      if (window.innerWidth >= 1024 && idx !== current) {
+        goToSlide(idx);
+        startAutoplay();
+      }
+    });
+  });
+
+  // Botões de navegação lateral (Desktop)
+  prevBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    prevSlide();
+    startAutoplay();
+  });
+
+  nextBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    nextSlide();
+    startAutoplay();
+  });
+
+  // Redimensionamento de janela
+  let resizeDebounce = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(updateDesktopSlides, 100);
+  });
+
   // Keyboard navigation
   document.addEventListener('keydown', (e) => {
-    // Only respond when hero is in viewport
     const hero = document.getElementById('home');
     if (!hero) return;
     const rect = hero.getBoundingClientRect();
@@ -129,7 +214,7 @@
     }
   });
 
-  // Touch/Swipe support
+  // Touch/Swipe support (Mobile)
   let touchStartX = 0;
   let touchStartY = 0;
   let isSwiping = false;
@@ -201,6 +286,7 @@
 
   // ─── Initialize ────────────────────────────────
   preloadSlideImages();
+  updateDesktopSlides();
   startAutoplay();
 
 })();

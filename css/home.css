@@ -9,7 +9,7 @@
   height: 100dvh;
   min-height: 520px;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   text-align: center;
   overflow: hidden;
@@ -33,10 +33,10 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(28, 16, 8, 0.45) 0%,
-    rgba(28, 16, 8, 0.08) 25%,
-    rgba(28, 16, 8, 0.28) 55%,
-    rgba(28, 16, 8, 0.85) 100%
+    rgba(28, 16, 8, 0.6) 0%,
+    rgba(28, 16, 8, 0.25) 20%,
+    rgba(28, 16, 8, 0.05) 50%,
+    rgba(28, 16, 8, 0.35) 100%
   );
 }
 
@@ -44,8 +44,8 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  padding-top: 0;
-  padding-bottom: calc(clamp(1.75rem, 5vh, 3.5rem) + env(safe-area-inset-bottom, 0px));
+  padding-top: calc(var(--nav-height) + clamp(0.75rem, 2vh, 1.5rem) + env(safe-area-inset-top, 0px));
+  padding-bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -224,6 +224,14 @@
   z-index: 0;
 }
 
+.hero-carousel__track {
+  display: contents;
+}
+
+.hero-carousel__nav {
+  display: none;
+}
+
 .hero-carousel__slide {
   position: absolute;
   inset: 0;
@@ -303,30 +311,32 @@
 
 .hero-carousel__caption {
   text-align: center;
-  margin: 0 auto var(--space-6);
-  max-width: min(92vw, 720px);
+  margin: 0 auto;
+  max-width: min(92vw, 640px);
   opacity: 0;
   animation: fadeUp 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero-carousel__caption-text {
   font-family: var(--font-serif);
-  font-size: clamp(var(--size-lg), 2.5vw, var(--size-2xl));
+  font-size: clamp(1.15rem, 2.3vw, 1.45rem);
   font-weight: 600;
   font-style: italic;
   color: #E5B874;
-  margin-bottom: var(--space-1);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 3px;
+  line-height: 1.25;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .hero-carousel__caption-sub {
   font-family: var(--font-sans);
-  font-size: clamp(var(--size-sm), 1.5vw, var(--size-base));
-  color: rgba(245, 236, 215, 0.8);
+  font-size: clamp(0.775rem, 1.3vw, 0.885rem);
+  color: rgba(245, 236, 215, 0.9);
   font-weight: 400;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  line-height: 1.35;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
@@ -391,18 +401,22 @@
   .hero__content {
     align-items: center;
     text-align: center;
-    padding-bottom: calc(clamp(1.25rem, 4vh, 2rem) + env(safe-area-inset-bottom, 0px));
+    padding-top: calc(var(--nav-height) + clamp(0.5rem, 1.5vh, 1rem) + env(safe-area-inset-top, 0px));
+    padding-bottom: 0;
   }
   .hero-carousel__caption {
-    margin-bottom: var(--space-4);
+    margin-bottom: 0;
   }
   .hero-carousel__caption--fullscreen {
     margin-left: auto;
     margin-right: auto;
     width: fit-content;
-    max-width: min(92vw, 580px);
-    padding: 1.15rem 1.75rem;
+    max-width: min(92vw, 420px);
+    padding: 0.5rem 1.15rem;
     text-align: center;
+    background: rgba(18, 10, 6, 0.32);
+    border: 1px solid rgba(229, 184, 116, 0.2);
+    border-top: 2px solid rgba(229, 184, 116, 0.5);
   }
 }
 
@@ -1045,9 +1059,12 @@
 
 @media (max-width: 480px) {
   .hero-carousel__caption--fullscreen {
-    max-width: 340px;
+    max-width: min(92vw, 350px);
     margin-bottom: 0;
-    padding: 1rem 1.25rem;
+    padding: 0.45rem 0.95rem;
+    background: rgba(18, 10, 6, 0.30);
+    border: 1px solid rgba(229, 184, 116, 0.2);
+    border-top: 2px solid rgba(229, 184, 116, 0.5);
   }
   .hero__actions {
     flex-direction: column;
@@ -1126,18 +1143,18 @@
 .hero-carousel__caption--fullscreen {
   position: relative;
   text-align: center;
-  margin: 1.5rem auto 1rem;
-  padding: 1.25rem 2.5rem;
-  background: rgba(20, 10, 5, 0.85);
-  border: 1px solid rgba(245, 236, 215, 0.12);
-  border-top: 2px solid var(--accent-light);
+  margin: 0 auto;
+  padding: 0.65rem 1.6rem;
+  background: rgba(18, 10, 6, 0.35);
+  border: 1px solid rgba(229, 184, 116, 0.22);
+  border-top: 2px solid rgba(229, 184, 116, 0.6);
   border-radius: var(--radius-sm);
   width: fit-content;
-  max-width: min(92vw, 720px);
-  min-width: min(100%, 320px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  max-width: min(90vw, 540px);
+  min-width: min(100%, 260px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1150,4 +1167,135 @@
   height: 4px;
   background: rgba(255,255,255,0.1);
   z-index: 20;
+}
+
+/* ─── DESKTOP SHOWCASE (Galeria de Artes Lado a Lado) ────── */
+@media (min-width: 1024px) {
+  .hero {
+    background: radial-gradient(circle at 50% 50%, rgba(38, 22, 15, 0.95) 0%, rgba(12, 6, 4, 1) 100%);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(85vw, 1100px);
+    height: 680px;
+    background: radial-gradient(ellipse at center, rgba(229, 184, 116, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .hero__overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 8, 4, 0.65) 0%,
+      rgba(15, 8, 4, 0.08) 25%,
+      rgba(15, 8, 4, 0.05) 50%,
+      rgba(15, 8, 4, 0.55) 100%
+    );
+    pointer-events: none;
+  }
+
+  .hero-carousel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-carousel__track {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .hero-carousel--fullscreen .hero-carousel__slide {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    height: min(68vh, 640px);
+    width: calc(min(68vh, 640px) * (9 / 16));
+    max-width: 360px;
+    aspect-ratio: 9 / 16;
+    border-radius: 18px;
+    overflow: hidden;
+    visibility: visible !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(245, 236, 215, 0.15);
+    transition: transform 0.65s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.65s ease, filter 0.65s ease, box-shadow 0.65s ease;
+    will-change: transform, opacity;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .hero-carousel--fullscreen .hero-carousel__slide--active {
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(229, 184, 116, 0.4), 0 0 32px rgba(229, 184, 116, 0.12);
+    cursor: default;
+    visibility: visible !important;
+  }
+
+  .hero-carousel--fullscreen .hero-carousel__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 17px;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .hero-carousel--fullscreen .hero-carousel__slide--active .hero-carousel__img {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Botões de navegação lateral no Desktop */
+  .hero-carousel__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(20, 10, 5, 0.65);
+    border: 1px solid rgba(245, 236, 215, 0.25);
+    color: var(--marfim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 25;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .hero-carousel__nav:hover {
+    background: var(--cafe);
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  .hero-carousel__nav--prev {
+    left: clamp(1.5rem, 3vw, 3.5rem);
+  }
+
+  .hero-carousel__nav--next {
+    right: clamp(1.5rem, 3vw, 3.5rem);
+  }
 }
