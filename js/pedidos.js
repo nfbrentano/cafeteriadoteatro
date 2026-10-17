@@ -2354,6 +2354,12 @@
   }
   if (pedidoParaViagem) {
     pedidoParaViagem.addEventListener('change', () => {
+      if (pedidoParaViagem.checked) {
+        if (mesaSelect) mesaSelect.value = '';
+        if (navigator.vibrate) navigator.vibrate(12);
+      }
+      updateMesaTriggerUI();
+      renderMesaSelectionGrid();
       checkFormValidity();
       salvarRascunhoCarrinho();
     });
@@ -2378,7 +2384,7 @@
   }
 
   // -----------------------------------------------------
-  // 5. ENVIAR PEDIDO (OPTIMISTIC UI, IDEMPOTÊNCIA & FILA OFFLINE) - CAF-000059
+  // 5. ENVIAR PEDIDO (OPTIMISTIC UI, IDEMPOTÊNCIA & FILA OFFLINE) - CAF-000059 / CAF-000060
   // -----------------------------------------------------
   btnEnviarPedido.addEventListener('click', () => {
     if (btnEnviarPedido.disabled) return;
@@ -2396,7 +2402,7 @@
       showToast('Adicione ao menos um item ao carrinho.', 'error');
       return;
     }
-    if (!mesaCodigo) {
+    if (!mesaCodigo && !paraViagem) {
       showToast('Por favor, selecione uma mesa para o pedido.', 'error');
       return;
     }
@@ -2425,7 +2431,7 @@
 
     const payload = {
       client_id: clientId,
-      mesa_codigo: mesaCodigo,
+      mesa_codigo: mesaCodigo || (paraViagem ? 'BALCAO' : 'BALCAO'),
       observacoes: obsGeral,
       cliente_nome: clienteNome,
       cliente_id: clienteId,
@@ -2447,7 +2453,7 @@
 
     const offlineOrderData = {
       client_id: clientId,
-      mesa_codigo: mesaCodigo,
+      mesa_codigo: mesaCodigo || (paraViagem ? 'BALCAO' : 'BALCAO'),
       cliente_nome: clienteNome,
       cliente_id: clienteId,
       para_viagem: paraViagem,
@@ -2462,7 +2468,7 @@
       ultimo_erro: null
     };
 
-    const mesaIdentificador = mesaCodigo ? `Mesa ${mesaCodigo}` : 'Balcão';
+    const mesaIdentificador = mesaCodigo ? `Mesa ${mesaCodigo}` : (paraViagem ? 'Balcão / Viagem' : 'Balcão');
     const cartSnapshot = JSON.parse(JSON.stringify(cart));
     const formSnapshot = {
       mesaCodigo,
