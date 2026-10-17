@@ -32,6 +32,13 @@
 
   // Refs Novo Pedido
   const mesaSelect = document.getElementById('mesa-select');
+  const btnMesaTrigger = document.getElementById('btn-mesa-trigger');
+  const mesaTriggerText = document.getElementById('mesa-trigger-text');
+  const modalSelecionarMesa = document.getElementById('modal-selecionar-mesa');
+  const modalSelecionarMesaClose = document.getElementById('modal-selecionar-mesa-close');
+  const gridSelecaoMesas = document.getElementById('grid-selecao-mesas');
+  const btnSelecionarBalcao = document.getElementById('btn-selecionar-balcao');
+  const btnLimparMesa = document.getElementById('btn-limpar-mesa');
   const productSearch = document.getElementById('product-search');
   const categoriesTabs = document.getElementById('categories-tabs');
   const productsGrid = document.getElementById('products-grid');
@@ -50,7 +57,24 @@
   const offlineQueueCount = document.getElementById('offline-queue-count');
   const pedidoObs = document.getElementById('pedido-obs');
   const pedidoClienteNome = document.getElementById('pedido-cliente-nome');
+  const pedidoClienteId = document.getElementById('pedido-cliente-id');
+  const clienteBadge = document.getElementById('cliente-selecionado-badge');
+  const clienteBadgeNome = document.getElementById('cliente-selecionado-nome');
+  const clienteBadgeTel = document.getElementById('cliente-selecionado-tel');
+  const btnDesvincularCliente = document.getElementById('btn-desvincular-cliente');
+  const sugestoesClientes = document.getElementById('sugestoes-clientes');
+  const btnAbrirCadastroCliente = document.getElementById('btn-abrir-cadastro-cliente');
+  const modalCadastroCliente = document.getElementById('modal-cadastro-cliente');
+  const btnFecharModalCliente = document.getElementById('btn-fechar-modal-cliente');
+  const btnCancelarCadastroCliente = document.getElementById('btn-cancelar-cadastro-cliente');
+  const formCadastroClienteRapido = document.getElementById('form-cadastro-cliente-rapido');
+  const cadClienteNome = document.getElementById('cad-cliente-nome');
+  const cadClienteTel = document.getElementById('cad-cliente-tel');
+  const cadClienteConsentimento = document.getElementById('cad-cliente-consentimento');
   const pedidoParaViagem = document.getElementById('pedido-para-viagem');
+  const pedidoPrioritario = document.getElementById('pedido-prioritario');
+  const boxMotivoPrioridade = document.getElementById('box-motivo-prioridade');
+  const pedidoPrioridadeMotivo = document.getElementById('pedido-prioridade-motivo');
   const pedidoPagamento = document.getElementById('pedido-pagamento');
   const pedidoPago = document.getElementById('pedido-pago');
 
@@ -70,6 +94,7 @@
   const mesasGrid = document.getElementById('mesas-grid');
   const pedidosCardsGrid = document.getElementById('pedidos-cards-grid');
   const filtroChips = document.querySelectorAll('.status-filters .filter-chip');
+  const filtroEscopoChips = document.querySelectorAll('.pedidos-filtro-escopo .btn-escopo-chip');
 
   // Refs Modais
   const modalObs = document.getElementById('modal-obs');
@@ -107,6 +132,7 @@
   let mesaAlvoTransferencia = null;
 
   const btnMesaAdicionarItens = document.getElementById('btn-mesa-adicionar-itens');
+  const btnMesaRepetirRodada = document.getElementById('btn-mesa-repetir-rodada');
   const bannerAdicionandoItens = document.getElementById('banner-adicionando-itens');
   const lblMesaAdicionando = document.getElementById('lbl-mesa-adicionando');
   const btnCancelarAdicao = document.getElementById('btn-cancelar-adicao');
@@ -116,6 +142,16 @@
   const fecharContaClose = document.getElementById('modal-fechar-conta-close');
   const fecharContaCancelar = document.getElementById('modal-fechar-conta-cancelar');
   const fecharContaConfirmar = document.getElementById('modal-fechar-conta-confirmar');
+  const btnFecharContaVoltar = document.getElementById('btn-fechar-conta-voltar');
+  const fecharContaStepSub = document.getElementById('fechar-conta-step-sub');
+  const btnFecharContaNext1 = document.getElementById('btn-fechar-conta-next-1');
+  const btnFecharContaNext2 = document.getElementById('btn-fechar-conta-next-2');
+  const fecharContaFooterLabel = document.getElementById('fechar-conta-footer-label');
+  const fecharContaFooterVal = document.getElementById('fechar-conta-footer-val');
+  const stepFecharConsumo = document.getElementById('step-fechar-consumo');
+  const stepFecharAjustes = document.getElementById('step-fechar-ajustes');
+  const stepFecharPagamento = document.getElementById('step-fechar-pagamento');
+  let currentFecharContaStep = 1;
   const fecharContaResumo = document.getElementById('fechar-conta-resumo-pedidos');
   
   const fecharContaSubtotalLbl = document.getElementById('fechar-conta-subtotal-lbl');
@@ -139,6 +175,7 @@
   const btnAddPagamento = document.getElementById('btn-add-pagamento');
   const divDinheiroRecebido = document.getElementById('div-dinheiro-recebido');
   const inputDinheiroRecebido = document.getElementById('fechar-conta-dinheiro-recebido');
+  const containerTrocoChips = document.getElementById('fechar-conta-troco-chips');
   const fecharContaTrocoLbl = document.getElementById('fechar-conta-troco-lbl');
   const fecharContaLista = document.getElementById('fechar-conta-lista-pagamentos');
 
@@ -156,18 +193,28 @@
 
 
   const audioPronto = document.getElementById('audio-pronto');
+  const btnToggleSound = document.getElementById('btn-toggle-sound');
+  const soundToggleIcon = document.getElementById('sound-toggle-icon');
+  const alertaProntoTop = document.getElementById('alerta-pronto-top');
+  const alertaProntoTitulo = document.getElementById('alerta-pronto-titulo');
+  const alertaProntoSubtitulo = document.getElementById('alerta-pronto-subtitulo');
+  const btnAlertaProntoAcao = document.getElementById('btn-alerta-pronto-acao');
+  const btnAlertaProntoFechar = document.getElementById('btn-alerta-pronto-fechar');
+  const pedidosProntosNotificados = new Set();
+  let alertaProntoTimeout = null;
 
   // Estado
   let currentUser = null;
   let allProducts = [];
   let allAdicionais = [];
   let allVinculosProduto = [];
-  let currentCategory = '';
+  let currentCategory = '__rapidos__';
   let searchQuery = '';
   let cart = []; // Array de { produto, quantidade, observacoes, adicionaisSelecionados: [] }
   let mesas = [];
   let activePedidos = [];
   let currentFilterStatus = 'todos';
+  let currentFilterScope = localStorage.getItem('cafeteria_pedidos_filtro_escopo') || 'todos';
   let activeObsCartIndex = null;
   let activeMontagemItem = null; // Guardará o item temporário da montagem
   let currentSelectedMesaParaConta = null;
@@ -201,70 +248,177 @@
   }
 
   // -----------------------------------------------------
-  // TOAST COMPONENT
+  // TOAST COMPONENT & BOTTOM SHEET (CAF-000056)
   // -----------------------------------------------------
-  window.showToast = function(message, actionText = null, actionCallback = null) {
+  window.showToast = function(message, optionsOrActionText = null, actionCallback = null, duracaoMs = 4000) {
     const container = document.getElementById('toast-container');
     if (!container) return;
-    
+
+    let tipo = 'info';
+    let acaoTexto = null;
+    let acaoCb = null;
+    let duracao = duracaoMs;
+
+    if (typeof optionsOrActionText === 'object' && optionsOrActionText !== null) {
+      tipo = optionsOrActionText.tipo || 'info';
+      acaoTexto = optionsOrActionText.acaoTexto || null;
+      acaoCb = optionsOrActionText.acaoCallback || null;
+      duracao = optionsOrActionText.duracaoMs || duracao;
+    } else if (typeof optionsOrActionText === 'string') {
+      acaoTexto = optionsOrActionText;
+      acaoCb = actionCallback;
+    }
+
     const toast = document.createElement('div');
-    toast.className = 'toast';
-    
-    const msgSpan = document.createElement('span');
-    msgSpan.textContent = message;
-    toast.appendChild(msgSpan);
-    
+    toast.className = `toast toast--${tipo}`;
+    toast.setAttribute('role', 'alert');
+
+    const icons = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: '☕'
+    };
+    const icon = icons[tipo] || 'ℹ';
+
+    const msgWrap = document.createElement('div');
+    msgWrap.className = 'toast-msg-wrap';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'toast-icon';
+    iconSpan.textContent = icon;
+    msgWrap.appendChild(iconSpan);
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'toast-text';
+    textSpan.textContent = message;
+    msgWrap.appendChild(textSpan);
+
+    toast.appendChild(msgWrap);
+
     let isRemoved = false;
+    let timeoutId = null;
+
     const removeToast = () => {
       if (isRemoved) return;
       isRemoved = true;
+      if (timeoutId) clearTimeout(timeoutId);
       toast.classList.add('fade-out');
       toast.addEventListener('animationend', () => toast.remove());
     };
 
-    if (actionText && actionCallback) {
+    if (acaoTexto && acaoCb) {
       const actionBtn = document.createElement('button');
+      actionBtn.type = 'button';
       actionBtn.className = 'toast-action';
-      actionBtn.textContent = actionText;
-      actionBtn.onclick = () => {
-        actionCallback();
+      actionBtn.textContent = acaoTexto;
+      actionBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          try { navigator.vibrate(10); } catch (_) {}
+        }
+        acaoCb();
         removeToast();
       };
       toast.appendChild(actionBtn);
     }
-    
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.setAttribute('aria-label', 'Fechar notificação');
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      removeToast();
+    };
+    toast.appendChild(closeBtn);
+
     container.appendChild(toast);
-    setTimeout(removeToast, 4000);
+    timeoutId = setTimeout(removeToast, duracao);
   };
 
-  window.showConfirm = function(title, msg) {
+  window.showConfirmBottomSheet = function(opts) {
     return new Promise((resolve) => {
       const modal = document.getElementById('modal-confirm');
       const titleEl = document.getElementById('modal-confirm-title');
       const msgEl = document.getElementById('modal-confirm-msg');
       const btnCancel = document.getElementById('modal-confirm-cancel');
       const btnOk = document.getElementById('modal-confirm-ok');
-      
+
       if (!modal) {
-        resolve(confirm(msg));
+        resolve(true);
         return;
       }
-      
-      titleEl.textContent = title;
-      msgEl.textContent = msg;
-      
+
+      const titulo = typeof opts === 'string' ? opts : (opts && opts.titulo ? opts.titulo : 'Confirmar');
+      const mensagem = typeof opts === 'object' && opts !== null ? (opts.mensagem || '') : (arguments[1] || '');
+      const textoConfirmar = (opts && opts.textoConfirmar) ? opts.textoConfirmar : 'Confirmar';
+      const textoCancelar = (opts && opts.textoCancelar !== undefined) ? opts.textoCancelar : 'Cancelar';
+      const perigoso = !!(opts && opts.perigoso);
+
+      titleEl.textContent = titulo;
+      msgEl.textContent = mensagem;
+      btnOk.textContent = textoConfirmar;
+
+      if (perigoso) {
+        btnOk.className = 'btn-destructive';
+      } else {
+        btnOk.className = 'btn-primary-small';
+      }
+
+      if (!textoCancelar) {
+        btnCancel.classList.add('hidden');
+      } else {
+        btnCancel.classList.remove('hidden');
+        btnCancel.textContent = textoCancelar;
+      }
+
+      let isClosed = false;
       const close = (result) => {
+        if (isClosed) return;
+        isClosed = true;
         modal.classList.add('hidden');
         btnCancel.onclick = null;
         btnOk.onclick = null;
+        modal.onclick = null;
+        document.removeEventListener('keydown', onKeyDown);
         resolve(result);
       };
-      
-      btnCancel.onclick = () => close(false);
-      btnOk.onclick = () => close(true);
-      
+
+      btnCancel.onclick = (e) => {
+        e.stopPropagation();
+        close(false);
+      };
+
+      btnOk.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          try { navigator.vibrate(12); } catch (_) {}
+        }
+        close(true);
+      };
+
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          close(false);
+        }
+      };
+
+      const onKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          close(false);
+        }
+      };
+      document.addEventListener('keydown', onKeyDown);
+
       modal.classList.remove('hidden');
     });
+  };
+
+  // Mantém compatibilidade com chamadas legadas showConfirm(title, msg)
+  window.showConfirm = function(title, msg) {
+    return window.showConfirmBottomSheet({ titulo: title, mensagem: msg });
   };
 
   // -----------------------------------------------------
@@ -632,7 +786,7 @@
 
       if (error) throw error;
       
-      alert('Item cancelado com sucesso!');
+      showToast('Item cancelado com sucesso!', { tipo: 'success' });
       
       // Checar se todos os itens foram cancelados (fazendo fetch)
       const { data: itens, error: itErr } = await window.cafeteriaSupabase
@@ -641,7 +795,14 @@
         .eq('pedido_id', pedidoId);
         
       if (!itErr && itens && itens.every(i => i.cancelado === true)) {
-        if (confirm('Todos os itens deste pedido foram cancelados. Deseja cancelar o pedido inteiro também?')) {
+        const confirmarCancelarPedido = await window.showConfirmBottomSheet({
+          titulo: 'Cancelar Pedido Inteiro?',
+          mensagem: 'Todos os itens deste pedido foram cancelados. Deseja cancelar o pedido inteiro também?',
+          textoConfirmar: 'Sim, Cancelar Pedido',
+          textoCancelar: 'Manter Pedido',
+          perigoso: true
+        });
+        if (confirmarCancelarPedido) {
           await window.cafeteriaSupabase
             .from('pedidos')
             .update({ 
@@ -653,7 +814,7 @@
               updated_at: new Date().toISOString() 
             })
             .eq('id', pedidoId);
-          alert('Pedido cancelado!');
+          showToast('Pedido cancelado com sucesso!', { tipo: 'success' });
         }
       }
 
@@ -665,7 +826,7 @@
       }
     } catch (err) {
       console.error(err);
-      alert('Erro ao cancelar item: ' + err.message);
+      showToast('Erro ao cancelar item: ' + err.message, { tipo: 'error' });
     }
   };
 
@@ -718,20 +879,25 @@
       }
       if (!perfil) {
         console.error('Erro ao buscar perfil:', err);
-        alert('Erro ao consultar perfil: ' + (err.message || 'Verifique a conexão'));
+        showToast('Erro ao consultar perfil: ' + (err.message || 'Verifique a conexão'), { tipo: 'error', duracaoMs: 6000 });
         await window.cafeteriaSupabase.auth.signOut();
         return;
       }
     }
 
     if (!perfil) {
-      alert(`O usuário (${user.email || user.id}) está autenticado, mas não possui um registro cadastrado na tabela "perfis".\n\nAdicione o usuário na tabela "perfis" com o perfil "barista" ou "admin" para liberar o acesso.`);
+      await window.showConfirmBottomSheet({
+        titulo: 'Perfil Não Cadastrado',
+        mensagem: `O usuário (${user.email || user.id}) está autenticado, mas não possui um registro cadastrado na tabela "perfis". Adicione o usuário na tabela "perfis" com o perfil "barista" ou "admin" para liberar o acesso.`,
+        textoConfirmar: 'Entendido',
+        textoCancelar: ''
+      });
       await window.cafeteriaSupabase.auth.signOut();
       return;
     }
 
     if (perfil.role !== 'barista' && perfil.role !== 'admin') {
-      alert('Acesso negado. Apenas baristas e administradores podem usar esta tela.');
+      showToast('Acesso negado. Apenas baristas e administradores podem usar esta tela.', { tipo: 'error', duracaoMs: 6000 });
       await window.cafeteriaSupabase.auth.signOut();
       return;
     }
@@ -780,6 +946,9 @@
   // 2. NAVEGAÇÃO ENTRE ABAS
   // -----------------------------------------------------
   function switchTab(tabName) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try { navigator.vibrate(12); } catch (_) {}
+    }
     if (tabName === 'novo') {
       navBtnNovo.classList.add('active');
       navBtnMesas.classList.remove('active');
@@ -808,6 +977,7 @@
       loadActivePedidos(),
       loadPromocoes()
     ]);
+    restaurarRascunhoCarrinho();
   }
 
   async function loadPromocoes() {
@@ -905,6 +1075,118 @@
     if (selectedVal) {
       mesaSelect.value = selectedVal;
     }
+
+    updateMesaTriggerUI();
+    renderMesaSelectionGrid();
+  }
+
+  function updateMesaTriggerUI() {
+    if (!btnMesaTrigger || !mesaTriggerText) return;
+    const val = mesaSelect ? mesaSelect.value : '';
+    const isViagem = pedidoParaViagem && pedidoParaViagem.checked;
+
+    if (mesaSelect && mesaSelect.disabled) {
+      btnMesaTrigger.disabled = true;
+    } else {
+      btnMesaTrigger.disabled = false;
+    }
+
+    if (val) {
+      const m = mesas.find(item => item.codigo === val);
+      const desc = m && m.descricao ? ` (${m.descricao})` : '';
+      mesaTriggerText.textContent = `Mesa ${val}${desc}`;
+      btnMesaTrigger.classList.add('has-mesa');
+      if (cartMesaBadge) cartMesaBadge.textContent = val;
+    } else if (isViagem) {
+      mesaTriggerText.textContent = '🥡 Balcão / Viagem';
+      btnMesaTrigger.classList.add('has-mesa');
+      if (cartMesaBadge) cartMesaBadge.textContent = '🥡 Viagem';
+    } else {
+      mesaTriggerText.textContent = 'Selecione a Mesa...';
+      btnMesaTrigger.classList.remove('has-mesa');
+      if (cartMesaBadge) cartMesaBadge.textContent = 'Sem Mesa';
+    }
+  }
+
+  function renderMesaSelectionGrid() {
+    if (!gridSelecaoMesas) return;
+    gridSelecaoMesas.innerHTML = '';
+
+    if (!mesas || mesas.length === 0) {
+      gridSelecaoMesas.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 20px;">Nenhuma mesa cadastrada.</div>';
+      return;
+    }
+
+    const currentVal = mesaSelect ? mesaSelect.value : '';
+
+    mesas.forEach(m => {
+      const pedidosMesa = activePedidos.filter(p => p.mesa_codigo === m.codigo);
+      const isOcupada = pedidosMesa.length > 0;
+      const isSelected = currentVal === m.codigo;
+      const totalMesa = pedidosMesa.reduce((acc, p) => acc + Number(p.total || 0), 0);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `mesa-btn-card ${isOcupada ? 'is-ocupada' : 'is-livre'} ${isSelected ? 'is-selected' : ''}`;
+      btn.setAttribute('data-mesa', m.codigo);
+      btn.innerHTML = `
+        <div class="mesa-btn-card__top">
+          <span class="mesa-btn-card__code">${m.codigo}</span>
+          <span class="mesa-btn-card__tag ${isOcupada ? 'tag-ocupada' : 'tag-livre'}">${isOcupada ? 'Ocupada' : 'Livre'}</span>
+        </div>
+        <div class="mesa-btn-card__desc" title="${m.descricao || ''}">${m.descricao || 'Mesa'}</div>
+        <div class="mesa-btn-card__footer">
+          ${isOcupada ? `<strong>${pedidosMesa.length} ped.</strong> · R$ ${totalMesa.toFixed(2).replace('.', ',')}` : 'Toque p/ abrir'}
+        </div>
+      `;
+
+      btn.onclick = () => {
+        selecionarMesaViaGrid(m.codigo, isOcupada);
+      };
+
+      gridSelecaoMesas.appendChild(btn);
+    });
+  }
+
+  function selecionarMesaViaGrid(codigo, isOcupada) {
+    if (mesaSelect) {
+      mesaSelect.value = codigo;
+      mesaSelect.dispatchEvent(new Event('change'));
+    }
+    if (pedidoParaViagem) {
+      pedidoParaViagem.checked = false;
+    }
+    updateMesaTriggerUI();
+    closeModalSelecaoMesa();
+
+    if (navigator.vibrate) {
+      navigator.vibrate(isOcupada ? [20, 50, 20] : 15);
+    }
+
+    if (isOcupada) {
+      // Notificação visual sutil
+      const banner = document.getElementById('banner-adicionando-itens');
+      if (banner && lblMesaAdicionando) {
+        lblMesaAdicionando.textContent = codigo;
+        banner.classList.remove('hidden');
+      }
+    }
+  }
+
+  function openModalSelecaoMesa() {
+    if (mesaSelect && mesaSelect.disabled) return;
+    renderMesaSelectionGrid();
+    if (modalSelecionarMesa) {
+      modalSelecionarMesa.classList.remove('hidden');
+      if (btnMesaTrigger) btnMesaTrigger.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function closeModalSelecaoMesa() {
+    if (modalSelecionarMesa) {
+      modalSelecionarMesa.classList.add('hidden');
+      if (btnMesaTrigger) btnMesaTrigger.setAttribute('aria-expanded', 'false');
+    }
   }
 
   async function loadProdutos() {
@@ -937,9 +1219,24 @@
     }
   }
 
+  const TERMOS_RAPIDOS = ['expresso', 'espresso', 'cappuccino', 'pão de queijo', 'pao de queijo', 'croissant', 'água', 'agua', 'cookie', 'latte', 'mocha', 'mate', 'refrigerante', 'suco'];
+
+  function isProdutoRapido(p) {
+    if (!p) return false;
+    const nome = (p.nome || '').toLowerCase();
+    const desc = (p.descricao || '').toLowerCase();
+    return TERMOS_RAPIDOS.some(t => nome.includes(t) || desc.includes(t));
+  }
+
   function renderCategories() {
     const catIds = [...new Set(allProducts.map(p => p.categoria_id))];
     categoriesTabs.innerHTML = '';
+
+    const btnRapidos = document.createElement('button');
+    btnRapidos.className = 'cat-tab' + (currentCategory === '__rapidos__' ? ' active' : '');
+    btnRapidos.textContent = '⭐ Rápidos';
+    btnRapidos.onclick = () => setCategory('__rapidos__');
+    categoriesTabs.appendChild(btnRapidos);
 
     const btnTodos = document.createElement('button');
     btnTodos.className = 'cat-tab' + (currentCategory === '' ? ' active' : '');
@@ -964,9 +1261,14 @@
   }
 
   function setCategory(catId) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try { navigator.vibrate(10); } catch (_) {}
+    }
     currentCategory = catId || '';
     document.querySelectorAll('.cat-tab').forEach(t => {
-      if (!currentCategory) {
+      if (currentCategory === '__rapidos__') {
+        t.classList.toggle('active', t.textContent.includes('Rápidos'));
+      } else if (!currentCategory) {
         t.classList.toggle('active', t.textContent.includes('Todos'));
       } else if (currentCategory === '__promos__') {
         t.classList.toggle('active', t.textContent.includes('Promos'));
@@ -988,7 +1290,15 @@
     productsGrid.innerHTML = '';
     
     let filtered = allProducts;
-    if (currentCategory === '__promos__') {
+    if (currentCategory === '__rapidos__') {
+      const rapidos = filtered.filter(p => isProdutoRapido(p));
+      if (rapidos.length >= 4) {
+        filtered = rapidos.slice(0, 14);
+      } else {
+        const simples = filtered.filter(p => !p.permite_adicionais && p.tipo_montagem !== 'meio_a_meio');
+        filtered = [...new Set([...rapidos, ...simples])].slice(0, 14);
+      }
+    } else if (currentCategory === '__promos__') {
       filtered = filtered.filter(p => activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id));
     } else if (currentCategory) {
       filtered = filtered.filter(p => p.categoria_id === currentCategory);
@@ -1004,11 +1314,43 @@
 
     filtered.forEach(p => {
       const card = document.createElement('div');
-      card.className = 'product-card' + (p.disponivel === false ? ' produto-esgotado' : '');
+      const isSimples = !p.permite_adicionais && p.tipo_montagem !== 'meio_a_meio';
+
+      // Identificar itens correspondentes no carrinho
+      const cartItemIndex = cart.findIndex(item => 
+        item.produto.id === p.id && 
+        (!item.adicionaisSelecionados || item.adicionaisSelecionados.length === 0) && 
+        (!item.sabores || item.sabores.length === 0)
+      );
+      const totalQtdCarrinho = cart
+        .filter(item => item.produto.id === p.id)
+        .reduce((sum, item) => sum + item.quantidade, 0);
+
+      card.className = 'product-card' + 
+        (p.disponivel === false ? ' produto-esgotado' : '') + 
+        (totalQtdCarrinho > 0 ? ' is-in-cart' : '');
+
       const descHtml = p.descricao ? `<p class="product-card__desc">${p.descricao}</p>` : '';
       const isPromo = activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id);
       const promoBadgeHtml = isPromo ? `<span style="background:#e74c3c; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">PROMO</span>` : '';
       const stampHtml = p.disponivel === false ? `<div class="esgotado-stamp">ESGOTADO</div>` : '';
+
+      let actionBadgeHtml = '';
+      if (p.disponivel !== false) {
+        if (isSimples && cartItemIndex !== -1) {
+          actionBadgeHtml = `
+            <div class="card-qty-controls">
+              <button type="button" class="card-qty-btn minus" title="Diminuir quantidade">−</button>
+              <span class="card-qty-val">${cart[cartItemIndex].quantidade}</span>
+              <button type="button" class="card-qty-btn plus" title="Aumentar quantidade">+</button>
+            </div>
+          `;
+        } else if (!isSimples && totalQtdCarrinho > 0) {
+          actionBadgeHtml = `<span class="card-cart-pill">${totalQtdCarrinho} no carrinho</span>`;
+        } else {
+          actionBadgeHtml = `<span class="btn-add-badge">+ Adicionar</span>`;
+        }
+      }
       
       card.innerHTML = `
         <div class="product-card__header">
@@ -1017,19 +1359,54 @@
         </div>
         <div class="product-card__bottom">
           <span class="price">R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</span>
-          <span class="btn-add-badge">+ Adicionar</span>
+          ${actionBadgeHtml}
         </div>
         ${stampHtml}
       `;
+
+      // Eventos inline dos botões de quantidade no card
+      const btnMinus = card.querySelector('.card-qty-btn.minus');
+      const btnPlus = card.querySelector('.card-qty-btn.plus');
+
+      if (btnMinus) {
+        btnMinus.onclick = (e) => {
+          e.stopPropagation();
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try { navigator.vibrate(12); } catch (_) {}
+          }
+          updateQuantity(cartItemIndex, -1);
+          renderProducts();
+        };
+      }
+
+      if (btnPlus) {
+        btnPlus.onclick = (e) => {
+          e.stopPropagation();
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try { navigator.vibrate(12); } catch (_) {}
+          }
+          updateQuantity(cartItemIndex, 1);
+          renderProducts();
+        };
+      }
+
       card.onclick = (e) => {
         if (p.disponivel === false) return;
-        if (!p.permite_adicionais && p.tipo_montagem !== 'meio_a_meio') {
-          addToCartFromMontagem({
-            produto: p,
-            adicionaisSelecionados: [],
-            sabores: null,
-            observacoes: ''
-          });
+        if (isSimples) {
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try { navigator.vibrate(15); } catch (_) {}
+          }
+          if (cartItemIndex !== -1) {
+            updateQuantity(cartItemIndex, 1);
+          } else {
+            addToCartFromMontagem({
+              produto: p,
+              adicionaisSelecionados: [],
+              sabores: null,
+              observacoes: ''
+            });
+          }
+          renderProducts();
         } else {
           openMontagemModal(p);
         }
@@ -1062,10 +1439,18 @@
   async function showEsgotadoMenu(produto) {
     const isEsgotado = produto.disponivel === false;
     const msg = isEsgotado 
-      ? `Marcar "${produto.nome}" como DISPONÍVEL?` 
-      : `Marcar "${produto.nome}" como ESGOTADO?`;
+      ? `Deseja marcar "${produto.nome}" como DISPONÍVEL para pedidos?` 
+      : `Deseja marcar "${produto.nome}" como ESGOTADO no cardápio?`;
       
-    if (confirm(msg)) {
+    const confirmar = await window.showConfirmBottomSheet({
+      titulo: 'Disponibilidade do Produto',
+      mensagem: msg,
+      textoConfirmar: isEsgotado ? 'Sim, Disponibilizar' : 'Sim, Esgotar',
+      textoCancelar: 'Cancelar',
+      perigoso: !isEsgotado
+    });
+
+    if (confirmar) {
       try {
         const { error } = await window.cafeteriaSupabase.rpc('toggle_produto_disponivel', {
           p_produto_id: produto.id,
@@ -1075,9 +1460,10 @@
         // Atualiza localmente para resposta rápida. O realtime sincronizará outras abas.
         produto.disponivel = isEsgotado;
         renderProducts();
+        showToast(`"${produto.nome}" marcado como ${isEsgotado ? 'disponível' : 'esgotado'}.`, { tipo: 'success' });
       } catch (err) {
         console.error('Erro ao atualizar disponibilidade', err);
-        alert('Erro ao atualizar produto. Verifique suas permissões ou tente recarregar.');
+        showToast('Erro ao atualizar produto. Verifique suas permissões ou tente recarregar.', { tipo: 'error' });
       }
     }
   }
@@ -1085,11 +1471,211 @@
   // -----------------------------------------------------
   // 4. CARRINHO, MONTAGEM & OBSERVAÇÃO POR ITEM
   // -----------------------------------------------------
+
+  // CAF-000057: Rascunho Persistente do Carrinho (LocalStorage)
+  const RASCUNHO_CARRINHO_KEY = 'cafeteria_pdv_carrinho_rascunho';
+  const RASCUNHO_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12 horas
+  let saveDraftTimeout = null;
+
+  function salvarRascunhoCarrinho() {
+    if (saveDraftTimeout) clearTimeout(saveDraftTimeout);
+    saveDraftTimeout = setTimeout(() => {
+      try {
+        if (!cart || cart.length === 0) {
+          localStorage.removeItem(RASCUNHO_CARRINHO_KEY);
+          return;
+        }
+
+        const rascunho = {
+          timestamp: Date.now(),
+          mesa: mesaSelect ? mesaSelect.value : '',
+          clienteNome: pedidoClienteNome ? pedidoClienteNome.value : '',
+          clienteId: pedidoClienteId ? pedidoClienteId.value : '',
+          clienteTel: clienteBadgeTel ? clienteBadgeTel.textContent : '',
+          paraViagem: pedidoParaViagem ? pedidoParaViagem.checked : false,
+          prioridade: pedidoPrioritario ? (pedidoPrioritario.checked ? 1 : 0) : 0,
+          prioridadeMotivo: pedidoPrioridadeMotivo ? pedidoPrioridadeMotivo.value : '',
+          observacoesGerais: pedidoObs ? pedidoObs.value : '',
+          pedidoEmEdicaoId: pedidoEmEdicaoId || null,
+          cart: cart.map(item => ({
+            produtoId: item.produto.id,
+            quantidade: item.quantidade,
+            observacoes: item.observacoes || '',
+            adicionaisIds: (item.adicionaisSelecionados || []).map(a => a.id),
+            saboresIds: (item.sabores || []).map(s => s.produto_id),
+            cortesia_de_item_index: item.cortesia_de_item_index
+          }))
+        };
+
+        localStorage.setItem(RASCUNHO_CARRINHO_KEY, JSON.stringify(rascunho));
+      } catch (err) {
+        console.warn('[PDV Rascunho] Erro ao salvar rascunho:', err);
+      }
+    }, 250);
+  }
+
+  function limparRascunhoCarrinho() {
+    if (saveDraftTimeout) clearTimeout(saveDraftTimeout);
+    try {
+      localStorage.removeItem(RASCUNHO_CARRINHO_KEY);
+    } catch (err) {
+      console.warn('[PDV Rascunho] Erro ao limpar rascunho:', err);
+    }
+  }
+
+  function restaurarRascunhoCarrinho() {
+    try {
+      const raw = localStorage.getItem(RASCUNHO_CARRINHO_KEY);
+      if (!raw) return;
+
+      const rascunho = JSON.parse(raw);
+      if (!rascunho || !rascunho.cart || !Array.isArray(rascunho.cart) || rascunho.cart.length === 0) {
+        localStorage.removeItem(RASCUNHO_CARRINHO_KEY);
+        return;
+      }
+
+      // Descartar rascunhos com mais de 12 horas
+      if (rascunho.timestamp && (Date.now() - rascunho.timestamp) > RASCUNHO_MAX_AGE_MS) {
+        console.log('[PDV Rascunho] Rascunho expirado (>12h). Descartando.');
+        localStorage.removeItem(RASCUNHO_CARRINHO_KEY);
+        return;
+      }
+
+      // Reconstruir o carrinho com referências de produtos reais
+      const restoredCart = [];
+      rascunho.cart.forEach(rawItem => {
+        const prod = allProducts.find(p => p.id === rawItem.produtoId);
+        if (!prod) return;
+
+        const adicionais = (rawItem.adicionaisIds || [])
+          .map(id => allAdicionais.find(a => a.id === id))
+          .filter(Boolean);
+
+        const sabores = (rawItem.saboresIds || []).map(pId => {
+          const sProd = allProducts.find(p => p.id === pId);
+          return sProd ? { produto_id: sProd.id, nome: sProd.nome } : null;
+        }).filter(Boolean);
+
+        restoredCart.push({
+          produto: prod,
+          quantidade: rawItem.quantidade || 1,
+          observacoes: rawItem.observacoes || '',
+          adicionaisSelecionados: adicionais,
+          sabores: sabores,
+          cortesia_de_item_index: rawItem.cortesia_de_item_index
+        });
+      });
+
+      if (restoredCart.length === 0) {
+        localStorage.removeItem(RASCUNHO_CARRINHO_KEY);
+        return;
+      }
+
+      cart = restoredCart;
+
+      // Restaurar campos auxiliares
+      if (rascunho.mesa && mesaSelect) {
+        mesaSelect.value = rascunho.mesa;
+      }
+      if (rascunho.clienteNome && pedidoClienteNome) {
+        pedidoClienteNome.value = rascunho.clienteNome;
+      }
+      if (rascunho.clienteId && pedidoClienteId) {
+        pedidoClienteId.value = rascunho.clienteId;
+        if (clienteBadge && clienteBadgeNome) {
+          clienteBadgeNome.textContent = rascunho.clienteNome;
+          if (clienteBadgeTel) clienteBadgeTel.textContent = rascunho.clienteTel || '';
+          clienteBadge.style.display = 'flex';
+          if (pedidoClienteNome) pedidoClienteNome.style.display = 'none';
+        }
+      }
+      if (rascunho.paraViagem !== undefined && pedidoParaViagem) {
+        pedidoParaViagem.checked = !!rascunho.paraViagem;
+      }
+      if (rascunho.prioridade !== undefined && pedidoPrioritario) {
+        pedidoPrioritario.checked = rascunho.prioridade === 1;
+        if (boxMotivoPrioridade) {
+          boxMotivoPrioridade.style.display = pedidoPrioritario.checked ? 'block' : 'none';
+        }
+      }
+      if (rascunho.prioridadeMotivo && pedidoPrioridadeMotivo) {
+        pedidoPrioridadeMotivo.value = rascunho.prioridadeMotivo;
+      }
+      if (rascunho.observacoesGerais && pedidoObs) {
+        pedidoObs.value = rascunho.observacoesGerais;
+      }
+      if (rascunho.pedidoEmEdicaoId) {
+        pedidoEmEdicaoId = rascunho.pedidoEmEdicaoId;
+      }
+
+      updateMesaTriggerUI();
+      renderCart();
+
+      const totalQtd = cart.reduce((acc, i) => acc + i.quantidade, 0);
+      showToast(`Rascunho recuperado (${totalQtd} ${totalQtd === 1 ? 'item' : 'itens'})`, {
+        tipo: 'info',
+        acaoTexto: 'Limpar',
+        duracaoMs: 6000,
+        acaoCallback: () => {
+          cart = [];
+          if (pedidoClienteNome) {
+            pedidoClienteNome.value = '';
+            pedidoClienteNome.style.display = '';
+          }
+          if (pedidoClienteId) pedidoClienteId.value = '';
+          if (clienteBadge) clienteBadge.style.display = 'none';
+          if (pedidoObs) pedidoObs.value = '';
+          if (pedidoParaViagem) pedidoParaViagem.checked = false;
+          limparRascunhoCarrinho();
+          renderCart();
+        }
+      });
+    } catch (err) {
+      console.warn('[PDV Rascunho] Erro ao restaurar rascunho:', err);
+    }
+  }
+
   mesaSelect.addEventListener('change', (e) => {
     const val = e.target.value;
-    cartMesaBadge.textContent = val ? val : 'Sem Mesa';
+    cartMesaBadge.textContent = val ? val : (pedidoParaViagem && pedidoParaViagem.checked ? '🥡 Viagem' : 'Sem Mesa');
+    updateMesaTriggerUI();
+    renderMesaSelectionGrid();
     checkFormValidity();
+    salvarRascunhoCarrinho();
   });
+
+  if (btnMesaTrigger) btnMesaTrigger.addEventListener('click', openModalSelecaoMesa);
+  if (cartMesaBadge) {
+    cartMesaBadge.style.cursor = 'pointer';
+    cartMesaBadge.title = 'Toque para selecionar a mesa';
+    cartMesaBadge.addEventListener('click', openModalSelecaoMesa);
+  }
+  if (modalSelecionarMesaClose) modalSelecionarMesaClose.addEventListener('click', closeModalSelecaoMesa);
+  if (modalSelecionarMesa) {
+    modalSelecionarMesa.addEventListener('click', (e) => {
+      if (e.target === modalSelecionarMesa) closeModalSelecaoMesa();
+    });
+  }
+  if (btnSelecionarBalcao) {
+    btnSelecionarBalcao.addEventListener('click', () => {
+      if (mesaSelect) mesaSelect.value = '';
+      if (pedidoParaViagem) pedidoParaViagem.checked = true;
+      if (mesaSelect) mesaSelect.dispatchEvent(new Event('change'));
+      updateMesaTriggerUI();
+      closeModalSelecaoMesa();
+      if (navigator.vibrate) navigator.vibrate(15);
+    });
+  }
+  if (btnLimparMesa) {
+    btnLimparMesa.addEventListener('click', () => {
+      if (mesaSelect) mesaSelect.value = '';
+      if (pedidoParaViagem) pedidoParaViagem.checked = false;
+      if (mesaSelect) mesaSelect.dispatchEvent(new Event('change'));
+      updateMesaTriggerUI();
+      closeModalSelecaoMesa();
+      if (navigator.vibrate) navigator.vibrate(10);
+    });
+  }
 
   // --- Modal de Montagem ---
   function openMontagemModal(produto) {
@@ -1255,9 +1841,15 @@
     if (delta === -999) {
       const removedItem = cart.splice(index, 1)[0];
       renderCart();
-      showToast('Item removido', 'Desfazer', () => {
-        cart.splice(index, 0, removedItem);
-        renderCart();
+      const nomeItem = removedItem.produto?.nome || 'Item';
+      showToast(`"${nomeItem}" removido do carrinho`, {
+        tipo: 'info',
+        acaoTexto: 'Desfazer',
+        duracaoMs: 5000,
+        acaoCallback: () => {
+          cart.splice(index, 0, removedItem);
+          renderCart();
+        }
       });
       return;
     }
@@ -1266,10 +1858,16 @@
     if (cart[index].quantidade <= 0) {
       const removedItem = cart.splice(index, 1)[0];
       renderCart();
-      showToast('Item removido', 'Desfazer', () => {
-        removedItem.quantidade = 1;
-        cart.splice(index, 0, removedItem);
-        renderCart();
+      const nomeItem = removedItem.produto?.nome || 'Item';
+      showToast(`"${nomeItem}" removido do carrinho`, {
+        tipo: 'info',
+        acaoTexto: 'Desfazer',
+        duracaoMs: 5000,
+        acaoCallback: () => {
+          removedItem.quantidade = 1;
+          cart.splice(index, 0, removedItem);
+          renderCart();
+        }
       });
       return;
     }
@@ -1357,6 +1955,7 @@
 
   function renderCart() {
     if (cart.length === 0) {
+      document.body.classList.remove('has-cart-bar');
       cartItemsContainer.innerHTML = '<div class="cart-empty">Nenhum item adicionado.</div>';
       cartTotalValue.textContent = 'R$ 0,00';
       if (mobileCartBar) mobileCartBar.classList.add('hidden');
@@ -1364,6 +1963,7 @@
       checkFormValidity();
       return;
     }
+    document.body.classList.add('has-cart-bar');
 
     cartItemsContainer.innerHTML = '';
     let total = 0;
@@ -1500,6 +2100,16 @@
     if (mobileCartBar) mobileCartBar.classList.remove('hidden');
 
     checkFormValidity();
+    salvarRascunhoCarrinho();
+    syncProductCardsWithCart();
+  }
+
+  let isRenderingProducts = false;
+  function syncProductCardsWithCart() {
+    if (isRenderingProducts || !productsGrid || productsGrid.children.length === 0) return;
+    isRenderingProducts = true;
+    renderProducts();
+    isRenderingProducts = false;
   }
 
   window.baristaUpdateQty = updateQuantity;
@@ -1508,7 +2118,7 @@
   function checkFormValidity() {
     const hasMesa = mesaSelect.value !== '';
     const isParaViagem = pedidoParaViagem.checked;
-    const hasNome = pedidoClienteNome.value.trim() !== '';
+    const hasNome = (pedidoClienteNome.value.trim() !== '') || (pedidoClienteId && pedidoClienteId.value !== '');
     const hasItems = cart.length > 0;
     
     // Pode enviar se tiver mesa selecionada OU se for para viagem/tiver nome (pois usaremos BALCAO).
@@ -1516,27 +2126,282 @@
     btnEnviarPedido.disabled = !canSend;
     atualizarModoConexaoCarrinho();
   }
+
+  function formatarTelefoneExibicao(tel) {
+    if (!tel) return '';
+    let d = String(tel).replace(/\D/g, '');
+    if (d.startsWith('55') && d.length > 10) d = d.slice(2);
+    if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return tel;
+  }
+
+  function selecionarCliente(cliente) {
+    if (!cliente) return;
+    if (pedidoClienteId) pedidoClienteId.value = cliente.id;
+    if (pedidoClienteNome) {
+      pedidoClienteNome.value = cliente.nome;
+      pedidoClienteNome.style.display = 'none';
+    }
+    if (clienteBadge && clienteBadgeNome) {
+      clienteBadgeNome.textContent = cliente.nome;
+      if (clienteBadgeTel) {
+        clienteBadgeTel.textContent = cliente.telefone ? formatarTelefoneExibicao(cliente.telefone) : '';
+      }
+      clienteBadge.style.display = 'flex';
+    }
+    if (sugestoesClientes) {
+      sugestoesClientes.style.display = 'none';
+      sugestoesClientes.innerHTML = '';
+    }
+    checkFormValidity();
+    salvarRascunhoCarrinho();
+  }
+
+  function desvincularCliente() {
+    if (pedidoClienteId) pedidoClienteId.value = '';
+    if (pedidoClienteNome) {
+      pedidoClienteNome.value = '';
+      pedidoClienteNome.style.display = '';
+      pedidoClienteNome.focus();
+    }
+    if (clienteBadge) clienteBadge.style.display = 'none';
+    if (sugestoesClientes) {
+      sugestoesClientes.style.display = 'none';
+      sugestoesClientes.innerHTML = '';
+    }
+    checkFormValidity();
+    salvarRascunhoCarrinho();
+  }
+
+  if (btnDesvincularCliente) {
+    btnDesvincularCliente.addEventListener('click', desvincularCliente);
+  }
+
+  function renderSugestoesClientes(lista, termo) {
+    if (!sugestoesClientes) return;
+    sugestoesClientes.innerHTML = '';
+
+    if (!lista || lista.length === 0) {
+      const itemVazio = document.createElement('div');
+      itemVazio.style.padding = '8px 12px';
+      itemVazio.style.fontSize = '13px';
+      itemVazio.style.color = '#64748b';
+      itemVazio.textContent = `Nenhum cliente cadastrado com "${termo}"`;
+      sugestoesClientes.appendChild(itemVazio);
+    } else {
+      lista.forEach(c => {
+        const item = document.createElement('div');
+        item.style.padding = '8px 12px';
+        item.style.cursor = 'pointer';
+        item.style.fontSize = '13px';
+        item.style.borderBottom = '1px solid #f1f5f9';
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.alignItems = 'center';
+
+        const telFmt = c.telefone ? formatarTelefoneExibicao(c.telefone) : '';
+        item.innerHTML = `
+          <div>
+            <strong>${window.escapeHtml(c.nome)}</strong>
+            ${telFmt ? `<span style="color:#64748b; font-size:12px; margin-left:6px;">${window.escapeHtml(telFmt)}</span>` : ''}
+          </div>
+          ${c.aceita_contato ? '<span title="Aceita contato via WhatsApp" style="font-size:14px;">💬</span>' : ''}
+        `;
+        item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+        item.addEventListener('mouseleave', () => item.style.background = '#fff');
+        item.addEventListener('click', () => selecionarCliente(c));
+        sugestoesClientes.appendChild(item);
+      });
+    }
+
+    const itemNovo = document.createElement('div');
+    itemNovo.style.padding = '8px 12px';
+    itemNovo.style.cursor = 'pointer';
+    itemNovo.style.fontSize = '13px';
+    itemNovo.style.fontWeight = 'bold';
+    itemNovo.style.color = '#15803d';
+    itemNovo.style.background = '#f0fdf4';
+    itemNovo.innerHTML = `➕ Cadastrar "<em>${window.escapeHtml(termo)}</em>"`;
+    itemNovo.addEventListener('click', () => {
+      sugestoesClientes.style.display = 'none';
+      abrirModalCadastroCliente(termo);
+    });
+    sugestoesClientes.appendChild(itemNovo);
+
+    sugestoesClientes.style.display = 'block';
+  }
+
+  function abrirModalCadastroCliente(nomePreenchido = '') {
+    if (!modalCadastroCliente) return;
+    if (cadClienteNome) cadClienteNome.value = nomePreenchido;
+    if (cadClienteTel) cadClienteTel.value = '';
+    if (cadClienteConsentimento) cadClienteConsentimento.checked = true;
+    modalCadastroCliente.style.display = 'flex';
+    if (nomePreenchido && cadClienteTel) {
+      cadClienteTel.focus();
+    } else if (cadClienteNome) {
+      cadClienteNome.focus();
+    }
+  }
+
+  function fecharModalCadastroCliente() {
+    if (modalCadastroCliente) modalCadastroCliente.style.display = 'none';
+  }
+
+  if (btnAbrirCadastroCliente) {
+    btnAbrirCadastroCliente.addEventListener('click', () => {
+      const termoAtual = pedidoClienteNome ? pedidoClienteNome.value.trim() : '';
+      abrirModalCadastroCliente(termoAtual);
+    });
+  }
+  if (btnFecharModalCliente) btnFecharModalCliente.addEventListener('click', fecharModalCadastroCliente);
+  if (btnCancelarCadastroCliente) btnCancelarCadastroCliente.addEventListener('click', fecharModalCadastroCliente);
+
+  if (cadClienteTel) {
+    cadClienteTel.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 6) {
+        v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+      } else if (v.length > 2) {
+        v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+      } else if (v.length > 0) {
+        v = `(${v}`;
+      }
+      e.target.value = v;
+    });
+  }
+
+  if (formCadastroClienteRapido) {
+    formCadastroClienteRapido.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!navigator.onLine) {
+        showToast('Cadastro de novos clientes requer conexão com a internet.', 'error');
+        return;
+      }
+      const nome = cadClienteNome.value.trim();
+      const tel = cadClienteTel.value.replace(/\D/g, '');
+      const aceita = cadClienteConsentimento.checked;
+
+      if (!nome) {
+        showToast('Informe o nome do cliente.', 'error');
+        return;
+      }
+      if (!tel || tel.length < 10) {
+        showToast('Informe um telefone válido com DDD (mínimo 10 dígitos).', 'error');
+        return;
+      }
+
+      try {
+        const btnSalvar = formCadastroClienteRapido.querySelector('button[type="submit"]');
+        if (btnSalvar) btnSalvar.disabled = true;
+
+        const novo = await window.cafeteriaDB.clientes.create({
+          nome: nome,
+          telefone: tel,
+          aceita_contato: aceita
+        });
+
+        showToast('Cliente cadastrado com sucesso!', 'success');
+        fecharModalCadastroCliente();
+        selecionarCliente(novo);
+      } catch (err) {
+        console.error('[PDV] Erro ao cadastrar cliente:', err);
+        const msg = (err.message && err.message.includes('unique'))
+          ? 'Este telefone já está cadastrado para outro cliente.'
+          : 'Erro ao cadastrar cliente: ' + (err.message || 'tente novamente');
+        showToast(msg, 'error');
+      } finally {
+        const btnSalvar = formCadastroClienteRapido.querySelector('button[type="submit"]');
+        if (btnSalvar) btnSalvar.disabled = false;
+      }
+    });
+  }
   
-  if (pedidoClienteNome) pedidoClienteNome.addEventListener('input', checkFormValidity);
-  if (pedidoParaViagem) pedidoParaViagem.addEventListener('change', checkFormValidity);
+  let timerBuscaCliente = null;
+  if (pedidoClienteNome) {
+    pedidoClienteNome.addEventListener('input', () => {
+      checkFormValidity();
+      salvarRascunhoCarrinho();
+
+      const termo = pedidoClienteNome.value.trim();
+      clearTimeout(timerBuscaCliente);
+      if (termo.length < 2) {
+        if (sugestoesClientes) {
+          sugestoesClientes.style.display = 'none';
+          sugestoesClientes.innerHTML = '';
+        }
+        return;
+      }
+
+      timerBuscaCliente = setTimeout(async () => {
+        try {
+          if (!window.cafeteriaDB || !window.cafeteriaDB.clientes) return;
+          const clientes = await window.cafeteriaDB.clientes.buscar(termo, 6);
+          renderSugestoesClientes(clientes, termo);
+        } catch (err) {
+          console.warn('[PDV] Erro ao buscar clientes:', err);
+        }
+      }, 220);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (sugestoesClientes && !sugestoesClientes.contains(e.target) && e.target !== pedidoClienteNome) {
+        sugestoesClientes.style.display = 'none';
+      }
+    });
+  }
+  if (pedidoParaViagem) {
+    pedidoParaViagem.addEventListener('change', () => {
+      checkFormValidity();
+      salvarRascunhoCarrinho();
+    });
+  }
+  if (pedidoPrioritario) {
+    pedidoPrioritario.addEventListener('change', () => {
+      if (boxMotivoPrioridade) {
+        boxMotivoPrioridade.style.display = pedidoPrioritario.checked ? 'block' : 'none';
+      }
+      salvarRascunhoCarrinho();
+    });
+  }
+  if (pedidoPrioridadeMotivo) {
+    pedidoPrioridadeMotivo.addEventListener('change', () => {
+      salvarRascunhoCarrinho();
+    });
+  }
+  if (pedidoObs) {
+    pedidoObs.addEventListener('input', () => {
+      salvarRascunhoCarrinho();
+    });
+  }
 
   // -----------------------------------------------------
-  // 5. ENVIAR PEDIDO (COM IDEMPOTÊNCIA & FILA OFFLINE)
+  // 5. ENVIAR PEDIDO (OPTIMISTIC UI, IDEMPOTÊNCIA & FILA OFFLINE) - CAF-000059
   // -----------------------------------------------------
-  btnEnviarPedido.addEventListener('click', async () => {
+  btnEnviarPedido.addEventListener('click', () => {
     if (btnEnviarPedido.disabled) return;
     
     const mesaCodigo = mesaSelect.value;
     const obsGeral = pedidoObs.value.trim();
     const clienteNome = pedidoClienteNome.value.trim();
     const paraViagem = pedidoParaViagem.checked;
+    const prioridade = pedidoPrioritario && pedidoPrioritario.checked ? 1 : 0;
+    const prioridadeMotivo = prioridade === 1 ? (pedidoPrioridadeMotivo ? pedidoPrioridadeMotivo.value : 'Espetáculo') : null;
     const formaPag = pedidoPagamento.value || null;
     const statusPag = pedidoPago.checked ? 'pago' : 'pendente';
+
+    if (!cart || cart.length === 0) {
+      showToast('Adicione ao menos um item ao carrinho.', 'error');
+      return;
+    }
+    if (!mesaCodigo) {
+      showToast('Por favor, selecione uma mesa para o pedido.', 'error');
+      return;
+    }
     
     const total = cart.reduce((acc, item) => acc + (item.produto.preco * item.quantidade), 0);
-
-    btnEnviarPedido.disabled = true;
-    btnEnviarPedido.textContent = isPdvOnline ? 'Enviando...' : 'Gravando na fila...';
 
     // Gerar UUID de idempotência no aparelho (CAF-000018)
     const clientId = (window.crypto && crypto.randomUUID) 
@@ -1556,12 +2421,17 @@
       cortesia_de_item_index: item.cortesia_de_item_index !== undefined ? item.cortesia_de_item_index : null
     }));
 
+    const clienteId = pedidoClienteId && pedidoClienteId.value ? pedidoClienteId.value : null;
+
     const payload = {
       client_id: clientId,
       mesa_codigo: mesaCodigo,
       observacoes: obsGeral,
       cliente_nome: clienteNome,
+      cliente_id: clienteId,
       para_viagem: paraViagem,
+      prioridade: prioridade,
+      prioridade_motivo: prioridadeMotivo,
       forma_pagamento: formaPag,
       status_pagamento: statusPag,
       itens: itensParaRpc
@@ -1579,7 +2449,10 @@
       client_id: clientId,
       mesa_codigo: mesaCodigo,
       cliente_nome: clienteNome,
+      cliente_id: clienteId,
       para_viagem: paraViagem,
+      prioridade: prioridade,
+      prioridade_motivo: prioridadeMotivo,
       total_estimado: total,
       itens_resumo: itensResumo,
       payload: payload,
@@ -1589,113 +2462,128 @@
       ultimo_erro: null
     };
 
-    // Caso offline declarado: grava direto na fila local sem travar
-    if (!navigator.onLine || !isPdvOnline) {
-      await dbSalvarPedidoOffline(offlineOrderData);
-      
-      cart = [];
-      pedidoObs.value = '';
-      pedidoClienteNome.value = '';
-      pedidoParaViagem.checked = false;
-      pedidoPagamento.value = '';
-      pedidoPago.checked = false;
-      resetarModoAdicao();
-      mesaSelect.value = '';
-      renderCart();
+    const mesaIdentificador = mesaCodigo ? `Mesa ${mesaCodigo}` : 'Balcão';
+    const cartSnapshot = JSON.parse(JSON.stringify(cart));
+    const formSnapshot = {
+      mesaCodigo,
+      obsGeral,
+      clienteNome,
+      clienteId,
+      clienteTel: clienteBadgeTel ? clienteBadgeTel.textContent : '',
+      paraViagem,
+      prioridade,
+      prioridadeMotivo,
+      formaPag,
+      statusPag
+    };
 
-      btnEnviarPedido.textContent = 'Salvo na Fila! ⏳';
-      showToast('⚡ Pedido salvo na fila offline! Será enviado automaticamente quando a internet voltar.');
-      await atualizarContadorFilaOffline();
-
-      setTimeout(() => {
-        checkFormValidity();
-        atualizarModoConexaoCarrinho();
-      }, 1500);
-      return;
+    // 1. OTIMISMO TOTAL: FECHA E LIBERA CARRINHO IMEDIATAMENTE (0ms de espera para o garçom)
+    if (typeof closeCartDrawer === 'function') {
+      closeCartDrawer();
     }
 
-    // Caso online: tenta enviar para a RPC
-    try {
-      const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
-        p_payload: payload
-      });
+    cart = [];
+    limparRascunhoCarrinho();
+    pedidoObs.value = '';
+    pedidoClienteNome.value = '';
+    pedidoClienteNome.style.display = '';
+    if (pedidoClienteId) pedidoClienteId.value = '';
+    if (clienteBadge) clienteBadge.style.display = 'none';
+    pedidoParaViagem.checked = false;
+    if (pedidoPrioritario) pedidoPrioritario.checked = false;
+    if (boxMotivoPrioridade) boxMotivoPrioridade.style.display = 'none';
+    if (pedidoPrioridadeMotivo) pedidoPrioridadeMotivo.value = 'Espetáculo';
+    pedidoPagamento.value = '';
+    pedidoPago.checked = false;
+    resetarModoAdicao();
+    mesaSelect.value = '';
+    renderCart();
+    checkFormValidity();
+    atualizarModoConexaoCarrinho();
 
-      if (pedidoError) {
-        const isNetError = !navigator.onLine || (pedidoError.message && (
-          pedidoError.message.includes('fetch') ||
-          pedidoError.message.includes('network') ||
-          pedidoError.message.includes('Failed') ||
-          pedidoError.message.includes('timeout')
-        ));
+    if (navigator.vibrate) navigator.vibrate(20);
+    showToast(`Enviando pedido da ${mesaIdentificador}...`, 'info');
 
-        if (isNetError) {
-          // Erro de rede durante o envio: guarda na fila offline
-          await dbSalvarPedidoOffline(offlineOrderData);
-          cart = [];
-          pedidoObs.value = '';
-          pedidoClienteNome.value = '';
-          pedidoParaViagem.checked = false;
-          pedidoPagamento.value = '';
-          pedidoPago.checked = false;
-          resetarModoAdicao();
-          mesaSelect.value = '';
-          renderCart();
-
-          showToast('⚠️ Conexão oscilou. Pedido guardado na fila local para envio automático!');
-          await atualizarContadorFilaOffline();
-          btnEnviarPedido.textContent = 'Guardado Offline ⏳';
-          setTimeout(() => {
-            checkFormValidity();
-            atualizarModoConexaoCarrinho();
-          }, 1500);
-          return;
-        }
-
-        showToast('Erro ao criar pedido: ' + pedidoError.message);
-        btnEnviarPedido.disabled = false;
-        atualizarModoConexaoCarrinho();
+    // 2. DISPARO EM SEGUNDO PLANO (BACKGROUND PROMISE)
+    (async () => {
+      // Caso offline declarado: grava direto na fila local sem travar
+      if (!navigator.onLine || !isPdvOnline) {
+        await dbSalvarPedidoOffline(offlineOrderData);
+        await atualizarContadorFilaOffline();
+        showToast(`⚡ Pedido da ${mesaIdentificador} guardado na fila offline! Será enviado automaticamente.`, 'info');
         return;
       }
 
-      // Limpeza e Sucesso
-      cart = [];
-      pedidoObs.value = '';
-      pedidoClienteNome.value = '';
-      pedidoParaViagem.checked = false;
-      pedidoPagamento.value = '';
-      pedidoPago.checked = false;
-      resetarModoAdicao();
-      mesaSelect.value = '';
-      renderCart();
+      // Caso online: tenta enviar para a RPC
+      try {
+        const { data: pedidoData, error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
+          p_payload: payload
+        });
 
-      btnEnviarPedido.textContent = 'Enviado! ✅';
-      setTimeout(() => {
-        checkFormValidity();
-        atualizarModoConexaoCarrinho();
-      }, 1500);
+        if (pedidoError) {
+          const isNetError = !navigator.onLine || (pedidoError.message && (
+            pedidoError.message.includes('fetch') ||
+            pedidoError.message.includes('network') ||
+            pedidoError.message.includes('Failed') ||
+            pedidoError.message.includes('timeout')
+          ));
 
-      await loadActivePedidos();
-    } catch (err) {
-      console.error('[PDV Enviar] Exceção na chamada RPC:', err);
-      await dbSalvarPedidoOffline(offlineOrderData);
-      cart = [];
-      pedidoObs.value = '';
-      pedidoClienteNome.value = '';
-      pedidoParaViagem.checked = false;
-      pedidoPagamento.value = '';
-      pedidoPago.checked = false;
-      resetarModoAdicao();
-      mesaSelect.value = '';
-      renderCart();
+          if (isNetError) {
+            await dbSalvarPedidoOffline(offlineOrderData);
+            await atualizarContadorFilaOffline();
+            showToast(`⚠️ Conexão oscilou. Pedido da ${mesaIdentificador} guardado na fila offline!`, 'warning');
+            return;
+          }
 
-      showToast('⚠️ Falha de comunicação. Pedido guardado na fila offline!');
-      await atualizarContadorFilaOffline();
-      btnEnviarPedido.textContent = 'Guardado Offline ⏳';
-      setTimeout(() => {
-        checkFormValidity();
-        atualizarModoConexaoCarrinho();
-      }, 1500);
-    }
+          showToast(`Erro ao registrar pedido da ${mesaIdentificador}: ${pedidoError.message}`, {
+            tipo: 'error',
+            acaoTexto: 'Restaurar',
+            acaoCallback: () => {
+              cart = cartSnapshot;
+              mesaSelect.value = formSnapshot.mesaCodigo || '';
+              pedidoObs.value = formSnapshot.obsGeral || '';
+              pedidoClienteNome.value = formSnapshot.clienteNome || '';
+              if (formSnapshot.clienteId && pedidoClienteId) {
+                pedidoClienteId.value = formSnapshot.clienteId;
+                if (clienteBadge && clienteBadgeNome) {
+                  clienteBadgeNome.textContent = formSnapshot.clienteNome;
+                  if (clienteBadgeTel) clienteBadgeTel.textContent = formSnapshot.clienteTel || '';
+                  clienteBadge.style.display = 'flex';
+                  pedidoClienteNome.style.display = 'none';
+                }
+              } else {
+                if (pedidoClienteId) pedidoClienteId.value = '';
+                if (clienteBadge) clienteBadge.style.display = 'none';
+                pedidoClienteNome.style.display = '';
+              }
+              pedidoParaViagem.checked = !!formSnapshot.paraViagem;
+              if (pedidoPrioritario) pedidoPrioritario.checked = formSnapshot.prioridade === 1;
+              if (boxMotivoPrioridade) boxMotivoPrioridade.style.display = formSnapshot.prioridade === 1 ? 'block' : 'none';
+              if (pedidoPrioridadeMotivo) pedidoPrioridadeMotivo.value = formSnapshot.prioridadeMotivo || 'Espetáculo';
+              pedidoPagamento.value = formSnapshot.formaPag || '';
+              pedidoPago.checked = formSnapshot.statusPag === 'pago';
+              renderCart();
+              checkFormValidity();
+              atualizarModoConexaoCarrinho();
+              if (typeof openCartDrawer === 'function') openCartDrawer();
+              showToast('Carrinho restaurado para ajustes!', { tipo: 'info' });
+            },
+            duracaoMs: 8000
+          });
+          return;
+        }
+
+        // Sucesso de envio
+        if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+        showToast(`✓ Pedido da ${mesaIdentificador} enviado à cozinha com sucesso!`, 'success');
+        await Promise.all([loadActivePedidos(), loadMesasOverview()]);
+      } catch (err) {
+        console.error('[PDV Enviar Otimista] Exceção:', err);
+        await dbSalvarPedidoOffline(offlineOrderData);
+        await atualizarContadorFilaOffline();
+        showToast(`⚠️ Falha de comunicação. Pedido da ${mesaIdentificador} guardado na fila offline!`, 'warning');
+      }
+    })();
   });
 
   // -----------------------------------------------------
@@ -1717,6 +2605,19 @@
         .order('created_at', { ascending: false });
 
       if (!error && data) {
+        if (pedidosProntosNotificados.size > 0) {
+          data.forEach(p => {
+            if ((p.status === 'concluido' || p.status === 'pronto') && !pedidosProntosNotificados.has(p.id)) {
+              notificarPedidoPronto(p);
+            }
+          });
+        } else {
+          data.forEach(p => {
+            if (p.status === 'concluido' || p.status === 'pronto') {
+              pedidosProntosNotificados.add(p.id);
+            }
+          });
+        }
         activePedidos = data;
         localStorage.setItem('cafeteria_cache_pdv_active_pedidos', JSON.stringify(data));
         await loadCortesiasDisponiveis();
@@ -1786,6 +2687,7 @@
           // Selecionar para novo pedido
           mesaSelect.value = mesa.codigo;
           cartMesaBadge.textContent = mesa.codigo;
+          updateMesaTriggerUI();
           switchTab('novo');
         }
       };
@@ -1794,7 +2696,27 @@
     });
   }
 
-  // Filtros de Pedidos Ativos
+  // Filtro de Escopo (Meus Pedidos vs Todos) - CAF-000059
+  if (filtroEscopoChips && filtroEscopoChips.length > 0) {
+    filtroEscopoChips.forEach(chip => {
+      if (chip.dataset.scope === currentFilterScope) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+
+      chip.addEventListener('click', () => {
+        filtroEscopoChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilterScope = chip.dataset.scope;
+        localStorage.setItem('cafeteria_pedidos_filtro_escopo', currentFilterScope);
+        if (navigator.vibrate) navigator.vibrate(15);
+        renderPedidosCards();
+      });
+    });
+  }
+
+  // Filtros de Pedidos Ativos (Status)
   filtroChips.forEach(chip => {
     chip.addEventListener('click', () => {
       filtroChips.forEach(c => c.classList.remove('active'));
@@ -1858,12 +2780,24 @@
     pedidosCardsGrid.innerHTML = '';
 
     let list = activePedidos.filter(p => p.status !== 'entregue');
+
+    // Filtro de escopo (Meus Pedidos vs Todos) - CAF-000059
+    if (currentFilterScope === 'meus') {
+      const myId = currentUser ? currentUser.id : null;
+      if (myId) {
+        list = list.filter(p => p.usuario_id === myId || p.criado_por === myId);
+      }
+    }
+
     if (currentFilterStatus !== 'todos') {
       list = list.filter(p => p.status === currentFilterStatus);
     }
 
     if (list.length === 0) {
-      pedidosCardsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1; text-align:center; padding:30px; color:#888;">Nenhum pedido nesta categoria.</div>';
+      const msgVazio = currentFilterScope === 'meus'
+        ? 'Você não possui pedidos ativos nesta categoria.'
+        : 'Nenhum pedido nesta categoria.';
+      pedidosCardsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1; text-align:center; padding:30px; color:#888;">${msgVazio}</div>`;
       return;
     }
 
@@ -1875,8 +2809,22 @@
         'concluido': '🟢 PRONTO P/ SERVIR!'
       }[pedido.status] || pedido.status;
 
+      const isPrioritario = pedido.prioridade === 1;
+      const prioridadeTag = isPrioritario
+        ? `<span class="badge-prioridade-pdv" title="Motivo: ${window.escapeHtml(pedido.prioridade_motivo || 'Urgência')}">⚡ ${window.escapeHtml(pedido.prioridade_motivo || 'PRIORIDADE')}</span>`
+        : '';
+      const btnPrioridadeHtml = `
+        <button class="btn-toggle-prioridade ${isPrioritario ? 'is-active' : ''}" 
+                onclick="window.baristaTogglePrioridade(${pedido.id})" 
+                title="${isPrioritario ? 'Remover prioridade' : 'Marcar como prioritário'}">
+          ⚡ ${isPrioritario ? 'Prioritário' : 'Priorizar'}
+        </button>
+      `;
+
       const card = document.createElement('div');
-      card.className = `pedido-card-barista ${isPronto ? 'pronto' : ''}`;
+      card.className = `pedido-card-barista ${isPronto ? 'pronto' : ''} ${isPrioritario ? 'prioritario' : ''}`;
+      card.setAttribute('data-pedido-id', pedido.id);
+      if (pedido.mesa_codigo) card.setAttribute('data-mesa-codigo', pedido.mesa_codigo);
 
       let itensHtml = '';
       (pedido.pedido_itens || []).forEach(item => {
@@ -1911,7 +2859,7 @@
 
       card.innerHTML = `
         <div class="pedido-card-barista__header">
-          <span class="pedido-card-barista__mesa">${pedido.mesa_codigo} (Pedido #${pedido.numero_pedido || pedido.id})${viagemTag}</span>
+          <span class="pedido-card-barista__mesa">${pedido.mesa_codigo} (Pedido #${pedido.numero_pedido || pedido.id})${viagemTag} ${prioridadeTag}</span>
           <span class="pedido-card-barista__status status-chip--${pedido.status === 'concluido' ? 'pronto' : pedido.status === 'em_preparo' ? 'preparo' : 'pendente'}">
             ${statusLabel}
           </span>
@@ -1921,7 +2869,10 @@
           ${itensHtml}
         </div>
         <div class="pedido-card-barista__footer">
-          <span style="font-weight:700; font-size:14px;">Total: R$ ${Number(pedido.total).toFixed(2).replace('.', ',')}</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-weight:700; font-size:14px;">Total: R$ ${Number(pedido.total).toFixed(2).replace('.', ',')}</span>
+            ${btnPrioridadeHtml}
+          </div>
           ${btnAcaoHtml}
         </div>
       `;
@@ -1929,6 +2880,54 @@
       pedidosCardsGrid.appendChild(card);
     });
   }
+
+  window.baristaTogglePrioridade = async function (pedidoId) {
+    const pedido = activePedidos.find(p => p.id === pedidoId);
+    if (!pedido) return;
+
+    const novaPrioridade = pedido.prioridade === 1 ? 0 : 1;
+    let motivo = null;
+    if (novaPrioridade === 1) {
+      motivo = prompt('Motivo da prioridade (ex: Espetáculo, Refazer, Reclamação):', pedido.prioridade_motivo || 'Espetáculo');
+      if (motivo === null) return; // Cancelou
+      motivo = motivo.trim() || 'Espetáculo';
+    }
+
+    // Atualização otimista
+    pedido.prioridade = novaPrioridade;
+    pedido.prioridade_motivo = motivo;
+    renderPedidosCards();
+
+    try {
+      const { error: errRpc } = await window.cafeteriaSupabase.rpc('alterar_prioridade_pedido', {
+        p_pedido_id: pedidoId,
+        p_prioridade: novaPrioridade,
+        p_motivo: motivo
+      });
+
+      if (errRpc) {
+        // Fallback update direto
+        const { error: errUpd } = await window.cafeteriaSupabase
+          .from('pedidos')
+          .update({
+            prioridade: novaPrioridade,
+            prioridade_motivo: motivo,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', pedidoId);
+
+        if (errUpd) throw errUpd;
+      }
+
+      showToast(novaPrioridade === 1 ? '⚡ Pedido marcado como prioritário!' : 'Prioridade removida.', 'info');
+    } catch (err) {
+      console.error('[PDV] Erro ao alternar prioridade:', err);
+      showToast('Erro ao atualizar prioridade: ' + err.message, 'error');
+      // Reverter se erro
+      pedido.prioridade = novaPrioridade === 1 ? 0 : 1;
+      renderPedidosCards();
+    }
+  };
 
   if (pedidosCardsGrid) {
     pedidosCardsGrid.addEventListener('click', (e) => {
@@ -2068,14 +3067,17 @@
     if (mesaSelect) mesaSelect.disabled = false;
     if (bannerAdicionandoItens) bannerAdicionandoItens.classList.add('hidden');
     if (lblMesaAdicionando) lblMesaAdicionando.textContent = '';
+    updateMesaTriggerUI();
   }
 
   if (btnCancelarAdicao) {
     btnCancelarAdicao.addEventListener('click', () => {
       cart = [];
+      limparRascunhoCarrinho();
       renderCart();
       resetarModoAdicao();
       mesaSelect.value = '';
+      updateMesaTriggerUI();
       checkFormValidity();
       switchTab('mesas');
     });
@@ -2096,7 +3098,82 @@
       const badge = document.getElementById('cart-mesa-badge');
       if (badge) badge.textContent = mesa;
       
+      updateMesaTriggerUI();
       checkFormValidity();
+    });
+  }
+
+  if (btnMesaRepetirRodada) {
+    btnMesaRepetirRodada.addEventListener('click', () => {
+      if (!currentSelectedMesaParaConta || !currentSelectedMesaParaConta.pedidosMesa) return;
+      const pedidosValidos = currentSelectedMesaParaConta.pedidosMesa.filter(p => p.status !== 'cancelado');
+      if (pedidosValidos.length === 0) {
+        showToast('Nenhum pedido anterior encontrado para repetir.', { tipo: 'warning' });
+        return;
+      }
+
+      // Último pedido da mesa (mais recente)
+      const ultimoPedido = pedidosValidos[0];
+      if (!ultimoPedido.pedido_itens || ultimoPedido.pedido_itens.length === 0) {
+        showToast('O último pedido não possui itens ativos.', { tipo: 'warning' });
+        return;
+      }
+
+      const itensClonados = [];
+      ultimoPedido.pedido_itens.forEach(it => {
+        if (it.cancelado) return;
+        const prod = allProducts.find(p => p.id === it.produto_id) || {
+          id: it.produto_id,
+          nome: it.nome_produto,
+          preco: it.preco_unitario
+        };
+
+        const adicionais = (it.pedido_item_adicionais || []).map(ad => {
+          return allAdicionais.find(a => a.id === ad.adicional_id) || {
+            id: ad.adicional_id,
+            nome: ad.nome_adicional,
+            preco: ad.preco_unitario
+          };
+        });
+
+        itensClonados.push({
+          produto: prod,
+          quantidade: it.quantidade,
+          observacoes: it.observacoes || '',
+          adicionaisSelecionados: adicionais,
+          sabores: null
+        });
+      });
+
+      if (itensClonados.length === 0) {
+        showToast('Nenhum item válido para repetir.', { tipo: 'warning' });
+        return;
+      }
+
+      cart.push(...itensClonados);
+
+      const mesa = currentSelectedMesaParaConta.mesaCodigo;
+      fecharModalMesa();
+      switchTab('novo');
+      mesaSelect.value = mesa;
+      mesaSelect.disabled = true;
+      lblMesaAdicionando.textContent = mesa;
+      bannerAdicionandoItens.classList.remove('hidden');
+
+      const badge = document.getElementById('cart-mesa-badge');
+      if (badge) badge.textContent = mesa;
+
+      updateMesaTriggerUI();
+      renderCart();
+      if (typeof openCartDrawer === 'function') {
+        openCartDrawer();
+      }
+
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate([15, 60, 15]); } catch (_) {}
+      }
+
+      showToast(`Rodada da ${mesa} copiada para o carrinho!`, { tipo: 'success' });
     });
   }
 
@@ -2179,7 +3256,7 @@
   btnTransferirConfirm.addEventListener('click', async () => {
     const mesaSelecionada = selectTransferirMesa.value;
     if (!mesaSelecionada) {
-      alert('Por favor, selecione uma mesa.');
+      showToast('Por favor, selecione uma mesa.', { tipo: 'warning' });
       return;
     }
 
@@ -2203,13 +3280,13 @@
 
       if (error) throw error;
 
-      window.showToast(`Operação realizada com sucesso!`);
+      window.showToast('Operação realizada com sucesso!', { tipo: 'success' });
       fecharModalTransferencia();
       fecharModalMesa();
       loadPedidos(); // Recarrega os pedidos e mesas
     } catch (err) {
       console.error('Erro ao transferir:', err);
-      alert('Erro ao transferir pedidos: ' + err.message);
+      showToast('Erro ao transferir pedidos: ' + err.message, { tipo: 'error' });
     } finally {
       btnTransferirConfirm.disabled = false;
       btnTransferirConfirm.textContent = 'Confirmar';
@@ -2280,6 +3357,7 @@
     
     modalMesa.classList.add('hidden');
     modalFecharConta.classList.remove('hidden');
+    setFecharContaStep(1);
   }
 
   function recalcularTotaisFechamento() {
@@ -2326,6 +3404,7 @@
     }
     
     renderPartes();
+    updateFecharContaFooterSummary();
   }
 
   fecharContaDescontoValor.addEventListener('input', recalcularTotaisFechamento);
@@ -2547,6 +3626,64 @@
     }
 
     renderPainelPagamento();
+    updateFecharContaFooterSummary();
+  }
+
+  function renderTrocoChips(valorBase, pt) {
+    if (!containerTrocoChips) return;
+    containerTrocoChips.innerHTML = '';
+    if (!valorBase || valorBase <= 0) return;
+
+    const sugestoes = new Set();
+    sugestoes.add(Number(valorBase.toFixed(2))); // Valor exato
+
+    // Próxima dezena redonda (ex: 26 -> 30, 34 -> 40)
+    const proxDezena = Math.ceil(valorBase / 10) * 10;
+    if (proxDezena > valorBase && proxDezena <= 200) {
+      sugestoes.add(proxDezena);
+    }
+
+    // Próximas notas comerciais comuns do Real
+    const notasComuns = [5, 10, 20, 50, 100, 200];
+    for (const nota of notasComuns) {
+      if (nota > valorBase && sugestoes.size < 5) {
+        sugestoes.add(nota);
+      }
+    }
+
+    const valoresOrdenados = Array.from(sugestoes).sort((a, b) => a - b);
+    const atualRecebido = Number(inputDinheiroRecebido.value) || 0;
+
+    valoresOrdenados.forEach(val => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const isExato = Math.abs(val - valorBase) < 0.005;
+      const isSelected = Math.abs(val - atualRecebido) < 0.005;
+      btn.className = `btn-troco-chip ${isExato ? 'btn-troco-chip--exato' : ''} ${isSelected ? 'selected' : ''}`;
+      
+      btn.textContent = isExato
+        ? `Exato (R$ ${val.toFixed(2).replace('.', ',')})`
+        : `R$ ${val.toFixed(0)}`;
+
+      btn.addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(15);
+        inputDinheiroRecebido.value = val.toFixed(2);
+        pt.dinheiro_recebido = val;
+
+        if (fecharContaForma.value !== 'dinheiro') {
+          fecharContaForma.value = 'dinheiro';
+          divDinheiroRecebido.classList.remove('hidden');
+        }
+
+        if (!fecharContaValor.value || Number(fecharContaValor.value) <= 0) {
+          fecharContaValor.value = valorBase.toFixed(2);
+        }
+
+        renderPainelPagamento();
+      });
+
+      containerTrocoChips.appendChild(btn);
+    });
   }
 
   function renderPainelPagamento() {
@@ -2585,10 +3722,15 @@
     }
 
     let valorDinheiroLancado = pt.pagamentos.filter(pag => pag.forma === 'dinheiro').reduce((sum, pag) => sum + pag.valor, 0);
+    const valorBaseParaTroco = valorDinheiroLancado > 0 
+      ? valorDinheiroLancado 
+      : (Number(fecharContaValor.value) || faltaParte || 0);
+
+    renderTrocoChips(valorBaseParaTroco, pt);
+
     let recebido = Number(inputDinheiroRecebido.value) || 0;
-    
-    if (recebido > 0) {
-      let troco = recebido - valorDinheiroLancado;
+    if (recebido > 0 && valorBaseParaTroco > 0) {
+      let troco = recebido - valorBaseParaTroco;
       if (troco < 0) troco = 0;
       fecharContaTrocoLbl.textContent = `R$ ${troco.toFixed(2).replace('.', ',')}`;
     } else {
@@ -2599,6 +3741,7 @@
   fecharContaForma.addEventListener('change', () => {
     if (fecharContaForma.value === 'dinheiro') {
       divDinheiroRecebido.classList.remove('hidden');
+      renderPainelPagamento();
     } else {
       divDinheiroRecebido.classList.add('hidden');
     }
@@ -2736,8 +3879,180 @@
   });
 
   // -----------------------------------------------------
+  // CAF-000054: CONTROLE DO FLUXO DE FECHAMENTO EM ETAPAS
+  // -----------------------------------------------------
+  function setFecharContaStep(step) {
+    currentFecharContaStep = Math.max(1, Math.min(3, step));
+    
+    // 1. Alternar visibilidade das etapas
+    if (stepFecharConsumo) stepFecharConsumo.classList.toggle('is-active', currentFecharContaStep === 1);
+    if (stepFecharAjustes) stepFecharAjustes.classList.toggle('is-active', currentFecharContaStep === 2);
+    if (stepFecharPagamento) stepFecharPagamento.classList.toggle('is-active', currentFecharContaStep === 3);
+
+    // 2. Botão voltar e subtítulo
+    if (btnFecharContaVoltar) {
+      btnFecharContaVoltar.classList.toggle('hidden', currentFecharContaStep === 1);
+    }
+    
+    if (fecharContaStepSub) {
+      const stepNames = {
+        1: 'Passo 1 de 3: Consumo da Mesa',
+        2: 'Passo 2 de 3: Ajustes e Divisão',
+        3: 'Passo 3 de 3: Formas de Pagamento'
+      };
+      fecharContaStepSub.textContent = stepNames[currentFecharContaStep] || '';
+    }
+
+    // 3. Marcadores visuais do stepper
+    const tabs = document.querySelectorAll('.fechar-conta-step-tab');
+    tabs.forEach(tab => {
+      const s = Number(tab.getAttribute('data-step'));
+      tab.classList.toggle('active', s === currentFecharContaStep);
+      tab.classList.toggle('completed', s < currentFecharContaStep);
+    });
+
+    // 4. Botões de avanço no rodapé
+    if (btnFecharContaNext1) btnFecharContaNext1.classList.toggle('hidden', currentFecharContaStep !== 1);
+    if (btnFecharContaNext2) btnFecharContaNext2.classList.toggle('hidden', currentFecharContaStep !== 2);
+    if (fecharContaConfirmar) fecharContaConfirmar.classList.toggle('hidden', currentFecharContaStep !== 3);
+
+    // 5. Atualizar resumo do rodapé
+    updateFecharContaFooterSummary();
+
+    // 6. Rolar para o topo suavemente
+    const modalBody = document.querySelector('.fechar-conta-body');
+    if (modalBody) modalBody.scrollTop = 0;
+  }
+
+  function updateFecharContaFooterSummary() {
+    if (!fecharContaFooterLabel || !fecharContaFooterVal) return;
+    if (currentFecharContaStep === 1) {
+      fecharContaFooterLabel.textContent = 'Subtotal Itens:';
+      fecharContaFooterVal.textContent = `R$ ${currentFechamento.subtotal.toFixed(2).replace('.', ',')}`;
+      fecharContaFooterVal.style.color = 'var(--marrom-escuro)';
+    } else if (currentFecharContaStep === 2) {
+      fecharContaFooterLabel.textContent = 'Total c/ Ajustes:';
+      fecharContaFooterVal.textContent = `R$ ${currentFechamento.totalConta.toFixed(2).replace('.', ',')}`;
+      fecharContaFooterVal.style.color = 'var(--marrom-escuro)';
+    } else {
+      let totalPagoAll = 0;
+      currentPartes.forEach(pt => {
+        totalPagoAll += pt.pagamentos.reduce((sum, pag) => sum + pag.valor, 0);
+      });
+      const faltaTotal = currentFechamento.aPagar - totalPagoAll;
+      if (faltaTotal <= 0.05 && totalPagoAll > 0 && currentPartes.length > 0) {
+        fecharContaFooterLabel.textContent = 'Status:';
+        fecharContaFooterVal.textContent = 'Total Pago ✓';
+        fecharContaFooterVal.style.color = 'var(--verde-ok)';
+      } else {
+        fecharContaFooterLabel.textContent = 'Falta Pagar:';
+        fecharContaFooterVal.textContent = `R$ ${(faltaTotal > 0 ? faltaTotal : 0).toFixed(2).replace('.', ',')}`;
+        fecharContaFooterVal.style.color = 'var(--vermelho-erro)';
+      }
+    }
+  }
+
+  if (btnFecharContaNext1) {
+    btnFecharContaNext1.addEventListener('click', () => {
+      setFecharContaStep(2);
+    });
+  }
+  if (btnFecharContaNext2) {
+    btnFecharContaNext2.addEventListener('click', () => {
+      setFecharContaStep(3);
+    });
+  }
+  if (btnFecharContaVoltar) {
+    btnFecharContaVoltar.addEventListener('click', () => {
+      setFecharContaStep(currentFecharContaStep - 1);
+    });
+  }
+  document.querySelectorAll('.fechar-conta-step-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const step = Number(tab.getAttribute('data-step'));
+      if (step) setFecharContaStep(step);
+    });
+  });
+
+  // -----------------------------------------------------
   // 8. REALTIME (NOTIFICAÇÃO QUANDO PEDIDO FICA PRONTO)
   // -----------------------------------------------------
+  // CAF-000030: Debounce individual por pedido (300ms) no PDV
+  const pendingPdvPedidoFetches = new Map();
+
+  function schedulePdvIncrementalFetch(pedidoId) {
+    if (!pedidoId) return;
+    if (pendingPdvPedidoFetches.has(pedidoId)) {
+      clearTimeout(pendingPdvPedidoFetches.get(pedidoId));
+    }
+    const timerId = setTimeout(() => {
+      pendingPdvPedidoFetches.delete(pedidoId);
+      fetchPdvPedidoIncremental(pedidoId);
+    }, 300);
+    pendingPdvPedidoFetches.set(pedidoId, timerId);
+  }
+
+  async function fetchPdvPedidoIncremental(pedidoId) {
+    if (!pedidoId) return;
+    try {
+      const { data, error } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select(`
+          *,
+          pedido_itens (
+            *,
+            pedido_item_adicionais (*)
+          )
+        `)
+        .eq('id', pedidoId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('[PDV Incremental] Erro ao buscar pedido:', pedidoId, error);
+        return;
+      }
+
+      const inicioDoDia = window.getInicioDoDiaSaoPaulo();
+
+      const deveEstarAtivo = data &&
+        data.status !== 'cancelado' &&
+        (
+          data.status === 'pendente' ||
+          data.status === 'em_preparo' ||
+          data.status_pagamento === 'pendente' ||
+          !data.status_pagamento ||
+          (data.status === 'concluido' && data.created_at >= inicioDoDia)
+        );
+
+      const idx = activePedidos.findIndex(p => p.id === pedidoId);
+
+      if (!deveEstarAtivo) {
+        if (idx >= 0) {
+          activePedidos.splice(idx, 1);
+        }
+      } else {
+        if (idx >= 0) {
+          activePedidos[idx] = data;
+        } else {
+          activePedidos.unshift(data);
+        }
+        activePedidos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        if ((data.status === 'concluido' || data.status === 'pronto') && !pedidosProntosNotificados.has(data.id)) {
+          notificarPedidoPronto(data);
+        }
+      }
+
+      localStorage.setItem('cafeteria_cache_pdv_active_pedidos', JSON.stringify(activePedidos));
+      renderMesasSection();
+      renderPedidosCards();
+      updateProntosBadge();
+      updateMesaSelectOptions();
+    } catch (err) {
+      console.warn('[PDV Incremental] Falha:', err);
+    }
+  }
+
   let fetchTimeout = null;
   function debouncedLoadActivePedidos() {
     if (fetchTimeout) clearTimeout(fetchTimeout);
@@ -2746,36 +4061,306 @@
     }, 300);
   }
 
+  let wasOffline = false;
+  let onlineToastTimeout = null;
+
   function updateConnectionStatus(isConnected) {
     isPdvOnline = isConnected;
     const indicator = document.getElementById('conn-status-indicator') || document.querySelector('.status-indicator');
-    if (!indicator) return;
-    const dot = document.getElementById('conn-pulse-dot') || indicator.querySelector('.pulse-dot');
-    const text = document.getElementById('conn-status-text') || indicator.querySelector('.status-text');
+    const dot = document.getElementById('conn-pulse-dot') || (indicator ? indicator.querySelector('.pulse-dot') : null);
+    const text = document.getElementById('conn-status-text') || (indicator ? indicator.querySelector('.status-text') : null);
     
+    const banner = document.getElementById('banner-offline-alert');
+    const bannerIcon = document.getElementById('banner-offline-icon');
+    const bannerText = document.getElementById('banner-offline-text');
+
     if (isConnected) {
       if (dot) dot.style.backgroundColor = '#4CAF50';
       if (text) { text.textContent = 'Conectado'; text.style.color = '#fff'; }
+
+      if (wasOffline && banner) {
+        if (onlineToastTimeout) clearTimeout(onlineToastTimeout);
+        banner.classList.remove('hidden', 'offline');
+        banner.classList.add('online');
+        if (bannerIcon) bannerIcon.textContent = '✓';
+        if (bannerText) bannerText.textContent = 'Conexão restabelecida. Sincronizando pedidos pendentes...';
+
+        onlineToastTimeout = setTimeout(() => {
+          banner.classList.add('hidden');
+          banner.classList.remove('online');
+        }, 4000);
+      } else if (banner && !wasOffline) {
+        banner.classList.add('hidden');
+        banner.classList.remove('offline', 'online');
+      }
+      wasOffline = false;
     } else {
+      wasOffline = true;
+      if (onlineToastTimeout) clearTimeout(onlineToastTimeout);
       if (dot) dot.style.backgroundColor = '#e74c3c';
       if (text) { text.textContent = 'Modo Offline'; text.style.color = '#e74c3c'; }
+
+      if (banner) {
+        banner.classList.remove('hidden', 'online');
+        banner.classList.add('offline');
+        if (bannerIcon) bannerIcon.textContent = '⚡';
+        if (bannerText) bannerText.textContent = 'Sem internet. O sistema continua operando offline e salvará seus pedidos.';
+      }
     }
     atualizarModoConexaoCarrinho();
+  }
+
+  // -----------------------------------------------------
+  // CAF-000053: SISTEMA MULTISSENSORIAL DE PEDIDO PRONTO
+  // -----------------------------------------------------
+  function isSomAtivo() {
+    return localStorage.getItem('cafeteria_pdv_som_ativo') !== 'false';
+  }
+
+  function setSomAtivo(ativo) {
+    localStorage.setItem('cafeteria_pdv_som_ativo', ativo ? 'true' : 'false');
+    updateSoundToggleUI();
+  }
+
+  function updateSoundToggleUI() {
+    if (!btnToggleSound || !soundToggleIcon) return;
+    const label = btnToggleSound.querySelector('.sound-toggle-label');
+    const ativo = isSomAtivo();
+    if (ativo) {
+      btnToggleSound.classList.remove('is-muted');
+      btnToggleSound.title = 'Modo normal (Som ativo) · Toque para silenciar';
+      soundToggleIcon.textContent = '🔔';
+      if (label) label.textContent = 'Som';
+    } else {
+      btnToggleSound.classList.add('is-muted');
+      btnToggleSound.title = 'Modo Silencioso (Sem som · apenas vibração/toast) · Toque para ativar som';
+      soundToggleIcon.textContent = '🔕';
+      if (label) label.textContent = 'Mudo';
+    }
+  }
+
+  function solicitarPermissaoNotificacao() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      try {
+        Notification.requestPermission().then(perm => {
+          console.log('[PDV] Permissão de notificações:', perm);
+        }).catch(() => {});
+      } catch (e) {}
+    }
+  }
+
+  function dispararVibracaoTatil() {
+    if ('vibrate' in navigator) {
+      try {
+        // Padrão multissensorial distintivo: 200ms vibra, 80ms pausa, 200ms vibra, 80ms pausa, 300ms vibra
+        navigator.vibrate([200, 80, 200, 80, 300]);
+      } catch (e) {
+        console.debug('[PDV Vibrate]', e);
+      }
+    }
+  }
+
+  function dispararNotificacaoNativa(pedido) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      const mesaStr = pedido.mesa_codigo ? `Mesa ${pedido.mesa_codigo}` : (pedido.para_viagem ? 'Para Viagem' : 'Balcão');
+      const titulo = `☕ Pedido Pronto · ${mesaStr}`;
+      const corpo = pedido.cliente_nome
+        ? `Cliente: ${pedido.cliente_nome} (Pedido #${pedido.numero_pedido || pedido.id}). Pronto para servir!`
+        : `Pedido #${pedido.numero_pedido || pedido.id} pronto para servir.`;
+
+      const notif = new Notification(titulo, {
+        body: corpo,
+        icon: 'assets/icons/icon-192.png',
+        tag: `pedido-pronto-${pedido.id}`,
+        renotify: true
+      });
+
+      notif.onclick = () => {
+        window.focus();
+        focarPedidoPronto(pedido);
+        notif.close();
+      };
+    } catch (e) {
+      console.warn('[Notification API]', e);
+    }
+  }
+
+  function focarPedidoPronto(pedido) {
+    if (!pedido) return;
+    if (navBtnMesas) navBtnMesas.click();
+
+    // Se houver filtro ativo que oculte os prontos, alternar para todos
+    if (currentFilterStatus !== 'todos' && currentFilterStatus !== 'concluido') {
+      currentFilterStatus = 'todos';
+      if (filtroChips) {
+        filtroChips.forEach(chip => {
+          chip.classList.toggle('active', chip.dataset.filter === 'todos');
+        });
+      }
+      renderPedidosCards();
+    }
+
+    // Se estiver filtrando por 'meus' e o pedido for de outro garçom, alternar escopo para 'todos' (CAF-000059)
+    if (currentFilterScope === 'meus') {
+      const myId = currentUser ? currentUser.id : null;
+      const isMeu = myId && (pedido.criado_por === myId || pedido.usuario_id === myId);
+      if (!isMeu) {
+        currentFilterScope = 'todos';
+        localStorage.setItem('cafeteria_pedidos_filtro_escopo', 'todos');
+        if (filtroEscopoChips) {
+          filtroEscopoChips.forEach(c => c.classList.toggle('active', c.dataset.scope === 'todos'));
+        }
+        renderPedidosCards();
+      }
+    }
+
+    setTimeout(() => {
+      // 1. Procurar card específico do pedido
+      const card = document.querySelector(`.pedido-card-barista[data-pedido-id="${pedido.id}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('destaque-pronto-pulse');
+        setTimeout(() => card.classList.remove('destaque-pronto-pulse'), 3500);
+        return;
+      }
+
+      // 2. Procurar card da mesa na seção de mesas
+      if (pedido.mesa_codigo) {
+        const mesaCards = document.querySelectorAll('.mesa-card');
+        for (const mc of mesaCards) {
+          const cod = mc.querySelector('.mesa-card__codigo');
+          if (cod && cod.textContent.trim() === pedido.mesa_codigo) {
+            mc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            mc.classList.add('destaque-pronto-pulse');
+            setTimeout(() => mc.classList.remove('destaque-pronto-pulse'), 3500);
+            break;
+          }
+        }
+      }
+    }, 220);
+  }
+
+  function exibirToastPedidoPronto(pedido) {
+    if (!alertaProntoTop || !alertaProntoTitulo) return;
+    if (alertaProntoTimeout) clearTimeout(alertaProntoTimeout);
+
+    const mesaStr = pedido.mesa_codigo ? `Mesa ${pedido.mesa_codigo}` : (pedido.para_viagem ? 'Viagem' : 'Balcão');
+    alertaProntoTitulo.textContent = `🔔 ${mesaStr}: Pedido #${pedido.numero_pedido || pedido.id} pronto!`;
+    if (alertaProntoSubtitulo) {
+      alertaProntoSubtitulo.textContent = pedido.cliente_nome
+        ? `Cliente: ${pedido.cliente_nome} · Toque para ver comanda`
+        : 'Pronto para servir · Toque para ver comanda';
+    }
+
+    const onAcao = (e) => {
+      if (e) e.stopPropagation();
+      alertaProntoTop.classList.add('hidden');
+      focarPedidoPronto(pedido);
+    };
+
+    alertaProntoTop.onclick = onAcao;
+    if (btnAlertaProntoAcao) btnAlertaProntoAcao.onclick = onAcao;
+    if (btnAlertaProntoFechar) {
+      btnAlertaProntoFechar.onclick = (e) => {
+        e.stopPropagation();
+        alertaProntoTop.classList.add('hidden');
+      };
+    }
+
+    alertaProntoTop.classList.remove('hidden');
+
+    alertaProntoTimeout = setTimeout(() => {
+      alertaProntoTop.classList.add('hidden');
+    }, 12000);
+  }
+
+  function notificarPedidoPronto(pedido) {
+    if (!pedido || !pedido.id) return;
+    if (pedidosProntosNotificados.has(pedido.id)) return;
+    pedidosProntosNotificados.add(pedido.id);
+
+    // 1. Vibração tátil
+    dispararVibracaoTatil();
+
+    // 2. Alerta sonoro / chamada por voz (se não for modo silencioso)
+    if (isSomAtivo()) {
+      tocarAlertaPronto();
+      chamarPedidoVoz(pedido.numero_pedido || pedido.id, pedido.mesa_codigo, pedido.cliente_nome, pedido.para_viagem);
+    } else {
+      console.log('[PDV] Modo Silencioso ativo: som suprimido para pedido #', pedido.numero_pedido || pedido.id);
+    }
+
+    // 3. Banner / Toast flutuante no topo interativo
+    exibirToastPedidoPronto(pedido);
+
+    // 4. Notificação nativa se a tela estiver oculta
+    if (document.visibilityState === 'hidden') {
+      dispararNotificacaoNativa(pedido);
+    }
+  }
+
+  function initSoundAndNotificationSystem() {
+    updateSoundToggleUI();
+
+    if (btnToggleSound) {
+      btnToggleSound.addEventListener('click', () => {
+        const novo = !isSomAtivo();
+        setSomAtivo(novo);
+        if (novo) {
+          tocarAlertaPronto();
+          if (window.showToast) window.showToast('🔔 Som ativado para alertas de pedidos prontos');
+        } else {
+          if (window.showToast) window.showToast('🔕 Modo Silencioso ativado (vibração e alertas visuais mantidos)');
+        }
+        solicitarPermissaoNotificacao();
+      });
+    }
+
+    // Solicitar permissão de forma não intrusiva na primeira interação
+    document.addEventListener('click', () => {
+      solicitarPermissaoNotificacao();
+    }, { once: true });
   }
 
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-barista')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, payload => {
         if (payload.eventType === 'UPDATE') {
-          if (payload.new && payload.new.status === 'concluido' && payload.old && payload.old.status !== 'concluido') {
-            tocarAlertaPronto();
-            chamarPedidoVoz(payload.new.numero_pedido || payload.new.id, payload.new.mesa_codigo, payload.new.cliente_nome, payload.new.para_viagem);
+          const isProntoAgora = payload.new && (payload.new.status === 'concluido' || payload.new.status === 'pronto');
+          const eraProntoAntes = payload.old && (payload.old.status === 'concluido' || payload.old.status === 'pronto');
+          if (isProntoAgora && !eraProntoAntes && !pedidosProntosNotificados.has(payload.new.id)) {
+            notificarPedidoPronto(payload.new);
           }
         }
-        debouncedLoadActivePedidos();
+        if (payload.eventType === 'DELETE') {
+          const pId = payload.old && payload.old.id;
+          if (pId) {
+            const idx = activePedidos.findIndex(p => p.id === pId);
+            if (idx >= 0) {
+              activePedidos.splice(idx, 1);
+              renderMesasSection();
+              renderPedidosCards();
+              updateProntosBadge();
+              updateMesaSelectOptions();
+            }
+          }
+        } else {
+          const pId = payload.new && payload.new.id;
+          if (pId) {
+            schedulePdvIncrementalFetch(pId);
+          } else {
+            debouncedLoadActivePedidos();
+          }
+        }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedido_itens' }, payload => {
-        debouncedLoadActivePedidos();
+        const pId = (payload.new && payload.new.pedido_id) || (payload.old && payload.old.pedido_id);
+        if (pId) {
+          schedulePdvIncrementalFetch(pId);
+        } else {
+          debouncedLoadActivePedidos();
+        }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'produtos' }, payload => {
         loadProdutos();
@@ -2800,22 +4385,32 @@
     updateConnectionStatus(false);
   });
 
-  // Lidar com repouso/troca de aba
+  // Lidar com repouso/troca de aba (CAF-000030: recarga completa apenas se ficou oculta > 60 segundos)
+  let lastPdvHiddenTime = 0;
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      debouncedLoadActivePedidos();
+    if (document.visibilityState === 'hidden') {
+      lastPdvHiddenTime = Date.now();
+    } else if (document.visibilityState === 'visible') {
+      const ocultaMs = lastPdvHiddenTime ? (Date.now() - lastPdvHiddenTime) : 0;
+      if (ocultaMs > 60000) {
+        debouncedLoadActivePedidos();
+      }
       if (navigator.onLine) processarFilaOffline();
     }
   });
 
   function tocarAlertaPronto() {
+    if (!isSomAtivo()) return;
     try {
-      audioPronto.currentTime = 0;
-      audioPronto.play().catch(e => console.log('Autoplay bloqueado:', e));
+      if (audioPronto) {
+        audioPronto.currentTime = 0;
+        audioPronto.play().catch(e => console.log('Autoplay bloqueado:', e));
+      }
     } catch (e) {}
   }
 
   function chamarPedidoVoz(numeroPedido, mesaCodigo, clienteNome, paraViagem) {
+    if (!isSomAtivo()) return;
     tocarAlertaPronto();
     if (!('speechSynthesis' in window)) return;
 
@@ -2856,6 +4451,10 @@
   }
 
   window.baristaChamarPedido = function(numeroOuId, mesaCodigo, clienteNome, paraViagem) {
+    if (!isSomAtivo()) {
+      if (window.showToast) window.showToast('🔕 Modo silencioso ativo. Ative o som no topo para chamar por voz.');
+      return;
+    }
     if (typeof numeroOuId === 'number' && !mesaCodigo && !clienteNome) {
       const pedido = activePedidos.find(p => p.id === numeroOuId);
       if (pedido) {
@@ -2891,6 +4490,7 @@
   // Inicializar
   updateConnectionStatus(navigator.onLine);
   atualizarContadorFilaOffline();
+  initSoundAndNotificationSystem();
   checkSession();
   loadConfiguracoes();
 

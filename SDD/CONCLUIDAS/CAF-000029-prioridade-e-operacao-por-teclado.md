@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + PDV + banco | 🟢 Baixa | P | Especificação · aguardando revisão |
+| Cozinha (KDS) + PDV + banco | 🟢 Baixa | P | Concluída |
 
 ---
 
@@ -26,21 +26,21 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Coluna `pedidos.prioridade SMALLINT NOT NULL DEFAULT 0` (0 = normal, 1 = prioritário) e `pedidos.prioridade_motivo TEXT`.
-- [ ] PDV: opção "⚡ Prioritário" no carrinho (com motivo rápido: "Espetáculo", "Refazer", "Outro") e no card do pedido já enviado.
-- [ ] KDS: pedidos prioritários ficam no topo da coluna, com borda e selo "⚡ PRIORIDADE". A cozinha pode ligar e desligar a prioridade pelo card.
-- [ ] Mudanças de prioridade registradas no log ([CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
-- [ ] Atalhos no KDS:
+- [x] Coluna `pedidos.prioridade SMALLINT NOT NULL DEFAULT 0` (0 = normal, 1 = prioritário) e `pedidos.prioridade_motivo TEXT`.
+- [x] PDV: opção "⚡ Prioritário" no carrinho (com motivo rápido: "Espetáculo", "Refazer", "Outro") e no card do pedido já enviado.
+- [x] KDS: pedidos prioritários ficam no topo da coluna, com borda e selo "⚡ PRIORIDADE". A cozinha pode ligar e desligar a prioridade pelo card.
+- [x] Mudanças de prioridade registradas no log ([CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
+- [x] Atalhos no KDS:
   - `←`/`→` trocam a coluna e `↑`/`↓` o card selecionado (com foco visível).
   - `Enter` avança o status do card ("Iniciar" → "Pronto").
   - `Backspace` desfaz a última ação (com toast de 5 s).
   - `P` reimprime e `C` chama por voz.
   - `1`–`9` selecionam o card N da coluna atual.
-- [ ] Legenda dos atalhos acessível pela tecla `?`.
+- [x] Legenda dos atalhos acessível pela tecla `?`.
 
 ### Requisitos não funcionais
-- [ ] **Acessibilidade:** os cards viram elementos focáveis (`tabindex`, `role="button"`), com foco bem visível no tema escuro do KDS.
-- [ ] Os atalhos não disparam enquanto um campo de texto estiver focado (login).
+- [x] **Acessibilidade:** os cards viram elementos focáveis (`tabindex`, `role="button"`), com foco bem visível no tema escuro do KDS.
+- [x] Os atalhos não disparam enquanto um campo de texto estiver focado (login).
 
 ### Dependências técnicas
 - RPC `criar_pedido` (aceitar `prioridade` no payload) e `js/pedidos.js` (carrinho).
@@ -53,10 +53,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o barista marca um pedido como prioritário, **quando** ele chega ao KDS, **então** aparece no topo de "Pendentes" com o selo ⚡, mesmo sendo o mais recente.
-- [ ] **Dado que** a cozinha remove a prioridade, **quando** o board atualiza, **então** o pedido volta à ordem normal e o evento fica no log.
-- [ ] **Dado que** um card está selecionado pelo teclado, **quando** a cozinha pressiona `Enter` duas vezes, **então** o pedido vai de "Pendente" a "Pronto".
-- [ ] **Dado que** foi pressionado `Backspace` logo após concluir, **quando** a ação acontece, **então** o pedido volta para "Em preparo".
+- [x] **Dado que** o barista marca um pedido como prioritário, **quando** ele chega ao KDS, **então** aparece no topo de "Pendentes" com o selo ⚡, mesmo sendo o mais recente.
+- [x] **Dado que** a cozinha remove a prioridade, **quando** o board atualiza, **então** o pedido volta à ordem normal e o evento fica no log.
+- [x] **Dado que** um card está selecionado pelo teclado, **quando** a cozinha pressiona `Enter` duas vezes, **então** o pedido vai de "Pendente" a "Pronto".
+- [x] **Dado que** foi pressionado `Backspace` logo após concluir, **quando** a ação acontece, **então** o pedido volta para "Em preparo".
 
 ---
 
@@ -83,5 +83,5 @@
 
 ## URL Complementar
 
-- Código: `js/cozinha.js:288-336` (busca e ordenação), `js/cozinha.js:459-494` (botões do card), `js/pedidos.js:1500-1690` (carrinho e envio)
+- Código: `js/cozinha.js:288-336` (busca e ordenação), `js/cozinha.js:459-494` (botões do card), `js/pedidos.js:1909-2058` (`renderCart`) e `:2104-2280` (envio)
 - Análise de mercado: [ANALISE_PEDIDOS_COZINHA.md](ANALISE_PEDIDOS_COZINHA.md)

@@ -39,9 +39,21 @@
       cbPermiteAdd: document.getElementById('produto-ativo-adicionais'),
       fieldVinculos: document.getElementById('field-produto-vinculos-adicionais'),
       wrapAdicionais: document.getElementById('produto-adicionais-wrap'),
-      selectCategoria: document.getElementById('produto-categoria')
+      // Estoque
+      selectEstoqueItem: document.getElementById('produto-estoque-item-id'),
+      // Ficha Técnica (CAF-000032)
+      inputCustoManual: document.getElementById('produto-custo-manual'),
+      selectFichaInsumo: document.getElementById('ficha-insumo-select'),
+      inputFichaQtd: document.getElementById('ficha-insumo-qtd'),
+      btnAddFichaInsumo: document.getElementById('btn-add-ficha-insumo'),
+      tbodyFichaInsumos: document.getElementById('ficha-insumos-body'),
+      fichaResumoCusto: document.getElementById('ficha-resumo-custo'),
+      fichaResumoMargem: document.getElementById('ficha-resumo-margem'),
+      fichaAlertaMargem: document.getElementById('ficha-alerta-margem')
     };
   }
+
+  let activeFichaItens = [];
 
   // --- Renderização ---
   window.renderProdutos = function() {
@@ -85,35 +97,95 @@
       return;
     }
 
-    const cats = admin.appData.categorias || [];
-    el.tableBody.innerHTML = filtered.map(p => {
-      const pCatId = p.categoria_id || p.categoriaId;
-      const cat = cats.find(c => c.id === pCatId);
-      const preco = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      const badgesHTML = (p.badges || []).map(b => `<span class="badge-mini badge-mini--${b}">${b}</span>`).join(' ');
+      const cats = admin.appData.categorias || [];
+      const estoqueItens = admin.appData.estoqueItens || [];
 
-      const tempoProprio = (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined && p.tempo_alvo_min !== '');
-      const tempoVal = tempoProprio ? p.tempo_alvo_min : (cat?.tempo_alvo_min || 15);
-      const tempoAlvoHtml = tempoProprio
-        ? `<strong title="Tempo alvo específico deste produto">⏱️ ${tempoVal} min</strong>`
-        : `<span style="color:var(--admin-text-dim)" title="Herdado da categoria ${cat ? cat.nome : ''}">⏱️ ${tempoVal} min <small>(cat)</small></span>`;
+      el.tableBody.innerHTML = filtered.map(p => {
+        const pCatId = p.categoria_id || p.categoriaId;
+        const cat = cats.find(c => c.id === pCatId);
+        const preco = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        const badgesHTML = (p.badges || []).map(b => `<span class="badge-mini badge-mini--${b}">${b}</span>`).join(' ');
 
-      return `
-        <tr>
-          <td class="td-name">${p.nome}</td>
-          <td><span style="color:var(--admin-text-dim)">${cat ? cat.icone + ' ' + cat.nome : pCatId}</span></td>
-          <td class="td-price">R$ ${preco}</td>
-          <td>${tempoAlvoHtml}</td>
-          <td><div class="td-badges">${badgesHTML || '—'}</div></td>
-          <td>${p.ativo ? '<span class="status-pill status-pill--ativo">Ativo</span>' : '<span class="status-pill status-pill--inativo">Inativo</span>'} ${p.disponivel === false ? '<span class="status-pill" style="background:#e74c3c;color:white;font-size:0.7em;">Esgotado</span>' : ''}</td>
-          <td>
-            <div class="td-actions">
-              <button class="btn btn--icon btn--ghost" onclick="window.openProdutoModal('${p.id}')">✏️</button>
-              <button class="btn btn--icon btn--danger" onclick="window.deleteProduto('${p.id}')">🗑️</button>
-            </div>
-          </td>
-        </tr>`;
-    }).join('');
+        const tempoProprio = (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined && p.tempo_alvo_min !== '');
+        const tempoVal = tempoProprio ? p.tempo_alvo_min : (cat?.tempo_alvo_min || 15);
+        const tempoAlvoHtml = tempoProprio
+          ? `<strong title="Tempo alvo específico deste produto">⏱️ ${tempoVal} min</strong>`
+          : `<span style="color:var(--admin-text-dim)" title="Herdado da categoria ${cat ? cat.nome : ''}">⏱️ ${tempoVal} min <small>(cat)</small></span>`;
+
+        let stockBadge = '';
+        if (p.estoque_item_id) {
+          const estItem = estoqueItens.find(i => String(i.id) === String(p.estoque_item_id));
+          if (estItem) {
+            const saldo = Number(estItem.saldo_atual || 0);
+            const min = Number(estItem.estoque_minimo || 0);
+            if (saldo <= 0) {
+              stockBadge = `<span class="badge-estoque badge-estoque--critico" title="Estoque zerado ou negativo">Estoque: ${saldo} ${estItem.unidade_medida}</span>`;
+            } else if (saldo <= min) {
+              stockBadge = `<span class="badge-estoque badge-estoque--alerta" title="Estoque no limite mínimo">Estoque: ${saldo} ${estItem.unidade_medida}</span>`;
+            } else {
+              stockBadge = `<span class="badge-estoque badge-estoque--ok" title="Estoque regular">Estoque: ${saldo} ${estItem.unidade_medida}</span>`;
+            }
+          } else {
+            stockBadge = `<span class="badge-estoque" style="background:rgba(255,255,255,0.06);color:var(--admin-text-sub);" title="Item de estoque vinculado">📦 Vinculado</span>`;
+          }
+        }
+
+        // Cálculo de Custo e Margem para exibição na tabela (CAF-000032)
+        const allFichas = admin.appData.fichasTecnicas || [];
+        const prodFichas = allFichas.filter(f => f.produto_id === p.id);
+        let custoProd = 0;
+        let temCusto = false;
+
+        if (prodFichas.length > 0) {
+          custoProd = prodFichas.reduce((acc, f) => {
+            const ei = f.estoque_itens || (estoqueItens || []).find(i => String(i.id) === String(f.estoque_item_id));
+            return acc + (Number(f.quantidade || 0) * Number(ei?.custo_unitario_medio || 0));
+          }, 0);
+          temCusto = true;
+        } else if (p.preco_custo_manual !== null && p.preco_custo_manual !== undefined && p.preco_custo_manual !== '') {
+          custoProd = Number(p.preco_custo_manual);
+          temCusto = true;
+        } else if (p.estoque_item_id) {
+          const ei = (estoqueItens || []).find(i => String(i.id) === String(p.estoque_item_id));
+          if (ei) {
+            custoProd = Number(ei.custo_unitario_medio || 0);
+            temCusto = true;
+          }
+        }
+
+        let marginBadge = '';
+        if (temCusto && custoProd > 0 && Number(p.preco) > 0) {
+          const margem = ((Number(p.preco) - custoProd) / Number(p.preco)) * 100;
+          let margemClass = 'badge-estoque--ok';
+          if (margem < 40) margemClass = 'badge-estoque--critico';
+          else if (margem < 55) margemClass = 'badge-estoque--alerta';
+
+          marginBadge = `<div style="margin-top:3px; font-size:11px;">
+            <span style="color:var(--admin-text-sub);">Custo: R$ ${custoProd.toFixed(2)}</span> · 
+            <span class="badge-estoque ${margemClass}" title="Margem de lucro bruto estimada">${margem.toFixed(0)}% margem</span>
+          </div>`;
+        }
+
+        return `
+          <tr>
+            <td class="td-name">${p.nome}</td>
+            <td><span style="color:var(--admin-text-dim)">${cat ? cat.icone + ' ' + cat.nome : pCatId}</span></td>
+            <td class="td-price">R$ ${preco}${marginBadge}</td>
+            <td>${tempoAlvoHtml}</td>
+            <td><div class="td-badges">${badgesHTML || '—'}</div></td>
+            <td>
+              ${p.ativo ? '<span class="status-pill status-pill--ativo">Ativo</span>' : '<span class="status-pill status-pill--inativo">Inativo</span>'}
+              ${p.disponivel === false ? '<span class="status-pill" style="background:#e74c3c;color:white;font-size:0.7em;">Esgotado</span>' : ''}
+              ${stockBadge ? `<div style="margin-top:4px;">${stockBadge}</div>` : ''}
+            </td>
+            <td>
+              <div class="td-actions">
+                <button class="btn btn--icon btn--ghost" onclick="window.openProdutoModal('${p.id}')">✏️</button>
+                <button class="btn btn--icon btn--danger" onclick="window.deleteProduto('${p.id}')">🗑️</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
   }
 
   // --- Adicionais ---
@@ -168,6 +240,75 @@
     }).join('');
   }
 
+  // --- Ficha Técnica Helpers (CAF-000032) ---
+  function renderFichaTable() {
+    const el = productsEls();
+    if (!el.tbodyFichaInsumos) return;
+
+    if (!activeFichaItens || activeFichaItens.length === 0) {
+      el.tbodyFichaInsumos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--admin-text-sub); padding: 12px;">Nenhum insumo na ficha técnica.</td></tr>`;
+    } else {
+      el.tbodyFichaInsumos.innerHTML = activeFichaItens.map((item, idx) => {
+        const custoUnit = Number(item.custo_unitario_medio || 0);
+        const subtotal = Number(item.quantidade) * custoUnit;
+        return `
+          <tr style="border-bottom: 1px solid var(--admin-border2);">
+            <td style="padding: 6px 8px; font-weight: 600;">${window.escapeHtml(item.nome)}</td>
+            <td style="padding: 6px 8px;">${item.quantidade} ${item.unidade_medida}</td>
+            <td style="padding: 6px 8px;">R$ ${custoUnit.toFixed(2)}</td>
+            <td style="padding: 6px 8px; font-weight: 600;">R$ ${subtotal.toFixed(2)}</td>
+            <td style="padding: 6px 8px; text-align: right;">
+              <button type="button" class="btn btn--icon btn--ghost" style="padding:2px 6px; font-size:12px;" onclick="window.removerInsumoFicha(${idx})">🗑️</button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    atualizarResumoFicha();
+  }
+
+  function atualizarResumoFicha() {
+    const el = productsEls();
+    const precoVenda = parseFloat(document.getElementById('produto-preco')?.value || '0');
+    const custoManual = parseFloat(el.inputCustoManual?.value || '0');
+
+    let custoTotal = 0;
+    if (activeFichaItens.length > 0) {
+      custoTotal = activeFichaItens.reduce((acc, item) => {
+        return acc + (Number(item.quantidade) * Number(item.custo_unitario_medio || 0));
+      }, 0);
+    } else if (!isNaN(custoManual) && custoManual > 0) {
+      custoTotal = custoManual;
+    }
+
+    if (el.fichaResumoCusto) {
+      el.fichaResumoCusto.textContent = `R$ ${custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    let margem = 0;
+    if (precoVenda > 0 && custoTotal > 0) {
+      margem = ((precoVenda - custoTotal) / precoVenda) * 100;
+    }
+
+    if (el.fichaResumoMargem) {
+      el.fichaResumoMargem.textContent = `${margem.toFixed(1)}%`;
+      el.fichaResumoMargem.className = 'badge-estoque ' + (margem < 40 ? 'badge-estoque--critico' : (margem < 55 ? 'badge-estoque--alerta' : 'badge-estoque--ok'));
+    }
+
+    if (el.fichaAlertaMargem) {
+      if (precoVenda > 0 && custoTotal > 0 && margem < 50) {
+        el.fichaAlertaMargem.style.display = 'block';
+      } else {
+        el.fichaAlertaMargem.style.display = 'none';
+      }
+    }
+  }
+
+  window.removerInsumoFicha = function(index) {
+    activeFichaItens.splice(index, 1);
+    renderFichaTable();
+  };
+
   // --- Modal e CRUD ---
   window.openProdutoModal = async function(id) {
     const el = productsEls();
@@ -195,6 +336,24 @@
       }
     }
 
+    // Popular opções de estoque
+    if (el.selectEstoqueItem || el.selectFichaInsumo) {
+      if (!admin.appData.estoqueItens || admin.appData.estoqueItens.length === 0) {
+        try {
+          admin.appData.estoqueItens = await window.cafeteriaDB.estoque.allItens();
+        } catch(e) {}
+      }
+      const itens = admin.appData.estoqueItens || [];
+      if (el.selectEstoqueItem) {
+        el.selectEstoqueItem.innerHTML = '<option value="">-- Sem controle de revenda direta --</option>' +
+          itens.map(i => `<option value="${i.id}">${window.escapeHtml(i.nome)} (Saldo: ${i.saldo_atual} ${i.unidade_medida})</option>`).join('');
+      }
+      if (el.selectFichaInsumo) {
+        el.selectFichaInsumo.innerHTML = '<option value="">Selecione um insumo...</option>' +
+          itens.map(i => `<option value="${i.id}" data-un="${i.unidade_medida}" data-custo="${i.custo_unitario_medio || 0}">${window.escapeHtml(i.nome)} (${i.unidade_medida} · Custo: R$ ${Number(i.custo_unitario_medio || 0).toFixed(2)})</option>`).join('');
+      }
+    }
+
     if (isEdit) {
       p = admin.appData.produtos.find(x => x.id === id);
       if (p) {
@@ -204,10 +363,14 @@
         document.getElementById('produto-descricao').value = p.descricao || '';
         document.getElementById('produto-ativo').checked = !!p.ativo;
         document.getElementById('produto-disponivel').checked = p.disponivel !== false;
+        if (el.inputCustoManual) {
+          el.inputCustoManual.value = (p.preco_custo_manual !== null && p.preco_custo_manual !== undefined) ? p.preco_custo_manual : '';
+        }
         if (inputTempoAlvo) {
           inputTempoAlvo.value = (p.tempo_alvo_min !== null && p.tempo_alvo_min !== undefined) ? p.tempo_alvo_min : '';
         }
         if (el.cbPermiteAdd) el.cbPermiteAdd.checked = !!p.permite_adicionais;
+        if (el.selectEstoqueItem) el.selectEstoqueItem.value = p.estoque_item_id ? String(p.estoque_item_id) : '';
         
         // Badges
         (p.badges || []).forEach(b => {
@@ -224,11 +387,33 @@
             el.dataInput.value = p.imagem_url;
           }
         }
+
+        // Carrega Ficha Técnica do Produto
+        try {
+          const fichas = await window.cafeteriaDB.fichasTecnicas.getByProduto(id);
+          activeFichaItens = (fichas || []).map(f => {
+            const ei = f.estoque_itens || (admin.appData.estoqueItens || []).find(i => String(i.id) === String(f.estoque_item_id));
+            return {
+              estoque_item_id: f.estoque_item_id,
+              quantidade: f.quantidade,
+              nome: ei?.nome || 'Insumo',
+              unidade_medida: ei?.unidade_medida || 'un',
+              custo_unitario_medio: ei?.custo_unitario_medio || 0
+            };
+          });
+        } catch(e) {
+          activeFichaItens = [];
+        }
       }
     } else {
       if (inputTempoAlvo) inputTempoAlvo.value = '';
+      if (el.inputCustoManual) el.inputCustoManual.value = '';
       if (el.cbPermiteAdd) el.cbPermiteAdd.checked = false;
+      if (el.selectEstoqueItem) el.selectEstoqueItem.value = '';
+      activeFichaItens = [];
     }
+
+    renderFichaTable();
 
     updateTempoAlvoPlaceholder();
     if (el.selectCategoria) {
@@ -253,10 +438,12 @@
     const nome = document.getElementById('produto-nome').value.trim();
     const categoria_id = document.getElementById('produto-categoria').value;
     const preco = parseFloat(document.getElementById('produto-preco').value);
+    const preco_custo_manual = el.inputCustoManual?.value ? parseFloat(el.inputCustoManual.value) : null;
     const descricao = document.getElementById('produto-descricao').value;
     const ativo = document.getElementById('produto-ativo').checked;
     const disponivel = document.getElementById('produto-disponivel').checked;
     const permite_adicionais = el.cbPermiteAdd ? el.cbPermiteAdd.checked : false;
+    const estoque_item_id = el.selectEstoqueItem?.value ? parseInt(el.selectEstoqueItem.value, 10) : null;
 
     const tempoAlvoStr = document.getElementById('produto-tempo-alvo')?.value.trim();
     const tempo_alvo_min = tempoAlvoStr ? parseInt(tempoAlvoStr, 10) : null;
@@ -277,10 +464,15 @@
       await window.cafeteriaDB.products.upsert({
         id, nome, categoria_id, preco, descricao, ativo, badges, disponivel,
         permite_adicionais,
+        estoque_item_id,
+        preco_custo_manual,
         tempo_alvo_min,
         imagem_url: isNewImage ? null : dataUrl,
         updated_at: new Date().toISOString()
       }, imageBlob);
+
+      // Salva Ficha Técnica (CAF-000032)
+      await window.cafeteriaDB.fichasTecnicas.saveFichaProduto(id, activeFichaItens);
       
       // Salva Vínculos de Adicionais Diretos
       if (permite_adicionais && el.wrapAdicionais) {
@@ -383,6 +575,49 @@
         const pId = document.getElementById('produto-id').value;
         renderAdicionaisCheckboxes(pId);
       });
+    }
+
+    // Ficha Técnica event bindings (CAF-000032)
+    if (els.btnAddFichaInsumo) {
+      els.btnAddFichaInsumo.addEventListener('click', () => {
+        const insumoId = els.selectFichaInsumo.value;
+        const qtd = parseFloat(els.inputFichaQtd.value);
+
+        if (!insumoId) {
+          return admin.toast('Atenção', 'Selecione um insumo para a ficha técnica.', 'warn');
+        }
+        if (isNaN(qtd) || qtd <= 0) {
+          return admin.toast('Atenção', 'Informe uma quantidade válida maior que zero.', 'warn');
+        }
+
+        const estoqueItens = admin.appData.estoqueItens || [];
+        const insumo = estoqueItens.find(i => String(i.id) === String(insumoId));
+        if (!insumo) return;
+
+        const existingIdx = activeFichaItens.findIndex(i => String(i.estoque_item_id) === String(insumoId));
+        if (existingIdx >= 0) {
+          activeFichaItens[existingIdx].quantidade = qtd;
+        } else {
+          activeFichaItens.push({
+            estoque_item_id: insumo.id,
+            quantidade: qtd,
+            nome: insumo.nome,
+            unidade_medida: insumo.unidade_medida,
+            custo_unitario_medio: insumo.custo_unitario_medio || 0
+          });
+        }
+
+        els.inputFichaQtd.value = '';
+        renderFichaTable();
+      });
+    }
+
+    const inputPreco = document.getElementById('produto-preco');
+    if (inputPreco) {
+      inputPreco.addEventListener('input', atualizarResumoFicha);
+    }
+    if (els.inputCustoManual) {
+      els.inputCustoManual.addEventListener('input', atualizarResumoFicha);
     }
 
     // Upload zone

@@ -37,7 +37,7 @@
     <header class="topbar">
       <div class="topbar__left">
         <div class="topbar__logo">☕ PDV Cafeteria do Teatro</div>
-        <nav class="topbar__nav">
+        <nav class="topbar__nav bottom-nav">
           <button id="nav-btn-novo" class="nav-tab active">
             ☕ Novo Pedido
           </button>
@@ -47,7 +47,11 @@
         </nav>
       </div>
 
-      <div class="topbar__user" style="display: flex; align-items: center; gap: 16px;">
+      <div class="topbar__user" style="display: flex; align-items: center; gap: 10px;">
+        <button id="btn-toggle-sound" class="btn-sound-toggle" type="button" title="Alternar som / Modo Silencioso" aria-label="Alternar som / Modo Silencioso">
+          <span id="sound-toggle-icon">🔔</span>
+          <span class="sound-toggle-label">Som</span>
+        </button>
         <button id="btn-offline-queue" class="btn-ghost-small hidden" style="background-color: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">
           0 Pendentes
         </button>
@@ -60,6 +64,27 @@
       </div>
     </header>
 
+    <!-- BANNER DE ALERTA DE PEDIDO PRONTO NO TOPO (CAF-000053) -->
+    <div id="alerta-pronto-top" class="alerta-pronto-top hidden" role="alert" aria-live="assertive">
+      <div class="alerta-pronto-content">
+        <span class="alerta-pronto-icon">🔔</span>
+        <div class="alerta-pronto-info">
+          <strong id="alerta-pronto-titulo">Mesa pronta para entrega!</strong>
+          <span id="alerta-pronto-subtitulo">Toque para ver a comanda</span>
+        </div>
+        <button type="button" id="btn-alerta-pronto-acao" class="alerta-pronto-acao">Ver ➔</button>
+        <button type="button" id="btn-alerta-pronto-fechar" class="alerta-pronto-fechar" aria-label="Fechar alerta">✕</button>
+      </div>
+    </div>
+
+    <!-- BANNER DE STATUS OFFLINE / RECONEXÃO (CAF-000057) -->
+    <div id="banner-offline-alert" class="banner-offline-alert hidden" role="status" aria-live="polite">
+      <div class="banner-offline-content">
+        <span id="banner-offline-icon" class="banner-offline-icon">⚡</span>
+        <span id="banner-offline-text" class="banner-offline-text">Sem internet. O sistema continua operando offline e salvará seus pedidos.</span>
+      </div>
+    </div>
+
     <!-- ABA 1: NOVO PEDIDO -->
     <div id="view-novo-pedido" class="main-layout">
       <!-- PAINEL ESQUERDO: CARDÁPIO E MESAS -->
@@ -70,15 +95,20 @@
         </div>
         <div class="panel-header">
           <div class="mesa-selector">
-            <label for="mesa-select">Mesa / Local:</label>
-            <select id="mesa-select">
+            <label for="btn-mesa-trigger">Mesa / Local:</label>
+            <button type="button" id="btn-mesa-trigger" class="btn-mesa-trigger" aria-haspopup="dialog" aria-expanded="false">
+              <span class="mesa-trigger__icon">📍</span>
+              <span id="mesa-trigger-text" class="mesa-trigger__text">Selecione a Mesa...</span>
+              <span class="mesa-trigger__arrow">▼</span>
+            </button>
+            <select id="mesa-select" class="sr-only-mesa-select" tabindex="-1" aria-hidden="true">
               <option value="">Selecione a Mesa...</option>
               <!-- Preenchido via JS -->
             </select>
           </div>
 
           <div class="search-wrap">
-            <input type="search" id="product-search" placeholder="🔍 Buscar café, doce, salgado..." autocomplete="off" />
+            <input type="search" id="product-search" placeholder="🔍 Buscar café, doce, salgado..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search" />
           </div>
         </div>
 
@@ -111,14 +141,44 @@
         </div>
 
         <div class="cart-footer">
-          <div class="form-group">
-            <label for="pedido-cliente-nome">Nome do cliente (opcional):</label>
-            <input type="text" id="pedido-cliente-nome" class="input-padrao" placeholder="Ex: Ana Maria" maxlength="40" style="margin-bottom: 8px;">
+          <div class="form-group" style="position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="pedido-cliente-nome" style="margin-bottom: 0;">Nome do cliente (opcional):</label>
+              <button type="button" id="btn-abrir-cadastro-cliente" style="background: none; border: none; color: #15803d; font-size: 12px; font-weight: bold; cursor: pointer; text-decoration: underline; padding: 0;">+ Cadastrar</button>
+            </div>
+
+            <!-- Badge de cliente cadastrado selecionado -->
+            <div id="cliente-selecionado-badge" style="display: none; align-items: center; justify-content: space-between; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; font-size: 13px; color: #2e7d32;">
+              <span>👤 <strong id="cliente-selecionado-nome">Nome</strong> <small id="cliente-selecionado-tel" style="color: #4b5563; margin-left: 4px;"></small></span>
+              <button type="button" id="btn-desvincular-cliente" style="background: none; border: none; color: #c62828; cursor: pointer; font-weight: bold; font-size: 14px; padding: 0 4px;" title="Desvincular cliente">✕</button>
+            </div>
+
+            <div style="position: relative;">
+              <input type="text" id="pedido-cliente-nome" class="input-padrao" placeholder="Buscar cliente por nome ou celular..." maxlength="40" style="margin-bottom: 8px;" autocomplete="off">
+              <div id="sugestoes-clientes" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; z-index: 1000;">
+                <!-- Resultados de sugestão de cliente -->
+              </div>
+            </div>
+            <input type="hidden" id="pedido-cliente-id" value="">
             
-            <label class="payment-checkbox" style="margin-bottom: 12px; display: flex; align-items: center;">
+            <label class="payment-checkbox" style="margin-bottom: 8px; display: flex; align-items: center;">
               <input type="checkbox" id="pedido-para-viagem" />
               <span>🥡 <strong>Para viagem</strong> / Balcão</span>
             </label>
+
+            <label class="payment-checkbox" style="margin-bottom: 8px; display: flex; align-items: center; color: #b7791f;">
+              <input type="checkbox" id="pedido-prioritario" />
+              <span>⚡ <strong>Prioritário</strong> (Urgência / Espetáculo)</span>
+            </label>
+            <div id="box-motivo-prioridade" style="display: none; margin-bottom: 12px; background: #fff8e6; padding: 8px 12px; border-radius: 6px; border: 1px solid #f39c12;">
+              <label for="pedido-prioridade-motivo" style="font-size: 12px; font-weight: bold; color: #b7791f; display: block; margin-bottom: 4px;">Motivo da prioridade:</label>
+              <select id="pedido-prioridade-motivo" class="input-padrao" style="font-size: 13px; padding: 6px 8px; width: 100%;">
+                <option value="Espetáculo">Espetáculo (Início em breve)</option>
+                <option value="Refazer">Refazer pedido / Erro anterior</option>
+                <option value="Reclamação">Reclamação / Cliente aguardando</option>
+                <option value="Outro">Outro motivo</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
@@ -194,7 +254,13 @@
       <section class="pedidos-section">
         <div class="section-header">
           <div class="header-with-filters">
-            <h3>Pedidos em Andamento</h3>
+            <div class="header-title-and-scope">
+              <h3>Pedidos em Andamento</h3>
+              <div class="pedidos-filtro-escopo" id="pedidos-filtro-escopo">
+                <button type="button" class="btn-escopo-chip active" data-scope="todos">👥 Todos</button>
+                <button type="button" class="btn-escopo-chip" data-scope="meus">👤 Meus Pedidos</button>
+              </div>
+            </div>
             <div class="status-filters" id="pedidos-filtro-barista">
               <button class="filter-chip active" data-filter="todos">Todos</button>
               <button class="filter-chip chip--prontos" data-filter="concluido">🟢 Prontos p/ Servir</button>
@@ -281,6 +347,7 @@
         <div style="display:flex; gap: 8px;">
           <button id="btn-mesa-transferir" class="btn-ghost" style="color: var(--primaria); border-color: var(--primaria);">↔ Transferir Mesa</button>
           <button id="btn-mesa-juntar" class="btn-ghost" style="color: var(--primaria); border-color: var(--primaria);">⊕ Juntar com…</button>
+          <button id="btn-mesa-repetir-rodada" class="btn-ghost" style="color: var(--caramelo); border-color: var(--caramelo);">🔁 Repetir Rodada</button>
           <button id="btn-mesa-adicionar-itens" class="btn-ghost" style="color: var(--marrom-escuro); border-color: var(--marrom-escuro);">➕ Adicionar Itens</button>
           <button id="modal-mesa-fechar" class="btn-ghost">Fechar</button>
           <button id="modal-mesa-fechar-conta" class="btn-primary">💳 Fechar Conta</button>
@@ -311,150 +378,251 @@
     </div>
   </div>
 
-  <!-- MODAL: FECHAR CONTA DA MESA -->
-  <div id="modal-fechar-conta" class="modal-overlay hidden">
-    <div class="modal-card modal-card--large" style="max-width: 900px; width: 90%;">
+  <!-- MODAL / BOTTOM SHEET: SELECIONAR MESA (CAF-000052) -->
+  <div id="modal-selecionar-mesa" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-selecionar-mesa-title">
+    <div class="modal-card modal-content--bottom-sheet modal-selecionar-mesa-content">
       <div class="modal-header">
-        <h4 id="modal-fechar-conta-title">Fechar Conta</h4>
-        <button id="modal-fechar-conta-close" class="btn-close">✕</button>
+        <h4 id="modal-selecionar-mesa-title">📍 Selecionar Mesa</h4>
+        <button id="modal-selecionar-mesa-close" class="btn-close" aria-label="Fechar">✕</button>
       </div>
-      <div class="modal-body" style="display:flex; flex-direction: column; gap: 16px;">
+      <div class="modal-body modal-selecionar-mesa__body">
         
-        <!-- Seleção de Modo de Divisão -->
-        <div style="background: #F9F9F9; padding: 12px; border-radius: 8px; border: 1px solid #E5E5E5; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-          <label style="font-weight: bold; color: var(--marrom-escuro);">Modo de Fechamento:</label>
-          <select id="fechar-conta-modo" class="input-padrao" style="max-width: 200px;">
-            <option value="padrao">Padrão (Tudo junto)</option>
-            <option value="igual">Dividir Igualmente</option>
-            <option value="item">Dividir por Item</option>
-          </select>
-          
-          <div id="fechar-conta-div-pessoas" class="hidden" style="display: flex; gap: 8px; align-items: center;">
-            <label>Nº Pessoas:</label>
-            <input type="number" id="fechar-conta-num-pessoas" class="input-padrao" min="2" max="20" value="2" style="width: 80px;">
-            <button id="btn-gerar-partes-igual" class="btn-secondary">Gerar</button>
-          </div>
-          
-          <div id="fechar-conta-div-add-parte" class="hidden" style="display: flex; gap: 8px; align-items: center;">
-            <input type="text" id="fechar-conta-nome-parte" class="input-padrao" placeholder="Nome da pessoa" style="width: 150px;">
-            <button id="btn-add-parte-item" class="btn-secondary">Add Pessoa</button>
-          </div>
+        <!-- Ações Rápidas: Balcão e Limpar -->
+        <div class="mesa-quick-actions">
+          <button type="button" id="btn-selecionar-balcao" class="btn-mesa-quick">
+            <span class="quick-icon">🥡</span>
+            <div class="quick-text">
+              <strong>Balcão / Viagem</strong>
+              <small>Sem mesa física</small>
+            </div>
+          </button>
+          <button type="button" id="btn-limpar-mesa" class="btn-mesa-quick btn-mesa-quick--clear">
+            <span class="quick-icon">✕</span>
+            <div class="quick-text">
+              <strong>Sem Mesa</strong>
+              <small>Limpar seleção</small>
+            </div>
+          </button>
         </div>
 
-        <div style="display:flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
-          
-          <!-- Lado Esquerdo: Resumo / Atribuição de Itens -->
-          <div style="flex: 1; min-width: 300px; background: #F9F9F9; padding: 16px; border-radius: 8px; border: 1px solid #E5E5E5;">
-            <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Resumo da Conta</h5>
-            <div id="fechar-conta-resumo-pedidos" style="font-size: 13px; color: #444; max-height: 250px; overflow-y: auto; margin-bottom: 12px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
-              <!-- Pedidos listados aqui -->
-            </div>
-            
-            <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
-              <span>Subtotal Itens:</span>
-              <strong id="fechar-conta-subtotal-lbl">R$ 0,00</strong>
-            </div>
-
-            <div id="fechar-conta-div-desconto" class="hidden" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 13px; font-weight: bold; color: var(--marrom-escuro);">Desconto Manual</label>
-                <div style="display: flex; gap: 4px;">
-                  <select id="fechar-conta-desconto-tipo" class="input-padrao" style="padding: 4px; font-size: 13px;">
-                    <option value="valor">R$</option>
-                    <option value="percent">%</option>
-                  </select>
-                  <input type="number" id="fechar-conta-desconto-valor" class="input-padrao" style="padding: 4px; font-size: 13px; width: 80px;" placeholder="Valor" min="0" step="0.01">
-                </div>
-                <input type="text" id="fechar-conta-desconto-motivo" class="input-padrao" style="padding: 4px; font-size: 13px;" placeholder="Motivo do desconto (obrigatório)">
-              </div>
-            </div>
-
-            <div id="fechar-conta-div-taxa" class="hidden" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
-                <input type="checkbox" id="fechar-conta-taxa-check" checked>
-                Taxa de Serviço (<span id="fechar-conta-taxa-perc-lbl">10%</span>)
-              </label>
-              <strong id="fechar-conta-taxa-val-lbl">R$ 0,00</strong>
-            </div>
-
-            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px;">
-              <span>Total da Conta:</span>
-              <strong id="fechar-conta-total-lbl">R$ 0,00</strong>
-            </div>
-            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; color: green;">
-              <span>Já Pago:</span>
-              <strong id="fechar-conta-ja-pago-lbl">R$ 0,00</strong>
-            </div>
-            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: #D97706;">
-              <strong>A Pagar:</strong>
-              <strong id="fechar-conta-a-pagar-lbl">R$ 0,00</strong>
-            </div>
-            
-            <div style="display:flex; justify-content: space-between; margin-bottom: 8px; margin-top: 16px; font-size: 16px; color: var(--marrom-escuro);">
-              <strong>Total Restante:</strong>
-              <strong id="fechar-conta-falta-lbl">R$ 0,00</strong>
-            </div>
-          </div>
-
-          <!-- Lado Direito: Partes e Pagamentos -->
-          <div style="flex: 1.5; min-width: 350px;">
-            <h5 style="margin-top: 0; margin-bottom: 12px; color: var(--marrom-escuro);">Divisões e Pagamentos</h5>
-            
-            <!-- Lista de Partes -->
-            <div id="fechar-conta-lista-partes" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;">
-              <!-- Partes geradas via JS -->
-            </div>
-
-            <div id="fechar-conta-painel-pagamento" class="hidden" style="background: #fff; border: 1px solid #ccc; padding: 12px; border-radius: 8px;">
-              <h6 id="titulo-pagamento-parte" style="margin-top: 0; margin-bottom: 8px; font-size: 14px; color: #333;">Pagamento</h6>
-              
-              <div style="display:flex; gap: 8px; margin-bottom: 12px;">
-                <select id="fechar-conta-forma" class="input-padrao" style="flex:1;">
-                  <option value="pix">PIX</option>
-                  <option value="dinheiro">Dinheiro</option>
-                  <option value="cartao_debito">Cartão de Débito</option>
-                  <option value="cartao_credito">Cartão de Crédito</option>
-                  <option value="outros">Outros</option>
-                </select>
-                <input type="number" id="fechar-conta-valor" class="input-padrao" step="0.01" min="0" placeholder="Valor" style="width: 100px;">
-                <button id="btn-add-pagamento" class="btn-secondary" style="padding: 0 12px;">+</button>
-              </div>
-
-              <div id="div-dinheiro-recebido" class="hidden" style="margin-bottom: 12px; background: #E8F5E9; padding: 12px; border-radius: 8px; border: 1px solid #A5D6A7;">
-                <label style="font-size:12px; display:block; margin-bottom:4px; font-weight:bold;">Valor recebido em Dinheiro (para troco):</label>
-                <input type="number" id="fechar-conta-dinheiro-recebido" class="input-padrao" step="0.01" min="0" placeholder="Ex: 50.00" style="width: 100%;">
-                <div style="margin-top: 8px; font-size: 14px; text-align: right; font-weight: bold; color: #2E7D32;">
-                  Troco: <span id="fechar-conta-troco-lbl">R$ 0,00</span>
-                </div>
-              </div>
-
-              <div id="fechar-conta-lista-pagamentos">
-                <!-- Pagamentos da parte selecionada -->
-              </div>
-            </div>
-            
+        <div class="mesas-grid-section-header">
+          <span>Mesas do Salão</span>
+          <div class="mesas-grid-legenda">
+            <span class="legenda-item"><span class="legenda-dot livre"></span> Livre</span>
+            <span class="legenda-item"><span class="legenda-dot ocupada"></span> Ocupada</span>
           </div>
         </div>
-      </div>
-      <div class="modal-footer" style="justify-content: flex-end;">
-        <label style="display: flex; align-items: center; gap: 8px; margin-right: auto;">
-          <input type="checkbox" id="fechar-conta-imprimir-cupom" checked>
-          Imprimir Cupons
-        </label>
-        <button id="modal-fechar-conta-cancelar" class="btn-ghost">Cancelar</button>
-        <button id="modal-fechar-conta-confirmar" class="btn-primary" disabled>Confirmar Fechamento</button>
+        
+        <!-- Grade de Mesas -->
+        <div id="grid-selecao-mesas" class="mesas-selection-grid">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- MODAL: CONFIRMACAO GENERICA -->
-  <div id="modal-confirm" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width: 320px; text-align: center;">
-      <h4 id="modal-confirm-title" style="margin-bottom: 12px;">Confirmar</h4>
-      <p id="modal-confirm-msg" style="margin-bottom: 20px; font-size: 14px; color: #555;"></p>
-      <div style="display: flex; gap: 10px; justify-content: center;">
-        <button id="modal-confirm-cancel" class="btn-ghost">Cancelar</button>
-        <button id="modal-confirm-ok" class="btn-primary-small">Confirmar</button>
+  <!-- MODAL: FECHAR CONTA DA MESA -->
+  <!-- MODAL: FECHAR CONTA DA MESA (CAF-000054: FLUXO EM ETAPAS) -->
+  <div id="modal-fechar-conta" class="modal-overlay hidden">
+    <div class="modal-card modal-card--large modal-card--fechar-conta">
+      <div class="modal-header fechar-conta-header">
+        <div class="fechar-conta-header__left">
+          <button type="button" id="btn-fechar-conta-voltar" class="btn-fechar-conta-voltar hidden" title="Voltar etapa" aria-label="Voltar etapa">←</button>
+          <div>
+            <h4 id="modal-fechar-conta-title">Fechar Conta</h4>
+            <span id="fechar-conta-step-sub" class="fechar-conta-step-sub">Passo 1 de 3: Consumo</span>
+          </div>
+        </div>
+        <button id="modal-fechar-conta-close" class="btn-close" aria-label="Fechar">✕</button>
+      </div>
+
+      <!-- STEPPER DE ETAPAS (MOBILE & TABLET) -->
+      <div id="fechar-conta-stepper" class="fechar-conta-stepper">
+        <button type="button" class="fechar-conta-step-tab active" data-step="1">
+          <span class="step-num">1</span>
+          <span class="step-text">Consumo</span>
+        </button>
+        <div class="step-divider"></div>
+        <button type="button" class="fechar-conta-step-tab" data-step="2">
+          <span class="step-num">2</span>
+          <span class="step-text">Ajustes</span>
+        </button>
+        <div class="step-divider"></div>
+        <button type="button" class="fechar-conta-step-tab" data-step="3">
+          <span class="step-num">3</span>
+          <span class="step-text">Pagamento</span>
+        </button>
+      </div>
+
+      <div class="modal-body fechar-conta-body">
+        
+        <!-- ETAPA 1: RESUMO DO CONSUMO -->
+        <div id="step-fechar-consumo" class="fechar-conta-step-pane is-active">
+          <div class="fechar-conta-card">
+            <h5 class="fechar-conta-card__title">Itens Consumidos na Mesa</h5>
+            <div id="fechar-conta-resumo-pedidos" class="fechar-conta-resumo-pedidos">
+              <!-- Pedidos listados aqui -->
+            </div>
+            
+            <div class="fechar-conta-row">
+              <span>Subtotal dos Itens:</span>
+              <strong id="fechar-conta-subtotal-lbl">R$ 0,00</strong>
+            </div>
+            <div class="fechar-conta-row text-success">
+              <span>Já Pago Antecipadamente:</span>
+              <strong id="fechar-conta-ja-pago-lbl">R$ 0,00</strong>
+            </div>
+            <div class="fechar-conta-row fechar-conta-row--destaque text-warning">
+              <strong>Pendente de Pagamento:</strong>
+              <strong id="fechar-conta-a-pagar-lbl">R$ 0,00</strong>
+            </div>
+            <div class="fechar-conta-dica">
+              💡 <em>Confira os itens consumidos com os clientes na mesa antes de prosseguir com os ajustes e pagamento.</em>
+            </div>
+          </div>
+        </div>
+
+        <!-- ETAPA 2: AJUSTES (TAXA, DESCONTO E DIVISÃO) -->
+        <div id="step-fechar-ajustes" class="fechar-conta-step-pane">
+          
+          <!-- Modo de Divisão -->
+          <div class="fechar-conta-card">
+            <label class="fechar-conta-label">Modo de Divisão da Comanda:</label>
+            <select id="fechar-conta-modo" class="input-padrao" style="width: 100%; margin-top: 6px;">
+              <option value="padrao">Padrão (Conta Única / Tudo Junto)</option>
+              <option value="igual">Dividir Igualmente por Pessoas</option>
+              <option value="item">Dividir por Item / Pessoa</option>
+            </select>
+            
+            <div id="fechar-conta-div-pessoas" class="hidden" style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
+              <label style="font-size: 14px; font-weight: 600;">Nº de Pessoas:</label>
+              <input type="number" id="fechar-conta-num-pessoas" class="input-padrao" inputmode="numeric" min="2" max="20" value="2" style="width: 90px; text-align: center;">
+              <button type="button" id="btn-gerar-partes-igual" class="btn-secondary" style="height: 44px; padding: 0 16px;">Gerar Divisão</button>
+            </div>
+            
+            <div id="fechar-conta-div-add-parte" class="hidden" style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="fechar-conta-nome-parte" class="input-padrao" placeholder="Nome da pessoa" style="flex: 1;">
+              <button type="button" id="btn-add-parte-item" class="btn-secondary" style="height: 44px; padding: 0 14px;">+ Adicionar</button>
+            </div>
+          </div>
+
+          <!-- Taxa de Serviço e Desconto -->
+          <div class="fechar-conta-card">
+            <h5 class="fechar-conta-card__title">Acréscimos e Descontos</h5>
+            
+            <div id="fechar-conta-div-taxa" class="fechar-conta-row hidden" style="align-items: center;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                <input type="checkbox" id="fechar-conta-taxa-check" checked style="width: 20px; height: 20px;">
+                <span>Taxa de Serviço (<strong id="fechar-conta-taxa-perc-lbl">10%</strong>)</span>
+              </label>
+              <strong id="fechar-conta-taxa-val-lbl">R$ 0,00</strong>
+            </div>
+
+            <div id="fechar-conta-div-desconto" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--cinza-borda);">
+              <label style="font-size: 13px; font-weight: bold; color: var(--marrom-escuro); display: block; margin-bottom: 6px;">Desconto Manual Autorizado</label>
+              <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                <select id="fechar-conta-desconto-tipo" class="input-padrao" style="width: 80px;">
+                  <option value="valor">R$</option>
+                  <option value="percent">%</option>
+                </select>
+                <input type="number" id="fechar-conta-desconto-valor" class="input-padrao" inputmode="decimal" style="flex: 1;" placeholder="0,00" min="0" step="0.01">
+              </div>
+              <input type="text" id="fechar-conta-desconto-motivo" class="input-padrao" placeholder="Motivo do desconto (obrigatório)" style="width: 100%;">
+            </div>
+
+            <div class="fechar-conta-row fechar-conta-row--destaque" style="margin-top: 12px; border-top: 1px solid var(--cinza-borda); padding-top: 10px;">
+              <span>Total da Conta c/ Ajustes:</span>
+              <strong id="fechar-conta-total-lbl">R$ 0,00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- ETAPA 3: PAGAMENTO -->
+        <div id="step-fechar-pagamento" class="fechar-conta-step-pane">
+          
+          <!-- Lista de Partes (se houver divisão) -->
+          <div class="fechar-conta-card">
+            <h5 class="fechar-conta-card__title">Divisões / Pessoas</h5>
+            <div id="fechar-conta-lista-partes" class="fechar-conta-lista-partes">
+              <!-- Partes geradas via JS -->
+            </div>
+            
+            <div class="fechar-conta-row fechar-conta-row--destaque">
+              <strong>Total Restante a Pagar:</strong>
+              <strong id="fechar-conta-falta-lbl" style="font-size: 18px; color: var(--vermelho-erro);">R$ 0,00</strong>
+            </div>
+          </div>
+
+          <!-- Painel de Pagamento da Parte Selecionada -->
+          <div id="fechar-conta-painel-pagamento" class="fechar-conta-card hidden">
+            <h6 id="titulo-pagamento-parte" style="margin-top: 0; margin-bottom: 10px; font-size: 15px; color: var(--marrom-escuro);">Pagamento</h6>
+            
+            <div class="fechar-conta-pagamento-form">
+              <select id="fechar-conta-forma" class="input-padrao" style="flex: 1.5; min-width: 130px;">
+                <option value="pix">📱 PIX</option>
+                <option value="dinheiro">💵 Dinheiro</option>
+                <option value="cartao_debito">💳 Cartão de Débito</option>
+                <option value="cartao_credito">💳 Cartão de Crédito</option>
+                <option value="outros">Outros</option>
+              </select>
+              <input type="number" id="fechar-conta-valor" class="input-padrao" inputmode="decimal" step="0.01" min="0" placeholder="Valor R$" style="flex: 1; min-width: 90px;">
+              <button type="button" id="btn-add-pagamento" class="btn-primary" style="height: 44px; padding: 0 16px; font-weight: bold;">+ Lançar</button>
+            </div>
+
+            <!-- Bloco de Dinheiro Recebido & Troco -->
+            <div id="div-dinheiro-recebido" class="hidden fechar-conta-troco-box">
+              <label style="font-size: 13px; display: block; margin-bottom: 4px; font-weight: bold; color: var(--verde-ok);">
+                Valor recebido em Dinheiro:
+              </label>
+              <input type="number" id="fechar-conta-dinheiro-recebido" class="input-padrao" inputmode="decimal" step="0.01" min="0" placeholder="Ex: 50.00" style="width: 100%;">
+              <div id="fechar-conta-troco-chips" class="fechar-conta-troco-chips">
+                <!-- Chips rápidos gerados dinamicamente via JS -->
+              </div>
+              <div class="fechar-conta-troco-display">
+                Troco a Devolver: <strong id="fechar-conta-troco-lbl">R$ 0,00</strong>
+              </div>
+            </div>
+
+            <!-- Lista de Pagamentos Registrados -->
+            <div id="fechar-conta-lista-pagamentos" class="fechar-conta-lista-pagamentos">
+              <!-- Pagamentos da parte selecionada -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- FOOTER / BARRA DE AÇÃO -->
+      <div class="modal-footer fechar-conta-footer">
+        <div class="fechar-conta-footer-summary">
+          <span class="fechar-conta-footer-summary__label" id="fechar-conta-footer-label">Total a Pagar:</span>
+          <strong class="fechar-conta-footer-summary__val" id="fechar-conta-footer-val">R$ 0,00</strong>
+        </div>
+        <div class="fechar-conta-footer-actions">
+          <label class="fechar-conta-imprimir-label">
+            <input type="checkbox" id="fechar-conta-imprimir-cupom" checked>
+            <span>Imprimir Cupom</span>
+          </label>
+          <button type="button" id="modal-fechar-conta-cancelar" class="btn-ghost">Cancelar</button>
+          <button type="button" id="btn-fechar-conta-next-1" class="btn-primary btn-fechar-step-next">Ajustes ➔</button>
+          <button type="button" id="btn-fechar-conta-next-2" class="btn-primary btn-fechar-step-next hidden">Pagamento ➔</button>
+          <button type="button" id="modal-fechar-conta-confirmar" class="btn-primary" disabled>Confirmar Fechamento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACAO GENERICA / BOTTOM SHEET (CAF-000056) -->
+  <div id="modal-confirm" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title">
+    <div class="modal-card modal-card--confirm" style="max-width: 380px; text-align: center;">
+      <div class="sheet-handle"></div>
+      <h4 id="modal-confirm-title" style="margin-bottom: 10px; font-size: 17px; color: var(--marrom-escuro);">Confirmar</h4>
+      <p id="modal-confirm-msg" style="margin-bottom: 20px; font-size: 14px; color: #555; line-height: 1.4;"></p>
+      <div class="modal-confirm-actions" style="display: flex; gap: 10px; justify-content: center;">
+        <button id="modal-confirm-cancel" class="btn-ghost" type="button">Cancelar</button>
+        <button id="modal-confirm-ok" class="btn-primary-small" type="button">Confirmar</button>
       </div>
     </div>
   </div>
@@ -485,6 +653,43 @@
     </div>
   </div>
 
+  <!-- MODAL CADASTRO RÁPIDO DE CLIENTE (PDV) -->
+  <div id="modal-cadastro-cliente" class="modal-overlay" style="display: none; z-index: 2000;">
+    <div class="modal-card" style="max-width: 420px; width: 90%; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h4 style="margin: 0; font-size: 17px; color: #1e293b;">👤 Novo Cadastro de Cliente</h4>
+        <button type="button" id="btn-fechar-modal-cliente" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #64748b;">✕</button>
+      </div>
+      
+      <form id="form-cadastro-cliente-rapido">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; color: #334155; margin-bottom: 4px;">Nome completo *</label>
+          <input type="text" id="cad-cliente-nome" class="input-padrao" placeholder="Ex: Ana Souza" required maxlength="60" style="width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; color: #334155; margin-bottom: 4px;">WhatsApp / Telefone *</label>
+          <input type="tel" id="cad-cliente-tel" class="input-padrao" placeholder="(51) 99999-9999" required maxlength="16" style="width: 100%; box-sizing: border-box;">
+          <small style="font-size: 11px; color: #64748b;">DDD + 8 ou 9 dígitos</small>
+        </div>
+
+        <div style="margin-bottom: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #334155; cursor: pointer;">
+            <input type="checkbox" id="cad-cliente-consentimento" style="margin-top: 2px;">
+            <span><strong>Consentimento LGPD:</strong> Cliente autoriza contato via WhatsApp para avisos sobre pedidos e novidades da Cafeteria do Teatro.</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" id="btn-cancelar-cadastro-cliente" class="btn-ghost" style="padding: 8px 14px;">Cancelar</button>
+          <button type="submit" id="btn-salvar-cadastro-cliente" class="btn-primary" style="padding: 8px 16px; background: #15803d; border-color: #15803d; color: #fff;">
+            Salvar e Vincular
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div id="toast-container" class="toast-container"></div>
 
@@ -497,6 +702,7 @@
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
   <script src="js/pedido-print.js"></script>
   <script src="js/pedidos.js"></script>
   <script>

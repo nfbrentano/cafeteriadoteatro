@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + impressão + banco | 🟡 Média | P | Especificação · aguardando revisão |
+| Cozinha (KDS) + impressão + banco | 🟡 Média | P | Concluída |
 
 ---
 
@@ -24,20 +24,20 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Menu "⚙ Esta tela" no KDS, salvo em `localStorage` por dispositivo:
+- [x] Menu "⚙ Esta tela" no KDS, salvo em `localStorage` por dispositivo:
   - "Imprimir comandas automaticamente": sim/não. Padrão **não**; a primeira tela configurada vira a impressora.
   - "Estações que esta tela imprime": bar, cozinha ou as duas. Independe do filtro de visualização.
-- [ ] Controle no banco: tabela `pedido_impressoes (pedido_id, estacao, tipo ['comanda','adicional'], impresso_em, dispositivo)` com `UNIQUE (pedido_id, estacao, tipo)`.
+- [x] Controle no banco: tabela `pedido_impressoes (pedido_id, estacao, tipo ['comanda','adicional'], impresso_em, dispositivo)` com `UNIQUE (pedido_id, estacao, tipo)`.
   - Antes de imprimir, a tela faz `INSERT … ON CONFLICT DO NOTHING RETURNING` e **só imprime se conseguiu inserir**.
-- [ ] A comanda automática de cada estação traz só os itens dela e o cabeçalho "COMANDA — BAR" ou "COMANDA — COZINHA".
-- [ ] Indicador no card: "🖨 impressa 14:32" ou "⚠ não impressa". Pedidos com mais de 1 min sem impressão na estação ganham selo de alerta.
-- [ ] A reimpressão manual continua sempre disponível e **não** é bloqueada pela trava (registra `tipo = 'reimpressao'` sem `UNIQUE`).
-- [ ] Botão "Testar impressão" mostra também a configuração atual da tela.
+- [x] A comanda automática de cada estação traz só os itens dela e o cabeçalho "COMANDA — BAR" ou "COMANDA — COZINHA".
+- [x] Indicador no card: "🖨 impressa 14:32" ou "⚠ não impressa". Pedidos com mais de 1 min sem impressão na estação ganham selo de alerta.
+- [x] A reimpressão manual continua sempre disponível e **não** é bloqueada pela trava (registra `tipo = 'reimpressao'` sem `UNIQUE`).
+- [x] Botão "Testar impressão" mostra também a configuração atual da tela.
 
 ### Requisitos não funcionais
-- [ ] **Idempotência:** com N telas configuradas para imprimir a mesma estação, sai exatamente 1 comanda.
-- [ ] **Resiliência:** se a tela impressora estiver offline quando o pedido chega, ela imprime os pendentes do dia ao reconectar (consulta pedidos sem registro em `pedido_impressoes`).
-- [ ] **Permissão:** `INSERT` em `pedido_impressoes` só para `cozinha` e `admin`.
+- [x] **Idempotência:** com N telas configuradas para imprimir a mesma estação, sai exatamente 1 comanda.
+- [x] **Resiliência:** se a tela impressora estiver offline quando o pedido chega, ela imprime os pendentes do dia ao reconectar (consulta pedidos sem registro em `pedido_impressoes`).
+- [x] **Permissão:** `INSERT` em `pedido_impressoes` só para `cozinha` e `admin`.
 
 ### Dependências técnicas
 - [CAF-000022](CAF-000022-conclusao-independente-por-estacao.md) (estação gravada no item) e [CAF-000023](CAF-000023-correcoes-comanda-e-chamada-por-voz.md) (consulta completa para impressão).
@@ -50,11 +50,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** 2 tablets estão configurados para imprimir a cozinha, **quando** um pedido chega, **então** só um deles imprime.
-- [ ] **Dado que** o tablet do bar imprime só o bar, **quando** chega um pedido misto, **então** ele imprime a comanda com os cafés e o tablet da cozinha imprime a da cozinha.
-- [ ] **Dado que** nenhuma tela está configurada para imprimir o bar, **quando** passa 1 min de um pedido com cafés, **então** o card mostra "⚠ não impressa".
-- [ ] **Dado que** a tela impressora ficou 5 min offline, **quando** reconecta, **então** imprime as comandas pendentes do período.
-- [ ] **Dado que** a comanda já foi impressa, **quando** alguém toca em "🖨 Comanda", **então** reimprime normalmente.
+- [x] **Dado que** 2 tablets estão configurados para imprimir a cozinha, **quando** um pedido chega, **então** só um deles imprime.
+- [x] **Dado que** o tablet do bar imprime só o bar, **quando** chega um pedido misto, **então** ele imprime a comanda com os cafés e o tablet da cozinha imprime a da cozinha.
+- [x] **Dado que** nenhuma tela está configurada para imprimir o bar, **quando** passa 1 min de um pedido com cafés, **então** o card mostra "⚠ não impressa".
+- [x] **Dado que** a tela impressora ficou 5 min offline, **quando** reconecta, **então** imprime as comandas pendentes do período.
+- [x] **Dado que** a comanda já foi impressa, **quando** alguém toca em "🖨 Comanda", **então** reimprime normalmente.
 
 ---
 

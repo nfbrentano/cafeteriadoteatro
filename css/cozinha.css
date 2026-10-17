@@ -1302,3 +1302,381 @@ body {
   }
 }
 
+/* CAF-000028: Configuração de Impressão Desta Tela & Status de Impressão */
+#topbar-printer-status {
+  color: #FBBF24;
+  font-weight: 700;
+}
+
+#topbar-printer-status.ativo {
+  color: #34D399;
+}
+
+.modal-config-tela-card {
+  max-width: 480px;
+  width: 90%;
+  background: #1E1E1E;
+  color: #E0E0E0;
+  border-radius: 12px;
+  border: 1px solid #333;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-config-desc {
+  font-size: 13.5px;
+  color: #A0A0A0;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.config-field-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+}
+
+.config-toggle-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.config-field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #DDD;
+}
+
+.config-select,
+.config-input {
+  background: #2A2A2A;
+  border: 1px solid #444;
+  color: #FFF;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.config-field-hint {
+  font-size: 12px;
+  color: #888;
+}
+
+.config-info-box {
+  background: #252525;
+  border-left: 3px solid #10B981;
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: #C8E6C9;
+  line-height: 1.4;
+}
+
+.config-info-box.inativo {
+  border-left-color: #F59E0B;
+  color: #FEF3C7;
+}
+
+/* Badge de Impressão no Card do Pedido */
+.badge-impressao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.badge-impressao--ok {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-impressao--pendente {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  animation: pulsePendente 2s infinite ease-in-out;
+}
+
+@keyframes pulsePendente {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* =========================================================
+   CAF-000029: PRIORIDADE DE PEDIDO E BUMP BAR NO KDS
+   ========================================================= */
+
+/* Card prioritário */
+.pedido-card.pedido-card--prioritario {
+  border: 2px solid #F59E0B !important;
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.25) !important;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, #1e1e1e 80px) !important;
+}
+
+.badge-prioridade-kds {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #111;
+  font-weight: 900;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  animation: pulsoPrioridadeKds 2s infinite ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+@keyframes pulsoPrioridadeKds {
+  0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4); }
+  50% { transform: scale(1.03); box-shadow: 0 0 14px rgba(245, 158, 11, 0.8); }
+}
+
+.btn-card--prioridade {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #F59E0B;
+  color: #FBBF24;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-card--prioridade:hover {
+  background: #F59E0B;
+  color: #111;
+}
+
+.btn-card--prioridade.is-active {
+  background: #F59E0B;
+  color: #111;
+}
+
+/* Foco de Teclado / Bump Bar */
+.pedido-card.is-keyboard-focused {
+  outline: 3px solid #F59E0B !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.7) !important;
+  transform: translateY(-2px);
+  transition: outline 0.1s ease, box-shadow 0.1s ease, transform 0.1s ease;
+  z-index: 10;
+}
+
+/* Modal e Tabela de Atalhos */
+.tabela-atalhos {
+  width: 100%;
+  border-collapse: collapse;
+  color: #e0e0e0;
+  font-size: 13px;
+}
+
+.tabela-atalhos th {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  color: #F59E0B;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabela-atalhos td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.key-chip {
+  display: inline-block;
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom-width: 3px;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* =====================================================
+   CAF-000030: BOTÃO E MODAL DE HISTÓRICO / RECALL DO KDS
+   ===================================================== */
+.btn-historico-kds {
+  background: #334155;
+  color: #f1f5f9;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-historico-kds:hover {
+  background: #475569;
+  color: #fff;
+  border-color: #64748b;
+  transform: translateY(-1px);
+}
+
+.modal-historico-card {
+  max-width: 760px;
+  width: 95%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.historico-pedidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.historico-pedido-row {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background 0.2s;
+}
+
+.historico-pedido-row:hover {
+  background: #243247;
+  border-color: #475569;
+}
+
+.historico-pedido-row.is-prioritario {
+  border-left: 4px solid #f59e0b;
+}
+
+.historico-info-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.historico-num-mesa {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.historico-badge-status {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.historico-badge-status.concluido {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.historico-badge-status.entregue {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.historico-detalhes-itens {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.3;
+}
+
+.historico-meta-tempo {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.historico-acoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-recall-reimprimir,
+.btn-recall-desfazer {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-recall-reimprimir {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.btn-recall-reimprimir:hover {
+  background: #2563eb;
+}
+
+.btn-recall-desfazer {
+  background: #f59e0b;
+  color: #111;
+}
+
+.btn-recall-desfazer:hover {
+  background: #d97706;
+  color: #fff;
+}
+

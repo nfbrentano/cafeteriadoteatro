@@ -2259,4 +2259,125 @@ tbody tr:hover { background: var(--admin-hover); }
   color: #991b1b;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CAF-000031: CONTROLE DE ESTOQUE E CÂMERA DE CÓDIGO DE BARRAS
+   ════════════════════════════════════════════════════════════ */
+.badge-estoque {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.badge-estoque--critico {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.badge-estoque--alerta {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.badge-estoque--ok {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.badge-estoque--vencendo {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+/* Scanner de código de barras */
+.scanner-viewport-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--admin-border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-guide-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-target-box {
+  width: 75%;
+  height: 45%;
+  border: 2px solid rgba(201, 162, 39, 0.85);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+  position: relative;
+  animation: pulseScanner 2s infinite ease-in-out;
+}
+
+@keyframes pulseScanner {
+  0%, 100% { border-color: rgba(201, 162, 39, 0.85); box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); }
+  50% { border-color: rgba(46, 204, 113, 0.95); box-shadow: 0 0 12px rgba(46, 204, 113, 0.4), 0 0 0 9999px rgba(0, 0, 0, 0.45); }
+}
+
+.scanner-laser-line {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  opacity: 0.8;
+}
+
+.table-extrato-movimentos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table-extrato-movimentos th,
+.table-extrato-movimentos td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border2);
+}
+
+.table-extrato-movimentos th {
+  font-weight: 600;
+  color: var(--admin-text-sub);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+
 

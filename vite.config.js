@@ -42,6 +42,7 @@ export default defineConfig({
         admin: resolve(import.meta.dirname, 'admin.html'),
         pedidos: resolve(import.meta.dirname, 'pedidos.html'),
         cozinha: resolve(import.meta.dirname, 'cozinha.html'),
+        retirada: resolve(import.meta.dirname, 'retirada.html'),
         notfound: resolve(import.meta.dirname, '404.html')
       }
     }

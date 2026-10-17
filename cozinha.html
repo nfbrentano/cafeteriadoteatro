@@ -66,7 +66,12 @@
         </div>
       </div>
 
-      <div class="topbar__user">
+        <button id="btn-ajuda-atalhos" class="btn-ghost btn-icon" title="Atalhos do Teclado e Bump Bar (tecla ?)" aria-label="Atalhos">
+          ⌨️ <span class="btn-label">Atalhos ( ? )</span>
+        </button>
+        <button id="btn-config-tela" class="btn-ghost btn-icon" title="Configurar Impressão Desta Tela" aria-label="Esta Tela">
+          ⚙️ <span class="btn-label">Esta Tela: <strong id="topbar-printer-status">Não imprime</strong></span>
+        </button>
         <button id="btn-toggle-som" class="btn-ghost btn-icon" title="Testar ou Silenciar Alarme" aria-label="Som Ativo">🔔 <span class="btn-label">Som Ativo</span></button>
         <button id="btn-teste-voz" class="btn-ghost btn-icon" title="Testar Chamada de Voz" aria-label="Testar Voz">📢 <span class="btn-label">Testar Voz</span></button>
         <button id="btn-teste-impressao" class="btn-ghost btn-icon" title="Testar Impressão" aria-label="Testar Impressão">🖨 <span class="btn-label">Testar Impressão</span></button>
@@ -130,11 +135,14 @@
       <!-- 3. CONCLUÍDOS HOJE -->
       <div class="column" id="col-concluidos">
         <h2 class="column-header">
-          <span>🟢 Prontos (Hoje)</span>
-          <span class="count" id="count-concluidos">0</span>
+          <span>🟢 Prontos (Aguardando Entrega)</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="btn-historico-kds" class="btn-historico-kds" title="Histórico de Pedidos Concluídos e Entregues (Recall)">🕘 Histórico</button>
+            <span class="count" id="count-concluidos">0</span>
+          </div>
         </h2>
         <div class="pedidos-list" id="list-concluidos">
-          <div class="empty-state">Nenhum pedido concluído hoje.</div>
+          <div class="empty-state">Nenhum pedido pronto no momento.</div>
         </div>
       </div>
     </main>
@@ -155,6 +163,144 @@
         <!-- Renderizado dinamicamente -->
       </div>
     </section>
+  </div>
+
+  <!-- MODAL: CONFIGURAÇÃO DE IMPRESSÃO DESTA TELA (CAF-000028) -->
+  <div id="modal-config-tela" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-config-tela-title">
+    <div class="modal-card modal-config-tela-card">
+      <div class="modal-header">
+        <h4 id="modal-config-tela-title">⚙ Configuração Desta Tela</h4>
+        <button type="button" id="modal-config-tela-close" class="btn-close" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-config-desc">
+          Defina se este dispositivo deve imprimir comandas automaticamente e para quais estações. Ative em apenas 1 aparelho por estação para evitar impressões duplicadas.
+        </p>
+
+        <div class="config-field-group">
+          <label class="config-toggle-label" for="cfg-auto-print">
+            <input type="checkbox" id="cfg-auto-print">
+            <span class="toggle-text"><strong>Imprimir comandas automaticamente neste dispositivo</strong></span>
+          </label>
+        </div>
+
+        <div class="config-field-group" id="group-cfg-estacoes">
+          <label for="cfg-print-estacao" class="config-field-label">Estações que esta tela imprime:</label>
+          <select id="cfg-print-estacao" class="config-select">
+            <option value="todas">🍽️ Ambas (Cozinha & Bar)</option>
+            <option value="cozinha">🍳 Apenas Cozinha</option>
+            <option value="bar">☕ Apenas Bar</option>
+          </select>
+          <small class="config-field-hint">Independe do filtro de visualização do painel.</small>
+        </div>
+
+        <div class="config-field-group">
+          <label for="cfg-device-name" class="config-field-label">Nome identificador deste dispositivo:</label>
+          <input type="text" id="cfg-device-name" class="config-input" placeholder="Ex: Tablet Cozinha 1, PC Balcão">
+        </div>
+
+        <div class="config-info-box" id="cfg-status-summary">
+          <!-- Resumo de status gerado via JS -->
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <button type="button" id="btn-cfg-testar-impressao" class="btn-ghost">🖨 Testar Impressão</button>
+        <button type="button" id="btn-cfg-salvar" class="btn-primary" style="padding: 10px 20px; font-weight: bold;">Salvar Configuração</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ATALHOS DE TECLADO / BUMP BAR (CAF-000029) -->
+  <div id="modal-atalhos-teclado" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-atalhos-title">
+    <div class="modal-content modal-atalhos" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3 id="modal-atalhos-title">⌨️ Atalhos do Teclado & Bump Bar</h3>
+        <button type="button" id="btn-close-atalhos-modal" class="btn-close-modal" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 18px 20px;">
+        <p style="font-size: 13px; color: #bbb; margin-bottom: 16px;">
+          Opere o KDS com agilidade sem tocar na tela com as mãos sujas ou em TVs sem touch:
+        </p>
+
+        <table class="tabela-atalhos">
+          <thead>
+            <tr>
+              <th style="width: 130px;">Tecla</th>
+              <th style="width: 140px;">Ação</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd class="key-chip">←</kbd> <kbd class="key-chip">→</kbd></td>
+              <td><strong>Mudar Coluna</strong></td>
+              <td>Alterna entre Pendentes, Em Preparo e Concluídos</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">↑</kbd> <kbd class="key-chip">↓</kbd></td>
+              <td><strong>Navegar Cards</strong></td>
+              <td>Seleciona o pedido anterior ou próximo na coluna</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">1</kbd> a <kbd class="key-chip">9</kbd></td>
+              <td><strong>Card Direto</strong></td>
+              <td>Foca instantaneamente no card N da coluna ativa</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">Enter</kbd></td>
+              <td><strong>Avançar Status</strong></td>
+              <td>Pendente → <em>Iniciar Preparo</em> → <em>Pronto!</em></td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">Backspace</kbd></td>
+              <td><strong>Desfazer Ação</strong></td>
+              <td>Reverte a última conclusão ou início (5s)</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">P</kbd></td>
+              <td><strong>Reimprimir</strong></td>
+              <td>Reimprime a comanda do pedido selecionado</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">C</kbd></td>
+              <td><strong>Chamar Voz</strong></td>
+              <td>Chama pedido concluído por voz / painel</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">?</kbd></td>
+              <td><strong>Ajuda</strong></td>
+              <td>Abre esta tela de atalhos</td>
+            </tr>
+            <tr>
+              <td><kbd class="key-chip">Esc</kbd></td>
+              <td><strong>Fechar</strong></td>
+              <td>Fecha qualquer modal aberto</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+        <button type="button" id="btn-ok-atalhos" class="btn-primary" style="padding: 10px 24px; font-weight: bold;">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE HISTÓRICO / RECALL (CAF-000030) -->
+  <div id="modal-historico-kds" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-historico-title">
+    <div class="modal-card modal-historico-card">
+      <div class="modal-header">
+        <h2 id="modal-historico-title">🕘 Histórico Recente (Recall)</h2>
+        <button id="btn-fechar-historico" class="modal-close" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle" style="margin-bottom: 12px; font-size: 0.9rem; color: #a0aec0;">
+          Últimos 20 pedidos finalizados ou entregues hoje. Você pode reimprimir comandas ou desfazer a conclusão.
+        </p>
+        <div id="historico-pedidos-lista" class="historico-pedidos-lista">
+          <div class="empty-state">Nenhum pedido finalizado recente encontrado.</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- IFRAME OCULTO PARA IMPRESSÃO -->

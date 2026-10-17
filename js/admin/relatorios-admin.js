@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error) throw error;
       if (data) {
-        renderRelatorio(data);
+        renderRelatorio(data, p_start, p_end);
       }
     } catch (err) {
       console.error('Erro ao carregar relatórios:', err);
@@ -123,23 +123,96 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function renderRelatorio(data) {
-    // 1. KPIs
+  let ultimosDadosMargem = [];
+
+  function renderRelatorio(data, p_start, p_end) {
+    // 1. KPIs Operacionais
     document.getElementById('relatorio-faturamento').textContent = formatarDinheiro(data.resumo?.faturamento_total || 0);
     document.getElementById('relatorio-ticket').textContent = formatarDinheiro(data.resumo?.ticket_medio || 0);
     document.getElementById('relatorio-fila').textContent = data.tempo_preparo?.media_fila_minutos ? Math.round(data.tempo_preparo.media_fila_minutos) + ' min' : '0 min';
     document.getElementById('relatorio-preparo').textContent = data.tempo_preparo?.media_preparo_minutos ? Math.round(data.tempo_preparo.media_preparo_minutos) + ' min' : '0 min';
 
-    // 2. Charts
-    renderChartHorariosHora(data.horarios_pico_hora);
-    renderChartHorariosDia(data.horarios_pico_dia);
-    renderChartPagamentos(data.pagamentos);
+    // 2. KPIs Financeiros e CMV (CAF-000032)
+    const cmv = data.cmv_resumo || {};
+    const elCmvTotal = document.getElementById('relatorio-cmv-total');
+    const elCmvPct = document.getElementById('relatorio-cmv-pct');
+    const elLucroBruto = document.getElementById('relatorio-lucro-bruto');
+    const elMargemMedia = document.getElementById('relatorio-margem-media');
+    const elCustoCortesias = document.getElementById('relatorio-custo-cortesias');
 
-    // 3. Tables
+    if (elCmvTotal) elCmvTotal.textContent = formatarDinheiro(cmv.cmv_total || 0);
+    if (elCmvPct) elCmvPct.textContent = `${Number(cmv.cmv_percentual || 0).toFixed(1)}%`;
+    if (elLucroBruto) elLucroBruto.textContent = formatarDinheiro(cmv.lucro_bruto_total || 0);
+    if (elMargemMedia) elMargemMedia.textContent = `${Number(cmv.margem_media_percentual || 0).toFixed(1)}%`;
+    if (elCustoCortesias) elCustoCortesias.textContent = formatarDinheiro(cmv.custo_cortesias || 0);
+
+    // 3. Charts
+    renderChartHorariosHora(data.horarios_pico_hora || []);
+    renderChartHorariosDia(data.horarios_pico_dia || []);
+    renderChartPagamentos(data.pagamentos || []);
+
+    // 4. Tables
+    ultimosDadosMargem = data.margem_produtos || [];
+    renderTableMargemProdutos(ultimosDadosMargem);
     renderTableMaisVendidos(data.mais_vendidos);
     renderTableCortesias(data.cortesias);
     renderTablePromocoes(data.promocoes);
     renderTableTempoCategorias(data.tempo_por_categoria);
+    renderClientesRelatorio(p_start, p_end);
+  }
+
+  function renderTableMargemProdutos(dados) {
+    const tbody = document.getElementById('relatorio-margem-produtos');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!dados || dados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:20px; color:var(--admin-text-sub);">Sem produtos vendidos no período selecionado.</td></tr>';
+      return;
+    }
+
+    dados.forEach(d => {
+      const margem = Number(d.margem_percentual || 0);
+      let badgeClass = 'badge-estoque--ok';
+      if (margem < 40) badgeClass = 'badge-estoque--critico';
+      else if (margem < 55) badgeClass = 'badge-estoque--alerta';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:600;">${window.escapeHtml(d.nome_produto || 'Produto')}</td>
+        <td style="text-align:right;">${d.quantidade_vendida}</td>
+        <td style="text-align:right;">${formatarDinheiro(d.faturamento)}</td>
+        <td style="text-align:right; color:var(--admin-text-sub);">${formatarDinheiro(d.custo_total)}</td>
+        <td style="text-align:right; font-weight:600; color:#10b981;">${formatarDinheiro(d.lucro_bruto)}</td>
+        <td style="text-align:center;">
+          <span class="badge-estoque ${badgeClass}">${margem.toFixed(1)}%</span>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Exportar Margens em CSV
+  const btnExportMargens = document.getElementById('btn-exportar-margens-csv');
+  if (btnExportMargens) {
+    btnExportMargens.addEventListener('click', () => {
+      if (!ultimosDadosMargem || ultimosDadosMargem.length === 0) {
+        return alert('Nenhum dado para exportar no período atual.');
+      }
+      const headers = ['Produto', 'Quantidade Vendida', 'Faturamento', 'Custo Total', 'Lucro Bruto', 'Margem Percentual'];
+      const rows = ultimosDadosMargem.map(d => [
+        `"${(d.nome_produto || '').replace(/"/g, '""')}"`,
+        d.quantidade_vendida,
+        Number(d.faturamento || 0).toFixed(2),
+        Number(d.custo_total || 0).toFixed(2),
+        Number(d.lucro_bruto || 0).toFixed(2),
+        `${Number(d.margem_percentual || 0).toFixed(1)}%`
+      ].join(';'));
+
+      const csvContent = [headers.join(';'), ...rows].join('\r\n');
+      if (window.cafeteriaAdmin && window.cafeteriaAdmin.downloadCSV) {
+        window.cafeteriaAdmin.downloadCSV(`relatorio_margens_cmv_${new Date().toISOString().slice(0, 10)}.csv`, csvContent);
+      }
+    });
   }
 
   function renderChartHorariosHora(dados) {
@@ -228,15 +301,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('relatorio-cortesias');
     tbody.innerHTML = '';
     if (!dados || dados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="text-center">Sem dados</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Sem dados</td></tr>';
       return;
     }
     dados.forEach(d => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${d.produto_liberador_nome}</td>
-        <td>${d.quantidade}</td>
-        <td>${formatarDinheiro(d.valor_abonado)}</td>
+        <td>${window.escapeHtml(d.prato_liberador || d.produto_liberador_nome || 'Cortesia')}</td>
+        <td style="text-align:right;">${d.total_cortesias || d.quantidade || 0}</td>
+        <td style="text-align:right;">${formatarDinheiro(d.valor_abonado)}</td>
+        <td style="text-align:right; color:#ef4444; font-weight:600;">${formatarDinheiro(d.custo_cortesias || 0)}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -246,15 +320,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('relatorio-promocoes');
     tbody.innerHTML = '';
     if (!dados || dados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="text-center">Sem dados</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center">Sem dados</td></tr>';
       return;
     }
     dados.forEach(d => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${d.promocao_nome}</td>
-        <td>${d.aplicacoes}</td>
-        <td>${formatarDinheiro(d.desconto_total)}</td>
+        <td style="font-weight:600;">${window.escapeHtml(d.promocao_nome || 'Promoção')}</td>
+        <td style="text-align:right;">${d.vezes_aplicada || d.aplicacoes || 0}</td>
+        <td style="text-align:right; color:#f59e0b;">${formatarDinheiro(d.desconto_total)}</td>
+        <td style="text-align:right;">${formatarDinheiro(d.faturamento || 0)}</td>
+        <td style="text-align:right; color:var(--admin-text-sub);">${formatarDinheiro(d.custo_total || 0)}</td>
+        <td style="text-align:right; font-weight:600; color:#10b981;">${formatarDinheiro(d.lucro_com_desconto || 0)}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -296,5 +373,129 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  // Análise e Ranking de Clientes no Período (CAF-000033)
+  async function renderClientesRelatorio(p_start, p_end) {
+    const elNovos = document.getElementById('relatorio-clientes-novos');
+    const elRecorrentes = document.getElementById('relatorio-clientes-recorrentes');
+    const elTaxa = document.getElementById('relatorio-clientes-taxa-recorrencia');
+    const tbody = document.getElementById('relatorio-ranking-clientes');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px;">Carregando análise de clientes...</td></tr>';
+
+    try {
+      const { data: pedidosPeriodo, error: errPeriodo } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select('cliente_id, cliente_nome, total, created_at')
+        .not('cliente_id', 'is', null)
+        .neq('status', 'cancelado')
+        .gte('created_at', p_start)
+        .lte('created_at', p_end);
+
+      if (errPeriodo) throw errPeriodo;
+
+      if (!pedidosPeriodo || pedidosPeriodo.length === 0) {
+        if (elNovos) elNovos.textContent = '0';
+        if (elRecorrentes) elRecorrentes.textContent = '0';
+        if (elTaxa) elTaxa.textContent = '0%';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px; color:#64748b;">Nenhum cliente identificado realizou pedidos no período.</td></tr>';
+        return;
+      }
+
+      const clientesNoPeriodo = new Map();
+      pedidosPeriodo.forEach(p => {
+        const item = clientesNoPeriodo.get(p.cliente_id) || {
+          cliente_id: p.cliente_id,
+          nome: p.cliente_nome,
+          pedidosCount: 0,
+          totalGasto: 0
+        };
+        item.pedidosCount += 1;
+        item.totalGasto += (Number(p.total) || 0);
+        clientesNoPeriodo.set(p.cliente_id, item);
+      });
+
+      const clientIds = Array.from(clientesNoPeriodo.keys());
+
+      const { data: clientesCad, error: errCad } = await window.cafeteriaSupabase
+        .from('clientes')
+        .select('id, nome, telefone')
+        .in('id', clientIds);
+
+      const cadMap = new Map();
+      if (!errCad && clientesCad) {
+        clientesCad.forEach(c => cadMap.set(c.id, c));
+      }
+
+      const { data: primeirosPedidos, error: errPrim } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select('cliente_id, created_at')
+        .in('cliente_id', clientIds)
+        .neq('status', 'cancelado')
+        .order('created_at', { ascending: true });
+
+      const primeiroPedidoMap = new Map();
+      if (!errPrim && primeirosPedidos) {
+        primeirosPedidos.forEach(p => {
+          if (!primeiroPedidoMap.has(p.cliente_id)) {
+            primeiroPedidoMap.set(p.cliente_id, p.created_at);
+          }
+        });
+      }
+
+      let novosCount = 0;
+      let recorrentesCount = 0;
+      const pStartDate = new Date(p_start);
+
+      clientIds.forEach(cid => {
+        const prim = primeiroPedidoMap.get(cid);
+        if (prim && new Date(prim) < pStartDate) {
+          recorrentesCount++;
+        } else {
+          novosCount++;
+        }
+      });
+
+      const totalIdentificados = novosCount + recorrentesCount;
+      const taxaRec = totalIdentificados > 0 ? Math.round((recorrentesCount / totalIdentificados) * 100) : 0;
+
+      if (elNovos) elNovos.textContent = novosCount;
+      if (elRecorrentes) elRecorrentes.textContent = recorrentesCount;
+      if (elTaxa) elTaxa.textContent = `${taxaRec}%`;
+
+      const ranking = Array.from(clientesNoPeriodo.values())
+        .sort((a, b) => b.totalGasto - a.totalGasto);
+
+      tbody.innerHTML = '';
+      ranking.forEach((item, index) => {
+        const cad = cadMap.get(item.cliente_id) || {};
+        const nomeFinal = cad.nome || item.nome || 'Cliente';
+        const telFmt = cad.telefone ? formatarTelefoneAdmin(cad.telefone) : '-';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align:center; font-weight:bold; color:#64748b;">${index + 1}º</td>
+          <td><strong>${window.escapeHtml(nomeFinal)}</strong></td>
+          <td style="color:#64748b; font-size:13px;">${telFmt}</td>
+          <td style="text-align:center; font-weight:600;">${item.pedidosCount}</td>
+          <td style="text-align:right; font-weight:bold; color:#15803d;">${formatarDinheiro(item.totalGasto)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.warn('[Relatorios] Erro ao carregar análise de clientes:', err);
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px; color:#c62828;">Falha ao carregar métricas de clientes.</td></tr>';
+    }
+  }
+
+  function formatarTelefoneAdmin(tel) {
+    if (!tel) return '-';
+    let d = String(tel).replace(/\D/g, '');
+    if (d.startsWith('55') && d.length > 10) d = d.slice(2);
+    if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return tel;
   }
 });

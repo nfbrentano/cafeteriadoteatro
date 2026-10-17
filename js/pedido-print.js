@@ -87,15 +87,20 @@
       });
       const totalAdicionaisStr = Math.max(0, totalAdicionais).toFixed(2).replace('.', ',');
 
+      const estacao = options && options.estacao ? options.estacao.toLowerCase() : null;
+      let estacaoLabel = 'COZINHA / BAR';
+      if (estacao === 'cozinha') estacaoLabel = 'COZINHA';
+      else if (estacao === 'bar') estacaoLabel = 'BAR';
+
       let cabecalhoHtml = `
         <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
-        <div class="center">COMANDA DE COZINHA / BAR</div>
+        <div class="center bold" style="font-size: 14px; margin-top: 2px; letter-spacing: 0.5px;">COMANDA — ${estacaoLabel}</div>
       `;
 
       if (isComplementar) {
         cabecalhoHtml = `
           <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
-          <div class="center bold" style="background: #000; color: #fff; padding: 4px 0; margin: 4px 0; font-size: 13px; letter-spacing: 1px;">*** COMANDA COMPLEMENTAR ***</div>
+          <div class="center bold" style="background: #000; color: #fff; padding: 4px 0; margin: 4px 0; font-size: 13px; letter-spacing: 1px;">*** COMANDA COMPLEMENTAR — ${estacaoLabel} ***</div>
           <div class="center bold" style="font-size: 12px; margin-bottom: 2px;">⚠️ ACRÉSCIMO AO PEDIDO</div>
         `;
       }

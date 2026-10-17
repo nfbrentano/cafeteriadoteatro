@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Admin + banco + relatórios | 🟡 Média | M | Especificação · aguardando revisão |
+| Admin + banco + relatórios | 🟡 Média | M | 🟢 Concluída |
 
 ---
 
@@ -29,21 +29,21 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Tabela `fichas_tecnicas (id, produto_id NULL, adicional_id NULL, estoque_item_id, quantidade NUMERIC(12,3))` com `CHECK` de exatamente um dono (produto ou adicional).
-- [ ] Coluna `produtos.preco_custo_manual NUMERIC(10,2)` (usada quando não há ficha).
-- [ ] Função `custo_produto(produto_id)` = soma de `quantidade × custo_medio` dos insumos, ou `preco_custo_manual`.
-- [ ] Gravar o custo **no momento da venda** em `pedido_itens.custo_unitario` (e em `pedido_item_adicionais.custo`), para o relatório não mudar quando o custo do insumo mudar depois.
-- [ ] Meio a meio: custo e baixa = metade da ficha de cada sabor.
-- [ ] A baixa da [CAF-000031](CAF-000031-controle-de-estoque.md) passa a usar a ficha: 1 cappuccino gera `saida_venda` de 18 g de café, 150 ml de leite etc.
-- [ ] No formulário do produto (`js/admin/products.js`), aba "Ficha técnica": adicionar insumo + quantidade, com custo total e **margem** (`(preço − custo) / preço`) calculados na hora. Selo 🔴 quando a margem é menor que o mínimo configurado (padrão 50%).
-- [ ] Relatórios (`js/admin/relatorios-admin.js`):
+- [x] Tabela `fichas_tecnicas (id, produto_id NULL, adicional_id NULL, estoque_item_id, quantidade NUMERIC(12,3))` com `CHECK` de exatamente um dono (produto ou adicional).
+- [x] Coluna `produtos.preco_custo_manual NUMERIC(10,2)` (usada quando não há ficha).
+- [x] Função `custo_produto(produto_id)` = soma de `quantidade × custo_medio` dos insumos, ou `preco_custo_manual`.
+- [x] Gravar o custo **no momento da venda** em `pedido_itens.custo_unitario` (e em `pedido_item_adicionais.custo`), para o relatório não mudar quando o custo do insumo mudar depois.
+- [x] Meio a meio: custo e baixa = metade da ficha de cada sabor.
+- [x] A baixa da [CAF-000031](CAF-000031-controle-de-estoque.md) passa a usar a ficha: 1 cappuccino gera `saida_venda` de 18 g de café, 150 ml de leite etc.
+- [x] No formulário do produto (`js/admin/products.js`), aba "Ficha técnica": adicionar insumo + quantidade, com custo total e **margem** (`(preço − custo) / preço`) calculados na hora. Selo 🔴 quando a margem é menor que o mínimo configurado (padrão 50%).
+- [x] Relatórios (`js/admin/relatorios-admin.js`):
   - "Margem por produto": quantidade vendida, faturamento, custo, lucro bruto e margem %.
   - "CMV do período": custo total das vendas ÷ faturamento, com cortesias contadas como custo sem receita.
   - Promoções: lucro com e sem o desconto ([CAF-000017](CONCLUIDAS/CAF-000017-aba-promos-no-cardapio-publico.md)).
 
 ### Requisitos não funcionais
-- [ ] **Histórico imutável:** relatórios de períodos passados usam o custo gravado na venda.
-- [ ] **Desempenho:** o relatório roda por RPC agregada no banco (mesmo padrão de `get_admin_reports`).
+- [x] **Histórico imutável:** relatórios de períodos passados usam o custo gravado na venda.
+- [x] **Desempenho:** o relatório roda por RPC agregada no banco (mesmo padrão de `get_admin_reports`).
 
 ### Dependências técnicas
 - [CAF-000031](CAF-000031-controle-de-estoque.md) (itens de estoque e custo médio).
@@ -56,10 +56,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o Cappuccino tem ficha com custo de R$ 3,20 e preço R$ 12,00, **quando** o admin abre o produto, **então** vê custo R$ 3,20 e margem 73%.
-- [ ] **Dado que** um cappuccino é vendido, **quando** o pedido é salvo, **então** o estoque de café e de leite baixa pelas quantidades da ficha.
-- [ ] **Dado que** o custo do leite sobe depois da venda, **quando** o admin consulta o relatório do mês passado, **então** o lucro não muda.
-- [ ] **Dado que** houve cortesias no período, **quando** o relatório de CMV é gerado, **então** o custo delas aparece separado.
+- [x] **Dado que** o Cappuccino tem ficha com custo de R$ 3,20 e preço R$ 12,00, **quando** o admin abre o produto, **então** vê custo R$ 3,20 e margem 73%.
+- [x] **Dado que** um cappuccino é vendido, **quando** o pedido é salvo, **então** o estoque de café e de leite baixa pelas quantidades da ficha.
+- [x] **Dado que** o custo do leite sobe depois da venda, **quando** o admin consulta o relatório do mês passado, **então** o lucro não muda.
+- [x] **Dado que** houve cortesias no período, **quando** o relatório de CMV é gerado, **então** o custo delas aparece separado.
 
 ---
 

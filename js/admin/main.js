@@ -137,7 +137,9 @@
         conteudo: 'Conteúdo Home',
         configuracoes: 'Configurações',
         'menu-pdf': 'Cardápio PDF',
-        caixa: 'Caixa do Dia'
+        caixa: 'Caixa do Dia',
+        estoque: 'Estoque de Produtos e Insumos',
+        clientes: 'Gestão de Clientes'
       };
       document.getElementById('topbar-title').textContent = titles[pageId] || '';
       
@@ -155,7 +157,9 @@
         promocoes:  'renderPromocoes',
         conteudo:   'renderConteudo',
         'menu-pdf': 'renderMenuPdf',
-        caixa:      'initAdminCaixa'
+        caixa:      'initAdminCaixa',
+        estoque:    'initAdminEstoque',
+        clientes:   'initAdminClientes'
       };
       if (renderers[pageId] && typeof window[renderers[pageId]] === 'function') {
         window[renderers[pageId]]();
@@ -181,6 +185,23 @@
         this.appData.horarios   = hours;
         this.appData.promotions = promos;
         this.appData.settings   = settings;
+
+        try {
+          if (window.cafeteriaDB.estoque) {
+            this.appData.estoqueItens = await window.cafeteriaDB.estoque.allItens();
+          }
+        } catch (e) {
+          this.appData.estoqueItens = [];
+        }
+
+        try {
+          if (window.cafeteriaDB.fichasTecnicas) {
+            this.appData.fichasTecnicas = await window.cafeteriaDB.fichasTecnicas.all();
+          }
+        } catch (e) {
+          this.appData.fichasTecnicas = [];
+        }
+
         this.refreshCurrentPage();
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
@@ -417,7 +438,7 @@
     document.querySelectorAll('.sidebar__link[data-page]').forEach(btn => {
       btn.addEventListener('click', () => admin.navigateTo(btn.dataset.page));
     });
-    ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay', 'modal-mesa-overlay', 'modal-usuario-overlay', 'modal-movimento-caixa-overlay', 'modal-fechar-caixa-overlay'].forEach(id => {
+    ['modal-produto-overlay', 'modal-cat-overlay', 'modal-promo-overlay', 'modal-mesa-overlay', 'modal-usuario-overlay', 'modal-movimento-caixa-overlay', 'modal-fechar-caixa-overlay', 'modal-estoque-item-overlay', 'modal-estoque-movimento-overlay', 'modal-estoque-extrato-overlay', 'modal-barcode-scanner-overlay'].forEach(id => {
       document.getElementById(id)?.addEventListener('click', e => {
         if (e.target.id === id) admin.closeModal(id);
       });

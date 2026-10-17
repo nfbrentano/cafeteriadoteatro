@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Admin + PDV + banco | 🔴 Alta | G | Especificação · aguardando revisão |
+| Admin + PDV + banco | 🔴 Alta | G | 🟢 Concluída |
 
 ---
 
@@ -30,26 +30,26 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Tabela `estoque_itens (id, nome, unidade ['un','g','kg','ml','l'], quantidade NUMERIC(12,3), estoque_minimo, custo_medio NUMERIC(10,4), codigo_barras, controla_validade BOOLEAN, ativo)`.
-- [ ] Tabela `estoque_movimentos (id, item_id, tipo ['entrada','saida_venda','estorno','ajuste','perda'], quantidade, custo_unitario, validade DATE, pedido_item_id, motivo, criado_por, created_at)`. O saldo é sempre a soma dos movimentos; `estoque_itens.quantidade` é um cache atualizado por trigger.
-- [ ] Vínculo produto → estoque:
+- [x] Tabela `estoque_itens (id, nome, unidade ['un','g','kg','ml','l'], quantidade NUMERIC(12,3), estoque_minimo, custo_medio NUMERIC(10,4), codigo_barras, controla_validade BOOLEAN, ativo)`.
+- [x] Tabela `estoque_movimentos (id, item_id, tipo ['entrada','saida_venda','estorno','ajuste','perda'], quantidade, custo_unitario, validade DATE, pedido_item_id, motivo, criado_por, created_at)`. O saldo é sempre a soma dos movimentos; `estoque_itens.quantidade` é um cache atualizado por trigger.
+- [x] Vínculo produto → estoque:
   - **Revenda:** o produto aponta para um item de estoque com proporção 1:1 (`produtos.estoque_item_id`).
   - **Produzido:** a baixa usa a ficha técnica da [CAF-000032](CAF-000032-ficha-tecnica-custo-e-lucro.md). Até ela existir, o produto não baixa estoque.
   - Adicionais (`adicionais`) também podem apontar para um item de estoque (ex.: "leite vegetal").
-- [ ] Baixa automática no banco: trigger `AFTER INSERT ON pedido_itens` gera `saida_venda`; cancelamento de item ([CAF-000004](CONCLUIDAS/CAF-000004-cancelar-item-individual.md)) gera `estorno`. Nada é calculado no navegador.
-- [ ] Quando o saldo de um item de revenda chega a 0, o produto fica `disponivel = false` automaticamente (com evento no log da [CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)). Ao receber entrada, volta a `true` se tiver sido desligado pelo estoque (não pelo admin).
-- [ ] Nova aba **"Estoque"** no admin:
+- [x] Baixa automática no banco: trigger `AFTER INSERT ON pedido_itens` gera `saida_venda`; cancelamento de item ([CAF-000004](CONCLUIDAS/CAF-000004-cancelar-item-individual.md)) gera `estorno`. Nada é calculado no navegador.
+- [x] Quando o saldo de um item de revenda chega a 0, o produto fica `disponivel = false` automaticamente (com evento no log da [CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)). Ao receber entrada, volta a `true` se tiver sido desligado pelo estoque (não pelo admin).
+- [x] Nova aba **"Estoque"** no admin:
   - Lista com saldo, mínimo, custo médio e selo 🔴 abaixo do mínimo / 🟠 vence em ≤ 3 dias.
   - Botões "Entrada", "Ajuste de inventário" e "Registrar perda" (com motivo obrigatório).
   - Histórico de movimentos por item, filtrável por período e tipo.
-- [ ] Entrada com custo unitário atualiza o **custo médio ponderado** do item.
-- [ ] Leitura de código de barras pela câmera no cadastro e na entrada (`BarcodeDetector` quando disponível, digitação manual como alternativa).
-- [ ] Relatório "Perdas por período" e "Itens abaixo do mínimo" (exportável pelo CSV da [CAF-000016](CONCLUIDAS/CAF-000016-exportar-csv.md)).
+- [x] Entrada com custo unitário atualiza o **custo médio ponderado** do item.
+- [x] Leitura de código de barras pela câmera no cadastro e na entrada (`BarcodeDetector` quando disponível, digitação manual como alternativa).
+- [x] Relatório "Perdas por período" e "Itens abaixo do mínimo" (exportável pelo CSV da [CAF-000016](CONCLUIDAS/CAF-000016-exportar-csv.md)).
 
 ### Requisitos não funcionais
-- [ ] **Consistência:** a baixa acontece na mesma transação de `criar_pedido` / `adicionar_itens_pedido`. Pedido criado offline ([CAF-000018](CONCLUIDAS/CAF-000018-tolerancia-a-queda-de-internet.md)) baixa quando sincroniza, sem duplicar (idempotência já existente).
-- [ ] **Venda nunca bloqueada:** estoque negativo é permitido (com alerta), para não travar o balcão por cadastro desatualizado.
-- [ ] **Permissão:** entrada/ajuste/perda só `admin` (ou cargo com permissão, ver [CAF-000036](CAF-000036-permissoes-por-cargo-e-desempenho.md)).
+- [x] **Consistência:** a baixa acontece na mesma transação de `criar_pedido` / `adicionar_itens_pedido`. Pedido criado offline ([CAF-000018](CONCLUIDAS/CAF-000018-tolerancia-a-queda-de-internet.md)) baixa quando sincroniza, sem duplicar (idempotência já existente).
+- [x] **Venda nunca bloqueada:** estoque negativo é permitido (com alerta), para não travar o balcão por cadastro desatualizado.
+- [x] **Permissão:** entrada/ajuste/perda só `admin` (ou cargo com permissão, ver [CAF-000036](CAF-000036-permissoes-por-cargo-e-desempenho.md)).
 
 ### Dependências técnicas
 - `pedido_itens`, `pedido_item_adicionais`, `produtos.disponivel` e o log de `pedido_eventos`.
@@ -62,11 +62,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** "Água sem gás" tem saldo 10, **quando** o barista vende 2, **então** o saldo vai para 8 e há um movimento `saida_venda` ligado ao item do pedido.
-- [ ] **Dado que** um item vendido é cancelado, **quando** o cancelamento é salvo, **então** é gerado `estorno` e o saldo volta.
-- [ ] **Dado que** o saldo de um produto de revenda chega a 0, **quando** a venda é concluída, **então** o produto aparece como esgotado no PDV e no cardápio público.
-- [ ] **Dado que** o admin registra entrada de 12 unidades a R$ 2,00 num item com 6 a R$ 1,50, **quando** salva, **então** o custo médio passa a R$ 1,83.
-- [ ] **Dado que** um item está abaixo do mínimo, **quando** o admin abre a aba Estoque, **então** ele aparece no topo com selo vermelho.
+- [x] **Dado que** "Água sem gás" tem saldo 10, **quando** o barista vende 2, **então** o saldo vai para 8 e há um movimento `saida_venda` ligado ao item do pedido.
+- [x] **Dado que** um item vendido é cancelado, **quando** o cancelamento é salvo, **então** é gerado `estorno` e o saldo volta.
+- [x] **Dado que** o saldo de um produto de revenda chega a 0, **quando** a venda é concluída, **então** o produto aparece como esgotado no PDV e no cardápio público.
+- [x] **Dado que** o admin registra entrada de 12 unidades a R$ 2,00 num item com 6 a R$ 1,50, **quando** salva, **então** o custo médio passa a R$ 1,83.
+- [x] **Dado que** um item está abaixo do mínimo, **quando** o admin abre a aba Estoque, **então** ele aparece no topo com selo vermelho.
 
 ---
 

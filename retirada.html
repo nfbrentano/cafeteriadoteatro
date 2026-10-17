@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Retirada de Pedidos | Cafeteria do Teatro</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#120c08">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Painel de Retirada">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/retirada.css">
+</head>
+<body class="retirada-body">
+
+  <!-- AVISO DE ATIVAÇÃO DE ÁUDIO NA TV -->
+  <div id="retirada-audio-banner" class="retirada-audio-banner">
+    <span>🔊 Toque em qualquer lugar ou no botão para ativar os avisos sonoros da TV</span>
+    <button type="button" id="btn-ativar-audio" class="btn-ativar-audio">Ativar Som</button>
+  </div>
+
+  <div class="retirada-layout">
+    <!-- BARRA SUPERIOR -->
+    <header class="retirada-header">
+      <div class="retirada-header__brand">
+        <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Cafeteria do Teatro" class="retirada-header__logo" onerror="this.style.display='none'">
+        <div class="retirada-header__titles">
+          <h1 class="retirada-header__title">Cafeteria do Teatro</h1>
+          <span class="retirada-header__subtitle">Painel de Retirada no Balcão</span>
+        </div>
+      </div>
+
+      <div class="retirada-header__center">
+        <div id="retirada-status-conexao" class="retirada-status-chip online" title="Status da Conexão">
+          <span class="status-dot"></span>
+          <span class="status-text">Online</span>
+        </div>
+      </div>
+
+      <div class="retirada-header__right">
+        <div class="retirada-relogio" id="retirada-relogio">00:00</div>
+        <div class="retirada-header__actions">
+          <button type="button" id="btn-toggle-sound" class="btn-header-icon" title="Ativar/Desativar Som" aria-label="Som">
+            🔔
+          </button>
+          <button type="button" id="btn-toggle-fullscreen" class="btn-header-icon" title="Tela Cheia (F11)" aria-label="Tela Cheia">
+            ⛶
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL: 2 COLUNAS (PREPARANDO / PRONTO) -->
+    <main class="retirada-grid">
+      <!-- COLUNA 1: PREPARANDO -->
+      <section class="retirada-coluna retirada-coluna--preparando" aria-labelledby="col-preparando-title">
+        <div class="retirada-coluna__header">
+          <div class="retirada-coluna__header-title">
+            <span class="coluna-icon">⏳</span>
+            <h2 id="col-preparando-title">Preparando</h2>
+          </div>
+          <span class="retirada-coluna__count" id="count-preparando">0</span>
+        </div>
+        <div class="retirada-coluna__body" id="grid-preparando">
+          <div class="retirada-empty-state">Nenhum pedido em preparo no momento.</div>
+        </div>
+      </section>
+
+      <!-- COLUNA 2: PRONTO (RETIRE NO BALCÃO) -->
+      <section class="retirada-coluna retirada-coluna--pronto" aria-labelledby="col-pronto-title">
+        <div class="retirada-coluna__header">
+          <div class="retirada-coluna__header-title">
+            <span class="coluna-icon">✓</span>
+            <h2 id="col-pronto-title">Pronto · Retire no Balcão</h2>
+          </div>
+          <span class="retirada-coluna__count" id="count-pronto">0</span>
+        </div>
+        <div class="retirada-coluna__body" id="grid-pronto">
+          <div class="retirada-empty-state">Aguardando pedidos prontos...</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- RODAPÉ INFORMATIVO -->
+    <footer class="retirada-footer">
+      <div class="retirada-footer__msg" id="retirada-footer-msg">
+        ☕ <strong>Atenção:</strong> Ao ver o número da sua senha ou seu nome em "Pronto", dirija-se ao balcão com seu comprovante. Bom espetáculo!
+      </div>
+    </footer>
+  </div>
+
+  <!-- ELEMENTO DE ÁUDIO -->
+  <audio id="audio-ding" src="assets/audio/ding.wav" preload="auto"></audio>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/retirada.js"></script>
+</body>
+</html>

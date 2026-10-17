@@ -674,6 +674,427 @@
       }
     },
 
+    // --- Estoque e Controle de Insumos (CAF-000031) ---
+    estoque: {
+      async allItens() {
+        if (!window.cafeteriaSupabase) return [];
+        const { data, error } = await window.cafeteriaSupabase
+          .from('estoque_itens')
+          .select('*')
+          .order('nome', { ascending: true });
+        if (error) {
+          db.logger.error('estoque.allItens', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async getItem(id) {
+        if (!window.cafeteriaSupabase) return null;
+        const { data, error } = await window.cafeteriaSupabase
+          .from('estoque_itens')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        if (error) {
+          db.logger.error('estoque.getItem', error);
+          throw error;
+        }
+        return data;
+      },
+      async upsertItem(item) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const { data, error } = await window.cafeteriaSupabase
+          .from('estoque_itens')
+          .upsert(item)
+          .select()
+          .single();
+        if (error) {
+          db.logger.error('estoque.upsertItem', error);
+          throw error;
+        }
+        return data;
+      },
+      async deleteItem(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const { error } = await window.cafeteriaSupabase
+          .from('estoque_itens')
+          .delete()
+          .eq('id', id);
+        if (error) {
+          db.logger.error('estoque.deleteItem', error);
+          throw error;
+        }
+      },
+      async getMovimentos(filtro = {}) {
+        if (!window.cafeteriaSupabase) return [];
+        let query = window.cafeteriaSupabase
+          .from('estoque_movimentos')
+          .select(`
+            *,
+            estoque_itens:item_id (
+              nome,
+              unidade_medida,
+              codigo_barras
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (filtro.item_id) {
+          query = query.eq('item_id', filtro.item_id);
+        }
+        if (filtro.tipo) {
+          query = query.eq('tipo', filtro.tipo);
+        }
+        if (filtro.data_inicio) {
+          query = query.gte('created_at', filtro.data_inicio);
+        }
+        if (filtro.data_fim) {
+          query = query.lte('created_at', filtro.data_fim);
+        }
+        if (filtro.limite) {
+          query = query.limit(filtro.limite);
+        }
+
+        const { data, error } = await query;
+        if (error) {
+          db.logger.error('estoque.getMovimentos', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async criarMovimento(movimento) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const { data, error } = await window.cafeteriaSupabase
+          .from('estoque_movimentos')
+          .insert(movimento)
+          .select()
+          .single();
+        if (error) {
+          db.logger.error('estoque.criarMovimento', error);
+          throw error;
+        }
+        return data;
+      }
+    },
+
+    // --- Fichas Técnicas (CAF-000032) ---
+    fichasTecnicas: {
+      async all() {
+        if (!window.cafeteriaSupabase) return [];
+        const { data, error } = await window.cafeteriaSupabase
+          .from('fichas_tecnicas')
+          .select(`
+            *,
+            estoque_itens:estoque_item_id (
+              id,
+              nome,
+              unidade_medida,
+              custo_unitario_medio
+            )
+          `);
+        if (error) {
+          db.logger.error('fichasTecnicas.all', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async getByProduto(produtoId) {
+        if (!window.cafeteriaSupabase) return [];
+        const { data, error } = await window.cafeteriaSupabase
+          .from('fichas_tecnicas')
+          .select(`
+            *,
+            estoque_itens:estoque_item_id (
+              id,
+              nome,
+              unidade_medida,
+              custo_unitario_medio
+            )
+          `)
+          .eq('produto_id', produtoId);
+        if (error) {
+          db.logger.error('fichasTecnicas.getByProduto', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async getByAdicional(adicionalId) {
+        if (!window.cafeteriaSupabase) return [];
+        const { data, error } = await window.cafeteriaSupabase
+          .from('fichas_tecnicas')
+          .select(`
+            *,
+            estoque_itens:estoque_item_id (
+              id,
+              nome,
+              unidade_medida,
+              custo_unitario_medio
+            )
+          `)
+          .eq('adicional_id', adicionalId);
+        if (error) {
+          db.logger.error('fichasTecnicas.getByAdicional', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async saveFichaProduto(produtoId, itens = []) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        
+        // 1. Remove itens anteriores
+        const { error: delError } = await window.cafeteriaSupabase
+          .from('fichas_tecnicas')
+          .delete()
+          .eq('produto_id', produtoId);
+        if (delError) {
+          db.logger.error('fichasTecnicas.saveFichaProduto.delete', delError);
+          throw delError;
+        }
+
+        // 2. Insere novos itens da receita
+        if (itens && itens.length > 0) {
+          const rows = itens.map(i => ({
+            produto_id: produtoId,
+            estoque_item_id: parseInt(i.estoque_item_id, 10),
+            quantidade: parseFloat(i.quantidade)
+          }));
+          const { error: insError } = await window.cafeteriaSupabase
+            .from('fichas_tecnicas')
+            .insert(rows);
+          if (insError) {
+            db.logger.error('fichasTecnicas.saveFichaProduto.insert', insError);
+            throw insError;
+          }
+        }
+      },
+      async saveFichaAdicional(adicionalId, itens = []) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        
+        const { error: delError } = await window.cafeteriaSupabase
+          .from('fichas_tecnicas')
+          .delete()
+          .eq('adicional_id', adicionalId);
+        if (delError) {
+          db.logger.error('fichasTecnicas.saveFichaAdicional.delete', delError);
+          throw delError;
+        }
+
+        if (itens && itens.length > 0) {
+          const rows = itens.map(i => ({
+            adicional_id: adicionalId,
+            estoque_item_id: parseInt(i.estoque_item_id, 10),
+            quantidade: parseFloat(i.quantidade)
+          }));
+          const { error: insError } = await window.cafeteriaSupabase
+            .from('fichas_tecnicas')
+            .insert(rows);
+          if (insError) {
+            db.logger.error('fichasTecnicas.saveFichaAdicional.insert', insError);
+            throw insError;
+          }
+        }
+      }
+    },
+
+    // --- Cadastro de Clientes ---
+    clientes: {
+      /** Busca rápida de clientes para o PDV (<300ms) */
+      async buscar(termo, limite = 8) {
+        if (!window.cafeteriaSupabase) return [];
+        if (!termo || termo.trim().length < 2) return [];
+
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('buscar_clientes_pdv', {
+              p_termo: termo.trim(),
+              p_limite: limite
+            });
+
+          if (!error && Array.isArray(data)) {
+            return data;
+          }
+        } catch (rpcErr) {
+          console.warn('[DB] buscar_clientes_pdv falhou, usando fallback direto:', rpcErr);
+        }
+
+        // Fallback direto via Supabase se RPC indisponível
+        try {
+          const digits = termo.replace(/\D/g, '');
+          let query = window.cafeteriaSupabase
+            .from('clientes')
+            .select('id, nome, telefone, aceita_contato')
+            .eq('ativo', true)
+            .eq('anonimizado', false);
+
+          if (digits.length >= 3) {
+            query = query.or(`nome.ilike.%${termo.trim()}%,telefone.like.%${digits}%`);
+          } else {
+            query = query.ilike('nome', `%${termo.trim()}%`);
+          }
+
+          const { data, error } = await query.order('nome', { ascending: true }).limit(limite);
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('clientes.buscar', err);
+          return [];
+        }
+      },
+
+      /** Lista todos os clientes para o Admin */
+      async all(filtros = {}) {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          let query = window.cafeteriaSupabase
+            .from('clientes')
+            .select('*');
+
+          if (filtros.apenasAtivos !== false) {
+            query = query.eq('ativo', true);
+          }
+          if (filtros.apenasAceitaContato) {
+            query = query.eq('aceita_contato', true);
+          }
+          if (filtros.termo && filtros.termo.trim()) {
+            const t = filtros.termo.trim();
+            const digits = t.replace(/\D/g, '');
+            if (digits.length >= 3) {
+              query = query.or(`nome.ilike.%${t}%,telefone.like.%${digits}%,email.ilike.%${t}%`);
+            } else {
+              query = query.or(`nome.ilike.%${t}%,email.ilike.%${t}%`);
+            }
+          }
+
+          const { data, error } = await query.order('nome', { ascending: true });
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('clientes.all', err);
+          return [];
+        }
+      },
+
+      /** Retorna cliente por ID */
+      async getById(id) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('clientes')
+            .select('*')
+            .eq('id', id)
+            .single();
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.getById', err);
+          return null;
+        }
+      },
+
+      /** Obtém ficha completa com métricas de consumo e histórico */
+      async getFicha(id) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_ficha_cliente', { p_cliente_id: id });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.getFicha', err);
+          throw err;
+        }
+      },
+
+      /** Cria um novo cliente */
+      async create(dados) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const row = {
+            nome: dados.nome.trim(),
+            telefone: dados.telefone ? dados.telefone.trim() : null,
+            email: dados.email ? dados.email.trim() : null,
+            data_nascimento: dados.data_nascimento || null,
+            observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+            aceita_contato: Boolean(dados.aceita_contato),
+            ativo: dados.ativo !== false
+          };
+
+          const { data, error } = await window.cafeteriaSupabase
+            .from('clientes')
+            .insert([row])
+            .select()
+            .single();
+
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.create', err);
+          throw err;
+        }
+      },
+
+      /** Atualiza cliente existente */
+      async update(id, dados) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const row = {
+            nome: dados.nome.trim(),
+            telefone: dados.telefone ? dados.telefone.trim() : null,
+            email: dados.email ? dados.email.trim() : null,
+            data_nascimento: dados.data_nascimento || null,
+            observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+            aceita_contato: Boolean(dados.aceita_contato),
+            updated_at: new Date().toISOString()
+          };
+          if (dados.ativo !== undefined) row.ativo = Boolean(dados.ativo);
+
+          const { data, error } = await window.cafeteriaSupabase
+            .from('clientes')
+            .update(row)
+            .eq('id', id)
+            .select()
+            .single();
+
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.update', err);
+          throw err;
+        }
+      },
+
+      /** Mescla dois clientes duplicados */
+      async mesclar(origemId, destinoId) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('mesclar_clientes', {
+              p_cliente_origem_id: origemId,
+              p_cliente_destino_id: destinoId
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.mesclar', err);
+          throw err;
+        }
+      },
+
+      /** Anonimiza dados do cliente conforme LGPD */
+      async anonimizar(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('anonimizar_cliente', { p_cliente_id: id });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.anonimizar', err);
+          throw err;
+        }
+      }
+    },
+
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
       const channelId = `db-changes-${Math.random().toString(36).slice(2, 9)}`;

@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| PDV + admin + banco | 🟡 Média | M | Especificação · aguardando revisão |
+| PDV + admin + banco | 🟡 Média | M | 🟢 Concluída |
 
 ---
 
@@ -25,19 +25,19 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Tabela `clientes (id UUID, nome, telefone TEXT UNIQUE (só dígitos, com DDI), email, data_nascimento, observacoes, aceita_contato BOOLEAN DEFAULT false, ativo, created_at)`.
-- [ ] Coluna `pedidos.cliente_id UUID NULL REFERENCES clientes`. `cliente_nome` continua sendo preenchido (texto da chamada e da comanda).
-- [ ] PDV (`js/pedidos.js`): no campo de nome do cliente, busca por nome ou telefone com sugestões; opção "+ Cadastrar" rápida (nome + telefone). Vincular é opcional: o balcão continua funcionando só com o nome.
-- [ ] Nova aba "Clientes" no admin: lista com busca, total gasto, nº de visitas e última visita; ficha com histórico de pedidos (link para os detalhes existentes) e top 5 produtos.
-- [ ] Botão "💬 WhatsApp" na ficha (`https://wa.me/<telefone>`), só se `aceita_contato = true`.
-- [ ] Mesclar clientes duplicados (admin), movendo os pedidos para o cadastro que fica.
-- [ ] Relatório: clientes novos × recorrentes por período e ranking de clientes.
-- [ ] Exportação CSV da lista ([CAF-000016](CONCLUIDAS/CAF-000016-exportar-csv.md)), apenas para `admin`.
+- [x] Tabela `clientes (id UUID, nome, telefone TEXT UNIQUE (só dígitos, com DDI), email, data_nascimento, observacoes, aceita_contato BOOLEAN DEFAULT false, ativo, created_at)`.
+- [x] Coluna `pedidos.cliente_id UUID NULL REFERENCES clientes`. `cliente_nome` continua sendo preenchido (texto da chamada e da comanda).
+- [x] PDV (`js/pedidos.js`): no campo de nome do cliente, busca por nome ou telefone com sugestões; opção "+ Cadastrar" rápida (nome + telefone). Vincular é opcional: o balcão continua funcionando só com o nome.
+- [x] Nova aba "Clientes" no admin: lista com busca, total gasto, nº de visitas e última visita; ficha com histórico de pedidos (link para os detalhes existentes) e top 5 produtos.
+- [x] Botão "💬 WhatsApp" na ficha (`https://wa.me/<telefone>`), só se `aceita_contato = true`.
+- [x] Mesclar clientes duplicados (admin), movendo os pedidos para o cadastro que fica.
+- [x] Relatório: clientes novos × recorrentes por período e ranking de clientes.
+- [x] Exportação CSV da lista ([CAF-000016](CONCLUIDAS/CAF-000016-exportar-csv.md)), apenas para `admin`.
 
 ### Requisitos não funcionais
-- [ ] **LGPD:** consentimento explícito para contato (`aceita_contato`), exclusão/anonimização do cliente a pedido (mantém os pedidos, apaga os dados pessoais) e acesso restrito: `SELECT` só para `barista` e `admin`; nada exposto ao `anon`.
-- [ ] **Desempenho:** busca com índice em `lower(nome)` e `telefone`, respondendo em < 300 ms com 5 mil clientes.
-- [ ] **Offline:** pedido criado offline pode levar `cliente_id` de cliente já carregado; cadastro novo só online.
+- [x] **LGPD:** consentimento explícito para contato (`aceita_contato`), exclusão/anonimização do cliente a pedido (mantém os pedidos, apaga os dados pessoais) e acesso restrito: `SELECT` só para `barista` e `admin`; nada exposto ao `anon`.
+- [x] **Desempenho:** busca com índice em `lower(nome)` e `telefone`, respondendo em < 300 ms com 5 mil clientes.
+- [x] **Offline:** pedido criado offline pode levar `cliente_id` de cliente já carregado; cadastro novo só online.
 
 ### Dependências técnicas
 - RPC `criar_pedido` (aceitar `cliente_id` no payload), log de auditoria da [CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md).
@@ -49,10 +49,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a "Ana Souza" já está cadastrada, **quando** o barista digita "ana" ou "5199" no PDV, **então** ela aparece nas sugestões e é vinculada ao pedido.
-- [ ] **Dado que** o cliente não quer se cadastrar, **quando** o barista digita só o nome, **então** o pedido é criado normalmente sem `cliente_id`.
-- [ ] **Dado que** a Ana tem 12 pedidos, **quando** o admin abre a ficha, **então** vê total gasto, visitas, última visita e produtos preferidos.
-- [ ] **Dado que** um cliente pede exclusão, **quando** o admin anonimiza, **então** nome e telefone somem e os pedidos continuam nos relatórios.
+- [x] **Dado que** a "Ana Souza" já está cadastrada, **quando** o barista digita "ana" ou "5199" no PDV, **então** ela aparece nas sugestões e é vinculada ao pedido.
+- [x] **Dado que** o cliente não quer se cadastrar, **quando** o barista digita só o nome, **então** o pedido é criado normalmente sem `cliente_id`.
+- [x] **Dado que** a Ana tem 12 pedidos, **quando** o admin abre a ficha, **então** vê total gasto, visitas, última visita e produtos preferidos.
+- [x] **Dado que** um cliente pede exclusão, **quando** o admin anonimiza, **então** nome e telefone somem e os pedidos continuam nos relatórios.
 
 ---
 
