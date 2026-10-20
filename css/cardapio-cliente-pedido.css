@@ -1,0 +1,429 @@
+/* =========================================================
+   CARDAPIO-CLIENTE-PEDIDO.CSS — Autoatendimento via QR Code
+   CAF-000037
+   ========================================================= */
+
+/* Banner de identificação da Mesa fixo no topo */
+.mesa-qr-banner {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: linear-gradient(135deg, #2b1810 0%, #1c1008 100%);
+  color: #faf6ee;
+  padding: 10px 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  border-bottom: 2px solid #c59b27;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+.mesa-qr-banner__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mesa-qr-banner__badge {
+  background: #c59b27;
+  color: #1c1008;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mesa-qr-banner__text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.mesa-qr-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mesa-qr-btn-action {
+  background: rgba(255, 255, 255, 0.12);
+  color: #faf6ee;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+
+.mesa-qr-btn-action:hover, .mesa-qr-btn-action:active {
+  background: rgba(197, 155, 39, 0.3);
+  border-color: #c59b27;
+  transform: translateY(-1px);
+}
+
+/* Botão "+ Pedir" no card de produto */
+.btn-pedir-item {
+  background: #c59b27;
+  color: #1c1008;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  min-height: 40px;
+  box-shadow: 0 2px 6px rgba(197, 155, 39, 0.35);
+}
+
+.btn-pedir-item:hover, .btn-pedir-item:active {
+  background: #b58d20;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(197, 155, 39, 0.45);
+}
+
+.btn-pedir-item:disabled {
+  background: #94a3b8;
+  color: #cbd5e1;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Barra Flutuante do Carrinho */
+.barra-carrinho-cliente {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 990;
+  background: rgba(28, 16, 8, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #faf6ee;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(197, 155, 39, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.barra-carrinho-cliente__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.barra-carrinho-cliente__count {
+  font-size: 12px;
+  color: #c59b27;
+  font-weight: 600;
+}
+
+.barra-carrinho-cliente__total {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.barra-carrinho-cliente__btn {
+  background: #c59b27;
+  color: #1c1008;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(197, 155, 39, 0.4);
+  transition: all 0.2s ease;
+}
+
+.barra-carrinho-cliente__btn:hover {
+  background: #d4a92e;
+  transform: scale(1.02);
+}
+
+/* Modais de Autoatendimento */
+.modal-cliente-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@media (min-width: 640px) {
+  .modal-cliente-overlay {
+    align-items: center;
+    padding: 20px;
+  }
+}
+
+.modal-cliente-card {
+  background: #faf6ee;
+  color: #1c1008;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 20px 20px 0 0;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+  animation: sheetUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+  .modal-cliente-card {
+    border-radius: 16px;
+    max-height: 85vh;
+  }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-cliente-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.modal-cliente-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1008;
+}
+
+.modal-cliente-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cliente-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #1e293b;
+}
+
+.modal-cliente-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-cliente-footer {
+  padding: 14px 20px;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Seletor de Quantidade */
+.qty-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.qty-control button {
+  background: #f1f5f9;
+  border: none;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #334155;
+  transition: background 0.15s;
+}
+
+.qty-control button:hover {
+  background: #e2e8f0;
+}
+
+.qty-control span {
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Lista de Adicionais Customizáveis */
+.adicionais-list-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.adicional-item-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.adicional-item-label:hover {
+  border-color: #c59b27;
+  background: #fefce8;
+}
+
+.adicional-item-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #c59b27;
+}
+
+/* Lista do Carrinho */
+.carrinho-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.carrinho-item-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.carrinho-item-detalhes {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.carrinho-item-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* Acompanhamento do Pedido (Status Tracker) */
+.status-tracker-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.status-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.status-badge-live.aguardando {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.status-badge-live.preparo {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.status-badge-live.pronto {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge-live.cancelado {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.pulsing-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}

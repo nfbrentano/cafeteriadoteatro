@@ -118,6 +118,9 @@
       <button class="sidebar__link" data-page="caixa" id="nav-caixa">
         <span class="sidebar__link-icon">💵</span> Caixa
       </button>
+      <button class="sidebar__link" data-page="financeiro" id="nav-financeiro">
+        <span class="sidebar__link-icon">💰</span> Financeiro
+      </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Aparência</div>
 
@@ -192,6 +195,15 @@
             <div class="page-header__title">Dashboard</div>
             <div class="page-header__sub">Visão geral do cardápio</div>
           </div>
+        </div>
+
+        <!-- Alerta Financeiro de Contas a Vencer no Dashboard (CAF-000035) -->
+        <div id="dash-alerta-financeiro" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom:1.25rem; font-size:13px; color:#92400e; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px;" id="dash-alerta-financeiro-icon">⚠️</span>
+            <span id="dash-alerta-financeiro-texto"><strong>Atenção:</strong> 0 contas a pagar vencem esta semana.</span>
+          </div>
+          <button type="button" class="btn btn--primary btn-sm" id="btn-dash-ir-financeiro" style="padding:4px 10px; font-size:12px;">Ver Contas a Pagar</button>
         </div>
 
         <div class="stats-grid">
@@ -498,6 +510,33 @@
               </tbody>
             </table>
           </div>
+        <!-- Desempenho por Operador / Atendente (CAF-000036) -->
+        <div class="section-card" style="margin-top: 24px;">
+          <div class="section-card__header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <span class="section-card__title">👤 Desempenho e Indicadores por Operador</span>
+              <span style="font-size: 0.8rem; color: var(--admin-text-sub); display: block;">Métricas de vendas, ticket médio, cancelamentos e descontos por colaborador no período</span>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-exportar-operadores-csv">📥 Exportar CSV</button>
+          </div>
+          <div class="table-scroll" style="max-height: 380px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Colaborador</th>
+                  <th>Cargo</th>
+                  <th style="text-align: right;">Pedidos Concluídos</th>
+                  <th style="text-align: right;">Total Faturado</th>
+                  <th style="text-align: right;">Ticket Médio</th>
+                  <th style="text-align: center;">Cancelamentos</th>
+                  <th style="text-align: right;">Descontos Concedidos</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-desempenho-operadores">
+                <tr><td colspan="7" class="text-center">Carregando desempenho dos operadores...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </section>
@@ -682,9 +721,14 @@
             <div class="page-header__title">Mesas</div>
             <div class="page-header__sub">Gerencie os códigos e mesas disponíveis</div>
           </div>
-          <button class="btn btn--primary" id="btn-nova-mesa">
-            + Nova Mesa
-          </button>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn btn--ghost" id="btn-imprimir-todos-qr" title="Imprimir folha A4 com QR Codes de todas as mesas">
+              🖨️ Imprimir Folha A4 de QR Codes
+            </button>
+            <button class="btn btn--primary" id="btn-nova-mesa">
+              + Nova Mesa
+            </button>
+          </div>
         </div>
 
         <div class="table-wrap">
@@ -1199,32 +1243,69 @@
         </div>
       </section>
 
-      <!-- ── USUÁRIOS ─────────────────────────────────────── -->
+      <!-- ── USUÁRIOS & CARGOS (CAF-000036) ────────────────── -->
       <section class="page" id="page-usuarios">
-        <div class="page-header">
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
           <div>
-            <div class="page-header__title">Usuários</div>
-            <div class="page-header__sub">Gerencie a equipe da cafeteria</div>
+            <div class="page-header__title">Equipe & Permissões</div>
+            <div class="page-header__sub">Controle de colaboradores, cargos, permissões granulares e PIN de supervisor</div>
           </div>
-          <button class="btn btn--primary" id="btn-novo-usuario">
-            + Novo Usuário
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn btn--ghost" id="btn-novo-cargo">+ Novo Cargo</button>
+            <button class="btn btn--primary" id="btn-novo-usuario">+ Novo Usuário</button>
+          </div>
+        </div>
+
+        <!-- Sub-navegação por abas -->
+        <div class="usuarios-tabs" style="display:flex; gap:8px; border-bottom:2px solid #e2e8f0; margin-bottom:1.5rem;">
+          <button type="button" class="btn btn--tab active" id="btn-tab-usuarios-colabs" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#fff; border:1px solid #e2e8f0; border-bottom:none; color:#1e293b;">
+            👥 Colaboradores
+          </button>
+          <button type="button" class="btn btn--tab" id="btn-tab-usuarios-cargos" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:none; color:#64748b;">
+            🛡️ Cargos & Permissões Granulares
           </button>
         </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>E-mail (Login)</th>
-                <th>Perfil</th>
-                <th>Status</th>
-                <th>Criado em</th>
-              </tr>
-            </thead>
-            <tbody id="usuarios-table-body">
-            </tbody>
-          </table>
+        <!-- ── SUB-ABA 1: COLABORADORES ── -->
+        <div id="subtab-usuarios-colabs">
+          <div class="table-wrap" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; min-width:800px;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                  <th>Nome</th>
+                  <th>E-mail (Login)</th>
+                  <th>Cargo</th>
+                  <th style="text-align:center;">PIN Supervisor</th>
+                  <th style="text-align:center;">Status</th>
+                  <th>Criado em</th>
+                  <th style="text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="usuarios-table-body">
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Carregando usuários...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 2: CARGOS & PERMISSÕES ── -->
+        <div id="subtab-usuarios-cargos" style="display:none;">
+          <div class="table-wrap" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; min-width:800px;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                  <th>Nome do Cargo</th>
+                  <th>Descrição</th>
+                  <th style="text-align:center;">Tipo</th>
+                  <th>Permissões Ativas</th>
+                  <th style="text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="cargos-table-body">
+                <tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b;">Carregando cargos...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -1296,6 +1377,21 @@
           <p class="hint" style="margin-top:14px">
             Abra esta página na TV ou tablet do salão voltado para os clientes. Pressione <strong>F11</strong> no teclado da TV ou no navegador para ativar o modo Tela Cheia sem barras.
           </p>
+        <!-- Autoatendimento por QR Code (CAF-000037) -->
+        <div class="config-section">
+          <div class="config-section__title">📱 Autoatendimento por QR Code nas Mesas</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+            <div>
+              <strong>Habilitar pedidos feitos pelo cliente via QR Code</strong>
+              <p class="hint" style="margin:4px 0 0 0;">
+                Se desativado, o cardápio público continuará abrindo pelo QR Code, mas apenas em modo de consulta (sem botões de adicionar ao carrinho e enviar pedidos).
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-pedido-cliente-ativo" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
         </div>
 
         <!-- Danger zone -->
@@ -1560,6 +1656,12 @@
               <option value="sim">Autoriza WhatsApp (LGPD)</option>
               <option value="nao">Não autoriza WhatsApp</option>
             </select>
+            <select class="filter-select" id="filter-cliente-conta" aria-label="Filtrar por conta corrente">
+              <option value="todas">Todas as Contas</option>
+              <option value="com_saldo_positivo">Com Créditos (Pré-pago)</option>
+              <option value="com_saldo_devedor">Com Débito (Fiado)</option>
+              <option value="conta_ativa">Conta Habilitada</option>
+            </select>
             <select class="filter-select" id="filter-cliente-status" aria-label="Filtrar por status">
               <option value="ativos">Apenas Ativos</option>
               <option value="todos">Todos (inclui inativos)</option>
@@ -1578,16 +1680,286 @@
                 <th>E-mail</th>
                 <th style="text-align:center;">Visitas</th>
                 <th style="text-align:right;">Total Gasto</th>
+                <th style="text-align:center;">Conta / Saldo</th>
                 <th>Última Visita</th>
                 <th style="text-align:center;">WhatsApp</th>
                 <th style="text-align:center;">Ações</th>
               </tr>
             </thead>
             <tbody id="tbody-clientes">
-              <tr><td colspan="8" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>
+              <tr><td colspan="9" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>
             </tbody>
           </table>
         </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           PÁGINA: FINANCEIRO & FLUXO DE CAIXA (CAF-000035)
+      ════════════════════════════════════════════════════════════ -->
+      <section class="page" id="page-financeiro">
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div class="page-header__title">Gestão Financeira & Fluxo de Caixa</div>
+            <div class="page-header__sub">Contas a pagar, custos fixos e variáveis, fluxo de caixa diário e resultado operacional</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn--ghost" id="btn-abrir-fornecedores" title="Gerenciar Fornecedores Cadastrados">🏢 Fornecedores</button>
+            <button class="btn btn--ghost" id="btn-exportar-financeiro-csv" title="Exportar despesas para planilha CSV">📥 Exportar CSV</button>
+            <button class="btn btn--primary" id="btn-nova-despesa">+ Nova Despesa</button>
+          </div>
+        </div>
+
+        <!-- Alertas & KPIs Financeiros -->
+        <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="kpi-card" id="card-kpi-vencidas" style="border-left: 4px solid #ef4444;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#b91c1c; font-weight:700;">Contas Vencidas</span>
+              <span class="kpi-card__icon">🔴</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-contas-vencidas-total" style="color:#dc2626;">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-contas-vencidas-count">0 conta(s) em atraso</div>
+          </div>
+
+          <div class="kpi-card" id="card-kpi-7dias" style="border-left: 4px solid #f59e0b;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#b45309; font-weight:700;">Vencem em 7 Dias</span>
+              <span class="kpi-card__icon">🟠</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-contas-7dias-total" style="color:#d97706;">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-contas-7dias-count">0 conta(s) a pagar</div>
+          </div>
+
+          <div class="kpi-card" style="border-left: 4px solid #3b82f6;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Total Pago no Mês</span>
+              <span class="kpi-card__icon">🟢</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-contas-pago-mes">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-contas-pago-mes-sub">Despesas baixadas</div>
+          </div>
+
+          <div class="kpi-card" id="card-kpi-resultado" style="border-left: 4px solid #10b981;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Resultado do Mês</span>
+              <span class="kpi-card__icon">📊</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-financeiro-resultado-mes">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-financeiro-resultado-sub">Faturamento líq. − Despesas pagas</div>
+          </div>
+        </div>
+
+        <!-- Sub-navegação por abas -->
+        <div class="financeiro-tabs" style="display:flex; gap:8px; border-bottom:2px solid #e2e8f0; margin-bottom:1.5rem; overflow-x:auto;">
+          <button type="button" class="btn btn--tab active" id="btn-tab-contas" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#fff; border:1px solid #e2e8f0; border-bottom:none; color:#1e293b;">
+            📋 Contas a Pagar & Despesas
+          </button>
+          <button type="button" class="btn btn--tab" id="btn-tab-fluxo" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:none; color:#64748b;">
+            💵 Fluxo de Caixa Diário
+          </button>
+          <button type="button" class="btn btn--tab" id="btn-tab-resultado" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:none; color:#64748b;">
+            📈 Resultado do Mês (DRE)
+          </button>
+        </div>
+
+        <!-- ── SUB-ABA 1: CONTAS A PAGAR ── -->
+        <div id="subtab-financeiro-contas" class="financeiro-subtab-content">
+          <!-- Filtros e Barra de Ações -->
+          <div class="table-toolbar" style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div class="table-filters" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+              <select class="filter-select" id="filter-despesa-status" aria-label="Filtrar por status">
+                <option value="todas">Todos os Status</option>
+                <option value="pendentes" selected>Pendentes (Não pagas)</option>
+                <option value="vencidas">🔴 Vencidas (Em atraso)</option>
+                <option value="7dias">🟠 Vencem em 7 dias</option>
+                <option value="hoje">🟡 Vencem Hoje</option>
+                <option value="pagas">🟢 Pagas</option>
+              </select>
+
+              <select class="filter-select" id="filter-despesa-tipo" aria-label="Filtrar por tipo de custo">
+                <option value="">Todos os Tipos</option>
+                <option value="fixa">Custos Fixos</option>
+                <option value="variavel">Custos Variáveis</option>
+              </select>
+
+              <select class="filter-select" id="filter-despesa-categoria" aria-label="Filtrar por categoria">
+                <option value="">Todas as Categorias</option>
+              </select>
+
+              <select class="filter-select" id="filter-despesa-periodo" aria-label="Filtrar por período de vencimento">
+                <option value="mes_atual" selected>Vencem no Mês Atual</option>
+                <option value="proximo_mes">Vencem no Próximo Mês</option>
+                <option value="todos">Todo o Histórico</option>
+              </select>
+            </div>
+
+            <div class="search-box" style="min-width:240px;">
+              <input type="text" class="search-box__input" id="search-despesas" placeholder="🔍 Buscar despesa ou fornecedor..." />
+            </div>
+          </div>
+
+          <!-- Tabela de Despesas -->
+          <div class="table-wrap" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; min-width:850px;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                  <th>Vencimento</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Fornecedor</th>
+                  <th style="text-align:center;">Tipo</th>
+                  <th style="text-align:center;">Recorrência</th>
+                  <th style="text-align:right;">Valor (R$)</th>
+                  <th style="text-align:center;">Status</th>
+                  <th style="text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-despesas">
+                <tr><td colspan="9" style="text-align:center; padding:20px; color:#64748b;">Carregando despesas...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 2: FLUXO DE CAIXA DIÁRIO ── -->
+        <div id="subtab-financeiro-fluxo" class="financeiro-subtab-content" style="display:none;">
+          <div class="table-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <label for="filter-fluxo-mes" style="font-size:13px; font-weight:600; color:#475569;">Mês de Referência:</label>
+              <input type="month" id="filter-fluxo-mes" class="field__input" style="width:auto; padding:6px 10px;" />
+              <button type="button" class="btn btn--ghost" id="btn-recarregar-fluxo" style="padding:6px 12px;">Atualizar</button>
+            </div>
+            <div style="font-size:12px; color:#64748b;">
+              * Entradas consideram vendas pagas e recargas de crédito pré-pago. Saídas consideram despesas baixadas e sangrias de caixa.
+            </div>
+          </div>
+
+          <!-- Cards de Totais do Fluxo -->
+          <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="kpi-card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" style="color:#166534;">(+) Entradas do Período</span>
+                <span class="kpi-card__icon">💰</span>
+              </div>
+              <div class="kpi-card__value" id="fluxo-total-entradas" style="color:#15803d;">R$ 0,00</div>
+              <div class="kpi-card__subtitle" id="fluxo-total-entradas-sub">Vendas e créditos</div>
+            </div>
+
+            <div class="kpi-card" style="background:#fef2f2; border:1px solid #fecaca;">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" style="color:#991b1b;">(−) Saídas do Período</span>
+                <span class="kpi-card__icon">💸</span>
+              </div>
+              <div class="kpi-card__value" id="fluxo-total-saidas" style="color:#b91c1c;">R$ 0,00</div>
+              <div class="kpi-card__subtitle" id="fluxo-total-saidas-sub">Despesas e sangrias</div>
+            </div>
+
+            <div class="kpi-card" id="card-fluxo-saldo" style="background:#f8fafc; border:1px solid #e2e8f0;">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" id="fluxo-saldo-title">(=) Saldo Líquido do Mês</span>
+                <span class="kpi-card__icon">⚖️</span>
+              </div>
+              <div class="kpi-card__value" id="fluxo-total-saldo">R$ 0,00</div>
+              <div class="kpi-card__subtitle">Diferença de caixa no período</div>
+            </div>
+          </div>
+
+          <!-- Tabela de Movimentação Diária -->
+          <div class="table-wrap" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; min-width:800px;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                  <th>Data</th>
+                  <th style="text-align:right; color:#15803d;">Vendas Recebidas</th>
+                  <th style="text-align:right; color:#2563eb;">Créditos Pré-pagos</th>
+                  <th style="text-align:right; color:#b91c1c;">Despesas Pagas</th>
+                  <th style="text-align:right; color:#ea580c;">Sangrias</th>
+                  <th style="text-align:right; font-weight:700;">Saldo do Dia</th>
+                  <th style="text-align:right; font-weight:700;">Saldo Acumulado</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-fluxo-caixa">
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Carregando fluxo de caixa...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 3: RESULTADO DO MÊS (DRE GERENCIAL) ── -->
+        <div id="subtab-financeiro-resultado" class="financeiro-subtab-content" style="display:none;">
+          <div class="table-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;">
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <label for="filter-resultado-mes" style="font-size:13px; font-weight:600; color:#475569;">Mês de Apuração:</label>
+              <input type="month" id="filter-resultado-mes" class="field__input" style="width:auto; padding:6px 10px;" />
+              <button type="button" class="btn btn--ghost" id="btn-recarregar-resultado" style="padding:6px 12px;">Calcular DRE</button>
+            </div>
+            <div style="font-size:12px; color:#64748b;">
+              Demonstrativo de Resultado do Exercício Gerencial (Regime de Caixa)
+            </div>
+          </div>
+
+          <!-- Painel DRE -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; max-width:800px; margin:0 auto; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="text-align:center; margin-bottom:20px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+              <h3 style="margin:0; font-size:18px; color:#1e293b;">Demonstrativo de Resultado Gerencial</h3>
+              <p style="margin:4px 0 0 0; font-size:13px; color:#64748b;" id="dre-periodo-label">Período de Apuração: --</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <!-- 1. Receita Bruta -->
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:600; color:#1e293b; padding:8px 12px; background:#f8fafc; border-radius:6px;">
+                <span>(+) Faturamento Bruto (Vendas Realizadas)</span>
+                <span id="dre-faturamento-bruto">R$ 0,00</span>
+              </div>
+
+              <!-- 2. Deduções -->
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#b91c1c; padding:4px 12px 4px 28px;">
+                <span>(−) Descontos Concedidos em Vendas</span>
+                <span id="dre-descontos">R$ 0,00</span>
+              </div>
+
+              <!-- 3. Receita Líquida -->
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#0f172a; padding:8px 12px; border-top:1px dashed #cbd5e1; border-bottom:1px dashed #cbd5e1;">
+                <span>(=) Faturamento Líquido</span>
+                <span id="dre-faturamento-liquido">R$ 0,00</span>
+              </div>
+
+              <!-- 4. Custos Variáveis -->
+              <div style="margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:600; color:#c2410c; padding:6px 12px; background:#fff7ed; border-radius:6px;">
+                  <span>(−) Custos / Despesas Variáveis Pagas</span>
+                  <span id="dre-total-variaveis">R$ 0,00</span>
+                </div>
+                <div id="dre-lista-variaveis" style="padding:6px 12px 6px 28px; font-size:13px; color:#475569; display:flex; flex-direction:column; gap:4px;">
+                  <!-- Categorias variáveis preenchidas dinamicamente -->
+                </div>
+              </div>
+
+              <!-- 5. Margem de Contribuição -->
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#2563eb; padding:8px 12px; background:#eff6ff; border-radius:6px;">
+                <span>(=) Margem de Contribuição Bruta</span>
+                <span id="dre-margem-contribuicao">R$ 0,00 (0%)</span>
+              </div>
+
+              <!-- 6. Despesas Fixas -->
+              <div style="margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:600; color:#991b1b; padding:6px 12px; background:#fef2f2; border-radius:6px;">
+                  <span>(−) Despesas Fixas Operacionais Pagas</span>
+                  <span id="dre-total-fixas">R$ 0,00</span>
+                </div>
+                <div id="dre-lista-fixas" style="padding:6px 12px 6px 28px; font-size:13px; color:#475569; display:flex; flex-direction:column; gap:4px;">
+                  <!-- Categorias fixas preenchidas dinamicamente -->
+                </div>
+              </div>
+
+              <!-- 7. Resultado Operacional Líquido -->
+              <div id="dre-box-resultado-final" style="display:flex; justify-content:space-between; align-items:center; font-size:17px; font-weight:800; padding:14px 16px; border-radius:8px; margin-top:10px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">
+                <span>(=) Resultado Operacional Líquido</span>
+                <span id="dre-resultado-final">R$ 0,00 (0%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
     </main>
@@ -2176,6 +2548,44 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
+     MODAL QR CODE DA MESA (CAF-000037)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-qr-mesa-overlay" role="dialog" aria-modal="true" style="display:none; z-index:10000;">
+  <div class="modal" id="modal-qr-mesa" style="max-width: 440px; text-align: center;">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-qr-mesa-title">🔳 QR Code da Mesa</span>
+      <button class="modal__close" id="modal-qr-mesa-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body" style="padding: 20px;">
+      <div id="qr-code-display" style="display:flex; justify-content:center; align-items:center; margin: 10px auto; padding: 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); width: fit-content; min-width: 220px; min-height: 220px;">
+        <!-- Imagem do QR Code gerada dinamicamente -->
+      </div>
+      <p id="qr-code-mesa-info" style="font-weight: 700; font-size: 16px; color: var(--marrom-escuro); margin-bottom: 6px;"></p>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+        Aponte a câmera para abrir o cardápio com a mesa já selecionada e enviar pedidos direto ao PDV.
+      </p>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="text" id="qr-code-link-input" class="form-control" readonly style="font-size: 12px; background: #f8fafc; font-family: monospace;" />
+        <button type="button" class="btn btn--outline-dark" id="btn-copiar-qr-link" title="Copiar Link" style="white-space:nowrap;">📋 Copiar</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button type="button" class="btn btn--primary" id="btn-baixar-qr-png" style="width: 100%;">
+          📥 Baixar Imagem (PNG)
+        </button>
+        <button type="button" class="btn btn--ghost" id="btn-regenerar-qr-token" style="color: #d97706; font-size: 12px;">
+          🔄 Gerar Novo Token (invalida o QR code anterior)
+        </button>
+      </div>
+    </div>
+    <div class="modal__footer" style="justify-content: flex-end;">
+      <button class="btn btn--ghost" id="modal-qr-mesa-cancel">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
      MODAL DETALHES DO PEDIDO
 ════════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-pedido-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pedido-title">
@@ -2222,28 +2632,203 @@
           <div class="field__error-msg" id="err-usuario-senha">Senha muito curta.</div>
         </div>
 
-        <div class="field">
-          <label class="field__label" for="usuario-role">Perfil *</label>
-          <select class="field__select" id="usuario-role" required>
-            <option value="barista">Barista</option>
-            <option value="cozinha">Cozinha</option>
-            <option value="admin">Admin</option>
-          </select>
-          <div class="field__error-msg" id="err-usuario-role">Selecione um perfil.</div>
+        <div class="field-row" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="usuario-cargo">Cargo *</label>
+            <select class="field__select" id="usuario-cargo" required>
+              <option value="">Carregando cargos...</option>
+            </select>
+            <div class="field__error-msg" id="err-usuario-cargo">Selecione um cargo.</div>
+          </div>
+
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="usuario-pin">PIN de Supervisor (4 a 8 dígitos)</label>
+            <input class="field__input" type="password" id="usuario-pin" placeholder="Ex: 1234 (opcional)" maxlength="8" pattern="[0-9]*" inputmode="numeric" />
+            <div class="hint">Usado para autorizar cancelamentos/descontos no PDV.</div>
+          </div>
         </div>
 
-        <div class="field" id="usuario-desconto-container">
+        <!-- Campo hidden para compatibilidade de role legada -->
+        <input type="hidden" id="usuario-role" value="barista" />
+
+        <div class="field" id="usuario-desconto-container" style="display:none;">
           <label class="switch-field" style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
             <input type="checkbox" id="usuario-pode-dar-desconto" class="switch-field__input" />
             <span class="switch-field__label">Permitir aplicar descontos manuais no PDV</span>
           </label>
-          <div class="hint" style="margin-top: 4px;">Útil para baristas de confiança. Admins já possuem essa permissão.</div>
         </div>
       </form>
     </div>
     <div class="modal__footer">
       <button class="btn btn--ghost" id="modal-usuario-cancel">Cancelar</button>
-      <button class="btn btn--primary" id="btn-salvar-usuario">Criar Usuário</button>
+      <button class="btn btn--primary" id="btn-salvar-usuario">Salvar Usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE CARGOS & PERMISSÕES (CAF-000036)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-cargo-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-cargo-title">
+  <div class="modal" id="modal-cargo" style="max-width: 760px; width: 100%;">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-cargo-title">Novo Cargo</span>
+      <button class="modal__close" id="modal-cargo-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body" style="max-height: 75vh; overflow-y: auto;">
+      <form id="form-cargo" novalidate>
+        <input type="hidden" id="form-cargo-id" />
+
+        <div class="field-row" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:200px;">
+            <label class="field__label" for="form-cargo-nome">Nome do Cargo *</label>
+            <input class="field__input" type="text" id="form-cargo-nome" placeholder="Ex: Subgerente, Caixa Líder..." required />
+          </div>
+          <div class="field" style="flex:2; min-width:260px;">
+            <label class="field__label" for="form-cargo-desc">Descrição / Atribuições</label>
+            <input class="field__input" type="text" id="form-cargo-desc" placeholder="Breve resumo da função..." />
+          </div>
+        </div>
+
+        <div style="font-weight:700; color:#1e293b; font-size:14px; margin: 16px 0 8px 0; border-top:1px solid #e2e8f0; padding-top:14px;">
+          Permissões Granulares
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+          <!-- Bloco PDV -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+            <div style="font-weight:700; color:#0369a1; font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              🛍️ PDV / Salão de Mesas
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.vender" />
+                <span><strong>Lançar Pedidos</strong> (pdv.vender)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.transferir_mesa" />
+                <span><strong>Transferir Mesas</strong> (pdv.transferir_mesa)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.fechar_conta" />
+                <span><strong>Fechar Contas / Receber</strong> (pdv.fechar_conta)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.desconto" />
+                <span><strong>Conceder Desconto</strong> (pdv.desconto)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.cortesia" />
+                <span><strong>Liberar Cortesia</strong> (pdv.cortesia)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.cancelar_item" />
+                <span><strong>Cancelar Item</strong> (pdv.cancelar_item)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.cancelar_pedido" />
+                <span><strong>Cancelar Pedido Inteiro</strong> (pdv.cancelar_pedido)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bloco Caixa & KDS -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+            <div style="font-weight:700; color:#15803d; font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              💵 Caixa & Cozinha (KDS)
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="caixa.abrir_fechar" />
+                <span><strong>Abrir / Fechar Caixa</strong> (caixa.abrir_fechar)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="caixa.sangria" />
+                <span><strong>Sangria & Suprimento</strong> (caixa.sangria)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:8px;">
+                <input type="checkbox" class="cargo-perm-chk" value="kds.operar" />
+                <span><strong>Operar Monitor de Cozinha</strong> (kds.operar)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bloco Admin Operacional -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; grid-column: 1 / -1;">
+            <div style="font-weight:700; color:#7c3aed; font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              ⚙️ Módulos do Painel Administrativo
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:6px; font-size:13px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.cardapio" />
+                <span><strong>Cardápio & Preços</strong></span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.relatorios" />
+                <span><strong>Relatórios & Métricas</strong></span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.financeiro" />
+                <span><strong>Contas a Pagar & DRE</strong></span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.estoque" />
+                <span><strong>Estoque & Fichas</strong></span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.clientes" />
+                <span><strong>Clientes & Fiado</strong></span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" id="chk-perm-admin-usuarios" value="admin.usuarios" />
+                <span><strong>Usuários & Cargos</strong></span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.configuracoes" />
+                <span><strong>Configurações da Loja</strong></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="cargo-sistema-aviso" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:10px; font-size:12px; color:#92400e; margin-top:14px;">
+          🔒 <strong>Cargo do Sistema:</strong> O nome deste cargo é protegido e a permissão <code>admin.usuarios</code> não pode ser removida do Admin.
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer" style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+      <button class="btn btn--ghost" id="modal-cargo-cancel" type="button">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-cargo" type="button">Salvar Cargo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL PARA DEFINIR PIN DE SUPERVISOR (CAF-000036)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-pin-usuario-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pin-usuario-title">
+  <div class="modal" id="modal-pin-usuario" style="max-width: 440px; width: 100%;">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-pin-usuario-title">Definir PIN de Supervisor</span>
+      <button class="modal__close" id="modal-pin-usuario-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-pin-usuario" novalidate>
+        <input type="hidden" id="form-pin-user-id" />
+        <p style="font-size:13px; color:#64748b; margin-top:0;">
+          Colaborador: <strong id="form-pin-user-nome" style="color:#1e293b;">--</strong>
+        </p>
+
+        <div class="field">
+          <label class="field__label" for="form-pin-novo">Novo PIN Numérico (4 a 8 dígitos)</label>
+          <input class="field__input" type="password" id="form-pin-novo" placeholder="Digite de 4 a 8 dígitos..." maxlength="8" pattern="[0-9]*" inputmode="numeric" required />
+          <div class="hint">Deixe em branco se desejar remover o PIN existente.</div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer" style="display:flex; justify-content:flex-end; gap:8px;">
+      <button class="btn btn--ghost" id="modal-pin-usuario-cancel" type="button">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-pin-usuario" type="button">Salvar PIN</button>
     </div>
   </div>
 </div>
@@ -2705,6 +3290,27 @@
           <textarea class="field__textarea" id="form-cliente-obs" rows="2" placeholder="Ex: Professor da Univates, prefere café sem açúcar..."></textarea>
         </div>
 
+        <div class="field" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#1e293b; cursor:pointer; font-weight:600;">
+            <input type="checkbox" id="form-cliente-conta-habilitada" />
+            <span>💳 Habilitar Conta Corrente (Fiado / Créditos Pré-pagos)</span>
+          </label>
+          <div id="box-conta-config" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1;">
+            <div class="field-row" style="display:flex; gap:10px;">
+              <div class="field" style="flex:1;">
+                <label class="field__label" for="form-cliente-limite-credito">Limite Pós-pago / Fiado (R$)</label>
+                <input class="field__input" type="number" step="0.01" min="0" id="form-cliente-limite-credito" placeholder="0,00" value="0.00" />
+                <span style="font-size:11px; color:#64748b;">0,00 = apenas créditos pré-pagos</span>
+              </div>
+              <div class="field" style="flex:1;">
+                <label class="field__label" for="form-cliente-dia-vencimento">Dia Vencimento (1 a 31)</label>
+                <input class="field__input" type="number" min="1" max="31" id="form-cliente-dia-vencimento" placeholder="Ex: 10" />
+                <span style="font-size:11px; color:#64748b;">Dia do mês para acerto</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="field" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
           <label style="display:flex; align-items:flex-start; gap:8px; font-size:13px; color:#1e293b; cursor:pointer;">
             <input type="checkbox" id="form-cliente-aceita-contato" style="margin-top:2px;" />
@@ -2859,6 +3465,406 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CONTA CORRENTE DO CLIENTE (CAF-000034)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-conta-cliente-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-conta-cliente-nome">
+  <div class="modal" id="modal-conta-cliente" style="max-width: 760px; width: 95%;">
+    <div class="modal__header" style="align-items: center;">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="modal__title" id="modal-conta-cliente-nome">Conta Corrente</span>
+          <span id="modal-conta-badge-status"></span>
+        </div>
+        <div style="font-size:13px; color:#64748b; margin-top:2px;" id="modal-conta-cliente-sub">Telefone: --</div>
+      </div>
+      <button class="modal__close" id="modal-conta-cliente-close" aria-label="Fechar conta">✕</button>
+    </div>
+    <div class="modal__body" style="max-height: 75vh; overflow-y: auto;">
+      <!-- Indicadores de Saldo e Limite -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-bottom:16px;">
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center;">
+          <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:600;">Saldo Atual</div>
+          <div style="font-size:20px; font-weight:700; margin-top:4px;" id="conta-saldo-atual">R$ 0,00</div>
+          <div style="font-size:11px; color:#64748b;" id="conta-saldo-tipo">Sem débitos</div>
+        </div>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center;">
+          <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:600;">Limite Fiado</div>
+          <div style="font-size:20px; font-weight:700; color:#1e293b; margin-top:4px;" id="conta-limite-total">R$ 0,00</div>
+          <div style="font-size:11px; color:#64748b;">Pós-pago autorizado</div>
+        </div>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center;">
+          <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:600;">Limite Disponível</div>
+          <div style="font-size:20px; font-weight:700; color:#0284c7; margin-top:4px;" id="conta-limite-disponivel">R$ 0,00</div>
+          <div style="font-size:11px; color:#64748b;">Saldo + Limite</div>
+        </div>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center;">
+          <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:600;">Vencimento</div>
+          <div style="font-size:18px; font-weight:700; color:#475569; margin-top:4px;" id="conta-dia-vencimento">Dia --</div>
+          <div style="font-size:11px; color:#64748b;">Dia do mês</div>
+        </div>
+      </div>
+
+      <!-- Barra de Ações Rápidas -->
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+        <button type="button" class="btn btn--primary btn--small" id="btn-abrir-deposito">➕ Adicionar Créditos (Depósito)</button>
+        <button type="button" class="btn btn--secondary btn--small" id="btn-abrir-pagamento">💵 Receber Pagamento (Quitar Fiado)</button>
+        <button type="button" class="btn btn--ghost btn--small" id="btn-whatsapp-extrato" style="color:#15803d;">💬 Enviar Extrato WhatsApp</button>
+        <button type="button" class="btn btn--ghost btn--small" id="btn-imprimir-extrato">🖨️ Imprimir Extrato</button>
+      </div>
+
+      <!-- Painel Colapsável de Lançamento (Depósito ou Pagamento) -->
+      <div id="box-lancamento-conta" style="display:none; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:14px; margin-bottom:16px;">
+        <div style="font-weight:600; font-size:14px; color:#0f172a; margin-bottom:10px;" id="lancamento-conta-title">Lançar Operação</div>
+        <form id="form-lancamento-conta">
+          <input type="hidden" id="lancamento-tipo" value="deposito" />
+          <div class="field-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="field" style="flex:1; min-width:140px;">
+              <label class="field__label" for="lancamento-valor">Valor (R$) *</label>
+              <input class="field__input" type="number" step="0.01" min="0.01" id="lancamento-valor" placeholder="0,00" required />
+            </div>
+            <div class="field" style="flex:1; min-width:160px;">
+              <label class="field__label" for="lancamento-forma">Forma de Pagamento Real *</label>
+              <select class="field__select" id="lancamento-forma" required>
+                <option value="pix">Pix</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao_debito">Cartão de Débito</option>
+                <option value="cartao_credito">Cartão de Crédito</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+            <div class="field" style="flex:2; min-width:200px;">
+              <label class="field__label" for="lancamento-motivo">Motivo / Descrição</label>
+              <input class="field__input" type="text" id="lancamento-motivo" placeholder="Ex: Recarga pré-paga para cafés" maxlength="100" />
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+            <button type="button" class="btn btn--ghost btn--small" id="btn-cancelar-lancamento">Cancelar</button>
+            <button type="submit" class="btn btn--primary btn--small" id="btn-confirmar-lancamento">Confirmar Lançamento</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabela Extrato de Movimentações -->
+      <div style="margin-top:16px;">
+        <h4 style="font-size:14px; margin-bottom:8px; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
+          <span>Extrato de Movimentações</span>
+          <span style="font-size:12px; color:#64748b;" id="conta-total-movimentos">0 registros</span>
+        </h4>
+        <div class="table-wrap" style="max-height: 280px; overflow-y: auto;">
+          <table style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Tipo</th>
+                <th style="text-align:right;">Valor</th>
+                <th>Forma / Ref</th>
+                <th>Motivo</th>
+                <th>Operador</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-extrato-conta">
+              <tr><td colspan="6" style="text-align:center; padding:15px; color:#94a3b8;">Nenhuma movimentação registrada.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: NOVA / EDITAR DESPESA (CAF-000035)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-despesa-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-despesa-title">
+  <div class="modal" id="modal-despesa" style="max-width: 600px; width: 100%;">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-despesa-title">Nova Despesa / Conta a Pagar</h3>
+      <button class="modal__close" id="modal-despesa-close" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-despesa">
+        <input type="hidden" id="form-despesa-id" />
+
+        <div class="field">
+          <label class="field__label" for="form-despesa-descricao">Descrição da Despesa *</label>
+          <input class="field__input" type="text" id="form-despesa-descricao" required placeholder="Ex: Grãos de Café Especial, Aluguel do Mês, Conta de Luz..." />
+        </div>
+
+        <div class="field-row" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-despesa-valor">Valor (R$) *</label>
+            <input class="field__input" type="number" step="0.01" min="0.01" id="form-despesa-valor" required placeholder="0,00" />
+          </div>
+
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-despesa-vencimento">Data de Vencimento *</label>
+            <input class="field__input" type="date" id="form-despesa-vencimento" required />
+          </div>
+        </div>
+
+        <div class="field-row" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-despesa-categoria">Categoria *</label>
+            <select class="field__select" id="form-despesa-categoria" required>
+              <option value="">Selecione uma categoria...</option>
+            </select>
+          </div>
+
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-despesa-fornecedor">Fornecedor (opcional)</label>
+            <select class="field__select" id="form-despesa-fornecedor">
+              <option value="">Sem fornecedor vinculado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-despesa-tipo">Tipo de Custo *</label>
+            <select class="field__select" id="form-despesa-tipo" required>
+              <option value="variavel">Variável (Insumos, Embalagens, Revenda)</option>
+              <option value="fixa">Fixo (Aluguel, Luz, Água, Internet, Folha)</option>
+            </select>
+          </div>
+
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-despesa-recorrencia">Recorrência *</label>
+            <select class="field__select" id="form-despesa-recorrencia" required>
+              <option value="unica">Única (Não repete)</option>
+              <option value="mensal">Mensal (Gera próximo mês na baixa)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-despesa-doc">Nº Documento / Nota Fiscal / Boleto</label>
+          <input class="field__input" type="text" id="form-despesa-doc" placeholder="Ex: NF 1452, Cód. Barras Boleto..." />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-despesa-obs">Observações</label>
+          <textarea class="field__textarea" id="form-despesa-obs" rows="2" placeholder="Detalhes, especificações ou link do boleto..."></textarea>
+        </div>
+
+        <!-- Opção de já marcar como paga no cadastro -->
+        <div id="box-despesa-paga-criacao" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-top:10px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="form-despesa-ja-paga" />
+            <span>Já foi paga hoje? (Dar baixa imediata)</span>
+          </label>
+          <div id="box-despesa-pagamento-detalhes" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1;">
+            <div class="field-row" style="display:flex; gap:10px;">
+              <div class="field" style="flex:1;">
+                <label class="field__label" for="form-despesa-forma-pagamento">Forma de Pagamento</label>
+                <select class="field__select" id="form-despesa-forma-pagamento">
+                  <option value="pix">PIX</option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="debito">Cartão de Débito</option>
+                  <option value="credito">Cartão de Crédito</option>
+                  <option value="boleto">Boleto Bancário</option>
+                  <option value="transferencia">Transferência / TED</option>
+                </select>
+              </div>
+              <div class="field" style="flex:1;">
+                <label class="field__label" for="form-despesa-data-pagamento">Data do Pagamento</label>
+                <input class="field__input" type="date" id="form-despesa-data-pagamento" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__footer" style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+          <button type="button" class="btn btn--ghost" id="btn-cancelar-despesa">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="btn-salvar-despesa">Salvar Despesa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: BAIXAR PAGAMENTO DE DESPESA (CAF-000035)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-baixar-despesa-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-baixar-title">
+  <div class="modal" id="modal-baixar-despesa" style="max-width: 520px; width: 100%;">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-baixar-title">Baixar Pagamento</h3>
+      <button class="modal__close" id="modal-baixar-close" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-baixar-despesa">
+        <input type="hidden" id="form-baixar-id" />
+
+        <div style="background:#f1f5f9; border-radius:8px; padding:12px; margin-bottom:15px; font-size:13px;">
+          <div style="font-weight:700; color:#1e293b; font-size:15px;" id="baixar-info-descricao">Conta</div>
+          <div style="color:#64748b; margin-top:4px;">
+            Vencimento: <strong id="baixar-info-vencimento">--/--/----</strong> | 
+            Valor Original: <strong id="baixar-info-valor-original">R$ 0,00</strong>
+          </div>
+        </div>
+
+        <div class="field-row" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-baixar-valor">Valor Efetivamente Pago (R$) *</label>
+            <input class="field__input" type="number" step="0.01" min="0.01" id="form-baixar-valor" required />
+          </div>
+
+          <div class="field" style="flex:1; min-width:180px;">
+            <label class="field__label" for="form-baixar-data">Data do Pagamento *</label>
+            <input class="field__input" type="date" id="form-baixar-data" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-baixar-forma">Forma de Pagamento *</label>
+          <select class="field__select" id="form-baixar-forma" required>
+            <option value="pix">PIX</option>
+            <option value="dinheiro">Dinheiro (Caixa)</option>
+            <option value="debito">Cartão de Débito</option>
+            <option value="credito">Cartão de Crédito</option>
+            <option value="boleto">Boleto Bancário</option>
+            <option value="transferencia">Transferência / TED</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-baixar-comprovante">Nº Comprovante / Autenticação (opcional)</label>
+          <input class="field__input" type="text" id="form-baixar-comprovante" placeholder="Ex: Autenticação bancária 98471298..." />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-baixar-obs">Observação da Baixa (opcional)</label>
+          <textarea class="field__textarea" id="form-baixar-obs" rows="2" placeholder="Ex: Pago com desconto pontualidade de R$ 5,00..."></textarea>
+        </div>
+
+        <div id="baixar-box-recorrencia" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:10px; font-size:12px; color:#065f46; margin-top:10px;">
+          🔁 <strong>Conta Recorrente Mensal:</strong> Ao confirmar o pagamento, o sistema gerará automaticamente a despesa do próximo mês com base na data de vencimento!
+        </div>
+
+        <div class="modal__footer" style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+          <button type="button" class="btn btn--ghost" id="btn-cancelar-baixar">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="btn-confirmar-baixar">Confirmar Pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: GESTÃO DE FORNECEDORES (CAF-000035)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-fornecedores-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-fornecedores-title">
+  <div class="modal" id="modal-fornecedores" style="max-width: 720px; width: 100%;">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-fornecedores-title">🏢 Fornecedores Cadastrados</h3>
+      <button class="modal__close" id="modal-fornecedores-close" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body">
+      <!-- Formulário rápido para cadastrar novo fornecedor -->
+      <form id="form-novo-fornecedor" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:10px;">+ Cadastrar Novo Fornecedor</div>
+        <div class="field-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="field" style="flex:2; min-width:180px; margin-bottom:8px;">
+            <label class="field__label" for="form-fornecedor-nome" style="font-size:11px;">Razão Social / Nome *</label>
+            <input class="field__input" type="text" id="form-fornecedor-nome" required placeholder="Ex: Torrefação Bella Vista" />
+          </div>
+          <div class="field" style="flex:1; min-width:140px; margin-bottom:8px;">
+            <label class="field__label" for="form-fornecedor-telefone" style="font-size:11px;">Telefone / WhatsApp</label>
+            <input class="field__input" type="text" id="form-fornecedor-telefone" placeholder="(51) 99999-9999" />
+          </div>
+        </div>
+        <div class="field-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="field" style="flex:1; min-width:140px; margin-bottom:8px;">
+            <label class="field__label" for="form-fornecedor-cnpj" style="font-size:11px;">CNPJ / CPF</label>
+            <input class="field__input" type="text" id="form-fornecedor-cnpj" placeholder="00.000.000/0001-00" />
+          </div>
+          <div class="field" style="flex:1; min-width:140px; margin-bottom:8px;">
+            <label class="field__label" for="form-fornecedor-pix" style="font-size:11px;">Chave PIX</label>
+            <input class="field__input" type="text" id="form-fornecedor-pix" placeholder="E-mail, CNPJ ou telefone..." />
+          </div>
+          <div class="field" style="flex:1; min-width:140px; margin-bottom:8px;">
+            <label class="field__label" for="form-fornecedor-categoria" style="font-size:11px;">Categoria Principal</label>
+            <input class="field__input" type="text" id="form-fornecedor-categoria" placeholder="Ex: Grãos, Leite..." />
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+          <button type="submit" class="btn btn--primary" id="btn-salvar-fornecedor" style="padding:6px 14px; font-size:12px;">+ Adicionar Fornecedor</button>
+        </div>
+      </form>
+
+      <!-- Lista de fornecedores -->
+      <div class="table-wrap" style="max-height:300px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px;">
+        <table class="table" style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="background:#f1f5f9; text-align:left;">
+              <th style="padding:8px 12px;">Fornecedor</th>
+              <th style="padding:8px 12px;">Contato</th>
+              <th style="padding:8px 12px;">CNPJ / PIX</th>
+              <th style="padding:8px 12px; text-align:center;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-fornecedores">
+            <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">Nenhum fornecedor cadastrado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal__footer" style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button type="button" class="btn btn--ghost" id="btn-concluir-fornecedores">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÁREA PARA IMPRESSÃO DE QR CODES (A4) - CAF-000037 -->
+<div id="area-impressao-todos-qr" style="display:none;"></div>
+<style>
+@media print {
+  body.imprimindo-qr-mesas > *:not(#area-impressao-todos-qr) {
+    display: none !important;
+  }
+  body.imprimindo-qr-mesas #area-impressao-todos-qr {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+    padding: 10px !important;
+    background: #fff !important;
+  }
+  .cartao-qr-print {
+    border: 2px dashed #64748b;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    min-height: 290px;
+    box-sizing: border-box;
+  }
+  .cartao-qr-print img {
+    max-width: 170px;
+    height: auto;
+    margin: 8px 0;
+  }
+  .cartao-qr-print h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: #1e293b;
+    font-family: sans-serif;
+  }
+  .cartao-qr-print p {
+    margin: 0;
+    font-size: 11px;
+    color: #475569;
+    font-family: sans-serif;
+  }
+}
+</style>
+
 <!-- TOAST CONTAINER -->
 <div id="toast-container" aria-live="polite"></div>
 
@@ -2866,6 +3872,9 @@
 <script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="js/supabase-client.js"></script>
 <script defer src="js/db.js"></script>
+
+<!-- QR CODE GENERATOR (CAF-000037) -->
+<script defer src="js/libs/qrcode.min.js"></script>
 
 <!-- ADMIN MODULES -->
 <script defer src="js/admin/main.js"></script>
@@ -2883,6 +3892,7 @@
 <script defer src="js/admin/caixa-admin.js"></script>
 <script defer src="js/admin/estoque.js"></script>
 <script defer src="js/admin/clientes-admin.js"></script>
+<script defer src="js/admin/financeiro-admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

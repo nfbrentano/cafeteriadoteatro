@@ -61,7 +61,9 @@
   const clienteBadge = document.getElementById('cliente-selecionado-badge');
   const clienteBadgeNome = document.getElementById('cliente-selecionado-nome');
   const clienteBadgeTel = document.getElementById('cliente-selecionado-tel');
+  const clienteBadgeConta = document.getElementById('cliente-selecionado-conta');
   const btnDesvincularCliente = document.getElementById('btn-desvincular-cliente');
+  let selectedClienteObj = null;
   const sugestoesClientes = document.getElementById('sugestoes-clientes');
   const btnAbrirCadastroCliente = document.getElementById('btn-abrir-cadastro-cliente');
   const modalCadastroCliente = document.getElementById('modal-cadastro-cliente');
@@ -193,6 +195,7 @@
 
 
   const audioPronto = document.getElementById('audio-pronto');
+  const audioNovoPedidoCliente = document.getElementById('audio-novo-pedido-cliente');
   const btnToggleSound = document.getElementById('btn-toggle-sound');
   const soundToggleIcon = document.getElementById('sound-toggle-icon');
   const alertaProntoTop = document.getElementById('alerta-pronto-top');
@@ -202,6 +205,27 @@
   const btnAlertaProntoFechar = document.getElementById('btn-alerta-pronto-fechar');
   const pedidosProntosNotificados = new Set();
   let alertaProntoTimeout = null;
+
+  // CAF-000037: Elementos de Pedidos QR e Chamados de Mesa
+  const btnPedidosClienteNav = document.getElementById('btn-pedidos-cliente-nav');
+  const badgePedidosCliente = document.getElementById('badge-pedidos-cliente');
+  const btnChamadosMesaNav = document.getElementById('btn-chamados-mesa-nav');
+  const badgeChamadosMesa = document.getElementById('badge-chamados-mesa');
+  const bannerPedidosClienteContainer = document.getElementById('banner-pedidos-cliente-container');
+  const bannerPedidosClienteQtd = document.getElementById('banner-pedidos-cliente-qtd');
+  const btnAbrirTriagemPedidosCliente = document.getElementById('btn-abrir-triagem-pedidos-cliente');
+  const bannerChamadosMesaContainer = document.getElementById('banner-chamados-mesa-container');
+  const bannerChamadosMesaTexto = document.getElementById('banner-chamados-mesa-texto');
+  const btnAtenderChamadoTopo = document.getElementById('btn-atender-chamado-topo');
+  const modalPedidosClienteTriagem = document.getElementById('modal-pedidos-cliente-triagem');
+  const listaPedidosClienteAguardando = document.getElementById('lista-pedidos-cliente-aguardando');
+  const btnFecharTriagemPedidosCliente = document.getElementById('btn-fechar-triagem-pedidos-cliente');
+  const btnFecharTriagemFooter = document.getElementById('btn-fechar-triagem-footer');
+
+  let pedidosClienteAguardando = [];
+  let chamadosMesaPendentes = [];
+  const pedidosClienteNotificados = new Set();
+  const chamadosNotificados = new Set();
 
   // Estado
   let currentUser = null;
@@ -774,9 +798,146 @@
     }
   }, 15000);
 
+  // --- CONTROLE DE ACESSO GRANULAR & AUTORIZAÇÃO POR PIN (CAF-000036) ---
+  function usuarioTemPermissao(permissao) {
+    if (!currentUser) return false;
+    if (currentUser.is_admin || currentUser.perfil?.role === 'admin') return true;
+    if (currentUser.permissoes && currentUser.permissoes.includes(permissao)) return true;
+    // Fallbacks de retrocompatibilidade
+    if (permissao === 'pdv.vender' && currentUser.perfil?.role === 'barista') return true;
+    if (permissao === 'pdv.desconto' && currentUser.perfil?.pode_dar_desconto) return true;
+    return false;
+  }
+
+  function pedirAutorizacaoPin(permissaoNecessaria, descricaoAcao, contexto = null) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-autorizacao-pin');
+      const descEl = document.getElementById('modal-pin-descricao-acao');
+      const inputPin = document.getElementById('input-pin-supervisor');
+      const inputMotivo = document.getElementById('input-pin-motivo');
+      const erroEl = document.getElementById('modal-pin-erro');
+      const btnConfirmar = document.getElementById('btn-confirmar-pin');
+      const btnCancelar = document.getElementById('btn-cancelar-pin');
+      const btnClose = document.getElementById('modal-pin-close');
+
+      if (!modal || !inputPin) {
+        console.error('Modal de autorização por PIN não encontrado no DOM');
+        resolve(null);
+        return;
+      }
+
+      if (descEl) {
+        descEl.innerHTML = `<strong>Ação restrita:</strong> ${descricaoAcao || 'Operação requer supervisor'}<br><span style="font-size:11px; color:#64748b;">Permissão exigida: <code>${permissaoNecessaria}</code></span>`;
+      }
+      inputPin.value = '';
+      if (inputMotivo) inputMotivo.value = '';
+      if (erroEl) {
+        erroEl.style.display = 'none';
+        erroEl.textContent = '';
+      }
+
+      function cleanup() {
+        modal.classList.add('hidden');
+        btnConfirmar.removeEventListener('click', onConfirmar);
+        btnCancelar.removeEventListener('click', onCancelar);
+        btnClose.removeEventListener('click', onCancelar);
+        inputPin.removeEventListener('keydown', onKeyDown);
+      }
+
+      function onCancelar() {
+        cleanup();
+        resolve(null);
+      }
+
+      async function onConfirmar() {
+        const pin = inputPin.value.trim();
+        const motivo = inputMotivo ? inputMotivo.value.trim() : '';
+
+        if (!pin || pin.length < 4 || pin.length > 8) {
+          if (erroEl) {
+            erroEl.style.display = 'block';
+            erroEl.textContent = 'O PIN deve conter entre 4 e 8 dígitos numéricos.';
+          }
+          inputPin.focus();
+          return;
+        }
+
+        btnConfirmar.disabled = true;
+        btnConfirmar.textContent = 'Validando...';
+        if (erroEl) erroEl.style.display = 'none';
+
+        try {
+          const res = await window.cafeteriaDB.cargos.validarPin(
+            pin, 
+            permissaoNecessaria, 
+            motivo || `Autorizado na tela PDV (${permissaoNecessaria})`, 
+            contexto
+          );
+
+          if (res && res.autorizado) {
+            showToast(`Ação liberada por ${res.supervisor_nome || 'Supervisor'} (${res.cargo_nome || 'Cargo'})!`, { tipo: 'success' });
+            cleanup();
+            resolve({ ...res, motivo });
+          } else {
+            if (erroEl) {
+              erroEl.style.display = 'block';
+              erroEl.textContent = (res && res.mensagem) || 'PIN inválido ou sem permissão para esta ação.';
+            }
+            inputPin.value = '';
+            inputPin.focus();
+          }
+        } catch (err) {
+          console.error('Erro na validação de PIN:', err);
+          if (erroEl) {
+            erroEl.style.display = 'block';
+            erroEl.textContent = 'Erro ao validar PIN: ' + (err.message || 'Falha de comunicação');
+          }
+        } finally {
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = 'Liberar Ação';
+        }
+      }
+
+      function onKeyDown(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onConfirmar();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          onCancelar();
+        }
+      }
+
+      btnConfirmar.addEventListener('click', onConfirmar);
+      btnCancelar.addEventListener('click', onCancelar);
+      btnClose.addEventListener('click', onCancelar);
+      inputPin.addEventListener('keydown', onKeyDown);
+
+      modal.classList.remove('hidden');
+      setTimeout(() => inputPin.focus(), 100);
+    });
+  }
+
   window.baristaCancelarItem = async function(itemId, pedidoId, mesaCodigo) {
-    const motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
-    if (!motivo) return;
+    let motivo = null;
+
+    if (!usuarioTemPermissao('pdv.cancelar_item')) {
+      const auth = await pedirAutorizacaoPin(
+        'pdv.cancelar_item',
+        `Cancelamento do item #${itemId} do Pedido #${pedidoId}`,
+        { pedido_id: pedidoId, item_id: itemId, mesa_codigo: mesaCodigo }
+      );
+      if (!auth) {
+        showToast('Cancelamento não autorizado por supervisor.', { tipo: 'warning' });
+        return;
+      }
+      motivo = auth.motivo || null;
+    }
+
+    if (!motivo) {
+      motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
+      if (!motivo) return;
+    }
 
     try {
       const { data, error } = await window.cafeteriaSupabase.rpc('cancelar_item', {
@@ -859,7 +1020,7 @@
     try {
       const { data, error } = await window.cafeteriaSupabase
         .from('perfis')
-        .select('nome, role, pode_dar_desconto')
+        .select('nome, role, pode_dar_desconto, cargo_id')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -888,7 +1049,7 @@
     if (!perfil) {
       await window.showConfirmBottomSheet({
         titulo: 'Perfil Não Cadastrado',
-        mensagem: `O usuário (${user.email || user.id}) está autenticado, mas não possui um registro cadastrado na tabela "perfis". Adicione o usuário na tabela "perfis" com o perfil "barista" ou "admin" para liberar o acesso.`,
+        mensagem: `O usuário (${user.email || user.id}) está autenticado, mas não possui um registro cadastrado na tabela "perfis". Cadastre o colaborador em Cargos & Usuários para liberar o acesso.`,
         textoConfirmar: 'Entendido',
         textoCancelar: ''
       });
@@ -896,13 +1057,40 @@
       return;
     }
 
-    if (perfil.role !== 'barista' && perfil.role !== 'admin') {
-      showToast('Acesso negado. Apenas baristas e administradores podem usar esta tela.', { tipo: 'error', duracaoMs: 6000 });
+    // Carrega permissões granulares associadas ao cargo (CAF-000036)
+    let permissoesInfo = null;
+    try {
+      if (window.cafeteriaDB?.cargos?.getMinhasPermissoes) {
+        permissoesInfo = await window.cafeteriaDB.cargos.getMinhasPermissoes();
+        if (permissoesInfo) {
+          localStorage.setItem('cafeteria_pdv_permissoes_' + user.id, JSON.stringify(permissoesInfo));
+        }
+      }
+    } catch (pErr) {
+      console.warn('[PDV Cache] Falha ao carregar permissões na rede, buscando cache:', pErr);
+      const cachedP = localStorage.getItem('cafeteria_pdv_permissoes_' + user.id);
+      if (cachedP) {
+        try { permissoesInfo = JSON.parse(cachedP); } catch {}
+      }
+    }
+
+    const permissoes = (permissoesInfo && permissoesInfo.permissoes) || [];
+    const isAdmin = (permissoesInfo && permissoesInfo.is_admin) || perfil.role === 'admin';
+    const podeAcessarPDV = isAdmin || permissoes.includes('pdv.vender') || perfil.role === 'barista';
+
+    if (!podeAcessarPDV) {
+      showToast('Acesso negado. Seu perfil não possui permissão para acessar o PDV (pdv.vender).', { tipo: 'error', duracaoMs: 6000 });
       await window.cafeteriaSupabase.auth.signOut();
       return;
     }
 
-    currentUser = { ...user, perfil };
+    currentUser = { 
+      ...user, 
+      perfil, 
+      cargo_nome: permissoesInfo?.cargo_nome,
+      permissoes: permissoes,
+      is_admin: isAdmin 
+    };
     document.getElementById('user-name').textContent = perfil.nome;
     
     loginScreen.classList.add('hidden');
@@ -2138,6 +2326,7 @@
 
   function selecionarCliente(cliente) {
     if (!cliente) return;
+    selectedClienteObj = cliente;
     if (pedidoClienteId) pedidoClienteId.value = cliente.id;
     if (pedidoClienteNome) {
       pedidoClienteNome.value = cliente.nome;
@@ -2147,6 +2336,23 @@
       clienteBadgeNome.textContent = cliente.nome;
       if (clienteBadgeTel) {
         clienteBadgeTel.textContent = cliente.telefone ? formatarTelefoneExibicao(cliente.telefone) : '';
+      }
+      if (clienteBadgeConta) {
+        if (cliente.conta_habilitada) {
+          const saldo = Number(cliente.saldo) || 0;
+          const limiteDisp = Number(cliente.limite_disponivel) || 0;
+          const saldoFmt = Math.abs(saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          const dispFmt = limiteDisp.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          if (saldo > 0) {
+            clienteBadgeConta.innerHTML = `<span style="color:#15803d; font-weight:600;">💳 Créditos: +${saldoFmt}</span>`;
+          } else if (saldo < 0) {
+            clienteBadgeConta.innerHTML = `<span style="color:#b91c1c; font-weight:600;">💳 Fiado: ${saldoFmt} (Disp: ${dispFmt})</span>`;
+          } else {
+            clienteBadgeConta.innerHTML = `<span style="color:#475569; font-weight:600;">💳 Conta Habilitada (Disp: ${dispFmt})</span>`;
+          }
+        } else {
+          clienteBadgeConta.innerHTML = '<span style="color:#64748b; font-size:11px;">Conta pós-pago: Desabilitada</span>';
+        }
       }
       clienteBadge.style.display = 'flex';
     }
@@ -2159,12 +2365,14 @@
   }
 
   function desvincularCliente() {
+    selectedClienteObj = null;
     if (pedidoClienteId) pedidoClienteId.value = '';
     if (pedidoClienteNome) {
       pedidoClienteNome.value = '';
       pedidoClienteNome.style.display = '';
       pedidoClienteNome.focus();
     }
+    if (clienteBadgeConta) clienteBadgeConta.innerHTML = '';
     if (clienteBadge) clienteBadge.style.display = 'none';
     if (sugestoesClientes) {
       sugestoesClientes.style.display = 'none';
@@ -2396,7 +2604,7 @@
     const prioridade = pedidoPrioritario && pedidoPrioritario.checked ? 1 : 0;
     const prioridadeMotivo = prioridade === 1 ? (pedidoPrioridadeMotivo ? pedidoPrioridadeMotivo.value : 'Espetáculo') : null;
     const formaPag = pedidoPagamento.value || null;
-    const statusPag = pedidoPago.checked ? 'pago' : 'pendente';
+    const statusPag = (formaPag === 'conta_cliente' || pedidoPago.checked) ? 'pago' : 'pendente';
 
     if (!cart || cart.length === 0) {
       showToast('Adicione ao menos um item ao carrinho.', 'error');
@@ -2405,6 +2613,23 @@
     if (!mesaCodigo && !paraViagem) {
       showToast('Por favor, selecione uma mesa para o pedido.', 'error');
       return;
+    }
+
+    const clienteId = pedidoClienteId && pedidoClienteId.value ? pedidoClienteId.value : null;
+
+    if (formaPag === 'conta_cliente') {
+      if (!clienteId) {
+        showToast('Selecione um cliente cadastrado para lançar na conta corrente.', 'error');
+        return;
+      }
+      if (selectedClienteObj && selectedClienteObj.conta_habilitada === false) {
+        showToast('A conta corrente deste cliente não está habilitada para fiado/créditos.', 'error');
+        return;
+      }
+      if (!navigator.onLine || !isPdvOnline) {
+        showToast('Pagamento na conta corrente requer conexão ativa com a internet.', 'error');
+        return;
+      }
     }
     
     const total = cart.reduce((acc, item) => acc + (item.produto.preco * item.quantidade), 0);
@@ -2426,8 +2651,6 @@
       sabores: item.sabores || undefined,
       cortesia_de_item_index: item.cortesia_de_item_index !== undefined ? item.cortesia_de_item_index : null
     }));
-
-    const clienteId = pedidoClienteId && pedidoClienteId.value ? pedidoClienteId.value : null;
 
     const payload = {
       client_id: clientId,
@@ -2490,10 +2713,12 @@
 
     cart = [];
     limparRascunhoCarrinho();
+    selectedClienteObj = null;
     pedidoObs.value = '';
     pedidoClienteNome.value = '';
     pedidoClienteNome.style.display = '';
     if (pedidoClienteId) pedidoClienteId.value = '';
+    if (clienteBadgeConta) clienteBadgeConta.innerHTML = '';
     if (clienteBadge) clienteBadge.style.display = 'none';
     pedidoParaViagem.checked = false;
     if (pedidoPrioritario) pedidoPrioritario.checked = false;
@@ -2631,6 +2856,7 @@
         renderPedidosCards();
         updateProntosBadge();
         updateMesaSelectOptions();
+        await Promise.all([loadPedidosClienteAguardando(), loadChamadosMesa()]);
       }
     } catch (e) {
       console.warn('[PDV Cache] Falha ao carregar pedidos ativos:', e);
@@ -2644,6 +2870,258 @@
           updateMesaSelectOptions();
         } catch {}
       }
+    }
+  }
+
+  // -----------------------------------------------------
+  // CAF-000037: FUNÇÕES DE TRIAGEM QR E CHAMADOS DE MESA
+  // -----------------------------------------------------
+  function tocarAlertaNovoPedidoCliente() {
+    if (!isSomAtivo()) return;
+    try {
+      const audio = audioNovoPedidoCliente || audioPronto;
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log('Autoplay bloqueado:', e));
+      }
+    } catch (e) {}
+  }
+
+  async function loadPedidosClienteAguardando() {
+    try {
+      const { data, error } = await window.cafeteriaSupabase
+        .from('pedidos')
+        .select(`
+          *,
+          pedido_itens (
+            *,
+            pedido_item_adicionais (*)
+          )
+        `)
+        .eq('status', 'aguardando_aprovacao')
+        .order('created_at', { ascending: true });
+
+      if (!error && data) {
+        let temNovo = false;
+        data.forEach(p => {
+          if (!pedidosClienteNotificados.has(p.id)) {
+            pedidosClienteNotificados.add(p.id);
+            temNovo = true;
+          }
+        });
+        if (temNovo && pedidosClienteAguardando.length > 0) {
+          tocarAlertaNovoPedidoCliente();
+        }
+
+        pedidosClienteAguardando = data;
+        renderTriagemPedidosCliente();
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar pedidos aguardando aprovação:', e);
+    }
+  }
+
+  async function loadChamadosMesa() {
+    try {
+      if (window.cafeteriaDB && window.cafeteriaDB.mesas) {
+        const chamados = await window.cafeteriaDB.mesas.listarChamados(true);
+        let temNovo = false;
+        chamados.forEach(c => {
+          if (!chamadosNotificados.has(c.id)) {
+            chamadosNotificados.add(c.id);
+            temNovo = true;
+          }
+        });
+        if (temNovo && chamadosMesaPendentes.length > 0) {
+          tocarAlertaNovoPedidoCliente();
+        }
+        chamadosMesaPendentes = chamados;
+        renderChamadosMesa();
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar chamados de mesa:', e);
+    }
+  }
+
+  function renderTriagemPedidosCliente() {
+    const qtd = pedidosClienteAguardando.length;
+    if (badgePedidosCliente) badgePedidosCliente.textContent = qtd;
+    if (bannerPedidosClienteQtd) bannerPedidosClienteQtd.textContent = qtd;
+
+    if (qtd > 0) {
+      if (btnPedidosClienteNav) btnPedidosClienteNav.classList.remove('hidden');
+      if (bannerPedidosClienteContainer) bannerPedidosClienteContainer.classList.remove('hidden');
+    } else {
+      if (btnPedidosClienteNav) btnPedidosClienteNav.classList.add('hidden');
+      if (bannerPedidosClienteContainer) bannerPedidosClienteContainer.classList.add('hidden');
+    }
+
+    if (!listaPedidosClienteAguardando) return;
+
+    if (qtd === 0) {
+      listaPedidosClienteAguardando.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">✨</div>
+          <strong style="color: #334155;">Nenhum pedido de cliente aguardando aprovação</strong>
+          <p style="margin-top: 4px; font-size: 0.9rem;">Novos pedidos enviados pelo QR Code aparecerão aqui em tempo real.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listaPedidosClienteAguardando.innerHTML = pedidosClienteAguardando.map(pedido => {
+      const itensHtml = (pedido.pedido_itens || []).map(item => {
+        const adics = (item.pedido_item_adicionais || []).map(a => `+ ${a.nome_adicional} (R$ ${Number(a.preco_unitario || 0).toFixed(2)})`).join(', ');
+        return `
+          <div style="padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 0.9rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span><strong>${item.quantidade}x</strong> ${item.nome_produto || 'Item'}</span>
+              <span>R$ ${(item.subtotal || item.preco_unitario * item.quantidade || 0).toFixed(2)}</span>
+            </div>
+            ${item.observacoes ? `<div style="font-size: 0.8rem; color: #b45309; font-style: italic; margin-left: 12px;">Obs: ${item.observacoes}</div>` : ''}
+            ${adics ? `<div style="font-size: 0.8rem; color: #475569; margin-left: 12px;">${adics}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      const hora = new Date(pedido.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      return `
+        <div class="card-pedido-triagem" style="border: 1px solid #c7d2fe; border-left: 5px solid #4f46e5; border-radius: 8px; padding: 14px; background: #faf5ff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <span style="background: #4f46e5; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">
+                Mesa ${pedido.mesa_codigo}
+              </span>
+              <span style="font-weight: 600; margin-left: 8px; color: #1e293b;">
+                ${pedido.cliente_nome || 'Cliente na Mesa'}
+              </span>
+              <span style="font-size: 0.8rem; color: #64748b; margin-left: 6px;">
+                às ${hora}
+              </span>
+            </div>
+            <strong style="font-size: 1.1rem; color: #1e1b4b;">
+              R$ ${Number(pedido.total || 0).toFixed(2)}
+            </strong>
+          </div>
+
+          ${pedido.observacoes_gerais ? `
+            <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; color: #92400e; margin-bottom: 8px;">
+              <strong>Observação da mesa:</strong> ${pedido.observacoes_gerais}
+            </div>
+          ` : ''}
+
+          <div style="background: white; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px;">
+            ${itensHtml}
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn-recusar-pedido-cliente" data-id="${pedido.id}" style="background: #fff; border: 1px solid #fca5a5; color: #dc2626; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+              ✕ Recusar
+            </button>
+            <button type="button" class="btn-aprovar-pedido-cliente" data-id="${pedido.id}" style="background: #4f46e5; border: none; color: white; padding: 7px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);">
+              ✓ Aprovar & Enviar à Cozinha
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listaPedidosClienteAguardando.querySelectorAll('.btn-aprovar-pedido-cliente').forEach(btn => {
+      btn.addEventListener('click', () => aprovarPedidoCliente(Number(btn.dataset.id)));
+    });
+
+    listaPedidosClienteAguardando.querySelectorAll('.btn-recusar-pedido-cliente').forEach(btn => {
+      btn.addEventListener('click', () => recusarPedidoCliente(Number(btn.dataset.id)));
+    });
+  }
+
+  async function aprovarPedidoCliente(pedidoId) {
+    try {
+      if (window.showToast) window.showToast('Aprovando pedido...', 'info');
+      await window.cafeteriaDB.clientePedido.aprovar(pedidoId);
+      if (window.showToast) window.showToast('Pedido aprovado com sucesso! Enviado à cozinha.', 'success');
+
+      // Tentar auto-impressão da comanda se configurado
+      try {
+        const { data: pData } = await window.cafeteriaSupabase
+          .from('pedidos')
+          .select(`
+            *,
+            pedido_itens (
+              *,
+              pedido_item_adicionais (*)
+            )
+          `)
+          .eq('id', pedidoId)
+          .single();
+        if (pData && window.imprimirCupomPedido) {
+          window.imprimirCupomPedido(pData, false);
+        }
+      } catch (errPrint) {
+        console.warn('Erro ao auto-imprimir pedido aprovado:', errPrint);
+      }
+
+      await loadPedidosClienteAguardando();
+      await loadActivePedidos();
+    } catch (err) {
+      console.error('Erro ao aprovar pedido:', err);
+      alert('Erro ao aprovar pedido: ' + (err.message || err));
+    }
+  }
+
+  async function recusarPedidoCliente(pedidoId) {
+    const motivo = prompt('Informe o motivo da recusa (será exibido ao cliente no cardápio):', 'Cozinha com alta demanda no momento');
+    if (motivo === null) return;
+    try {
+      await window.cafeteriaDB.clientePedido.recusar(pedidoId, motivo);
+      if (window.showToast) window.showToast('Pedido recusado.', 'info');
+      await loadPedidosClienteAguardando();
+    } catch (err) {
+      console.error('Erro ao recusar pedido:', err);
+      alert('Erro ao recusar pedido: ' + (err.message || err));
+    }
+  }
+
+  function renderChamadosMesa() {
+    const qtd = chamadosMesaPendentes.length;
+    if (badgeChamadosMesa) badgeChamadosMesa.textContent = qtd;
+
+    if (qtd > 0) {
+      if (btnChamadosMesaNav) btnChamadosMesaNav.classList.remove('hidden');
+      if (bannerChamadosMesaContainer) bannerChamadosMesaContainer.classList.remove('hidden');
+      const primeiro = chamadosMesaPendentes[0];
+      const tipoTxt = primeiro.tipo === 'conta' ? '🧾 Pedido de Conta' : '🙋 Chamado de Garçom';
+      if (bannerChamadosMesaTexto) {
+        bannerChamadosMesaTexto.textContent = `${tipoTxt} na Mesa ${primeiro.mesa_codigo}${qtd > 1 ? ` (+${qtd - 1} outros)` : ''}`;
+      }
+    } else {
+      if (btnChamadosMesaNav) btnChamadosMesaNav.classList.add('hidden');
+      if (bannerChamadosMesaContainer) bannerChamadosMesaContainer.classList.add('hidden');
+    }
+  }
+
+  async function atenderChamadoMesa(chamadoId) {
+    try {
+      await window.cafeteriaDB.mesas.atenderChamado(chamadoId);
+      if (window.showToast) window.showToast('Chamado marcado como atendido!', 'success');
+      await loadChamadosMesa();
+    } catch (err) {
+      console.error('Erro ao atender chamado:', err);
+      alert('Erro ao atender chamado: ' + (err.message || err));
+    }
+  }
+
+  function abrirModalTriagemPedidosCliente() {
+    if (modalPedidosClienteTriagem) {
+      renderTriagemPedidosCliente();
+      modalPedidosClienteTriagem.classList.remove('hidden');
+    }
+  }
+
+  function fecharModalTriagemPedidosCliente() {
+    if (modalPedidosClienteTriagem) {
+      modalPedidosClienteTriagem.classList.add('hidden');
     }
   }
 
@@ -3343,14 +3821,20 @@
       fecharContaTaxaCheck.checked = false;
     }
 
-    // Configura UI Desconto Manual
-    if (currentUser && currentUser.perfil && (currentUser.perfil.role === 'admin' || currentUser.perfil.pode_dar_desconto)) {
+    // Configura UI Desconto Manual (CAF-000036)
+    const temPermissaoDesconto = usuarioTemPermissao('pdv.desconto');
+    const btnSolicitarDescontoContainer = document.getElementById('fechar-conta-btn-pedir-desconto-container');
+    currentFechamento._supervisorDesconto = null;
+
+    if (temPermissaoDesconto) {
       fecharContaDivDesconto.classList.remove('hidden');
+      if (btnSolicitarDescontoContainer) btnSolicitarDescontoContainer.classList.add('hidden');
       fecharContaDescontoTipo.value = 'valor';
       fecharContaDescontoValor.value = '';
       fecharContaDescontoMotivo.value = '';
     } else {
       fecharContaDivDesconto.classList.add('hidden');
+      if (btnSolicitarDescontoContainer) btnSolicitarDescontoContainer.classList.remove('hidden');
       fecharContaDescontoValor.value = '';
       fecharContaDescontoMotivo.value = '';
     }
@@ -3417,6 +3901,26 @@
   fecharContaDescontoTipo.addEventListener('change', recalcularTotaisFechamento);
   fecharContaDescontoMotivo.addEventListener('input', () => { currentFechamento.descontoMotivo = fecharContaDescontoMotivo.value.trim(); });
   fecharContaTaxaCheck.addEventListener('change', recalcularTotaisFechamento);
+
+  const btnSolicitarDescontoPin = document.getElementById('btn-solicitar-desconto-pin');
+  if (btnSolicitarDescontoPin) {
+    btnSolicitarDescontoPin.addEventListener('click', async () => {
+      const auth = await pedirAutorizacaoPin(
+        'pdv.desconto',
+        `Liberação de desconto para ${currentFechamento ? currentFechamento.mesaCodigo : 'a mesa'}`,
+        { mesa_codigo: currentFechamento ? currentFechamento.mesaCodigo : null }
+      );
+      if (auth) {
+        currentFechamento._supervisorDesconto = auth;
+        fecharContaDivDesconto.classList.remove('hidden');
+        document.getElementById('fechar-conta-btn-pedir-desconto-container')?.classList.add('hidden');
+        if (auth.motivo && !fecharContaDescontoMotivo.value) {
+          fecharContaDescontoMotivo.value = auth.motivo;
+        }
+        fecharContaDescontoValor.focus();
+      }
+    });
+  }
 
   fecharContaModo.addEventListener('change', () => {
     const modo = fecharContaModo.value;
@@ -3823,6 +4327,20 @@
     if (todosPagamentos.length === 0) {
       showToast('Adicione pelo menos uma forma de pagamento.', 'error');
       return;
+    }
+
+    // Verificação de permissão para desconto (CAF-000036)
+    if (currentFechamento.descontoAplicado > 0 && !usuarioTemPermissao('pdv.desconto') && !currentFechamento._supervisorDesconto) {
+      const auth = await pedirAutorizacaoPin(
+        'pdv.desconto',
+        `Aprovar desconto de R$ ${currentFechamento.descontoAplicado.toFixed(2)} no fechamento da mesa ${currentFechamento.mesaCodigo}`,
+        { mesa_codigo: currentFechamento.mesaCodigo, desconto: currentFechamento.descontoAplicado }
+      );
+      if (!auth) {
+        showToast('Desconto não autorizado por supervisor.', { tipo: 'warning' });
+        return;
+      }
+      currentFechamento._supervisorDesconto = auth;
     }
 
     fecharContaConfirmar.disabled = true;
@@ -4332,6 +4850,12 @@
   function setupRealtime() {
     window.cafeteriaSupabase.channel('pedidos-barista')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, payload => {
+        const statusNovo = payload.new && payload.new.status;
+        const statusAntigo = payload.old && payload.old.status;
+        if (statusNovo === 'aguardando_aprovacao' || statusAntigo === 'aguardando_aprovacao') {
+          loadPedidosClienteAguardando();
+        }
+
         if (payload.eventType === 'UPDATE') {
           const isProntoAgora = payload.new && (payload.new.status === 'concluido' || payload.new.status === 'pronto');
           const eraProntoAntes = payload.old && (payload.old.status === 'concluido' || payload.old.status === 'pronto');
@@ -4367,6 +4891,9 @@
         } else {
           debouncedLoadActivePedidos();
         }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mesa_chamados' }, () => {
+        loadChamadosMesa();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'produtos' }, payload => {
         loadProdutos();
@@ -4491,6 +5018,37 @@
     } catch (e) {
       console.warn('Erro ao carregar configurações de taxa:', e);
     }
+  }
+
+  // CAF-000037: Listeners da triagem de pedidos de clientes e chamados
+  if (btnPedidosClienteNav) btnPedidosClienteNav.addEventListener('click', abrirModalTriagemPedidosCliente);
+  if (btnAbrirTriagemPedidosCliente) btnAbrirTriagemPedidosCliente.addEventListener('click', abrirModalTriagemPedidosCliente);
+  if (btnFecharTriagemPedidosCliente) btnFecharTriagemPedidosCliente.addEventListener('click', fecharModalTriagemPedidosCliente);
+  if (btnFecharTriagemFooter) btnFecharTriagemFooter.addEventListener('click', fecharModalTriagemPedidosCliente);
+  if (modalPedidosClienteTriagem) {
+    modalPedidosClienteTriagem.addEventListener('click', (e) => {
+      if (e.target === modalPedidosClienteTriagem) fecharModalTriagemPedidosCliente();
+    });
+  }
+
+  if (btnAtenderChamadoTopo) {
+    btnAtenderChamadoTopo.addEventListener('click', () => {
+      if (chamadosMesaPendentes.length > 0) {
+        atenderChamadoMesa(chamadosMesaPendentes[0].id);
+      }
+    });
+  }
+
+  if (btnChamadosMesaNav) {
+    btnChamadosMesaNav.addEventListener('click', () => {
+      if (chamadosMesaPendentes.length > 0) {
+        const primeiro = chamadosMesaPendentes[0];
+        const tipoTxt = primeiro.tipo === 'conta' ? 'Pedir a Conta' : 'Chamar Garçom';
+        if (confirm(`Marcar chamado da Mesa ${primeiro.mesa_codigo} (${tipoTxt}) como atendido?`)) {
+          atenderChamadoMesa(primeiro.id);
+        }
+      }
+    });
   }
 
   // Inicializar

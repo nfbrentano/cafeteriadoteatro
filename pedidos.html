@@ -44,6 +44,12 @@
           <button id="nav-btn-mesas" class="nav-tab">
             📋 Mesas & Entregas <span id="badge-prontos" class="badge-pill hidden">0 prontos</span>
           </button>
+          <button type="button" id="btn-pedidos-cliente-nav" class="nav-tab hidden" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;">
+            📱 Pedidos QR <span id="badge-pedidos-cliente" class="badge-pill" style="background: #4f46e5; color: white;">0</span>
+          </button>
+          <button type="button" id="btn-chamados-mesa-nav" class="nav-tab hidden" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">
+            🔔 Chamados <span id="badge-chamados-mesa" class="badge-pill" style="background: #dc2626; color: white;">0</span>
+          </button>
         </nav>
       </div>
 
@@ -82,6 +88,35 @@
       <div class="banner-offline-content">
         <span id="banner-offline-icon" class="banner-offline-icon">⚡</span>
         <span id="banner-offline-text" class="banner-offline-text">Sem internet. O sistema continua operando offline e salvará seus pedidos.</span>
+      </div>
+    </div>
+
+    <!-- BANNER DE PEDIDOS QR AGUARDANDO APROVAÇÃO (CAF-000037) -->
+    <div id="banner-pedidos-cliente-container" class="hidden" style="background: linear-gradient(90deg, #4f46e5, #6366f1); color: white; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.3rem;">📱</span>
+        <div>
+          <strong><span id="banner-pedidos-cliente-qtd">0</span> novo(s) pedido(s) via QR Code da Mesa!</strong>
+          <span style="font-size: 0.85rem; opacity: 0.9; margin-left: 6px;">Clientes enviaram pedidos que precisam de aprovação para entrar na cozinha.</span>
+        </div>
+      </div>
+      <button type="button" id="btn-abrir-triagem-pedidos-cliente" style="background: white; color: #4338ca; border: none; font-weight: bold; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+        Revisar Pedidos ➔
+      </button>
+    </div>
+
+    <!-- BANNER DE CHAMADOS DE MESA (CAF-000037) -->
+    <div id="banner-chamados-mesa-container" class="hidden" style="background: linear-gradient(90deg, #dc2626, #ef4444); color: white; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.2rem;">🔔</span>
+        <div>
+          <strong>Chamado de Mesa: <span id="banner-chamados-mesa-texto">Mesa solicitando atendimento</span></strong>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" id="btn-atender-chamado-topo" style="background: white; color: #b91c1c; border: none; font-weight: bold; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+          Marcar como Atendido ✓
+        </button>
       </div>
     </div>
 
@@ -148,8 +183,11 @@
             </div>
 
             <!-- Badge de cliente cadastrado selecionado -->
-            <div id="cliente-selecionado-badge" style="display: none; align-items: center; justify-content: space-between; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; font-size: 13px; color: #2e7d32;">
-              <span>👤 <strong id="cliente-selecionado-nome">Nome</strong> <small id="cliente-selecionado-tel" style="color: #4b5563; margin-left: 4px;"></small></span>
+            <div id="cliente-selecionado-badge" style="display: none; align-items: center; justify-content: space-between; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; font-size: 13px; color: #2e7d32; flex-wrap: wrap; gap: 4px;">
+              <div>
+                <span>👤 <strong id="cliente-selecionado-nome">Nome</strong> <small id="cliente-selecionado-tel" style="color: #4b5563; margin-left: 4px;"></small></span>
+                <div id="cliente-selecionado-conta" style="font-size: 11px; margin-top: 2px;"></div>
+              </div>
               <button type="button" id="btn-desvincular-cliente" style="background: none; border: none; color: #c62828; cursor: pointer; font-weight: bold; font-size: 14px; padding: 0 4px;" title="Desvincular cliente">✕</button>
             </div>
 
@@ -195,6 +233,7 @@
                 <option value="dinheiro">Dinheiro</option>
                 <option value="cartao_debito">Cartão Débito</option>
                 <option value="cartao_credito">Cartão Crédito</option>
+                <option value="conta_cliente">Conta do Cliente (Fiado / Crédito)</option>
                 <option value="outros">Outros</option>
               </select>
             </div>
@@ -519,6 +558,12 @@
               <strong id="fechar-conta-taxa-val-lbl">R$ 0,00</strong>
             </div>
 
+            <div id="fechar-conta-btn-pedir-desconto-container" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--cinza-borda);">
+              <button type="button" id="btn-solicitar-desconto-pin" class="btn-ghost" style="width: 100%; border: 1px dashed #d97706; color: #b45309; font-size: 12px; padding: 6px; border-radius: 6px;">
+                🔒 Solicitar Desconto c/ PIN de Supervisor
+              </button>
+            </div>
+
             <div id="fechar-conta-div-desconto" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--cinza-borda);">
               <label style="font-size: 13px; font-weight: bold; color: var(--marrom-escuro); display: block; margin-bottom: 6px;">Desconto Manual Autorizado</label>
               <div style="display: flex; gap: 8px; margin-bottom: 6px;">
@@ -690,11 +735,70 @@
     </div>
   </div>
 
+  <!-- MODAL: AUTORIZAÇÃO DE SUPERVISOR POR PIN (CAF-000036) -->
+  <div id="modal-autorizacao-pin" class="modal-overlay hidden" role="dialog" aria-modal="true" style="z-index: 10000;">
+    <div class="modal-card" style="max-width: 420px; width: 100%; border-top: 4px solid #f59e0b;">
+      <div class="modal-header">
+        <h4 id="modal-pin-title" style="display:flex; align-items:center; gap:8px; margin:0; font-size:16px;">
+          🔒 Autorização de Supervisor
+        </h4>
+        <button id="modal-pin-close" class="btn-close" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 16px;">
+        <div id="modal-pin-descricao-acao" style="font-size: 13px; color: #475569; margin-bottom: 12px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 10px;">
+          Esta operação requer liberação de um supervisor ou administrador.
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label for="input-pin-supervisor" style="display:block; font-size:12px; font-weight:700; color:#1e293b; margin-bottom:4px;">
+            Digite o PIN do Supervisor (4 a 8 dígitos) *
+          </label>
+          <input type="password" id="input-pin-supervisor" class="input-padrao" placeholder="••••" maxlength="8" pattern="[0-9]*" inputmode="numeric" style="width:100%; font-size:20px; letter-spacing:4px; text-align:center; padding:10px;" required />
+          <div id="modal-pin-erro" style="display:none; color:#dc2626; font-size:12px; margin-top:4px;">PIN incorreto.</div>
+        </div>
+
+        <div style="margin-bottom: 8px;">
+          <label for="input-pin-motivo" style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">
+            Motivo da Liberação (opcional)
+          </label>
+          <input type="text" id="input-pin-motivo" class="input-padrao" placeholder="Ex: Erro ao digitar sabor, cliente desistiu..." style="width:100%; font-size:13px;" />
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px;">
+        <button type="button" id="btn-cancelar-pin" class="btn-ghost" style="padding:8px 14px;">Cancelar</button>
+        <button type="button" id="btn-confirmar-pin" class="btn-primary" style="padding:8px 16px;">Liberar Ação</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE TRIAGEM DE PEDIDOS CLIENTE QR (CAF-000037) -->
+  <div id="modal-pedidos-cliente-triagem" class="modal-overlay hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px;">
+    <div class="modal-card" style="background: white; width: 100%; max-width: 680px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);">
+      <div class="modal-header" style="background: #4f46e5; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">📱</span>
+          <h3 style="margin: 0; font-size: 1.15rem; font-weight: bold; color: white;">Pedidos Enviados pelos Clientes (QR Code)</h3>
+        </div>
+        <button type="button" id="btn-fechar-triagem-pedidos-cliente" style="background: transparent; border: none; color: white; font-size: 1.3rem; cursor: pointer;">✕</button>
+      </div>
+      <div id="lista-pedidos-cliente-aguardando" style="padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px;">
+        <!-- Itens inseridos dinamicamente -->
+      </div>
+      <div class="modal-footer" style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <small style="color: #64748b;">Ao aprovar, o pedido é lançado na comanda da mesa e enviado à cozinha (KDS).</small>
+        <button type="button" id="btn-fechar-triagem-footer" class="btn-ghost" style="padding: 6px 14px;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- SOM DE NOTIFICAÇÃO (QUANDO PEDIDO FICA PRONTO) -->
   <audio id="audio-pronto" src="assets/audio/ding.wav" preload="auto"></audio>
+
+  <!-- SOM DE NOVO PEDIDO DO CLIENTE (CAF-000037) -->
+  <audio id="audio-novo-pedido-cliente" src="assets/audio/alert.wav" preload="auto"></audio>
 
   <!-- IFRAME OCULTO DE IMPRESSÃO -->
   <iframe id="print-frame" style="display:none;"></iframe>

@@ -159,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTablePromocoes(data.promocoes);
     renderTableTempoCategorias(data.tempo_por_categoria);
     renderClientesRelatorio(p_start, p_end);
+    renderDesempenhoOperadores(p_start, p_end);
   }
 
   function renderTableMargemProdutos(dados) {
@@ -497,5 +498,81 @@ document.addEventListener('DOMContentLoaded', () => {
     if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
     if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
     return tel;
+  }
+
+  // --- Desempenho por Operador (CAF-000036) ---
+  let ultimosDadosOperadores = [];
+
+  async function renderDesempenhoOperadores(p_start, p_end) {
+    const tbody = document.getElementById('relatorio-desempenho-operadores');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:15px; color:var(--admin-text-sub);">Carregando desempenho dos operadores...</td></tr>';
+
+    try {
+      const db = window.cafeteriaDB?.cargos;
+      if (!db) return;
+
+      ultimosDadosOperadores = await db.getRelatorioDesempenho(p_start, p_end);
+
+      if (!ultimosDadosOperadores || ultimosDadosOperadores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:15px; color:var(--admin-text-sub);">Nenhum pedido ou operador registrado no período.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = ultimosDadosOperadores.map(op => {
+        const conc = op.pedidos_concluidos || 0;
+        const canc = (op.pedidos_cancelados || 0) + (op.qtd_itens_cancelados || 0);
+        const fat = formatarDinheiro(op.faturamento_total || 0);
+        const ticket = formatarDinheiro(op.ticket_medio || 0);
+        const desc = formatarDinheiro(op.total_descontos_concedidos || 0);
+
+        return `
+          <tr>
+            <td><strong>${op.operador_nome || 'Operador'}</strong></td>
+            <td><span class="badge" style="background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:12px; font-size:11px;">${op.cargo_nome || 'Sem Cargo'}</span></td>
+            <td style="text-align: right; font-weight: 600;">${conc}</td>
+            <td style="text-align: right; color: #15803d; font-weight: 700;">${fat}</td>
+            <td style="text-align: right;">${ticket}</td>
+            <td style="text-align: center; color: ${canc > 0 ? '#b91c1c' : '#64748b'}; font-weight: ${canc > 0 ? '700' : 'normal'};">
+              ${canc} ${canc > 0 ? '⚠️' : ''}
+            </td>
+            <td style="text-align: right; color: ${op.total_descontos_concedidos > 0 ? '#c2410c' : '#64748b'};">
+              ${desc}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Erro ao buscar desempenho dos operadores:', err);
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="color:#b91c1c;">Erro ao carregar relatório de operadores.</td></tr>';
+    }
+  }
+
+  // Exportar CSV de Desempenho dos Operadores
+  const btnExportOp = document.getElementById('btn-exportar-operadores-csv');
+  if (btnExportOp) {
+    btnExportOp.addEventListener('click', () => {
+      if (!ultimosDadosOperadores || ultimosDadosOperadores.length === 0) {
+        alert('Nenhum dado de operadores para exportar.');
+        return;
+      }
+      const headers = ['Operador', 'Cargo', 'Pedidos Concluídos', 'Pedidos Cancelados', 'Itens Cancelados', 'Faturamento Total', 'Ticket Médio', 'Descontos Concedidos'];
+      const rows = ultimosDadosOperadores.map(d => [
+        `"${(d.operador_nome || '').replace(/"/g, '""')}"`,
+        `"${(d.cargo_nome || '').replace(/"/g, '""')}"`,
+        d.pedidos_concluidos || 0,
+        d.pedidos_cancelados || 0,
+        d.qtd_itens_cancelados || 0,
+        Number(d.faturamento_total || 0).toFixed(2),
+        Number(d.ticket_medio || 0).toFixed(2),
+        Number(d.total_descontos_concedidos || 0).toFixed(2)
+      ].join(';'));
+
+      const csvContent = [headers.join(';'), ...rows].join('\r\n');
+      if (window.cafeteriaAdmin && window.cafeteriaAdmin.downloadCSV) {
+        window.cafeteriaAdmin.downloadCSV(`relatorio_desempenho_operadores_${new Date().toISOString().slice(0, 10)}.csv`, csvContent);
+      }
+    });
   }
 });

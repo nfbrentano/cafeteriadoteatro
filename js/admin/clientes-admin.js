@@ -7,6 +7,9 @@
 
   let clientesCache = [];
   let pedidosResumoMap = new Map(); // cliente_id -> { visitas, totalGasto, ultimaVisita }
+  let saldosResumoMap = new Map();  // cliente_id -> { saldo, limite_credito, limite_disponivel, conta_habilitada, dia_vencimento }
+  let activeClienteConta = null;
+  let activeExtratoData = null;
 
   // Elementos da Página
   const pageClientes = document.getElementById('page-clientes');
@@ -15,6 +18,7 @@
   const tbody = document.getElementById('tbody-clientes');
   const searchInput = document.getElementById('search-cliente');
   const filterContato = document.getElementById('filter-cliente-contato');
+  const filterConta = document.getElementById('filter-cliente-conta');
   const filterStatus = document.getElementById('filter-cliente-status');
   const btnNovoCliente = document.getElementById('btn-novo-cliente');
   const btnExportCSV = document.getElementById('btn-export-clientes');
@@ -37,9 +41,39 @@
   const formClienteNascimento = document.getElementById('form-cliente-nascimento');
   const formClienteEmail = document.getElementById('form-cliente-email');
   const formClienteObs = document.getElementById('form-cliente-obs');
+  const formClienteContaHabilitada = document.getElementById('form-cliente-conta-habilitada');
+  const boxContaConfig = document.getElementById('box-conta-config');
+  const formClienteLimiteCredito = document.getElementById('form-cliente-limite-credito');
+  const formClienteDiaVencimento = document.getElementById('form-cliente-dia-vencimento');
   const formClienteAceitaContato = document.getElementById('form-cliente-aceita-contato');
   const formClienteAtivo = document.getElementById('form-cliente-ativo');
   const modalClienteTitle = document.getElementById('modal-cliente-title');
+
+  // Modal Conta Corrente (CAF-000034)
+  const modalContaOverlay = document.getElementById('modal-conta-cliente-overlay');
+  const modalContaClose = document.getElementById('modal-conta-cliente-close');
+  const modalContaNome = document.getElementById('modal-conta-cliente-nome');
+  const modalContaBadgeStatus = document.getElementById('modal-conta-badge-status');
+  const modalContaSub = document.getElementById('modal-conta-cliente-sub');
+  const contaSaldoAtual = document.getElementById('conta-saldo-atual');
+  const contaSaldoTipo = document.getElementById('conta-saldo-tipo');
+  const contaLimiteTotal = document.getElementById('conta-limite-total');
+  const contaLimiteDisponivel = document.getElementById('conta-limite-disponivel');
+  const contaDiaVencimento = document.getElementById('conta-dia-vencimento');
+  const btnAbrirDeposito = document.getElementById('btn-abrir-deposito');
+  const btnAbrirPagamento = document.getElementById('btn-abrir-pagamento');
+  const btnWhatsappExtrato = document.getElementById('btn-whatsapp-extrato');
+  const btnImprimirExtrato = document.getElementById('btn-imprimir-extrato');
+  const boxLancamentoConta = document.getElementById('box-lancamento-conta');
+  const lancamentoContaTitle = document.getElementById('lancamento-conta-title');
+  const formLancamentoConta = document.getElementById('form-lancamento-conta');
+  const lancamentoTipo = document.getElementById('lancamento-tipo');
+  const lancamentoValor = document.getElementById('lancamento-valor');
+  const lancamentoForma = document.getElementById('lancamento-forma');
+  const lancamentoMotivo = document.getElementById('lancamento-motivo');
+  const btnCancelarLancamento = document.getElementById('btn-cancelar-lancamento');
+  const tbodyExtratoConta = document.getElementById('tbody-extrato-conta');
+  const contaTotalMovimentos = document.getElementById('conta-total-movimentos');
 
   // Modal Ficha 360
   const modalFichaOverlay = document.getElementById('modal-ficha-cliente-overlay');
@@ -116,7 +150,7 @@
 
   // --- Carregamento de Dados ---
   async function loadData() {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>';
 
     try {
       // 1. Carregar todos os clientes
@@ -148,11 +182,24 @@
         console.warn('[Clientes] Falha ao agregar compras dos clientes:', errPedidos);
       }
 
+      // 3. Carregar saldos das contas dos clientes (CAF-000034)
+      saldosResumoMap.clear();
+      try {
+        const saldos = await window.cafeteriaDB.clientes.getSaldos();
+        if (Array.isArray(saldos)) {
+          saldos.forEach(s => {
+            saldosResumoMap.set(s.cliente_id, s);
+          });
+        }
+      } catch (errSaldos) {
+        console.warn('[Clientes] Falha ao carregar saldos de contas:', errSaldos);
+      }
+
       atualizarKPIs();
       renderTabela();
     } catch (err) {
       console.error('[Clientes] Erro ao carregar:', err);
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#c62828; padding:20px;">Erro ao carregar clientes: ${err.message || 'tente novamente'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#c62828; padding:20px;">Erro ao carregar clientes: ${err.message || 'tente novamente'}</td></tr>`;
     }
   }
 
@@ -188,6 +235,7 @@
     const termo = (searchInput ? searchInput.value : '').toLowerCase().trim();
     const termoDigitos = termo.replace(/\D/g, '');
     const filtroZap = filterContato ? filterContato.value : '';
+    const filtroConta = filterConta ? filterConta.value : 'todas';
     const filtroSt = filterStatus ? filterStatus.value : 'ativos';
 
     return clientesCache.filter(c => {
@@ -197,6 +245,15 @@
       // Filtro WhatsApp
       if (filtroZap === 'sim' && !c.aceita_contato) return false;
       if (filtroZap === 'nao' && c.aceita_contato) return false;
+
+      // Filtro Conta Corrente
+      const sInfo = saldosResumoMap.get(c.id);
+      const isContaHab = sInfo ? sInfo.conta_habilitada : Boolean(c.conta_habilitada);
+      const saldoVal = sInfo ? (Number(sInfo.saldo) || 0) : 0;
+
+      if (filtroConta === 'conta_ativa' && !isContaHab) return false;
+      if (filtroConta === 'com_saldo_positivo' && (!isContaHab || saldoVal <= 0)) return false;
+      if (filtroConta === 'com_saldo_devedor' && (!isContaHab || saldoVal >= 0)) return false;
 
       // Filtro termo de busca
       if (termo) {
@@ -215,7 +272,7 @@
     tbody.innerHTML = '';
 
     if (lista.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#64748b;">Nenhum cliente encontrado com os filtros aplicados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:#64748b;">Nenhum cliente encontrado com os filtros aplicados.</td></tr>';
       return;
     }
 
@@ -236,6 +293,31 @@
         ? ` <span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; margin-left:4px;">Anonimizado</span>`
         : '';
 
+      const sInfo = saldosResumoMap.get(c.id);
+      const isContaHab = sInfo ? sInfo.conta_habilitada : Boolean(c.conta_habilitada);
+      const saldoVal = sInfo ? (Number(sInfo.saldo) || 0) : 0;
+      const limiteDisp = sInfo ? (Number(sInfo.limite_disponivel) || 0) : (Number(c.limite_credito) || 0);
+
+      let contaTdHtml = '<span style="color:#94a3b8; font-size:12px;">Desabilitada</span>';
+      if (isContaHab) {
+        if (saldoVal > 0) {
+          contaTdHtml = `
+            <span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:11px; padding:2px 8px; border-radius:12px;" title="Crédito pré-pago">+ ${formatarMoeda(saldoVal)}</span>
+            <div style="font-size:10px; color:#64748b; margin-top:2px;">Disp: ${formatarMoeda(limiteDisp)}</div>
+          `;
+        } else if (saldoVal < 0) {
+          contaTdHtml = `
+            <span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; font-size:11px; padding:2px 8px; border-radius:12px;" title="Débito / Fiado a pagar">${formatarMoeda(saldoVal)}</span>
+            <div style="font-size:10px; color:#64748b; margin-top:2px;">Disp: ${formatarMoeda(limiteDisp)}</div>
+          `;
+        } else {
+          contaTdHtml = `
+            <span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px; padding:2px 8px; border-radius:12px;">R$ 0,00</span>
+            <div style="font-size:10px; color:#64748b; margin-top:2px;">Disp: ${formatarMoeda(limiteDisp)}</div>
+          `;
+        }
+      }
+
       tr.innerHTML = `
         <td>
           <strong>${window.escapeHtml(c.nome)}</strong>
@@ -245,10 +327,12 @@
         <td>${c.email ? window.escapeHtml(c.email) : '<span style="color:#94a3b8;">-</span>'}</td>
         <td style="text-align:center; font-weight:600;">${res.visitas}</td>
         <td style="text-align:right; font-weight:600; color:#15803d;">${formatarMoeda(res.totalGasto)}</td>
+        <td style="text-align:center;">${contaTdHtml}</td>
         <td style="font-size:12px; color:#475569;">${formatarDataHora(res.ultimaVisita)}</td>
         <td style="text-align:center;">${zapBadge}</td>
         <td style="text-align:center; white-space:nowrap;">
           <div style="display:flex; justify-content:center; gap:4px;">
+            <button class="btn btn--ghost btn--small btn-conta-cliente" data-id="${c.id}" title="Gerenciar Conta Corrente e Extrato" style="color:#0284c7;">💳 Conta</button>
             <button class="btn btn--ghost btn--small btn-ver-ficha" data-id="${c.id}" title="Ver Ficha 360 do Cliente">👁️ Ficha</button>
             <button class="btn btn--ghost btn--small btn-editar-cliente" data-id="${c.id}" title="Editar dados">✏️</button>
             <button class="btn btn--ghost btn--small btn-mesclar-cliente" data-id="${c.id}" title="Mesclar duplicado">🔗</button>
@@ -261,6 +345,9 @@
     });
 
     // Eventos nas ações da tabela
+    tbody.querySelectorAll('.btn-conta-cliente').forEach(btn => {
+      btn.addEventListener('click', () => abrirModalConta(btn.dataset.id));
+    });
     tbody.querySelectorAll('.btn-ver-ficha').forEach(btn => {
       btn.addEventListener('click', () => abrirFicha(btn.dataset.id));
     });
@@ -297,11 +384,23 @@
       formClienteNascimento.value = cliente.data_nascimento || '';
       formClienteEmail.value = cliente.email || '';
       formClienteObs.value = cliente.observacoes || '';
+      if (formClienteContaHabilitada) {
+        formClienteContaHabilitada.checked = Boolean(cliente.conta_habilitada);
+        if (boxContaConfig) boxContaConfig.style.display = cliente.conta_habilitada ? 'block' : 'none';
+        if (formClienteLimiteCredito) formClienteLimiteCredito.value = cliente.limite_credito !== undefined ? Number(cliente.limite_credito).toFixed(2) : '0.00';
+        if (formClienteDiaVencimento) formClienteDiaVencimento.value = cliente.dia_vencimento || '';
+      }
       formClienteAceitaContato.checked = Boolean(cliente.aceita_contato);
       formClienteAtivo.checked = cliente.ativo !== false;
     } else {
       modalClienteTitle.textContent = 'Novo Cliente';
       formClienteId.value = '';
+      if (formClienteContaHabilitada) {
+        formClienteContaHabilitada.checked = false;
+        if (boxContaConfig) boxContaConfig.style.display = 'none';
+        if (formClienteLimiteCredito) formClienteLimiteCredito.value = '0.00';
+        if (formClienteDiaVencimento) formClienteDiaVencimento.value = '';
+      }
       formClienteAceitaContato.checked = true;
       formClienteAtivo.checked = true;
     }
@@ -312,6 +411,14 @@
 
   function fecharModalForm() {
     if (modalClienteOverlay) modalClienteOverlay.classList.remove('open');
+  }
+
+  if (formClienteContaHabilitada) {
+    formClienteContaHabilitada.addEventListener('change', () => {
+      if (boxContaConfig) {
+        boxContaConfig.style.display = formClienteContaHabilitada.checked ? 'block' : 'none';
+      }
+    });
   }
 
   if (modalClienteClose) modalClienteClose.addEventListener('click', fecharModalForm);
@@ -327,6 +434,9 @@
       const email = formClienteEmail.value.trim();
       const dataNascimento = formClienteNascimento.value;
       const observacoes = formClienteObs.value.trim();
+      const contaHabilitada = formClienteContaHabilitada ? formClienteContaHabilitada.checked : false;
+      const limiteCredito = formClienteLimiteCredito ? (Number(formClienteLimiteCredito.value) || 0) : 0;
+      const diaVencimento = formClienteDiaVencimento && formClienteDiaVencimento.value ? Number(formClienteDiaVencimento.value) : null;
       const aceitaContato = formClienteAceitaContato.checked;
       const ativo = formClienteAtivo.checked;
 
@@ -349,6 +459,9 @@
           email: email || null,
           data_nascimento: dataNascimento || null,
           observacoes: observacoes || null,
+          conta_habilitada: contaHabilitada,
+          limite_credito: limiteCredito,
+          dia_vencimento: diaVencimento,
           aceita_contato: aceitaContato,
           ativo
         };
@@ -372,6 +485,271 @@
       } finally {
         if (btnSalvar) btnSalvar.disabled = false;
       }
+    });
+  }
+
+  // --- Modal Conta Corrente do Cliente (CAF-000034) ---
+  async function abrirModalConta(clienteId) {
+    if (!modalContaOverlay) return;
+    activeClienteConta = clienteId;
+    if (boxLancamentoConta) boxLancamentoConta.style.display = 'none';
+    if (formLancamentoConta) formLancamentoConta.reset();
+
+    if (modalContaNome) modalContaNome.textContent = 'Carregando conta...';
+    if (modalContaBadgeStatus) modalContaBadgeStatus.innerHTML = '';
+    if (modalContaSub) modalContaSub.textContent = '';
+    if (contaSaldoAtual) contaSaldoAtual.textContent = '...';
+    if (contaLimiteTotal) contaLimiteTotal.textContent = '...';
+    if (contaLimiteDisponivel) contaLimiteDisponivel.textContent = '...';
+    if (contaDiaVencimento) contaDiaVencimento.textContent = '...';
+    if (tbodyExtratoConta) tbodyExtratoConta.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#94a3b8;">Carregando extrato...</td></tr>';
+
+    modalContaOverlay.classList.add('open');
+
+    try {
+      const data = await window.cafeteriaDB.clientes.getExtrato(clienteId);
+      activeExtratoData = data;
+
+      if (modalContaNome) modalContaNome.textContent = `Conta Corrente — ${data.cliente_nome}`;
+      if (modalContaSub) modalContaSub.textContent = `Telefone: ${formatarTelefone(data.cliente_telefone)}`;
+
+      const statusBadge = data.conta_habilitada
+        ? '<span class="badge" style="background:#dcfce7; color:#15803d; font-size:11px; padding:2px 8px; border-radius:12px;">Habilitada ✅</span>'
+        : '<span class="badge" style="background:#fee2e2; color:#991b1b; font-size:11px; padding:2px 8px; border-radius:12px;">Desabilitada ⚠️</span>';
+      if (modalContaBadgeStatus) modalContaBadgeStatus.innerHTML = statusBadge;
+
+      const saldo = Number(data.saldo) || 0;
+      const limite = Number(data.limite_credito) || 0;
+      const limiteDisp = Number(data.limite_disponivel) || 0;
+
+      if (contaSaldoAtual) {
+        contaSaldoAtual.textContent = (saldo > 0 ? '+ ' : '') + formatarMoeda(saldo);
+        if (saldo > 0) {
+          contaSaldoAtual.style.color = '#15803d';
+          if (contaSaldoTipo) contaSaldoTipo.textContent = 'Créditos pré-pagos disponíveis';
+        } else if (saldo < 0) {
+          contaSaldoAtual.style.color = '#b91c1c';
+          if (contaSaldoTipo) contaSaldoTipo.textContent = 'Débito / Fiado a pagar';
+        } else {
+          contaSaldoAtual.style.color = '#1e293b';
+          if (contaSaldoTipo) contaSaldoTipo.textContent = 'Sem débitos ou créditos';
+        }
+      }
+
+      if (contaLimiteTotal) contaLimiteTotal.textContent = formatarMoeda(limite);
+      if (contaLimiteDisponivel) contaLimiteDisponivel.textContent = formatarMoeda(limiteDisp);
+      if (contaDiaVencimento) contaDiaVencimento.textContent = data.dia_vencimento ? `Dia ${data.dia_vencimento}` : 'Não fixado';
+
+      renderExtratoTabela(data.movimentos || []);
+    } catch (err) {
+      console.error('[Conta Extrato] Erro:', err);
+      window.admin.toast('Erro', 'Falha ao carregar extrato: ' + (err.message || 'tente novamente'), 'error');
+    }
+  }
+
+  function renderExtratoTabela(movimentos) {
+    if (!tbodyExtratoConta) return;
+    tbodyExtratoConta.innerHTML = '';
+    if (contaTotalMovimentos) contaTotalMovimentos.textContent = `${movimentos.length} registro(s)`;
+
+    if (movimentos.length === 0) {
+      tbodyExtratoConta.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#94a3b8;">Nenhuma movimentação registrada para esta conta.</td></tr>';
+      return;
+    }
+
+    movimentos.forEach(m => {
+      const tr = document.createElement('tr');
+      const val = Number(m.valor) || 0;
+      const valStr = (val > 0 ? '+ ' : '') + formatarMoeda(val);
+      const valColor = val > 0 ? '#15803d' : '#b91c1c';
+
+      const tipoBadges = {
+        consumo: '<span class="badge" style="background:#fee2e2; color:#991b1b; font-size:10px;">Consumo</span>',
+        pagamento: '<span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px;">Pagamento</span>',
+        deposito: '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:10px;">Depósito</span>',
+        estorno: '<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px;">Estorno</span>',
+        ajuste: '<span class="badge" style="background:#f1f5f9; color:#475569; font-size:10px;">Ajuste</span>'
+      };
+
+      const ref = m.pedido_id ? `Pedido #${m.pedido_id}` : (m.forma_pagamento ? m.forma_pagamento.toUpperCase() : '-');
+
+      tr.innerHTML = `
+        <td style="font-size:11px; color:#475569;">${formatarDataHora(m.created_at)}</td>
+        <td>${tipoBadges[m.tipo] || m.tipo}</td>
+        <td style="text-align:right; font-weight:700; color:${valColor};">${valStr}</td>
+        <td style="font-size:11px;">${window.escapeHtml(ref)}</td>
+        <td style="font-size:11px; color:#334155;">${window.escapeHtml(m.motivo || '-')}</td>
+        <td style="font-size:11px; color:#64748b;">${window.escapeHtml(m.criado_por_nome || 'Sistema')}</td>
+      `;
+      tbodyExtratoConta.appendChild(tr);
+    });
+  }
+
+  if (btnAbrirDeposito) {
+    btnAbrirDeposito.addEventListener('click', () => {
+      if (boxLancamentoConta) boxLancamentoConta.style.display = 'block';
+      if (lancamentoTipo) lancamentoTipo.value = 'deposito';
+      if (lancamentoContaTitle) lancamentoContaTitle.textContent = '➕ Adicionar Créditos Pré-pagos (Depósito)';
+      if (lancamentoValor) {
+        lancamentoValor.value = '';
+        lancamentoValor.focus();
+      }
+      if (lancamentoMotivo) lancamentoMotivo.value = 'Depósito de créditos pré-pagos';
+    });
+  }
+
+  if (btnAbrirPagamento) {
+    btnAbrirPagamento.addEventListener('click', () => {
+      if (boxLancamentoConta) boxLancamentoConta.style.display = 'block';
+      if (lancamentoTipo) lancamentoTipo.value = 'pagamento';
+      if (lancamentoContaTitle) lancamentoContaTitle.textContent = '💵 Receber Pagamento de Conta (Quitar Fiado)';
+      if (lancamentoValor) {
+        lancamentoValor.value = '';
+        lancamentoValor.focus();
+      }
+      if (lancamentoMotivo) lancamentoMotivo.value = 'Quitação parcial / total de fiado';
+    });
+  }
+
+  if (btnCancelarLancamento) {
+    btnCancelarLancamento.addEventListener('click', () => {
+      if (boxLancamentoConta) boxLancamentoConta.style.display = 'none';
+    });
+  }
+
+  if (modalContaClose) {
+    modalContaClose.addEventListener('click', () => {
+      if (modalContaOverlay) modalContaOverlay.classList.remove('open');
+    });
+  }
+
+  if (formLancamentoConta) {
+    formLancamentoConta.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeClienteConta) return;
+
+      const tipo = lancamentoTipo.value;
+      const valor = Number(lancamentoValor.value);
+      const forma = lancamentoForma.value;
+      const motivo = lancamentoMotivo.value.trim();
+
+      if (!valor || valor <= 0) {
+        window.admin.toast('Erro', 'Informe um valor válido maior que zero.', 'error');
+        return;
+      }
+
+      const btnConfirmar = document.getElementById('btn-confirmar-lancamento');
+      if (btnConfirmar) btnConfirmar.disabled = true;
+
+      try {
+        await window.cafeteriaDB.clientes.lancarMovimento({
+          clienteId: activeClienteConta,
+          tipo,
+          valor,
+          formaPagamento: forma,
+          motivo
+        });
+
+        window.admin.toast('Sucesso', `${tipo === 'deposito' ? 'Créditos adicionados' : 'Pagamento registrado'} com sucesso!`, 'success');
+        if (boxLancamentoConta) boxLancamentoConta.style.display = 'none';
+        if (formLancamentoConta) formLancamentoConta.reset();
+        await abrirModalConta(activeClienteConta);
+        await loadData();
+      } catch (err) {
+        console.error('[Lançar Movimento] Erro:', err);
+        window.admin.toast('Erro', 'Falha ao registrar movimento: ' + (err.message || 'tente novamente'), 'error');
+      } finally {
+        if (btnConfirmar) btnConfirmar.disabled = false;
+      }
+    });
+  }
+
+  if (btnWhatsappExtrato) {
+    btnWhatsappExtrato.addEventListener('click', () => {
+      if (!activeExtratoData) return;
+      const tel = (activeExtratoData.cliente_telefone || '').replace(/\D/g, '');
+      if (!tel || tel.length < 10) {
+        window.admin.toast('Aviso', 'Cliente não possui telefone válido para WhatsApp.', 'warn');
+        return;
+      }
+      const numDestino = tel.startsWith('55') ? tel : `55${tel}`;
+      const saldo = Number(activeExtratoData.saldo) || 0;
+      const statusTxt = saldo > 0 
+        ? `Você possui *${formatarMoeda(saldo)}* em créditos disponíveis.`
+        : (saldo < 0 ? `Seu saldo em aberto é de *${formatarMoeda(Math.abs(saldo))}* (a pagar).` : `Seu saldo atual é de *R$ 0,00*.`);
+
+      const msg = encodeURIComponent(
+        `Olá, ${activeExtratoData.cliente_nome}! Segue o resumo da sua conta corrente na Cafeteria do Teatro:\n\n` +
+        `💳 *Status da Conta:* ${statusTxt}\n` +
+        (activeExtratoData.limite_credito > 0 ? `📊 *Limite Total:* ${formatarMoeda(activeExtratoData.limite_credito)}\n` : '') +
+        (activeExtratoData.dia_vencimento ? `📅 *Vencimento:* dia ${activeExtratoData.dia_vencimento}\n\n` : '\n') +
+        `Agradecemos pela preferência! Qualquer dúvida estamos à disposição. ☕🎭`
+      );
+      window.open(`https://wa.me/${numDestino}?text=${msg}`, '_blank');
+    });
+  }
+
+  if (btnImprimirExtrato) {
+    btnImprimirExtrato.addEventListener('click', () => {
+      if (!activeExtratoData) return;
+      const win = window.open('', '_blank', 'width=700,height=800');
+      if (!win) {
+        window.admin.toast('Erro', 'Pop-up bloqueado pelo navegador.', 'error');
+        return;
+      }
+      const saldo = Number(activeExtratoData.saldo) || 0;
+      const rowsHtml = (activeExtratoData.movimentos || []).map(m => {
+        const val = Number(m.valor) || 0;
+        return `
+          <tr>
+            <td style="padding:6px; border-bottom:1px solid #ddd;">${formatarDataHora(m.created_at)}</td>
+            <td style="padding:6px; border-bottom:1px solid #ddd; text-transform:uppercase;">${m.tipo}</td>
+            <td style="padding:6px; border-bottom:1px solid #ddd; text-align:right; font-weight:bold; color:${val > 0 ? 'green' : 'red'};">${(val > 0 ? '+' : '')}${formatarMoeda(val)}</td>
+            <td style="padding:6px; border-bottom:1px solid #ddd;">${m.pedido_id ? `Pedido #${m.pedido_id}` : (m.forma_pagamento || '-')}</td>
+            <td style="padding:6px; border-bottom:1px solid #ddd;">${m.motivo || '-'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Extrato de Conta - ${activeExtratoData.cliente_nome}</title>
+          <style>
+            body { font-family: sans-serif; padding: 20px; color: #1e293b; font-size: 13px; }
+            h2 { margin: 0 0 4px 0; color: #0f172a; }
+            .header-info { margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th { text-align: left; padding: 8px 6px; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; }
+          </style>
+        </head>
+        <body>
+          <div class="header-info">
+            <h2>Cafeteria do Teatro — Extrato de Conta Corrente</h2>
+            <div><strong>Cliente:</strong> ${activeExtratoData.cliente_nome} | <strong>Telefone:</strong> ${formatarTelefone(activeExtratoData.cliente_telefone)}</div>
+            <div style="margin-top:6px;"><strong>Saldo Atual:</strong> ${(saldo > 0 ? '+' : '')}${formatarMoeda(saldo)} | <strong>Limite:</strong> ${formatarMoeda(activeExtratoData.limite_credito)}</div>
+            <div><strong>Emissão:</strong> ${new Date().toLocaleString('pt-BR')}</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Tipo</th>
+                <th style="text-align:right;">Valor</th>
+                <th>Ref / Forma</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding:15px;">Nenhum movimento registrado.</td></tr>'}
+            </tbody>
+          </table>
+          <script>window.print();<\/script>
+        </body>
+        </html>
+      `);
+      win.document.close();
     });
   }
 

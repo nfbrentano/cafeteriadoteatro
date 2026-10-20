@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| PDV + admin + banco | 🟡 Média | M | Especificação · aguardando revisão |
+| PDV + admin + banco | 🟡 Média | M | Concluída |
 
 ---
 
@@ -27,23 +27,23 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Colunas em `clientes`: `conta_habilitada BOOLEAN`, `limite_credito NUMERIC(10,2)` (pós-pago), `dia_vencimento SMALLINT`.
-- [ ] Tabela `cliente_conta_movimentos (id, cliente_id, tipo ['consumo','pagamento','deposito','estorno','ajuste'], valor NUMERIC(10,2) (sinal: + crédito, − débito), pedido_id, fechamento_id, forma_pagamento, motivo, criado_por, created_at)`. Saldo = soma dos movimentos (view `v_cliente_saldo`).
-- [ ] Nova forma de pagamento `conta_cliente` no `CHECK` de `pedidos.forma_pagamento` e no fechamento de mesa ([CAF-000002](CONCLUIDAS/CAF-000002-fechamento-de-conta-da-mesa.md)), podendo ser combinada com outras formas.
-- [ ] RPC `lancar_na_conta(p_cliente_id, p_valor, p_pedido_id | p_fechamento_id)` que valida no banco:
+- [x] Colunas em `clientes`: `conta_habilitada BOOLEAN`, `limite_credito NUMERIC(10,2)` (pós-pago), `dia_vencimento SMALLINT`.
+- [x] Tabela `cliente_conta_movimentos (id, cliente_id, tipo ['consumo','pagamento','deposito','estorno','ajuste'], valor NUMERIC(10,2) (sinal: + crédito, − débito), pedido_id, fechamento_id, forma_pagamento, motivo, criado_por, created_at)`. Saldo = soma dos movimentos (view `v_cliente_saldo`).
+- [x] Nova forma de pagamento `conta_cliente` no `CHECK` de `pedidos.forma_pagamento` e no fechamento de mesa ([CAF-000002](CONCLUIDAS/CAF-000002-fechamento-de-conta-da-mesa.md)), podendo ser combinada com outras formas.
+- [x] RPC `lancar_na_conta(p_cliente_id, p_valor, p_pedido_id | p_fechamento_id)` que valida no banco:
   - cliente com conta habilitada;
   - `saldo − valor ≥ −limite_credito` (pré-pago puro tem limite 0);
   - se ultrapassar, recusa com mensagem; só `admin` pode liberar acima do limite (com motivo no log).
-- [ ] Recebimento: no PDV/admin, "Receber da conta" registra `pagamento` com forma real (pix/dinheiro/cartão) — é isso que entra no caixa do dia.
-- [ ] Depósito de créditos: "Adicionar créditos" registra `deposito` com forma real e imprime comprovante.
-- [ ] Cancelamento de pedido pago na conta gera `estorno` automático.
-- [ ] Admin: aba "Contas de clientes" com saldo, limite, dias em atraso e extrato; filtro "em atraso"; extrato imprimível e botão para enviar resumo pelo WhatsApp (link manual).
-- [ ] Caixa ([CAF-000015](CONCLUIDAS/CAF-000015-fechamento-de-caixa-do-dia.md)): `conta_cliente` aparece como "a receber" e **não** entra no dinheiro esperado; recebimentos e depósitos entram pela forma real.
+- [x] Recebimento: no PDV/admin, "Receber da conta" registra `pagamento` com forma real (pix/dinheiro/cartão) — é isso que entra no caixa do dia.
+- [x] Depósito de créditos: "Adicionar créditos" registra `deposito` com forma real e imprime comprovante.
+- [x] Cancelamento de pedido pago na conta gera `estorno` automático.
+- [x] Admin: aba "Contas de clientes" com saldo, limite, dias em atraso e extrato; filtro "em atraso"; extrato imprimível e botão para enviar resumo pelo WhatsApp (link manual).
+- [x] Caixa ([CAF-000015](CONCLUIDAS/CAF-000015-fechamento-de-caixa-do-dia.md)): `conta_cliente` aparece como "a receber" e **não** entra no dinheiro esperado; recebimentos e depósitos entram pela forma real.
 
 ### Requisitos não funcionais
-- [ ] **Integridade:** saldo nunca é editado direto; todo ajuste é um movimento com motivo e usuário (log da [CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
-- [ ] **Concorrência:** a validação de limite usa `SELECT … FOR UPDATE` no cliente, para dois PDVs não estourarem o limite ao mesmo tempo.
-- [ ] **Offline:** pagamento em `conta_cliente` exige conexão (a validação de limite é no banco).
+- [x] **Integridade:** saldo nunca é editado direto; todo ajuste é um movimento com motivo e usuário (log da [CAF-000019](CONCLUIDAS/CAF-000019-log-de-auditoria.md)).
+- [x] **Concorrência:** a validação de limite usa `SELECT … FOR UPDATE` no cliente, para dois PDVs não estourarem o limite ao mesmo tempo.
+- [x] **Offline:** pagamento em `conta_cliente` exige conexão (a validação de limite é no banco).
 
 ### Dependências técnicas
 - [CAF-000033](CAF-000033-cadastro-de-clientes.md) (clientes), `fechamento_pagamentos` (`supabase/migration_caf_000002.sql`), `caixa_conferencia` (`supabase/migration_caf_000025_caixa.sql`).
@@ -55,11 +55,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o Pedro tem limite de R$ 200 e saldo −R$ 150, **quando** o barista lança R$ 30 na conta, **então** o saldo vai para −R$ 180.
-- [ ] **Dado que** o mesmo Pedro tenta lançar mais R$ 40, **quando** confirma, **então** o sistema recusa por limite e oferece outra forma de pagamento.
-- [ ] **Dado que** a Ana depositou R$ 100 em Pix, **quando** consome R$ 14, **então** o saldo fica R$ 86 e o caixa do dia registra R$ 100 em Pix (e não R$ 14).
-- [ ] **Dado que** um pedido pago na conta é cancelado, **quando** o cancelamento é salvo, **então** o valor volta para a conta.
-- [ ] **Dado que** o caixa é fechado, **quando** houve vendas em `conta_cliente`, **então** elas aparecem como "a receber" e não alteram o dinheiro esperado.
+- [x] **Dado que** o Pedro tem limite de R$ 200 e saldo −R$ 150, **quando** o barista lança R$ 30 na conta, **então** o saldo vai para −R$ 180.
+- [x] **Dado que** o mesmo Pedro tenta lançar mais R$ 40, **quando** confirma, **então** o sistema recusa por limite e oferece outra forma de pagamento.
+- [x] **Dado que** a Ana depositou R$ 100 em Pix, **quando** consome R$ 14, **então** o saldo fica R$ 86 e o caixa do dia registra R$ 100 em Pix (e não R$ 14).
+- [x] **Dado que** um pedido pago na conta é cancelado, **quando** o cancelamento é salvo, **então** o valor volta para a conta.
+- [x] **Dado que** o caixa é fechado, **quando** houve vendas em `conta_cliente`, **então** elas aparecem como "a receber" e não alteram o dinheiro esperado.
 
 ---
 

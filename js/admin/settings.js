@@ -381,6 +381,45 @@
       promoZone.classList.remove('drag-over');
       if (e.dataTransfer.files?.[0]) handlePromoFile(e.dataTransfer.files[0]);
     });
+
+    // Autoatendimento por QR Code (CAF-000037)
+    const togglePedidoCliente = document.getElementById('config-pedido-cliente-ativo');
+    if (togglePedidoCliente) {
+      // Carregar valor inicial
+      (async () => {
+        try {
+          const { data } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('valor')
+            .eq('chave', 'pedido_cliente_ativo')
+            .maybeSingle();
+          if (data && data.valor !== undefined) {
+            togglePedidoCliente.checked = typeof data.valor === 'boolean' ? data.valor : (data.valor.ativo !== false);
+          }
+        } catch (err) {
+          console.warn('Erro ao carregar pedido_cliente_ativo:', err);
+        }
+      })();
+
+      togglePedidoCliente.addEventListener('change', async (e) => {
+        const ativo = e.target.checked;
+        try {
+          const { error } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert({
+              chave: 'pedido_cliente_ativo',
+              valor: ativo,
+              updated_at: new Date().toISOString()
+            });
+          if (error) throw error;
+          admin.toast('Sucesso', `Autoatendimento via QR Code ${ativo ? 'ativado' : 'desativado'}.`, 'success');
+        } catch (err) {
+          console.error('Erro ao salvar pedido_cliente_ativo:', err);
+          admin.toast('Erro', 'Falha ao salvar configuração.', 'error');
+          e.target.checked = !ativo;
+        }
+      });
+    }
   });
 
 })();

@@ -1016,6 +1016,9 @@
             data_nascimento: dados.data_nascimento || null,
             observacoes: dados.observacoes ? dados.observacoes.trim() : null,
             aceita_contato: Boolean(dados.aceita_contato),
+            conta_habilitada: Boolean(dados.conta_habilitada),
+            limite_credito: Number(dados.limite_credito) || 0.00,
+            dia_vencimento: dados.dia_vencimento ? Number(dados.dia_vencimento) : null,
             ativo: dados.ativo !== false
           };
 
@@ -1046,6 +1049,9 @@
             aceita_contato: Boolean(dados.aceita_contato),
             updated_at: new Date().toISOString()
           };
+          if (dados.conta_habilitada !== undefined) row.conta_habilitada = Boolean(dados.conta_habilitada);
+          if (dados.limite_credito !== undefined) row.limite_credito = Number(dados.limite_credito) || 0.00;
+          if (dados.dia_vencimento !== undefined) row.dia_vencimento = dados.dia_vencimento ? Number(dados.dia_vencimento) : null;
           if (dados.ativo !== undefined) row.ativo = Boolean(dados.ativo);
 
           const { data, error } = await window.cafeteriaSupabase
@@ -1090,6 +1096,620 @@
           return data;
         } catch (err) {
           db.logger.error('clientes.anonimizar', err);
+          throw err;
+        }
+      },
+
+      /** Obtém extrato e resumo financeiro da conta corrente (CAF-000034) */
+      async getExtrato(clienteId, limite = 50) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_extrato_cliente', {
+              p_cliente_id: clienteId,
+              p_limite: limite
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.getExtrato', err);
+          throw err;
+        }
+      },
+
+      /** Lança movimento na conta do cliente (consumo, pagamento, depósito, estorno, ajuste) */
+      async lancarMovimento({ clienteId, tipo, valor, formaPagamento, motivo, pedidoId, fechamentoId, bypassLimite = false }) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('lancar_movimento_conta', {
+              p_cliente_id: clienteId,
+              p_tipo: tipo,
+              p_valor: Number(valor),
+              p_pedido_id: pedidoId || null,
+              p_fechamento_id: fechamentoId || null,
+              p_forma_pagamento: formaPagamento || null,
+              p_motivo: motivo || null,
+              p_bypass_limite: Boolean(bypassLimite)
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientes.lancarMovimento', err);
+          throw err;
+        }
+      },
+
+      /** Retorna saldos de todas as contas para a listagem */
+      async getSaldos() {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('v_cliente_saldo')
+            .select('*');
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('clientes.getSaldos', err);
+          return [];
+        }
+      }
+    },
+
+    // --- Financeiro: Contas a Pagar, Despesas e Fluxo de Caixa (CAF-000035) ---
+    financeiro: {
+      despesas: {
+        async all(filtros = {}) {
+          if (!window.cafeteriaSupabase) return [];
+          try {
+            let query = window.cafeteriaSupabase
+              .from('despesas')
+              .select('*, fornecedor:fornecedores(id, nome), categoria:despesa_categorias(id, nome, tipo)');
+
+            if (filtros.status === 'vencidas') {
+              query = query.is('pago_em', null).lt('vencimento', new Date().toISOString().slice(0, 10));
+            } else if (filtros.status === '7dias') {
+              const hoje = new Date();
+              const d7 = new Date();
+              d7.setDate(hoje.getDate() + 7);
+              query = query.is('pago_em', null)
+                .gte('vencimento', hoje.toISOString().slice(0, 10))
+                .lte('vencimento', d7.toISOString().slice(0, 10));
+            } else if (filtros.status === 'pagas') {
+              query = query.not('pago_em', 'is', null);
+            } else if (filtros.status === 'abertas') {
+              query = query.is('pago_em', null);
+            }
+
+            if (filtros.categoriaId) {
+              query = query.eq('categoria_id', filtros.categoriaId);
+            }
+
+            const { data, error } = await query.order('vencimento', { ascending: true });
+            if (error) throw error;
+            return data || [];
+          } catch (err) {
+            db.logger.error('financeiro.despesas.all', err);
+            return [];
+          }
+        },
+
+        async create(dados) {
+          if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+          try {
+            const user = (await window.cafeteriaSupabase.auth.getUser()).data.user;
+            const row = {
+              descricao: dados.descricao.trim(),
+              fornecedor_id: dados.fornecedor_id || null,
+              categoria_id: Number(dados.categoria_id),
+              valor: Number(dados.valor),
+              vencimento: dados.vencimento,
+              pago_em: dados.pago_em || null,
+              valor_pago: dados.valor_pago ? Number(dados.valor_pago) : null,
+              forma_pagamento: dados.forma_pagamento || null,
+              origem: dados.origem || 'manual',
+              recorrencia: dados.recorrencia || 'nenhuma',
+              observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+              anexo_url: dados.anexo_url || null,
+              criado_por: user ? user.id : null,
+              criado_por_nome: user ? (user.user_metadata?.nome || user.email) : 'Admin'
+            };
+
+            const { data, error } = await window.cafeteriaSupabase
+              .from('despesas')
+              .insert([row])
+              .select('*, fornecedor:fornecedores(id, nome), categoria:despesa_categorias(id, nome, tipo)')
+              .single();
+
+            if (error) throw error;
+            return data;
+          } catch (err) {
+            db.logger.error('financeiro.despesas.create', err);
+            throw err;
+          }
+        },
+
+        async update(id, dados) {
+          if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+          try {
+            const row = {
+              descricao: dados.descricao.trim(),
+              fornecedor_id: dados.fornecedor_id || null,
+              categoria_id: Number(dados.categoria_id),
+              valor: Number(dados.valor),
+              vencimento: dados.vencimento,
+              forma_pagamento: dados.forma_pagamento || null,
+              recorrencia: dados.recorrencia || 'nenhuma',
+              observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+              updated_at: new Date().toISOString()
+            };
+            if (dados.pago_em !== undefined) row.pago_em = dados.pago_em;
+            if (dados.valor_pago !== undefined) row.valor_pago = dados.valor_pago ? Number(dados.valor_pago) : null;
+
+            const { data, error } = await window.cafeteriaSupabase
+              .from('despesas')
+              .update(row)
+              .eq('id', id)
+              .select('*, fornecedor:fornecedores(id, nome), categoria:despesa_categorias(id, nome, tipo)')
+              .single();
+
+            if (error) throw error;
+            return data;
+          } catch (err) {
+            db.logger.error('financeiro.despesas.update', err);
+            throw err;
+          }
+        },
+
+        async delete(id) {
+          if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+          try {
+            const { error } = await window.cafeteriaSupabase
+              .from('despesas')
+              .delete()
+              .eq('id', id);
+            if (error) throw error;
+            return true;
+          } catch (err) {
+            db.logger.error('financeiro.despesas.delete', err);
+            throw err;
+          }
+        },
+
+        async baixar({ id, pagoEm, valorPago, formaPagamento }) {
+          if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+          try {
+            const { data, error } = await window.cafeteriaSupabase
+              .rpc('baixar_despesa', {
+                p_despesa_id: id,
+                p_pago_em: pagoEm || new Date().toISOString().slice(0, 10),
+                p_valor_pago: Number(valorPago),
+                p_forma_pagamento: formaPagamento
+              });
+            if (error) throw error;
+            return data;
+          } catch (err) {
+            db.logger.error('financeiro.despesas.baixar', err);
+            throw err;
+          }
+        }
+      },
+
+      categorias: {
+        async all() {
+          if (!window.cafeteriaSupabase) return [];
+          try {
+            const { data, error } = await window.cafeteriaSupabase
+              .from('despesa_categorias')
+              .select('*')
+              .order('nome', { ascending: true });
+            if (error) throw error;
+            return data || [];
+          } catch (err) {
+            db.logger.error('financeiro.categorias.all', err);
+            return [];
+          }
+        }
+      },
+
+      fornecedores: {
+        async all() {
+          if (!window.cafeteriaSupabase) return [];
+          try {
+            const { data, error } = await window.cafeteriaSupabase
+              .from('fornecedores')
+              .select('*')
+              .eq('ativo', true)
+              .order('nome', { ascending: true });
+            if (error) throw error;
+            return data || [];
+          } catch (err) {
+            db.logger.error('financeiro.fornecedores.all', err);
+            return [];
+          }
+        },
+
+        async create(dados) {
+          if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+          try {
+            const row = {
+              nome: dados.nome.trim(),
+              documento: dados.documento ? dados.documento.trim() : null,
+              telefone: dados.telefone ? dados.telefone.trim() : null,
+              email: dados.email ? dados.email.trim() : null,
+              observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+              ativo: true
+            };
+            const { data, error } = await window.cafeteriaSupabase
+              .from('fornecedores')
+              .insert([row])
+              .select()
+              .single();
+            if (error) throw error;
+            return data;
+          } catch (err) {
+            db.logger.error('financeiro.fornecedores.create', err);
+            throw err;
+          }
+        },
+
+        async delete(id) {
+          if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+          try {
+            const { error } = await window.cafeteriaSupabase
+              .from('fornecedores')
+              .update({ ativo: false })
+              .eq('id', id);
+            if (error) throw error;
+            return true;
+          } catch (err) {
+            db.logger.error('financeiro.fornecedores.delete', err);
+            throw err;
+          }
+        }
+      },
+
+      async getResumo(mes, ano) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('get_resumo_financeiro', { p_mes: mes, p_ano: ano });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('financeiro.getResumo', err);
+          return null;
+        }
+      },
+
+      async getFluxoCaixa(inicio, fim) {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('get_fluxo_caixa', { p_inicio: inicio, p_fim: fim });
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('financeiro.getFluxoCaixa', err);
+          return [];
+        }
+      }
+    },
+
+    // --- Módulo de Cargos, Permissões e PIN (CAF-000036) ---
+    cargos: {
+      async all() {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('cargos')
+            .select('*, cargo_permissoes(permissao)')
+            .order('nome');
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('cargos.all', err);
+          return [];
+        }
+      },
+
+      async create(dados) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('cargos')
+            .insert([{
+              nome: dados.nome,
+              descricao: dados.descricao || null,
+              sistema: false
+            }])
+            .select()
+            .single();
+          if (error) throw error;
+
+          if (dados.permissoes && Array.isArray(dados.permissoes) && dados.permissoes.length > 0) {
+            const permsRows = dados.permissoes.map(p => ({ cargo_id: data.id, permissao: p }));
+            const { error: pErr } = await window.cafeteriaSupabase
+              .from('cargo_permissoes')
+              .insert(permsRows);
+            if (pErr) throw pErr;
+          }
+          return data;
+        } catch (err) {
+          db.logger.error('cargos.create', err);
+          throw err;
+        }
+      },
+
+      async update(id, dados) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('cargos')
+            .update({
+              nome: dados.nome,
+              descricao: dados.descricao || null
+            })
+            .eq('id', id)
+            .select()
+            .single();
+          if (error) throw error;
+
+          if (dados.permissoes && Array.isArray(dados.permissoes)) {
+            await window.cafeteriaSupabase
+              .from('cargo_permissoes')
+              .delete()
+              .eq('cargo_id', id);
+
+            if (dados.permissoes.length > 0) {
+              const permsRows = dados.permissoes.map(p => ({ cargo_id: id, permissao: p }));
+              const { error: pErr } = await window.cafeteriaSupabase
+                .from('cargo_permissoes')
+                .insert(permsRows);
+              if (pErr) throw pErr;
+            }
+          }
+          return data;
+        } catch (err) {
+          db.logger.error('cargos.update', err);
+          throw err;
+        }
+      },
+
+      async delete(id) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { error } = await window.cafeteriaSupabase
+            .from('cargos')
+            .delete()
+            .eq('id', id);
+          if (error) throw error;
+          return true;
+        } catch (err) {
+          db.logger.error('cargos.delete', err);
+          throw err;
+        }
+      },
+
+      async getMinhasPermissoes() {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('get_minhas_permissoes');
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('cargos.getMinhasPermissoes', err);
+          return null;
+        }
+      },
+
+      async validarPin(pin, permissaoNecessaria, motivo = null, contexto = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('validar_pin_autorizacao', {
+              p_pin: pin,
+              p_permissao_necessaria: permissaoNecessaria,
+              p_motivo: motivo,
+              p_contexto: contexto
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('cargos.validarPin', err);
+          throw err;
+        }
+      },
+
+      async setPin(userId, pin) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('set_usuario_pin', {
+              p_user_id: userId,
+              p_pin: pin
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('cargos.setPin', err);
+          throw err;
+        }
+      },
+
+      async getRelatorioDesempenho(inicio, fim) {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('get_relatorio_desempenho_operadores', {
+              p_data_inicio: inicio,
+              p_data_fim: fim
+            });
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('cargos.getRelatorioDesempenho', err);
+          return [];
+        }
+      }
+    },
+
+    // --- Módulo: Mesas & QR Code (CAF-000037) ---
+    mesas: {
+      async all() {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('mesas')
+            .select('*')
+            .order('codigo');
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('mesas.all', err);
+          return [];
+        }
+      },
+
+      async getByQrToken(qrToken) {
+        if (!window.cafeteriaSupabase || !qrToken) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('mesas')
+            .select('*')
+            .eq('qr_token', qrToken)
+            .eq('ativo', true)
+            .maybeSingle();
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('mesas.getByQrToken', err);
+          return null;
+        }
+      },
+
+      async regenerarQrToken(mesaId) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('regenerar_qr_token_mesa', { p_mesa_id: mesaId });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('mesas.regenerarQrToken', err);
+          throw err;
+        }
+      },
+
+      async listarChamados(apenasPendentes = true) {
+        if (!window.cafeteriaSupabase) return [];
+        try {
+          let query = window.cafeteriaSupabase
+            .from('mesa_chamados')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (apenasPendentes) {
+            query = query.eq('status', 'pendente');
+          }
+          const { data, error } = await query;
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('mesas.listarChamados', err);
+          return [];
+        }
+      },
+
+      async atenderChamado(chamadoId) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('atender_chamado_mesa', { p_chamado_id: chamadoId });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('mesas.atenderChamado', err);
+          throw err;
+        }
+      }
+    },
+
+    // --- Módulo: Autoatendimento & Pedido pelo Cliente (CAF-000037) ---
+    clientePedido: {
+      async criar(qrToken, payload, idempotencyKey = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('criar_pedido_cliente', {
+              p_qr_token: qrToken,
+              p_payload: payload,
+              p_idempotency_key: idempotencyKey
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.criar', err);
+          throw err;
+        }
+      },
+
+      async consultarStatus(pedidoToken) {
+        if (!window.cafeteriaSupabase || !pedidoToken) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('consultar_status_pedido_cliente', {
+              p_pedido_token: pedidoToken
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.consultarStatus', err);
+          return null;
+        }
+      },
+
+      async chamarAtendente(qrToken, tipo) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('chamar_atendente_mesa', {
+              p_qr_token: qrToken,
+              p_tipo: tipo
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.chamarAtendente', err);
+          throw err;
+        }
+      },
+
+      async aprovar(pedidoId) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('aprovar_pedido_cliente', { p_pedido_id: pedidoId });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.aprovar', err);
+          throw err;
+        }
+      },
+
+      async recusar(pedidoId, motivo) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('recusar_pedido_cliente', {
+              p_pedido_id: pedidoId,
+              p_motivo: motivo
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.recusar', err);
           throw err;
         }
       }

@@ -139,7 +139,8 @@
         'menu-pdf': 'Cardápio PDF',
         caixa: 'Caixa do Dia',
         estoque: 'Estoque de Produtos e Insumos',
-        clientes: 'Gestão de Clientes'
+        clientes: 'Gestão de Clientes',
+        financeiro: 'Financeiro & Fluxo de Caixa'
       };
       document.getElementById('topbar-title').textContent = titles[pageId] || '';
       
@@ -159,7 +160,8 @@
         'menu-pdf': 'renderMenuPdf',
         caixa:      'initAdminCaixa',
         estoque:    'initAdminEstoque',
-        clientes:   'initAdminClientes'
+        clientes:   'initAdminClientes',
+        financeiro: 'initAdminFinanceiro'
       };
       if (renderers[pageId] && typeof window[renderers[pageId]] === 'function') {
         window[renderers[pageId]]();
@@ -404,6 +406,55 @@
               <td>${c.ativo ? '<span class="status-pill status-pill--ativo">Ativa</span>' : '<span class="status-pill status-pill--inativo">Inativa</span>'}</td>
             </tr>`;
         }).join('');
+      }
+
+      // Alerta de Contas a Vencer no Dashboard (CAF-000035)
+      const dashAlerta = document.getElementById('dash-alerta-financeiro');
+      const dashAlertaTexto = document.getElementById('dash-alerta-financeiro-texto');
+      const dashAlertaIcon = document.getElementById('dash-alerta-financeiro-icon');
+      const btnIrFinanceiro = document.getElementById('btn-dash-ir-financeiro');
+
+      if (btnIrFinanceiro && !btnIrFinanceiro.dataset.bound) {
+        btnIrFinanceiro.dataset.bound = 'true';
+        btnIrFinanceiro.addEventListener('click', () => admin.navigateTo('financeiro'));
+      }
+
+      if (dashAlerta && window.cafeteriaDB?.financeiro?.getResumo) {
+        window.cafeteriaDB.financeiro.getResumo().then(resumo => {
+          if (!resumo) return;
+          const vencidas = Number(resumo.qtd_vencidas) || 0;
+          const vencem7d = Number(resumo.qtd_a_vencer_7d) || 0;
+          const totalVencidas = Number(resumo.total_vencidas) || 0;
+          const total7d = Number(resumo.total_a_vencer_7d) || 0;
+
+          if (vencidas > 0) {
+            dashAlerta.style.display = 'flex';
+            dashAlerta.style.background = '#fef2f2';
+            dashAlerta.style.borderColor = '#fecaca';
+            dashAlerta.style.borderLeftColor = '#ef4444';
+            dashAlerta.style.color = '#991b1b';
+            if (dashAlertaIcon) dashAlertaIcon.textContent = '🔴';
+            if (dashAlertaTexto) {
+              const valorFormatado = totalVencidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+              dashAlertaTexto.innerHTML = `<strong>Atenção:</strong> Você tem <strong>${vencidas} conta(s) vencida(s)</strong> totalizando <strong>${valorFormatado}</strong>.`;
+            }
+          } else if (vencem7d > 0) {
+            dashAlerta.style.display = 'flex';
+            dashAlerta.style.background = '#fffbeb';
+            dashAlerta.style.borderColor = '#fde68a';
+            dashAlerta.style.borderLeftColor = '#f59e0b';
+            dashAlerta.style.color = '#92400e';
+            if (dashAlertaIcon) dashAlertaIcon.textContent = '🟠';
+            if (dashAlertaTexto) {
+              const valorFormatado = total7d.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+              dashAlertaTexto.innerHTML = `<strong>Aviso Financeiro:</strong> <strong>${vencem7d} conta(s)</strong> vencem esta semana (${valorFormatado}).`;
+            }
+          } else {
+            dashAlerta.style.display = 'none';
+          }
+        }).catch(() => {
+          if (dashAlerta) dashAlerta.style.display = 'none';
+        });
       }
     }
   };

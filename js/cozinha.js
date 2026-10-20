@@ -2365,7 +2365,7 @@
         return;
       }
 
-      if (pedidoData.status === 'cancelado') {
+      if (pedidoData.status === 'cancelado' || pedidoData.status === 'aguardando_aprovacao') {
         removerPedidoLocal(pedidoId);
         return;
       }
@@ -2529,6 +2529,10 @@
     window.cafeteriaSupabase.channel('pedidos-cozinha-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, async payload => {
         if (payload.eventType === 'INSERT') {
+          if (payload.new && payload.new.status === 'aguardando_aprovacao') {
+            // Pedido via cliente QR ainda aguardando aprovação no PDV: não notificar cozinha ainda
+            return;
+          }
           playAlert();
           
           // Buscar pedido completo com itens para auto-impressão
@@ -2544,7 +2548,19 @@
           }
           scheduleIncrementalFetch(payload.new.id);
         } else if (payload.eventType === 'UPDATE') {
-          if (payload.new && payload.new.status === 'cancelado') {
+          // Se acabou de ser aprovado vindo de aguardando_aprovacao
+          const recemAprovado = payload.old && payload.old.status === 'aguardando_aprovacao' && payload.new && payload.new.status === 'pendente';
+          if (recemAprovado) {
+            playAlert();
+            const { data: approvedPedido } = await window.cafeteriaSupabase
+              .from('pedidos')
+              .select(PEDIDO_SELECT_COMPLETO)
+              .eq('id', payload.new.id)
+              .single();
+            if (approvedPedido) {
+              await tentarTravarEImprimir(approvedPedido, 'comanda');
+            }
+          } else if (payload.new && payload.new.status === 'cancelado') {
             showCancelToast(`⚠️ O Pedido #${payload.new.numero_pedido || payload.new.id} da ${payload.new.mesa_codigo} foi CANCELADO!`);
             playAlert();
           } else if (payload.new && payload.new.status === 'concluido' && (!payload.old || payload.old.status !== 'concluido')) {

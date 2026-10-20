@@ -86,9 +86,15 @@ window.initAdminCaixa = async function() {
           if (row.metodo === 'dinheiro') {
              totalDinheiroVendas += Number(row.total);
           }
+          const isConta = row.metodo === 'conta_cliente';
+          const labelMetodo = isConta 
+            ? 'CONTA DO CLIENTE (FIADO / A RECEBER)' 
+            : `${row.metodo.toUpperCase()} (Vendas)`;
+
           const tr = document.createElement('tr');
+          if (isConta) tr.style.color = '#b45309';
           tr.innerHTML = `
-            <td>${row.metodo.toUpperCase()} (Vendas)</td>
+            <td>${labelMetodo}</td>
             <td>${fmt(row.total)}</td>
           `;
           tbodyResumo.appendChild(tr);

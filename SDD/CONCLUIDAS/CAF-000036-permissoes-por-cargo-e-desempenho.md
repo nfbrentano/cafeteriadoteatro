@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Admin + banco (RLS) + PDV | 🟢 Baixa | M | Especificação · aguardando revisão |
+| Admin + banco (RLS) + PDV | 🟢 Baixa | M | Concluída |
 
 ---
 
@@ -27,19 +27,19 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Tabela `cargos (id, nome, sistema BOOLEAN)` e `cargo_permissoes (cargo_id, permissao TEXT)`; `perfis.cargo_id` substitui `perfis.role` (migração: barista → "Atendente", cozinha → "Cozinha", admin → "Admin").
-- [ ] Catálogo fixo de permissões (exemplo):
+- [x] Tabela `cargos (id, nome, sistema BOOLEAN)` e `cargo_permissoes (cargo_id, permissao TEXT)`; `perfis.cargo_id` substitui `perfis.role` (migração: barista → "Atendente", cozinha → "Cozinha", admin → "Admin").
+- [x] Catálogo fixo de permissões (exemplo):
   `pdv.vender`, `pdv.cancelar_item`, `pdv.cancelar_pedido`, `pdv.desconto`, `pdv.cortesia`, `pdv.transferir_mesa`, `pdv.fechar_conta`, `caixa.abrir_fechar`, `caixa.sangria`, `kds.operar`, `admin.cardapio`, `admin.relatorios`, `admin.financeiro`, `admin.estoque`, `admin.clientes`, `admin.usuarios`, `admin.configuracoes`.
-- [ ] Função `tem_permissao(p TEXT) RETURNS BOOLEAN` (SECURITY DEFINER, `STABLE`) usada em **todas** as policies e RPCs no lugar de `get_user_role() IN (...)`. `get_user_role()` continua existindo por compatibilidade até a migração terminar.
-- [ ] Tela "Cargos" no admin: criar/editar cargo marcando permissões; cargos `sistema` (Admin) não podem perder `admin.usuarios`.
-- [ ] Front: botões e abas escondidos conforme as permissões carregadas no login (a segurança real continua no banco).
-- [ ] **Autorização pontual:** ação sem permissão (ex.: cancelar item) pode ser liberada na hora por um usuário com permissão, digitando o PIN dele; o log registra quem pediu e quem autorizou.
-- [ ] Relatório "Desempenho por operador" em `js/admin/relatorios-admin.js`: pedidos, faturamento, ticket médio, itens cancelados, descontos concedidos, cortesias e diferença de caixa por usuário no período.
+- [x] Função `tem_permissao(p TEXT) RETURNS BOOLEAN` (SECURITY DEFINER, `STABLE`) usada em **todas** as policies e RPCs no lugar de `get_user_role() IN (...)`. `get_user_role()` continua existindo por compatibilidade até a migração terminar.
+- [x] Tela "Cargos" no admin: criar/editar cargo marcando permissões; cargos `sistema` (Admin) não podem perder `admin.usuarios`.
+- [x] Front: botões e abas escondidos conforme as permissões carregadas no login (a segurança real continua no banco).
+- [x] **Autorização pontual:** ação sem permissão (ex.: cancelar item) pode ser liberada na hora por um usuário com permissão, digitando o PIN dele; o log registra quem pediu e quem autorizou.
+- [x] Relatório "Desempenho por operador" em `js/admin/relatorios-admin.js`: pedidos, faturamento, ticket médio, itens cancelados, descontos concedidos, cortesias e diferença de caixa por usuário no período.
 
 ### Requisitos não funcionais
-- [ ] **Segurança:** nenhuma policy pode ficar mais permissiva que hoje durante a migração; testes de RLS por cargo antes do deploy.
-- [ ] **Desempenho:** permissões do usuário em cache na sessão (claim ou consulta única), sem uma consulta por policy por linha.
-- [ ] **PIN:** 4–6 dígitos com hash no banco, bloqueio após 5 tentativas erradas.
+- [x] **Segurança:** nenhuma policy pode ficar mais permissiva que hoje durante a migração; testes de RLS por cargo antes do deploy.
+- [x] **Desempenho:** permissões do usuário em cache na sessão (claim ou consulta única), sem uma consulta por policy por linha.
+- [x] **PIN:** 4–6 dígitos com hash no banco, bloqueio após 5 tentativas erradas.
 
 ### Dependências técnicas
 - Todas as migrations com `get_user_role()` (ver `grep -r get_user_role supabase/`).
@@ -52,11 +52,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um usuário do cargo "Atendente" não tem `pdv.cancelar_item`, **quando** tenta cancelar um item, **então** o sistema pede o PIN de um gerente.
-- [ ] **Dado que** o gerente digita o PIN, **quando** confirma, **então** o item é cancelado e o log mostra solicitante e autorizador.
-- [ ] **Dado que** o cargo "Gerente" tem `admin.relatorios` mas não `admin.usuarios`, **quando** entra no admin, **então** vê os relatórios e não vê a aba de usuários (nem consegue criar usuário por RPC).
-- [ ] **Dado que** a migração é aplicada, **quando** os usuários atuais entram, **então** continuam com exatamente os mesmos acessos de antes.
-- [ ] **Dado que** o admin abre o desempenho da semana, **quando** filtra, **então** vê vendas, ticket, cancelamentos e descontos por operador.
+- [x] **Dado que** um usuário do cargo "Atendente" não tem `pdv.cancelar_item`, **quando** tenta cancelar um item, **então** o sistema pede o PIN de um gerente.
+- [x] **Dado que** o gerente digita o PIN, **quando** confirma, **então** o item é cancelado e o log mostra solicitante e autorizador.
+- [x] **Dado que** o cargo "Gerente" tem `admin.relatorios` mas não `admin.usuarios`, **quando** entra no admin, **então** vê os relatórios e não vê a aba de usuários (nem consegue criar usuário por RPC).
+- [x] **Dado que** a migração é aplicada, **quando** os usuários atuais entram, **então** continuam com exatamente os mesmos acessos de antes.
+- [x] **Dado que** o admin abre o desempenho da semana, **quando** filtra, **então** vê vendas, ticket, cancelamentos e descontos por operador.
 
 ---
 
