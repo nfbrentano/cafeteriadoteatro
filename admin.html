@@ -580,6 +580,55 @@
           </div>
         </div>
 
+        <!-- Menu Analytics: Funil do Cardápio & Desempenho de Produtos (CAF-000069) -->
+        <div class="section-card" style="margin-top: 24px;" id="sec-menu-analytics-funil">
+          <div class="section-card__header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <span class="section-card__title">📊 Funil do Cardápio Digital & Desempenho de Produtos (Menu Analytics)</span>
+              <span style="font-size: 0.8rem; color: var(--admin-text-sub); display: block;">
+                Taxa de passagem entre etapas do autoatendimento (Visitas → Detalhes → Sacola → Checkout → Pedidos) e conversão por item
+              </span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select class="filter-select" id="filter-funil-canal" style="font-size:12px; padding:4px 8px;">
+                <option value="todos">Todos os Canais</option>
+                <option value="mesa">QR Code na Mesa</option>
+                <option value="retirada">Retirada Online</option>
+                <option value="totem">Totem de Balcão</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Cards das 5 Etapas do Funil -->
+          <div id="funil-etapas-cards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin-bottom:20px;">
+            <!-- Preenchido via relatorios-admin.js -->
+          </div>
+
+          <!-- Tabela de Conversão Individual por Produto -->
+          <div style="margin-top:16px;">
+            <div style="font-size:0.95rem; font-weight:700; margin-bottom:8px; color:var(--admin-text);">
+              Matriz de Conversão de Produtos (Cliques vs. Sacola)
+            </div>
+            <div class="table-scroll" style="max-height: 380px; overflow-y: auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th style="text-align: center;">Visualizações (Modal)</th>
+                    <th style="text-align: center;">Adições à Sacola</th>
+                    <th style="text-align: center;">Taxa de Conversão</th>
+                    <th style="text-align: center;">Diagnóstico Automático</th>
+                  </tr>
+                </thead>
+                <tbody id="tabela-produtos-conversao">
+                  <tr><td colspan="6" class="text-center">Carregando dados do funil...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       <!-- ── CAIXA ────────────────────────────────────── -->
@@ -929,6 +978,7 @@
             <div class="page-header__sub">Produtos de revenda, insumos e baixa automática integrada às vendas</div>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn--secondary" id="btn-estoque-lista-compras" title="Lista de compras e reposição por fornecedor">📋 Lista de Compras</button>
             <button class="btn btn--ghost" id="btn-estoque-exportar-csv" title="Exportar inventário completo para CSV">📄 Exportar Inventário</button>
             <button class="btn btn--ghost" id="btn-estoque-exportar-perdas" title="Exportar relatório de perdas para CSV">🗑️ Exportar Perdas</button>
             <button class="btn btn--secondary" id="btn-estoque-movimentar" title="Registrar Entrada, Ajuste ou Perda">⚡ Movimentar</button>
@@ -1587,6 +1637,62 @@
             <button type="button" class="btn btn--ghost" id="btn-compartilhar-cardapio-online">📲 Compartilhar Cardápio & QR Code</button>
           </div>
           <div id="config-online-qr-share-box" style="display:none; margin-top:14px; padding:14px; background:var(--bg-sec); border:1px solid var(--border); border-radius:8px; text-align:center;"></div>
+        </div>
+
+        <!-- Modo Dia de Espetáculo / Intervalo Teatro Univates (CAF-000062) -->
+        <div class="config-section" id="cfg-espetaculo-container">
+          <div class="config-section__title">🎭 Modo Dia de Espetáculo / Intervalo (Teatro Univates)</div>
+          <p class="hint" style="margin:4px 0 14px 0;">
+            Ative este modo em dias de evento para que o Cardápio e Totem destaquem reservas antecipadas sem fila para o intervalo.
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:14px;">
+            <div class="field" style="margin:0;">
+              <label class="field__label">Ativar Modo Espetáculo Hoje?</label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; height:38px;">
+                <input type="checkbox" id="toggle-espetaculo-ativo" style="width:18px; height:18px;" />
+                <span style="font-weight:600; font-size:13px;">Habilitar Banner e Pré-venda</span>
+              </label>
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="field__label" for="config-espetaculo-nome">Nome do Evento / Espetáculo</label>
+              <input class="field__input" type="text" id="config-espetaculo-nome" placeholder="Ex: Stand-up Renato Albani" />
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="field__label" for="config-espetaculo-data">Data do Evento</label>
+              <input class="field__input" type="date" id="config-espetaculo-data" />
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="field__label" for="config-espetaculo-horario">Horário Previsto do Intervalo</label>
+              <input class="field__input" type="time" id="config-espetaculo-horario" value="21:00" />
+            </div>
+          </div>
+          <button type="button" class="btn btn--primary" id="btn-salvar-config-espetaculo">💾 Salvar Modo Espetáculo</button>
+        </div>
+
+        <!-- Fidelidade & Cashback Automático (CAF-000063) -->
+        <div class="config-section" id="cfg-cashback-container">
+          <div class="config-section__title">🪙 Fidelidade & Cashback Automático (Carteira do Cliente)</div>
+          <p class="hint" style="margin:4px 0 14px 0;">
+            Recompense os clientes com saldo cashback em suas carteiras a cada compra realizada via Pix, Dinheiro ou Cartão. Por padrão, este recurso fica desativado até ser explicitamente ativado pelo administrador.
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:14px;">
+            <div class="field" style="margin:0;">
+              <label class="field__label">Ativar Sistema de Cashback?</label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; height:38px;">
+                <input type="checkbox" id="toggle-cashback-ativo" style="width:18px; height:18px;" />
+                <span style="font-weight:600; font-size:13px;">Habilitar Cashback em Compras</span>
+              </label>
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="field__label" for="config-cashback-percentual">Percentual de Cashback (%)</label>
+              <input class="field__input" type="number" id="config-cashback-percentual" min="0" max="100" step="0.5" value="5" placeholder="Ex: 5" />
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="field__label" for="config-cashback-minimo">Valor Mínimo do Pedido (R$)</label>
+              <input class="field__input" type="number" id="config-cashback-minimo" min="0" step="0.50" value="0" placeholder="Ex: 0.00" />
+            </div>
+          </div>
+          <button type="button" class="btn btn--primary" id="btn-salvar-config-cashback">💾 Salvar Fidelidade & Cashback</button>
         </div>
 
         <!-- Totem de Autoatendimento no Balcão (CAF-000040) -->
@@ -3604,6 +3710,14 @@
         </div>
 
         <div class="field" style="grid-column: 1/-1;">
+          <label class="field__label" for="estoque-item-fornecedor">Fornecedor Padrão (Reposição)</label>
+          <select class="field__select" id="estoque-item-fornecedor">
+            <option value="">Nenhum fornecedor vinculado</option>
+          </select>
+          <small class="field__hint">Utilizado para agrupar na Lista de Compras automática e envio de pedidos.</small>
+        </div>
+
+        <div class="field" style="grid-column: 1/-1;">
           <label class="field__label" for="estoque-item-codigo-barras">Código de Barras (EAN / UPC)</label>
           <div style="display: flex; gap: 8px;">
             <input class="field__input" type="text" id="estoque-item-codigo-barras" placeholder="Ex: 7891234567890" style="flex: 1;" />
@@ -3673,13 +3787,44 @@
         <!-- Campos específicos para ENTRADA -->
         <div id="box-mov-entrada" style="grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="field">
-            <label class="field__label" for="mov-estoque-custo">Custo Unitário de Compra (R$)</label>
-            <input class="field__input" type="number" id="mov-estoque-custo" step="0.0001" min="0" placeholder="Ex: 2.50" />
-            <small class="field__hint">Atualiza o custo médio ponderado do item.</small>
+            <label class="field__label" for="mov-estoque-custo-total">Custo Total da Compra (R$)</label>
+            <input class="field__input" type="number" id="mov-estoque-custo-total" step="0.01" min="0" placeholder="Ex: 650.00" />
+            <small class="field__hint">Calcula o custo unitário automaticamente.</small>
+          </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-custo">Custo Unitário (R$)</label>
+            <input class="field__input" type="number" id="mov-estoque-custo" step="0.0001" min="0" placeholder="Ex: 65.00" />
+            <small class="field__hint">Atualiza o custo médio do insumo.</small>
+          </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-fornecedor">Fornecedor da Compra</label>
+            <select class="field__select" id="mov-estoque-fornecedor">
+              <option value="">Selecione um fornecedor...</option>
+            </select>
           </div>
           <div class="field">
             <label class="field__label" for="mov-estoque-validade">Data de Validade do Lote</label>
             <input class="field__input" type="date" id="mov-estoque-validade" />
+          </div>
+
+          <!-- Integração com Contas a Pagar (CAF-000068) -->
+          <div class="field" style="grid-column: 1/-1; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 10px; margin: 0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:13px; color:var(--admin-text);">
+              <input type="checkbox" id="mov-estoque-gerar-financeiro" style="width:18px; height:18px;" />
+              <span>💳 Lançar despesa automaticamente em Contas a Pagar</span>
+            </label>
+            <div id="box-mov-financeiro-detalhes" style="display:none; margin-top:10px; grid-template-columns: 1fr 1fr; gap:12px;">
+              <div class="field" style="margin:0;">
+                <label class="field__label" for="mov-estoque-vencimento">Data de Vencimento *</label>
+                <input class="field__input" type="date" id="mov-estoque-vencimento" />
+              </div>
+              <div class="field" style="margin:0; display:flex; align-items:center; padding-top:20px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600;">
+                  <input type="checkbox" id="mov-estoque-pago-hoje" style="width:16px; height:16px;" />
+                  <span>Já Pago Hoje (Liquidar despesa)</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3713,6 +3858,27 @@
     <div class="modal__footer">
       <button class="btn btn--ghost" id="modal-estoque-movimento-cancel">Cancelar</button>
       <button class="btn btn--primary" id="btn-salvar-estoque-movimento">Confirmar Movimentação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE COMPRAS POR FORNECEDOR (CAF-000068) -->
+<div class="modal-overlay" id="modal-lista-compras-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-lista-compras-title">
+  <div class="modal modal--lg" id="modal-lista-compras" style="max-width: 850px; width: 95%;">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="modal-lista-compras-title">📋 Lista de Compras & Reposição de Estoque</h3>
+        <p class="modal__subtitle" style="font-size:0.85rem; color:var(--text-sec); margin:2px 0 0 0;">
+          Itens em ponto de pedido (estoque atual &le; estoque mínimo), agrupados por fornecedor com quantidades sugeridas.
+        </p>
+      </div>
+      <button class="modal__close" id="modal-lista-compras-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body" id="modal-lista-compras-body" style="max-height: 65vh; overflow-y: auto;">
+      <!-- Preenchido via JavaScript -->
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-lista-compras-fechar">Fechar</button>
     </div>
   </div>
 </div>
@@ -4102,6 +4268,21 @@
           <div class="field" style="margin:0;">
             <label class="field__label" style="font-size:11px;">Cupom / Promoção (Opcional)</label>
             <input type="text" class="field__input" id="camp-cupom" placeholder="Ex: VOLTEI10" />
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Tipo de Desconto</label>
+            <select class="field__input" id="camp-tipo-desconto">
+              <option value="percentual">Percentual (%)</option>
+              <option value="valor_fixo">Valor Fixo (R$)</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Valor do Desconto</label>
+            <input type="number" class="field__input" id="camp-valor-desconto" placeholder="Ex: 10" min="0" step="0.01" />
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Pedido Mínimo (R$)</label>
+            <input type="number" class="field__input" id="camp-minimo-desconto" placeholder="Ex: 20" min="0" step="0.01" />
           </div>
         </div>
 
@@ -4613,6 +4794,7 @@
 <!-- QR CODE GENERATOR (CAF-000037 + CAF-000039) -->
 <script defer src="js/libs/qrcode.min.js"></script>
 <script defer src="js/pix-brcode.js"></script>
+<script type="module" src="js/utils/smart-search.js"></script>
 
 <!-- ADMIN MODULES -->
 <script defer src="js/admin/main.js"></script>
@@ -4629,6 +4811,10 @@
 <script defer src="js/admin/relatorios-admin.js"></script>
 <script defer src="js/admin/caixa-admin.js"></script>
 <script defer src="js/admin/estoque.js"></script>
+<script type="module" src="js/utils/coupon-validator.js"></script>
+<script type="module" src="js/utils/cashback.js"></script>
+<script type="module" src="js/utils/stock-purchase.js"></script>
+<script type="module" src="js/utils/menu-analytics.js"></script>
 <script defer src="js/admin/clientes-admin.js"></script>
 <script defer src="js/admin/avaliacoes-admin.js"></script>
 <script defer src="js/admin/financeiro-admin.js"></script>

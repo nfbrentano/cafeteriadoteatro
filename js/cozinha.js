@@ -38,6 +38,9 @@
   const topbarBadgeProducao = document.getElementById('topbar-badge-producao');
   const producaoEstacaoBadge = document.getElementById('producao-estacao-badge');
   const producaoTotalItensBadge = document.getElementById('producao-total-itens-badge');
+  const btnFiltroIntervalo = document.getElementById('btn-filtro-intervalo');
+  const topbarBadgeIntervalo = document.getElementById('topbar-badge-intervalo');
+  let filtroIntervaloApenas = false;
 
   const audioAlert = document.getElementById('audio-alert');
   const audioBanner = document.getElementById('audio-banner');
@@ -859,6 +862,13 @@
   if (btnViewProducao) {
     btnViewProducao.addEventListener('click', () => setDesktopView('producao'));
   }
+  if (btnFiltroIntervalo) {
+    btnFiltroIntervalo.addEventListener('click', () => {
+      filtroIntervaloApenas = !filtroIntervaloApenas;
+      btnFiltroIntervalo.classList.toggle('active', filtroIntervaloApenas);
+      renderPedidos();
+    });
+  }
 
   kdsTabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1099,9 +1109,16 @@
     let preparo = [];
     let concluidos = [];
 
+    const countIntervalo = pedidos.filter(p => p.status !== 'cancelado' && (p.is_intervalo === true || (p.observacoes && p.observacoes.toLowerCase().includes('intervalo')))).length;
+    if (topbarBadgeIntervalo) topbarBadgeIntervalo.textContent = countIntervalo;
+
     pedidos.forEach(p => {
       if (p.status === 'cancelado') return;
       if (!isPedidoLiberadoParaKds(p)) return;
+      if (filtroIntervaloApenas) {
+        const isInterv = p.is_intervalo === true || (p.observacoes && p.observacoes.toLowerCase().includes('intervalo'));
+        if (!isInterv) return;
+      }
 
       const info = getPedidoEstacaoInfo(p);
 
@@ -1492,7 +1509,7 @@
 
       card.innerHTML = `
         <div class="pedido-header">
-          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando} ${badgeNovos} ${prioridadeBadgeHtml} ${badgeImpressaoHtml}</div>
+          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando} ${badgeNovos} ${prioridadeBadgeHtml} ${badgeImpressaoHtml} ${window.theaterMode ? window.theaterMode.formatIntervalBadge(pedido) : ''}</div>
           ${progressHtml}
           <div class="pedido-tempo ${estadoTempo.semaforo} ${atrasadoClass}">${tempoStr}</div>
         </div>
@@ -2864,5 +2881,14 @@
   // Init
   updateConnectionStatus(navigator.onLine);
   checkSession();
+
+  // CAF-000064: Manter tela da cozinha sempre ligada
+  if (window.WakeLockUtil) {
+    window.WakeLockUtil.setupAutoWakeLock({ defaultActive: true });
+  } else {
+    window.addEventListener('load', () => {
+      window.WakeLockUtil?.setupAutoWakeLock({ defaultActive: true });
+    });
+  }
 
 })();

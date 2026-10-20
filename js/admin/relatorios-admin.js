@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableTempoCategorias(data.tempo_por_categoria);
     renderClientesRelatorio(p_start, p_end);
     renderDesempenhoOperadores(p_start, p_end);
+    renderMenuAnalyticsFunil(p_start, p_end);
   }
 
   function renderTableMargemProdutos(dados) {
@@ -682,4 +683,98 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ── Menu Analytics: Funil do Cardápio (CAF-000069) ──
+  let ultimosEventosFunil = [];
+
+  async function renderMenuAnalyticsFunil(p_start, p_end) {
+    const cardsEl = document.getElementById('funil-etapas-cards');
+    const tbodyProd = document.getElementById('tabela-produtos-conversao');
+    if (!cardsEl || !tbodyProd) return;
+
+    cardsEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--admin-text-sub); padding: 15px;">⏳ Carregando funil do cardápio...</div>';
+    tbodyProd.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:15px; color:#64748b;">Carregando métricas de conversão...</td></tr>';
+
+    const dataInicio = p_start ? p_start.slice(0, 10) : new Date().toISOString().slice(0, 10);
+    const dataFim = p_end ? p_end.slice(0, 10) : new Date().toISOString().slice(0, 10);
+
+    try {
+      if (window.cafeteriaSupabase) {
+        const { data: evData, error: evErr } = await window.cafeteriaSupabase
+          .from('cardapio_eventos_diarios')
+          .select('*')
+          .gte('data', dataInicio)
+          .lte('data', dataFim);
+
+        if (evErr) throw evErr;
+        ultimosEventosFunil = evData || [];
+      } else {
+        ultimosEventosFunil = [];
+      }
+    } catch (e) {
+      console.warn('[MenuAnalytics] Erro ao carregar eventos:', e);
+      ultimosEventosFunil = [];
+    }
+
+    renderizarFunilView();
+  }
+
+  function renderizarFunilView() {
+    const cardsEl = document.getElementById('funil-etapas-cards');
+    const tbodyProd = document.getElementById('tabela-produtos-conversao');
+    const selCanal = document.getElementById('filter-funil-canal');
+    if (!cardsEl || !tbodyProd || !window.cafeteriaMenuAnalytics) return;
+
+    const canalFiltro = selCanal?.value || 'todos';
+    let eventosFiltrados = ultimosEventosFunil;
+    if (canalFiltro !== 'todos') {
+      eventosFiltrados = ultimosEventosFunil.filter(e => e.canal === canalFiltro);
+    }
+
+    const funnel = window.cafeteriaMenuAnalytics.buildFunnelData(eventosFiltrados);
+
+    cardsEl.innerHTML = funnel.etapas.map((et, idx) => `
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center; position:relative;">
+        <div style="font-size:1.5rem; margin-bottom:4px;">${et.icone}</div>
+        <div style="font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase;">${et.rotulo}</div>
+        <div style="font-size:1.4rem; font-weight:800; color:#1e293b; margin:4px 0;">${et.total.toLocaleString('pt-BR')}</div>
+        <div style="font-size:0.75rem; color:${idx === 0 ? '#64748b' : (et.taxaPasso >= 50 ? '#16a34a' : '#d97706')}; font-weight:600;">
+          ${idx === 0 ? '100% de entrada' : `↳ ${et.taxaPasso}% da etapa anterior`}
+        </div>
+      </div>
+    `).join('');
+
+    // Produtos
+    const prods = (window.cafeteriaAdmin?.appData?.products) || [];
+    const prodMetrics = window.cafeteriaMenuAnalytics.calculateProductConversionMetrics(eventosFiltrados, prods);
+
+    if (prodMetrics.length === 0 || prodMetrics.every(p => p.views === 0 && p.adds === 0)) {
+      tbodyProd.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:20px; color:#64748b;">Nenhuma interação registrada no cardápio para este período.</td></tr>';
+      return;
+    }
+
+    tbodyProd.innerHTML = prodMetrics.map(p => {
+      let badgeStyle = 'background:#f1f5f9; color:#475569;';
+      if (p.status === 'alta_conversao') badgeStyle = 'background:#dcfce7; color:#15803d; font-weight:700;';
+      else if (p.status === 'muito_visto_pouco_comprado') badgeStyle = 'background:#fee2e2; color:#b91c1c; font-weight:700;';
+      else if (p.status === 'equilibrado') badgeStyle = 'background:#fef3c7; color:#b45309;';
+
+      return `
+        <tr>
+          <td style="font-weight:600; color:var(--admin-text);">${window.escapeHtml ? window.escapeHtml(p.nome) : p.nome}</td>
+          <td style="font-size:0.85rem; color:#64748b;">${p.categoria}</td>
+          <td style="text-align:center; font-weight:600;">${p.views}</td>
+          <td style="text-align:center; font-weight:600; color:#16a34a;">${p.adds}</td>
+          <td style="text-align:center; font-weight:700;">${p.taxaConversao}%</td>
+          <td style="text-align:center;">
+            <span style="display:inline-block; padding:4px 8px; border-radius:12px; font-size:0.75rem; ${badgeStyle}">
+              ${p.statusLabel}
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('filter-funil-canal')?.addEventListener('change', renderizarFunilView);
 });

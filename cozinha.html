@@ -58,6 +58,9 @@
           <button id="btn-view-producao" class="btn-view-tab" type="button" title="Visão Consolidada de Produção">
             📊 Produção <span class="tab-badge" id="topbar-badge-producao">0</span>
           </button>
+          <button id="btn-filtro-intervalo" class="btn-view-tab" type="button" title="Filtrar Pedidos do Intervalo do Espetáculo" style="border:1px solid rgba(168,85,247,0.5); color:#d8b4fe;">
+            🎭 Intervalo <span class="tab-badge" id="topbar-badge-intervalo">0</span>
+          </button>
         </div>
 
         <div id="cozinha-status-indicator" class="status-indicator">
@@ -350,6 +353,8 @@
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
+  <script type="module" src="js/utils/wake-lock.js"></script>
+  <script type="module" src="js/utils/theater-mode.js"></script>
   <script src="js/pedido-print.js"></script>
   <script src="js/cozinha.js"></script>
   <script>

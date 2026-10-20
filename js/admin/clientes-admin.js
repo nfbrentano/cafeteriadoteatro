@@ -1629,6 +1629,9 @@
       const tagId = document.getElementById('camp-tag')?.value ? Number(document.getElementById('camp-tag').value) : null;
       const prodId = document.getElementById('camp-produto')?.value || null;
       const cupom = document.getElementById('camp-cupom')?.value.trim() || null;
+      const tipoDesconto = document.getElementById('camp-tipo-desconto')?.value || 'percentual';
+      const valorDesconto = Math.max(0, parseFloat(document.getElementById('camp-valor-desconto')?.value) || 0);
+      const minPedido = Math.max(0, parseFloat(document.getElementById('camp-minimo-desconto')?.value) || 0);
       const msgTemplate = document.getElementById('camp-mensagem')?.value.trim();
 
       if (!nome || !msgTemplate) {
@@ -1644,6 +1647,10 @@
         tag_id_filtro: tagId,
         produto_id_filtro: prodId,
         cupom_codigo: cupom,
+        tipo_desconto: tipoDesconto,
+        valor_desconto: valorDesconto,
+        valor_minimo_pedido: minPedido,
+        ativa: true,
         mensagem_template: msgTemplate
       };
 
@@ -1656,6 +1663,10 @@
             tag_id_filtro: tagId,
             produto_id_filtro: prodId,
             cupom_codigo: cupom,
+            tipo_desconto: tipoDesconto,
+            valor_desconto: valorDesconto,
+            valor_minimo_pedido: minPedido,
+            ativa: true,
             mensagem_template: msgTemplate
           })
           .select('*')

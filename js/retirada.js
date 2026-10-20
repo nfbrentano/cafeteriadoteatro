@@ -379,4 +379,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Polling de segurança a cada 15s para garantir atualização mesmo em conexões instáveis
   pollingIntervalId = setInterval(carregarPedidos, 15000);
+
+  // CAF-000064: Manter painel de retirada sempre ligado
+  if (window.WakeLockUtil) {
+    window.WakeLockUtil.setupAutoWakeLock({ defaultActive: true });
+  } else {
+    window.addEventListener('load', () => {
+      window.WakeLockUtil?.setupAutoWakeLock({ defaultActive: true });
+    });
+  }
 });

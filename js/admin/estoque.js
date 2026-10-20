@@ -9,6 +9,7 @@
 
   let state = {
     itens: [],
+    fornecedores: [],
     filtroSearch: '',
     filtroStatus: '',
     filtroTipo: '',
@@ -102,6 +103,30 @@
       
       const itens = await window.cafeteriaDB.estoque.allItens();
       state.itens = itens || [];
+
+      if (window.cafeteriaSupabase) {
+        try {
+          const { data: fornData } = await window.cafeteriaSupabase
+            .from('fornecedores')
+            .select('*')
+            .order('nome', { ascending: true });
+          state.fornecedores = fornData || [];
+
+          const selItemForn = document.getElementById('estoque-item-fornecedor');
+          if (selItemForn) {
+            selItemForn.innerHTML = '<option value="">Nenhum fornecedor vinculado</option>' +
+              state.fornecedores.map(f => `<option value="${f.id}">${window.escapeHtml(f.nome)}</option>`).join('');
+          }
+          const selMovForn = document.getElementById('mov-estoque-fornecedor');
+          if (selMovForn) {
+            selMovForn.innerHTML = '<option value="">Selecione um fornecedor...</option>' +
+              state.fornecedores.map(f => `<option value="${f.id}">${window.escapeHtml(f.nome)}</option>`).join('');
+          }
+        } catch (fErr) {
+          console.warn('[Estoque] Erro ao carregar fornecedores:', fErr);
+        }
+      }
+
       if (admin && admin.appData) {
         admin.appData.estoqueItens = state.itens;
       }
@@ -279,10 +304,12 @@
         document.getElementById('estoque-item-unidade').value = item.unidade_medida || 'un';
         document.getElementById('estoque-item-minimo').value = item.estoque_minimo !== undefined ? item.estoque_minimo : 5;
         document.getElementById('estoque-item-codigo-barras').value = item.codigo_barras || '';
+        document.getElementById('estoque-item-fornecedor').value = item.fornecedor_padrao_id || '';
         document.getElementById('estoque-item-validade').checked = !!item.controla_validade;
         document.getElementById('estoque-item-ativo').checked = item.ativo !== false;
       }
     } else {
+      document.getElementById('estoque-item-fornecedor').value = '';
       document.getElementById('estoque-item-minimo').value = '5';
       document.getElementById('estoque-item-ativo').checked = true;
     }
@@ -297,6 +324,7 @@
     const tipo = document.getElementById('estoque-item-tipo').value;
     const unidade_medida = document.getElementById('estoque-item-unidade').value;
     const estoque_minimo = parseFloat(document.getElementById('estoque-item-minimo').value);
+    const fornecedor_padrao_id = document.getElementById('estoque-item-fornecedor').value || null;
     const codigo_barras = document.getElementById('estoque-item-codigo-barras').value.trim() || null;
     const controla_validade = document.getElementById('estoque-item-validade').checked;
     const ativo = document.getElementById('estoque-item-ativo').checked;
@@ -313,6 +341,7 @@
       tipo,
       unidade_medida,
       estoque_minimo,
+      fornecedor_padrao_id,
       codigo_barras,
       controla_validade,
       ativo,
@@ -372,10 +401,26 @@
 
     if (preselectedItemId) {
       el.selectMovItem.value = String(preselectedItemId);
+      const selectedItem = state.itens.find(i => String(i.id) === String(preselectedItemId));
+      const selForn = document.getElementById('mov-estoque-fornecedor');
+      if (selForn) {
+        selForn.value = selectedItem?.fornecedor_padrao_id || '';
+      }
     }
     if (tipoPredefinido) {
       el.selectMovTipo.value = tipoPredefinido;
     }
+
+    const custoTotEl = document.getElementById('mov-estoque-custo-total');
+    if (custoTotEl) custoTotEl.value = '';
+    const checkFin = document.getElementById('mov-estoque-gerar-financeiro');
+    if (checkFin) checkFin.checked = false;
+    const boxFin = document.getElementById('box-mov-financeiro-detalhes');
+    if (boxFin) boxFin.style.display = 'none';
+    const vencEl = document.getElementById('mov-estoque-vencimento');
+    if (vencEl) vencEl.value = new Date().toISOString().slice(0, 10);
+    const pagoHojeEl = document.getElementById('mov-estoque-pago-hoje');
+    if (pagoHojeEl) pagoHojeEl.checked = false;
 
     atualizarCamposMovimento();
     admin.openModal(el.modalMovOverlay);
@@ -398,6 +443,14 @@
       el.lblMovQtd.textContent = 'Quantidade de Entrada *';
       el.hintMovQtd.textContent = 'Informe a quantidade comprada / reposta.';
       el.inputMovQtd.placeholder = `Ex: 10 ${unidade}`;
+
+      // Preencher fornecedor se o item tiver fornecedor padrão
+      const selectedItemId = el.selectMovItem.value;
+      const currentItem = state.itens.find(i => String(i.id) === String(selectedItemId));
+      const selForn = document.getElementById('mov-estoque-fornecedor');
+      if (selForn && currentItem && currentItem.fornecedor_padrao_id) {
+        selForn.value = currentItem.fornecedor_padrao_id;
+      }
     } else if (tipo === 'ajuste') {
       el.boxMovAjuste.style.display = 'block';
       el.lblSaldoAtualAjuste.textContent = `${saldoAtual} ${unidade}`;
@@ -460,16 +513,84 @@
     el.btnSalvarMov.textContent = 'Registrando...';
 
     try {
+      // 1. Atualizar custo médio do item se fornecido na entrada
+      if (tipo === 'entrada' && custoUnit && custoUnit > 0 && window.cafeteriaSupabase) {
+        try {
+          await window.cafeteriaSupabase
+            .from('estoque_itens')
+            .update({ custo_medio: custoUnit, updated_at: new Date().toISOString() })
+            .eq('id', itemId);
+        } catch (cErr) {
+          console.warn('[Estoque] Erro ao atualizar custo_medio:', cErr);
+        }
+      }
+
+      // 2. Se marcado para gerar lançamento em Contas a Pagar (CAF-000068)
+      let despesaId = null;
+      const fornId = document.getElementById('mov-estoque-fornecedor')?.value || item?.fornecedor_padrao_id || null;
+      const gerarFin = document.getElementById('mov-estoque-gerar-financeiro')?.checked;
+
+      if (tipo === 'entrada' && gerarFin && window.cafeteriaSupabase) {
+        try {
+          const custoTotal = parseFloat(document.getElementById('mov-estoque-custo-total')?.value) || ((custoUnit || 0) * qtdInput);
+          if (custoTotal > 0) {
+            const vencimento = document.getElementById('mov-estoque-vencimento')?.value || new Date().toISOString().slice(0, 10);
+            const pagoHoje = document.getElementById('mov-estoque-pago-hoje')?.checked || false;
+
+            // Busca categoria para compras de insumos
+            let catId = null;
+            const { data: cats } = await window.cafeteriaSupabase
+              .from('despesa_categorias')
+              .select('id, nome')
+              .or('nome.ilike.%Insumos%,nome.ilike.%Mercadorias%')
+              .limit(1);
+            if (cats && cats.length > 0) catId = cats[0].id;
+
+            const despPayload = window.cafeteriaStockPurchase ? window.cafeteriaStockPurchase.buildStockPayableExpensePayload({
+              itemNome: item ? item.nome : 'Item',
+              quantidade: qtdInput,
+              unidade: item ? (item.unidade_medida || item.unidade || 'un') : 'un',
+              custoTotal: custoTotal,
+              fornecedorId: fornId,
+              vencimento: vencimento,
+              pagoHoje: pagoHoje,
+              categoriaId: catId
+            }) : {
+              descricao: `Entrada Estoque: ${qtdInput} - ${item ? item.nome : 'Item'}`,
+              valor: custoTotal,
+              vencimento: vencimento,
+              fornecedor_id: fornId,
+              origem: 'estoque'
+            };
+
+            const { data: despData, error: despErr } = await window.cafeteriaSupabase
+              .from('despesas')
+              .insert([despPayload])
+              .select()
+              .single();
+
+            if (!despErr && despData) {
+              despesaId = despData.id;
+            }
+          }
+        } catch (fErr) {
+          console.warn('[Estoque] Erro ao lançar despesa em contas_pagar:', fErr);
+        }
+      }
+
+      // 3. Criar movimento no estoque
       await window.cafeteriaDB.estoque.criarMovimento({
         item_id: itemId,
         tipo,
         quantidade: qtdFinal,
         custo_unitario: custoUnit,
         data_validade: dataValidade,
+        fornecedor_id: fornId,
+        despesa_id: despesaId,
         motivo: motivoFinal
       });
 
-      admin.toast('Movimentação Registrada', 'O estoque foi atualizado com sucesso.', 'success');
+      admin.toast('Movimentação Registrada', 'O estoque foi atualizado com sucesso' + (despesaId ? ' e a despesa foi lançada em Contas a Pagar.' : '.'), 'success');
       admin.closeModal(el.modalMovOverlay);
       await carregarDadosEstoque();
     } catch (err) {
@@ -480,6 +601,102 @@
       el.btnSalvarMov.textContent = 'Confirmar Movimentação';
     }
   }
+
+  // --- Modal Lista de Compras por Fornecedor (CAF-000068) ---
+  window.abrirModalListaCompras = function () {
+    const body = document.getElementById('modal-lista-compras-body');
+    if (!body || !window.cafeteriaStockPurchase) return;
+
+    const lista = window.cafeteriaStockPurchase.buildShoppingListBySupplier(state.itens, state.fornecedores);
+
+    if (!lista || lista.length === 0) {
+      body.innerHTML = `
+        <div style="padding: 40px; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 12px;">✅</div>
+          <h4 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 6px;">Nenhum item com estoque baixo!</h4>
+          <p style="color: var(--text-sec); font-size: 0.9rem;">
+            Todos os insumos e produtos estão com saldo superior ao estoque mínimo de alerta.
+          </p>
+        </div>
+      `;
+      admin.openModal('modal-lista-compras-overlay');
+      return;
+    }
+
+    body.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        ${lista.map((grupo, gIdx) => {
+          const forn = grupo.fornecedor;
+          const itensTotal = grupo.itens.length;
+          const msgWhatsapp = window.cafeteriaStockPurchase.formatSupplierWhatsAppOrder(forn.nome, grupo.itens);
+          const linkWhatsapp = window.cafeteriaStockPurchase.getWhatsAppShareUrl(forn.telefone, msgWhatsapp);
+
+          return `
+            <div style="border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                <div>
+                  <h4 style="margin:0; font-size:1.05rem; font-weight:700; color:#1e293b;">
+                    🏢 ${window.escapeHtml(forn.nome)}
+                  </h4>
+                  <span style="font-size:0.85rem; color:#64748b;">
+                    ${forn.telefone ? `📞 ${forn.telefone}` : 'Telefone não cadastrado'} • <strong>${itensTotal} item(ns) para reposição</strong>
+                  </span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="btn btn--sm btn--ghost btn-copiar-pedido-forn" data-idx="${gIdx}">
+                    📋 Copiar Pedido
+                  </button>
+                  <a href="${linkWhatsapp}" target="_blank" rel="noopener noreferrer" class="btn btn--sm btn--primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:#16a34a; border-color:#16a34a; color:#fff;">
+                    📲 Pedir no WhatsApp
+                  </a>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
+                  <thead>
+                    <tr style="border-bottom:1px solid #e2e8f0; text-align:left; color:#64748b; background:#f8fafc;">
+                      <th style="padding:8px;">Item / Insumo</th>
+                      <th style="padding:8px; text-align:center;">Estoque Atual</th>
+                      <th style="padding:8px; text-align:center;">Estoque Mínimo</th>
+                      <th style="padding:8px; text-align:center; color:#16a34a; font-weight:700;">Reposição Sugerida</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${grupo.itens.map(it => `
+                      <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:8px; font-weight:600; color:#1e293b;">${window.escapeHtml(it.nome)}</td>
+                        <td style="padding:8px; text-align:center; color:#dc2626; font-weight:600;">${it.saldoAtual} ${it.unidade}</td>
+                        <td style="padding:8px; text-align:center; color:#64748b;">${it.estoqueMinimo} ${it.unidade}</td>
+                        <td style="padding:8px; text-align:center; font-weight:700; color:#16a34a; background:#f0fdf4;">+ ${it.quantidadeSugerida} ${it.unidade}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    body.querySelectorAll('.btn-copiar-pedido-forn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const grupo = lista[idx];
+        if (grupo) {
+          const text = window.cafeteriaStockPurchase.formatSupplierWhatsAppOrder(grupo.fornecedor.nome, grupo.itens);
+          navigator.clipboard.writeText(text).then(() => {
+            admin.toast('Copiado', 'Texto do pedido copiado para a área de transferência!', 'success');
+          }).catch(() => {
+            prompt('Copie o texto do pedido:', text);
+          });
+        }
+      });
+    });
+
+    admin.openModal('modal-lista-compras-overlay');
+  };
 
   // --- Modal de Extrato / Histórico ---
   window.openExtratoModal = async function (itemId = null) {
@@ -873,6 +1090,40 @@
     if (el.btnCancelScanner) {
       el.btnCancelScanner.addEventListener('click', window.stopBarcodeScanner);
     }
+
+    // CAF-000068: Botão Lista de Compras
+    const btnLista = document.getElementById('btn-estoque-lista-compras');
+    if (btnLista) {
+      btnLista.addEventListener('click', window.abrirModalListaCompras);
+    }
+    const closeLista = document.getElementById('modal-lista-compras-close');
+    const fecharLista = document.getElementById('modal-lista-compras-fechar');
+    [closeLista, fecharLista].forEach(b => {
+      b?.addEventListener('click', () => admin.closeModal('modal-lista-compras-overlay'));
+    });
+
+    // CAF-000068: Toggle de lançamento financeiro
+    const checkGerarFin = document.getElementById('mov-estoque-gerar-financeiro');
+    const boxFinDetalhes = document.getElementById('box-mov-financeiro-detalhes');
+    if (checkGerarFin && boxFinDetalhes) {
+      checkGerarFin.addEventListener('change', () => {
+        boxFinDetalhes.style.display = checkGerarFin.checked ? 'grid' : 'none';
+      });
+    }
+
+    // CAF-000068: Recálculo automático de custo unitário com base no custo total
+    const inputCustoTotal = document.getElementById('mov-estoque-custo-total');
+    const inputQtd = el.inputMovQtd;
+    const inputCustoUnit = document.getElementById('mov-estoque-custo');
+    function recalcularUnit() {
+      const tot = parseFloat(inputCustoTotal?.value || '0');
+      const q = parseFloat(inputQtd?.value || '0');
+      if (tot > 0 && q > 0 && inputCustoUnit) {
+        inputCustoUnit.value = (tot / q).toFixed(4);
+      }
+    }
+    inputCustoTotal?.addEventListener('input', recalcularUnit);
+    inputQtd?.addEventListener('input', recalcularUnit);
   }
 
 })();

@@ -162,6 +162,10 @@
   const fecharContaDescontoTipo = document.getElementById('fechar-conta-desconto-tipo');
   const fecharContaDescontoValor = document.getElementById('fechar-conta-desconto-valor');
   const fecharContaDescontoMotivo = document.getElementById('fechar-conta-desconto-motivo');
+
+  const fecharContaCupomInput = document.getElementById('fechar-conta-cupom-input');
+  const btnFecharContaAplicarCupom = document.getElementById('btn-fechar-conta-aplicar-cupom');
+  const fecharContaCupomMsg = document.getElementById('fechar-conta-cupom-msg');
   
   const fecharContaDivTaxa = document.getElementById('fechar-conta-div-taxa');
   const fecharContaTaxaCheck = document.getElementById('fechar-conta-taxa-check');
@@ -1492,7 +1496,11 @@
       filtered = filtered.filter(p => p.categoria_id === currentCategory);
     }
     if (searchQuery) {
-      filtered = filtered.filter(p => p.nome.toLowerCase().includes(searchQuery) || (p.descricao && p.descricao.toLowerCase().includes(searchQuery)));
+      if (window.SmartSearch && typeof window.SmartSearch.filterProducts === 'function') {
+        filtered = window.SmartSearch.filterProducts(filtered, searchQuery);
+      } else {
+        filtered = filtered.filter(p => p.nome.toLowerCase().includes(searchQuery) || (p.descricao && p.descricao.toLowerCase().includes(searchQuery)));
+      }
     }
     
     if (filtered.length === 0) {
@@ -2676,8 +2684,11 @@
     const obsGeral = pedidoObs.value.trim();
     const clienteNome = pedidoClienteNome.value.trim();
     const paraViagem = pedidoParaViagem.checked;
-    const prioridade = pedidoPrioritario && pedidoPrioritario.checked ? 1 : 0;
-    const prioridadeMotivo = prioridade === 1 ? (pedidoPrioridadeMotivo ? pedidoPrioridadeMotivo.value : 'Espetáculo') : null;
+    const checkIntervalo = document.getElementById('check-pedido-intervalo');
+    const isIntervalo = checkIntervalo ? checkIntervalo.checked : false;
+    const finalObsGeral = isIntervalo ? ((obsGeral ? obsGeral + ' ' : '') + '[🎭 Intervalo]').trim() : obsGeral;
+    const prioridade = (pedidoPrioritario && pedidoPrioritario.checked) || isIntervalo ? 1 : 0;
+    const prioridadeMotivo = prioridade === 1 ? (isIntervalo ? 'Espetáculo (Intervalo)' : (pedidoPrioridadeMotivo ? pedidoPrioridadeMotivo.value : 'Espetáculo')) : null;
     const formaPag = pedidoPagamento.value || null;
     const statusPag = (formaPag === 'conta_cliente' || pedidoPago.checked) ? 'pago' : 'pendente';
 
@@ -2730,7 +2741,8 @@
     const payload = {
       client_id: clientId,
       mesa_codigo: mesaCodigo || (paraViagem ? 'BALCAO' : 'BALCAO'),
-      observacoes: obsGeral,
+      observacoes: finalObsGeral,
+      is_intervalo: isIntervalo,
       cliente_nome: clienteNome,
       cliente_id: clienteId,
       para_viagem: paraViagem,
@@ -3506,6 +3518,13 @@
         </div>
       `;
 
+      // CAF-000067: Gesto de deslizar para a direita para marcar como entregue no celular
+      if (window.SwipeAction && typeof window.SwipeAction.bindSwipeRight === 'function' && isPronto) {
+        window.SwipeAction.bindSwipeRight(card, () => {
+          window.baristaMarcarEntregue(pedido.id);
+        });
+      }
+
       pedidosCardsGrid.appendChild(card);
     });
   }
@@ -3894,6 +3913,102 @@
     }
   });
 
+  // CAF-000066: Compartilhamento digital via WhatsApp e Web Share API
+  function obterDadosComprovanteAtual(origem = 'mesa') {
+    let mesa = null;
+    let pedidos = [];
+    let subtotal = 0;
+    let desconto = 0;
+    let taxa = 0;
+    let total = 0;
+    let divisaoPessoas = 1;
+    let pagamentos = [];
+    let clienteNome = null;
+    let clienteTelefone = null;
+    let pedidoId = null;
+
+    if (origem === 'fechamento' && currentFechamento) {
+      mesa = currentFechamento.mesaCodigo;
+      pedidos = currentFechamento.pedidos || [];
+      subtotal = currentFechamento.subtotal || 0;
+      desconto = currentFechamento.descontoAplicado || 0;
+      taxa = currentFechamento.taxaServico || 0;
+      total = currentFechamento.totalConta || (subtotal - desconto + taxa);
+      pagamentos = currentFechamento.pagamentos || [];
+      if (fecharContaModo?.value === 'igual' && fecharContaNumPessoas) {
+        divisaoPessoas = parseInt(fecharContaNumPessoas.value, 10) || 1;
+      }
+    } else if (currentSelectedMesaParaConta) {
+      mesa = currentSelectedMesaParaConta.mesaCodigo;
+      pedidos = currentSelectedMesaParaConta.pedidosMesa || [];
+      subtotal = pedidos.reduce((sum, p) => sum + Number(p.total || 0), 0);
+      total = subtotal;
+    }
+
+    const itensMap = new Map();
+    pedidos.forEach(p => {
+      if (!clienteNome && (p.cliente_nome || p.clientes?.nome)) {
+        clienteNome = p.cliente_nome || p.clientes?.nome;
+      }
+      if (!clienteTelefone && (p.cliente_telefone || p.clientes?.telefone)) {
+        clienteTelefone = p.cliente_telefone || p.clientes?.telefone;
+      }
+      if (!pedidoId && p.id) {
+        pedidoId = p.id;
+      }
+
+      const itens = p.pedido_itens || p.itens || [];
+      itens.forEach(it => {
+        const nome = it.nome_produto || it.produtos?.nome || it.nome || 'Item';
+        const preco = Number(it.preco_unitario || it.preco || 0);
+        const qtd = Number(it.quantidade || 1);
+        const key = `${nome}__${preco}`;
+        if (!itensMap.has(key)) {
+          itensMap.set(key, { nome, preco_unitario: preco, quantidade: 0, observacoes: it.observacoes });
+        }
+        itensMap.get(key).quantidade += qtd;
+      });
+    });
+
+    return {
+      mesaCodigo: mesa,
+      clienteNome,
+      clienteTelefone,
+      itens: Array.from(itensMap.values()),
+      subtotal,
+      desconto,
+      taxaServico: taxa,
+      total,
+      divisaoPessoas,
+      formasPagamento: pagamentos,
+      pedidoId
+    };
+  }
+
+  function acaoEnviarWhatsAppComprovante(origem = 'mesa') {
+    if (!window.ReceiptFormatter) return;
+    const dados = obterDadosComprovanteAtual(origem);
+    const texto = window.ReceiptFormatter.formatDigitalReceipt(dados);
+    window.ReceiptFormatter.openWhatsAppReceipt(texto, dados.clienteTelefone);
+  }
+
+  async function acaoCompartilharComprovante(origem = 'mesa') {
+    if (!window.ReceiptFormatter) return;
+    const dados = obterDadosComprovanteAtual(origem);
+    const texto = window.ReceiptFormatter.formatDigitalReceipt(dados);
+    await window.ReceiptFormatter.shareOrCopyReceipt(texto, {
+      title: `Comprovante Mesa ${dados.mesaCodigo || ''}`,
+      onCopySuccess: (msg) => {
+        if (window.showToast) window.showToast(msg, { tipo: 'success' });
+      }
+    });
+  }
+
+  document.getElementById('btn-mesa-whatsapp')?.addEventListener('click', () => acaoEnviarWhatsAppComprovante('mesa'));
+  document.getElementById('btn-mesa-share')?.addEventListener('click', () => acaoCompartilharComprovante('mesa'));
+  document.getElementById('btn-fechar-conta-whatsapp')?.addEventListener('click', () => acaoEnviarWhatsAppComprovante('fechamento'));
+  document.getElementById('btn-fechar-conta-share')?.addEventListener('click', () => acaoCompartilharComprovante('fechamento'));
+
   // -----------------------------------------------------
   // 7.1. FLUXO DE FECHAMENTO DE CONTA DA MESA
   // -----------------------------------------------------
@@ -4063,6 +4178,14 @@
       fecharContaDescontoMotivo.value = '';
     }
 
+    if (fecharContaCupomInput) fecharContaCupomInput.value = '';
+    if (fecharContaCupomMsg) {
+      fecharContaCupomMsg.style.display = 'none';
+      fecharContaCupomMsg.textContent = '';
+    }
+    currentFechamento._cupomCampanhaId = null;
+    currentFechamento._cupomCodigo = null;
+
     recalcularTotaisFechamento();
     
     // Reseta UI Divisão
@@ -4125,6 +4248,62 @@
   fecharContaDescontoTipo.addEventListener('change', recalcularTotaisFechamento);
   fecharContaDescontoMotivo.addEventListener('input', () => { currentFechamento.descontoMotivo = fecharContaDescontoMotivo.value.trim(); });
   fecharContaTaxaCheck.addEventListener('change', recalcularTotaisFechamento);
+
+  if (btnFecharContaAplicarCupom) {
+    btnFecharContaAplicarCupom.addEventListener('click', async () => {
+      const code = (fecharContaCupomInput?.value || '').trim();
+      if (!code) {
+        if (fecharContaCupomMsg) {
+          fecharContaCupomMsg.textContent = 'Informe o código do cupom.';
+          fecharContaCupomMsg.style.color = '#dc2626';
+          fecharContaCupomMsg.style.display = 'block';
+        }
+        return;
+      }
+
+      btnFecharContaAplicarCupom.disabled = true;
+      btnFecharContaAplicarCupom.textContent = 'Validando...';
+
+      const validator = window.couponValidator;
+      const sb = window.cafeteriaSupabase || window.supabaseClient;
+      const subtotal = currentFechamento ? currentFechamento.subtotal : 0;
+
+      let res = null;
+      if (validator && sb) {
+        res = await validator.validateCouponWithSupabase(sb, code, subtotal);
+      } else {
+        res = { valid: false, message: 'Validador de cupons não disponível.' };
+      }
+
+      btnFecharContaAplicarCupom.disabled = false;
+      btnFecharContaAplicarCupom.textContent = 'Aplicar';
+
+      if (res && res.valid) {
+        fecharContaDivDesconto.classList.remove('hidden');
+        fecharContaDescontoTipo.value = (res.tipo_desconto === 'percentual' || res.tipo_desconto === 'percent') ? 'percent' : 'valor';
+        fecharContaDescontoValor.value = res.valor_desconto;
+        fecharContaDescontoMotivo.value = `Cupom: ${res.cupom_codigo}`;
+        if (currentFechamento) {
+          currentFechamento._cupomCampanhaId = res.campanha_id;
+          currentFechamento._cupomCodigo = res.cupom_codigo;
+        }
+
+        if (fecharContaCupomMsg) {
+          fecharContaCupomMsg.textContent = `✅ ${res.message} (- R$ ${res.desconto_calculado.toFixed(2).replace('.', ',')})`;
+          fecharContaCupomMsg.style.color = '#15803d';
+          fecharContaCupomMsg.style.display = 'block';
+        }
+
+        recalcularTotaisFechamento();
+      } else {
+        if (fecharContaCupomMsg) {
+          fecharContaCupomMsg.textContent = `❌ ${res ? res.message : 'Cupom inválido.'}`;
+          fecharContaCupomMsg.style.color = '#dc2626';
+          fecharContaCupomMsg.style.display = 'block';
+        }
+      }
+    });
+  }
 
   const btnSolicitarDescontoPin = document.getElementById('btn-solicitar-desconto-pin');
   if (btnSolicitarDescontoPin) {
@@ -4699,6 +4878,41 @@
 
       if (error) throw error;
 
+      if (currentFechamento._cupomCampanhaId && window.couponValidator) {
+        window.couponValidator.registerCouponUsage(
+          window.cafeteriaSupabase || window.supabaseClient,
+          currentFechamento._cupomCampanhaId,
+          currentFechamento.totalConta
+        );
+      }
+
+      // CAF-000063: Fidelidade e Cashback Automático (Desativado por padrão, ativo apenas se configurado)
+      if (window.cafeteriaCashback) {
+        try {
+          const sbClient = window.cafeteriaSupabase || window.supabaseClient;
+          const isCashbackAtivo = await window.cafeteriaCashback.isCashbackActive(sbClient);
+          if (isCashbackAtivo) {
+            const clienteComId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || null;
+            if (clienteComId) {
+              const valorElegivel = window.cafeteriaCashback.calculateEligiblePaymentAmount(todosPagamentos);
+              if (valorElegivel > 0) {
+                const cbResult = await window.cafeteriaCashback.processOrderCashback(sbClient, {
+                  clienteId: clienteComId,
+                  valorElegivel: valorElegivel,
+                  pedidoId: currentFechamento.pedidos[0]?.id || null,
+                  mesaCodigo: currentFechamento.mesaCodigo
+                });
+                if (cbResult && cbResult.cashbackGerado > 0) {
+                  showToast(`🪙 ${cbResult.mensagem}`, 'info');
+                }
+              }
+            }
+          }
+        } catch (cbErr) {
+          console.warn('[Cashback] Erro ao processar:', cbErr);
+        }
+      }
+
       showToast(`Conta da mesa ${currentFechamento.mesaCodigo} fechada com sucesso!`, 'success');
       
       if (fecharContaImprimirCupom.checked && window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoContaMultiPartes) {
@@ -5181,6 +5395,38 @@
     document.addEventListener('click', () => {
       solicitarPermissaoNotificacao();
     }, { once: true });
+
+    // CAF-000064: Controle de tela sempre ligada (Wake Lock) no PDV Mobile
+    const btnToggleWakeLock = document.getElementById('btn-toggle-wake-lock');
+    if (btnToggleWakeLock) {
+      if (window.WakeLockUtil) {
+        window.WakeLockUtil.initWakeLockToggle(btnToggleWakeLock);
+      } else {
+        window.addEventListener('load', () => {
+          window.WakeLockUtil?.initWakeLockToggle(btnToggleWakeLock);
+        });
+      }
+    }
+
+    // CAF-000067: Ditado por voz na observação do pedido/item
+    const setupVoice = () => {
+      if (window.VoiceDictation?.bindVoiceDictation) {
+        window.VoiceDictation.bindVoiceDictation(
+          document.getElementById('btn-voice-pedido-obs'),
+          document.getElementById('pedido-obs')
+        );
+        window.VoiceDictation.bindVoiceDictation(
+          document.getElementById('btn-voice-modal-obs'),
+          document.getElementById('modal-obs-input')
+        );
+        window.VoiceDictation.bindVoiceDictation(
+          document.getElementById('btn-voice-montagem-obs'),
+          document.getElementById('modal-montagem-obs')
+        );
+      }
+    };
+    setupVoice();
+    window.addEventListener('load', setupVoice);
   }
 
   function setupRealtime() {

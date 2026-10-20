@@ -759,6 +759,113 @@
         });
       });
 
+      // --- CAF-000062: MODO DIA DE ESPETÁCULO (TEATRO UNIVATES) ---
+      const toggleEspetaculoAtivo = document.getElementById('toggle-espetaculo-ativo');
+      const inputEspetaculoNome = document.getElementById('config-espetaculo-nome');
+      const inputEspetaculoData = document.getElementById('config-espetaculo-data');
+      const inputEspetaculoHorario = document.getElementById('config-espetaculo-horario');
+      const btnSalvarEspetaculo = document.getElementById('btn-salvar-config-espetaculo');
+
+      async function carregarConfigEspetaculo() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const { data } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', ['espetaculo_ativo', 'espetaculo_nome', 'espetaculo_data', 'espetaculo_horario_intervalo']);
+          (data || []).forEach((r) => {
+            const val = typeof r.valor === 'string' ? r.valor.replace(/^"|"$/g, '') : r.valor;
+            if (r.chave === 'espetaculo_ativo' && toggleEspetaculoAtivo) {
+              toggleEspetaculoAtivo.checked = Boolean(val === true || val === 'true');
+            }
+            if (r.chave === 'espetaculo_nome' && inputEspetaculoNome) {
+              inputEspetaculoNome.value = val || '';
+            }
+            if (r.chave === 'espetaculo_data' && inputEspetaculoData) {
+              inputEspetaculoData.value = val || '';
+            }
+            if (r.chave === 'espetaculo_horario_intervalo' && inputEspetaculoHorario) {
+              inputEspetaculoHorario.value = val || '21:00';
+            }
+          });
+        } catch (e) {
+          console.warn('[Settings] Erro ao carregar config espetaculo:', e);
+        }
+      }
+
+      btnSalvarEspetaculo?.addEventListener('click', async () => {
+        btnSalvarEspetaculo.disabled = true;
+        try {
+          const payload = [
+            { chave: 'espetaculo_ativo', valor: Boolean(toggleEspetaculoAtivo?.checked), updated_at: new Date().toISOString() },
+            { chave: 'espetaculo_nome', valor: (inputEspetaculoNome?.value || '').trim(), updated_at: new Date().toISOString() },
+            { chave: 'espetaculo_data', valor: (inputEspetaculoData?.value || '').trim(), updated_at: new Date().toISOString() },
+            { chave: 'espetaculo_horario_intervalo', valor: (inputEspetaculoHorario?.value || '21:00').trim(), updated_at: new Date().toISOString() }
+          ];
+          const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Configurações do Modo Espetáculo salvas!', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar modo espetaculo:', err);
+          admin.toast('Erro', 'Não foi possível salvar o Modo Espetáculo.', 'error');
+        } finally {
+          btnSalvarEspetaculo.disabled = false;
+        }
+      });
+
+      carregarConfigEspetaculo();
+
+      // --- CAF-000063: FIDELIDADE & CASHBACK AUTOMÁTICO ---
+      const toggleCashbackAtivo = document.getElementById('toggle-cashback-ativo');
+      const inputCashbackPerc = document.getElementById('config-cashback-percentual');
+      const inputCashbackMin = document.getElementById('config-cashback-minimo');
+      const btnSalvarCashback = document.getElementById('btn-salvar-config-cashback');
+
+      async function carregarConfigCashback() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const { data } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', ['cashback_ativo', 'cashback_percentual_padrao', 'cashback_valor_minimo_pedido']);
+          (data || []).forEach((r) => {
+            const val = typeof r.valor === 'string' ? r.valor.replace(/^"|"$/g, '') : r.valor;
+            if (r.chave === 'cashback_ativo' && toggleCashbackAtivo) {
+              toggleCashbackAtivo.checked = Boolean(val === true || val === 'true');
+            }
+            if (r.chave === 'cashback_percentual_padrao' && inputCashbackPerc) {
+              inputCashbackPerc.value = val !== undefined && val !== null ? val : '5';
+            }
+            if (r.chave === 'cashback_valor_minimo_pedido' && inputCashbackMin) {
+              inputCashbackMin.value = val !== undefined && val !== null ? val : '0';
+            }
+          });
+        } catch (e) {
+          console.warn('[Settings] Erro ao carregar config cashback:', e);
+        }
+      }
+
+      btnSalvarCashback?.addEventListener('click', async () => {
+        btnSalvarCashback.disabled = true;
+        try {
+          const payload = [
+            { chave: 'cashback_ativo', valor: Boolean(toggleCashbackAtivo?.checked), updated_at: new Date().toISOString() },
+            { chave: 'cashback_percentual_padrao', valor: Number(inputCashbackPerc?.value || 5), updated_at: new Date().toISOString() },
+            { chave: 'cashback_valor_minimo_pedido', valor: Number(inputCashbackMin?.value || 0), updated_at: new Date().toISOString() }
+          ];
+          const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Configurações de Fidelidade & Cashback salvas!', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar cashback:', err);
+          admin.toast('Erro', 'Não foi possível salvar o Fidelidade & Cashback.', 'error');
+        } finally {
+          btnSalvarCashback.disabled = false;
+        }
+      });
+
+      carregarConfigCashback();
+
       // --- CAF-000040: TOTEM DE AUTOATENDIMENTO NO BALCÃO ---
       const btnGerarTotem = document.getElementById('btn-gerar-pareamento-totem');
       const boxCodigoTotem = document.getElementById('totem-codigo-gerado-box');

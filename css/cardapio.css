@@ -520,7 +520,7 @@
 
   .cat-nav__btn {
     padding: 6px 16px;
-    min-height: 38px;
+    min-height: 44px;
     font-size: var(--size-xs);
     font-weight: 600;
     color: var(--texto-suave);

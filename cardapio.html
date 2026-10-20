@@ -245,6 +245,22 @@
       </div>
     </section>
 
+    <!-- BANNER DIA DE ESPETÁCULO / INTERVALO (CAF-000062) -->
+    <div id="banner-espetaculo-intervalo" class="container hidden" style="margin-top:16px; margin-bottom:10px;">
+      <div style="background:linear-gradient(135deg, #4c1d95, #7c3aed); color:#fff; padding:14px 18px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:0 6px 16px rgba(124,58,237,0.25);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:26px;">🎭</span>
+          <div>
+            <div style="font-weight:800; font-size:15px;" id="banner-espetaculo-titulo">Hoje no Teatro Univates!</div>
+            <div style="font-size:13px; opacity:0.9;" id="banner-espetaculo-desc">Garanta seu pedido para o intervalo sem filas.</div>
+          </div>
+        </div>
+        <button type="button" id="btn-banner-reservar-intervalo" class="btn" style="background:#fff; color:#6b21a8; font-weight:800; padding:8px 16px; border-radius:8px; border:none; cursor:pointer; font-size:13px;">
+          ⚡ Reservar p/ o Intervalo
+        </button>
+      </div>
+    </div>
+
     <!-- ═══════════════════════════════════════
          CONTEÚDO DINÂMICO
     ══════════════════════════════════════════ -->
@@ -375,6 +391,10 @@
   <!-- StPageFlip (efeito flipbook) -->
   <script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 
+  <script type="module" src="js/utils/coupon-validator.js"></script>
+  <script type="module" src="js/utils/theater-mode.js"></script>
+  <script type="module" src="js/utils/cashback.js"></script>
+  <script type="module" src="js/utils/menu-analytics.js"></script>
   <script defer src="js/cardapio-dynamic.js"></script>
   <script defer src="js/cardapio-cliente-pedido.js"></script>
   <script defer src="js/cardapio.js"></script>

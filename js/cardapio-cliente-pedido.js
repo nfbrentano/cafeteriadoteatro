@@ -19,6 +19,9 @@
   let allVinculosProduto = [];
   let allProdutos = [];
   let carrinho = [];
+  let cupomAplicado = null;
+  let espetaculoHojeConfig = null;
+  let reservandoParaIntervalo = false;
   let activePedidoToken = pedidoTokenUrl || localStorage.getItem('cafeteria_pedido_cliente_token');
   let trackingInterval = null;
 
@@ -51,6 +54,14 @@
     if (!window.cafeteriaDB || !window.cafeteriaDB.mesas) {
       setTimeout(inicializarAutoatendimento, 300);
       return;
+    }
+
+    // CAF-000069: Registrar evento de abertura/sessão no cardápio
+    if (window.cafeteriaMenuAnalytics) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: isModoMesa ? 'mesa' : (isModoOnline ? 'retirada' : 'vitrine'),
+        tipoEvento: 'sessao_cardapio'
+      });
     }
 
     if (isModoMesa) {
@@ -123,6 +134,51 @@
       if (pedidoTokenUrl) {
         abrirModalTracking();
       }
+    }
+
+    await verificarEspetaculoHoje();
+  }
+
+  async function verificarEspetaculoHoje() {
+    if (!window.cafeteriaSupabase || !window.theaterMode) return;
+    try {
+      const { data } = await window.cafeteriaSupabase
+        .from('configuracoes_sistema')
+        .select('chave, valor')
+        .in('chave', ['espetaculo_ativo', 'espetaculo_nome', 'espetaculo_data', 'espetaculo_horario_intervalo']);
+
+      const cfg = {};
+      (data || []).forEach(r => {
+        const val = typeof r.valor === 'string' ? r.valor.replace(/^"|"$/g, '') : r.valor;
+        cfg[r.chave] = val;
+      });
+
+      if (window.theaterMode.isTheaterModeActive(cfg)) {
+        espetaculoHojeConfig = cfg;
+        const info = window.theaterMode.getTheaterIntervalInfo(cfg);
+        const banner = document.getElementById('banner-espetaculo-intervalo');
+        const tit = document.getElementById('banner-espetaculo-titulo');
+        const desc = document.getElementById('banner-espetaculo-desc');
+        const btn = document.getElementById('btn-banner-reservar-intervalo');
+
+        if (banner) {
+          if (tit) tit.textContent = `🎭 Hoje no Teatro: ${info.nome}!`;
+          if (desc) desc.textContent = `Garanta seu café e lanche para o intervalo das ${info.horario} sem fila.`;
+          banner.classList.remove('hidden');
+
+          btn?.addEventListener('click', () => {
+            reservandoParaIntervalo = true;
+            if (carrinho.length > 0) {
+              abrirModalCarrinho();
+            } else {
+              alert(`⚡ Modo Intervalo Ativado! Adicione itens à sua sacola e eles já serão agendados para o intervalo das ${info.horario}.`);
+              window.scrollTo({ top: 400, behavior: 'smooth' });
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao verificar modo espetaculo:', e);
     }
   }
 
@@ -322,6 +378,7 @@
               Seu Nome (para identificação) *
             </label>
             <input type="text" id="input-cliente-nome" class="form-control" value="${savedNome}" placeholder="Ex: Lucas, Mariana..." style="width:100%; padding:10px; font-size:14px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:12px;" required />
+            <div id="box-cashback-fidelidade" style="display:none; font-size:12px; color:#15803d; background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 10px; border-radius:6px; margin-bottom:12px; font-weight:600;"></div>
 
             ${isModoOnline ? `
               <label style="display:block; font-size:13px; font-weight:700; color:#1e293b; margin-bottom:4px;">
@@ -372,9 +429,26 @@
             <input type="text" id="input-cliente-obs" class="form-control" placeholder="Ex: Guardanapos extras, adoçante..." style="width:100%; padding:10px; font-size:14px; border:1px solid #cbd5e1; border-radius:8px;" />
           </div>
 
-          <div style="margin-top:16px; padding:12px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:700; color:#475569;">Total do Pedido:</span>
-            <strong id="carrinho-modal-total-lbl" style="font-size:20px; color:#1c1008;">R$ 0,00</strong>
+          <div style="margin-top:14px; padding:10px; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1;">
+            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">
+              🎟️ Tem um cupom de desconto? (Opcional)
+            </label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="input-cupom-cliente" class="form-control" placeholder="CÓDIGO" style="flex:1; text-transform:uppercase; padding:6px 10px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px;" />
+              <button type="button" id="btn-aplicar-cupom-cliente" class="btn btn--secondary" style="padding:6px 14px; font-size:13px; font-weight:700; cursor:pointer;">Aplicar</button>
+            </div>
+            <div id="cupom-feedback-cliente" style="font-size:12px; margin-top:5px; font-weight:600; display:none;"></div>
+          </div>
+
+          <div style="margin-top:14px; padding:12px; background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+            <div id="carrinho-desconto-row" style="display:none; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:14px; color:#15803d; font-weight:600;">
+              <span id="carrinho-desconto-lbl">Desconto Cupom:</span>
+              <strong id="carrinho-modal-desconto-lbl">- R$ 0,00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; color:#475569;">Total do Pedido:</span>
+              <strong id="carrinho-modal-total-lbl" style="font-size:20px; color:#1c1008;">R$ 0,00</strong>
+            </div>
           </div>
         </div>
         <div class="modal-cliente-footer">
@@ -387,6 +461,47 @@
     document.body.appendChild(modalCarrinho);
     document.getElementById('modal-carrinho-close')?.addEventListener('click', fecharModalCarrinho);
     document.getElementById('btn-enviar-pedido-cliente')?.addEventListener('click', enviarPedidoFinal);
+
+    document.getElementById('btn-aplicar-cupom-cliente')?.addEventListener('click', async () => {
+      const code = (document.getElementById('input-cupom-cliente')?.value || '').trim();
+      const fb = document.getElementById('cupom-feedback-cliente');
+      if (!code) {
+        if (fb) {
+          fb.textContent = 'Informe o código do cupom.';
+          fb.style.color = '#dc2626';
+          fb.style.display = 'block';
+        }
+        return;
+      }
+
+      const subtotal = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
+      const validator = window.couponValidator;
+      const sb = window.cafeteriaSupabase || window.supabaseClient;
+
+      let res = null;
+      if (validator && sb) {
+        res = await validator.validateCouponWithSupabase(sb, code, subtotal);
+      } else {
+        res = { valid: false, message: 'Serviço de cupons temporariamente indisponível.' };
+      }
+
+      if (res && res.valid) {
+        cupomAplicado = res;
+        if (fb) {
+          fb.textContent = `🎉 ${res.message} (- R$ ${res.desconto_calculado.toFixed(2).replace('.', ',')})`;
+          fb.style.color = '#15803d';
+          fb.style.display = 'block';
+        }
+      } else {
+        cupomAplicado = null;
+        if (fb) {
+          fb.textContent = `❌ ${res ? res.message : 'Cupom inválido.'}`;
+          fb.style.color = '#dc2626';
+          fb.style.display = 'block';
+        }
+      }
+      atualizarTotaisCarrinhoCliente();
+    });
 
     if (isModoOnline) {
       document.querySelectorAll('input[name="modo_retirada_radio"]').forEach((r) => {
@@ -635,6 +750,17 @@
       observacoes: ''
     };
 
+    // CAF-000069: Registrar visualização de detalhes do produto
+    if (window.cafeteriaMenuAnalytics && produto) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: isModoMesa ? 'mesa' : (isModoOnline ? 'retirada' : 'vitrine'),
+        tipoEvento: 'view_item',
+        produtoId: produto.id,
+        produtoNome: produto.nome,
+        valor: produto.preco
+      });
+    }
+
     const modal = document.getElementById('modal-customizar-item');
     const titulo = document.getElementById('modal-cust-titulo');
     const body = document.getElementById('modal-cust-body');
@@ -819,6 +945,17 @@
       observacoes: customizacaoState.observacoes
     });
 
+    // CAF-000069: Registrar adição à sacola / carrinho
+    if (window.cafeteriaMenuAnalytics && itemSendoCustomizado) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: isModoMesa ? 'mesa' : (isModoOnline ? 'retirada' : 'vitrine'),
+        tipoEvento: 'add_to_cart',
+        produtoId: itemSendoCustomizado.id,
+        produtoNome: itemSendoCustomizado.nome,
+        valor: precoUnitario * customizacaoState.quantidade
+      });
+    }
+
     salvarCarrinhoCache();
     fecharModalCustomizar();
   }
@@ -846,21 +983,88 @@
     }
   }
 
+  function atualizarTotaisCarrinhoCliente() {
+    const totalLbl = document.getElementById('carrinho-modal-total-lbl');
+    const descRow = document.getElementById('carrinho-desconto-row');
+    const descLbl = document.getElementById('carrinho-modal-desconto-lbl');
+    const descNomeLbl = document.getElementById('carrinho-desconto-lbl');
+    const fb = document.getElementById('cupom-feedback-cliente');
+    if (!totalLbl) return;
+
+    const subtotal = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
+
+    if (cupomAplicado) {
+      const check = window.couponValidator ? window.couponValidator.validateCouponLocally(cupomAplicado, subtotal) : { valid: false };
+      if (!check.valid) {
+        cupomAplicado = null;
+        if (fb) {
+          fb.textContent = `⚠️ ${check.message}`;
+          fb.style.color = '#d97706';
+          fb.style.display = 'block';
+        }
+      } else {
+        cupomAplicado.desconto_calculado = check.desconto_calculado;
+      }
+    }
+
+    if (cupomAplicado && cupomAplicado.desconto_calculado > 0) {
+      if (descRow) descRow.style.display = 'flex';
+      if (descNomeLbl) descNomeLbl.textContent = `Desconto (${cupomAplicado.cupom_codigo}):`;
+      if (descLbl) descLbl.textContent = `- R$ ${cupomAplicado.desconto_calculado.toFixed(2).replace('.', ',')}`;
+      const totalComDesconto = Math.max(0, subtotal - cupomAplicado.desconto_calculado);
+      totalLbl.textContent = `R$ ${totalComDesconto.toFixed(2).replace('.', ',')}`;
+    } else {
+      if (descRow) descRow.style.display = 'none';
+      totalLbl.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+    }
+  }
+
   function abrirModalCarrinho() {
     const modal = document.getElementById('modal-carrinho-cliente');
     const lista = document.getElementById('carrinho-itens-lista');
     const totalLbl = document.getElementById('carrinho-modal-total-lbl');
     if (!modal || !lista) return;
 
+    // CAF-000069: Registrar início de checkout / abertura do carrinho
+    if (window.cafeteriaMenuAnalytics && carrinho.length > 0) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: isModoMesa ? 'mesa' : (isModoOnline ? 'retirada' : 'vitrine'),
+        tipoEvento: 'begin_checkout'
+      });
+    }
+
     if (carrinho.length === 0) {
       lista.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">Seu pedido está vazio.</p>';
       totalLbl.textContent = 'R$ 0,00';
+      const descRow = document.getElementById('carrinho-desconto-row');
+      if (descRow) descRow.style.display = 'none';
+      cupomAplicado = null;
       modal.classList.remove('hidden');
       return;
     }
 
-    const totalValor = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
-    totalLbl.textContent = `R$ ${totalValor.toFixed(2).replace('.', ',')}`;
+    atualizarTotaisCarrinhoCliente();
+
+    if (window.cafeteriaCashback) {
+      const sb = window.cafeteriaSupabase || window.supabaseClient;
+      window.cafeteriaCashback.isCashbackActive(sb).then(ativo => {
+        const box = document.getElementById('box-cashback-fidelidade');
+        if (box) {
+          if (ativo) {
+            window.cafeteriaCashback.getCashbackPrompt(sb).then(prompt => {
+              if (prompt) {
+                box.textContent = prompt;
+                box.style.display = 'block';
+              } else {
+                box.style.display = 'none';
+              }
+            });
+          } else {
+            box.style.display = 'none';
+          }
+        }
+      }).catch(() => {});
+    }
 
     lista.innerHTML = carrinho.map((it, idx) => {
       const nomesAdic = (it.adicionais || []).map(id => {
@@ -966,6 +1170,7 @@
       btnEnviar.textContent = 'Enviando Pedido...';
 
       try {
+        const subtotalOnline = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
         const res = await window.cafeteriaDB.clientePedido.criarOnline({
           cliente_nome: clienteNome,
           cliente_telefone: telVal,
@@ -973,10 +1178,34 @@
           modo_retirada: modoRetirada,
           retirada_em: retiradaEmIso,
           observacoes: (obsInput?.value || '').trim(),
+          is_intervalo: Boolean(reservandoParaIntervalo),
+          espetaculo_nome: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_nome : null,
+          horario_retirada: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_horario_intervalo : null,
+          cupom_codigo: cupomAplicado?.cupom_codigo || null,
+          campanha_id: cupomAplicado?.campanha_id || null,
+          desconto_cupom: cupomAplicado?.desconto_calculado || 0,
           itens: itensPayload
         }, idempotencyKey);
 
         if (res && res.sucesso) {
+          if (window.cafeteriaMenuAnalytics) {
+            window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+              canal: 'retirada',
+              tipoEvento: 'purchase',
+              valor: subtotalOnline
+            });
+          }
+
+          if (cupomAplicado && cupomAplicado.campanha_id && window.couponValidator) {
+            const finalVal = Math.max(0, subtotalOnline - (cupomAplicado.desconto_calculado || 0));
+            window.couponValidator.registerCouponUsage(
+              window.cafeteriaSupabase || window.supabaseClient,
+              cupomAplicado.campanha_id,
+              finalVal
+            );
+          }
+          cupomAplicado = null;
+          reservandoParaIntervalo = false;
           activePedidoToken = res.pedido_token;
           localStorage.setItem('cafeteria_pedido_cliente_token', activePedidoToken);
           carrinho = [];
@@ -1002,13 +1231,38 @@
     btnEnviar.textContent = 'Enviando Pedido...';
 
     try {
+      const subtotalMesa = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
       const res = await window.cafeteriaDB.clientePedido.criar(qrTokenParam, {
         cliente_nome: clienteNome,
         observacoes: (obsInput?.value || '').trim(),
+        is_intervalo: Boolean(reservandoParaIntervalo),
+        espetaculo_nome: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_nome : null,
+        horario_retirada: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_horario_intervalo : null,
+        cupom_codigo: cupomAplicado?.cupom_codigo || null,
+        campanha_id: cupomAplicado?.campanha_id || null,
+        desconto_cupom: cupomAplicado?.desconto_calculado || 0,
         itens: itensPayload
       }, idempotencyKey);
 
       if (res && res.sucesso) {
+        if (window.cafeteriaMenuAnalytics) {
+          window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+            canal: 'mesa',
+            tipoEvento: 'purchase',
+            valor: subtotalMesa
+          });
+        }
+
+        if (cupomAplicado && cupomAplicado.campanha_id && window.couponValidator) {
+          const finalVal = Math.max(0, subtotalMesa - (cupomAplicado.desconto_calculado || 0));
+          window.couponValidator.registerCouponUsage(
+            window.cafeteriaSupabase || window.supabaseClient,
+            cupomAplicado.campanha_id,
+            finalVal
+          );
+        }
+        cupomAplicado = null;
+        reservandoParaIntervalo = false;
         activePedidoToken = res.pedido_token;
         localStorage.setItem('cafeteria_pedido_cliente_token', activePedidoToken);
         carrinho = [];

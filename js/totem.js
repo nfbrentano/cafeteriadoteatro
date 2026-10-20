@@ -29,6 +29,7 @@
   let paraViagem = false;
   let formaPagamentoEscolhida = 'pix';
   let ultimoPedidoGerado = null;
+  let totemCupomAplicado = null;
 
   let idleTimer = null;
   let clearCartTimer = null;
@@ -79,6 +80,9 @@
   const inputNome = document.getElementById('totem-input-nome');
   const checkoutItemsList = document.getElementById('totem-checkout-items-list');
   const checkoutTotalLbl = document.getElementById('totem-checkout-total-lbl');
+  const totemInputCupom = document.getElementById('totem-input-cupom');
+  const btnTotemAplicarCupom = document.getElementById('btn-totem-aplicar-cupom');
+  const totemCupomFeedback = document.getElementById('totem-cupom-feedback');
   const btnEnviarPedido = document.getElementById('btn-totem-enviar-pedido');
 
   const successScreen = document.getElementById('totem-success-screen');
@@ -409,6 +413,16 @@
   }
 
   function abrirModalPersonalizarItem(prod) {
+    if (window.cafeteriaMenuAnalytics && prod) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: 'totem',
+        tipoEvento: 'view_item',
+        produtoId: prod.id,
+        produtoNome: prod.nome,
+        valor: prod.preco
+      });
+    }
+
     const adicsPermitidos = obterAdicionaisPermitidos(prod);
     const isMeioAMeio = prod.tipo_montagem === 'meio_a_meio';
 
@@ -545,6 +559,16 @@
       observacoes: itemEmEdicao.observacoes,
       precoUnitario: precoBase + precoAdics
     });
+
+    if (window.cafeteriaMenuAnalytics && prod) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: 'totem',
+        tipoEvento: 'add_to_cart',
+        produtoId: prod.id,
+        produtoNome: prod.nome,
+        valor: (precoBase + precoAdics) * itemEmEdicao.quantidade
+      });
+    }
 
     modalItem.classList.add('hidden');
     itemEmEdicao = null;
@@ -683,6 +707,13 @@
 
   // ── 9. CHECKOUT E ENVIO DO PEDIDO ──
   function abrirModalCheckout() {
+    if (window.cafeteriaMenuAnalytics && carrinho.length > 0) {
+      window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+        canal: 'totem',
+        tipoEvento: 'begin_checkout'
+      });
+    }
+
     renderizarListaCheckout();
     modalCheckout.classList.remove('hidden');
     setTimeout(() => inputNome?.focus(), 150);
@@ -726,8 +757,70 @@
       });
     });
 
-    if (checkoutTotalLbl) checkoutTotalLbl.textContent = fmtMoeda(calcularTotalCarrinho());
+    const subtotal = calcularTotalCarrinho();
+    if (totemCupomAplicado) {
+      const check = window.couponValidator ? window.couponValidator.validateCouponLocally(totemCupomAplicado, subtotal) : { valid: false };
+      if (!check.valid) {
+        totemCupomAplicado = null;
+        if (totemCupomFeedback) {
+          totemCupomFeedback.textContent = `⚠️ ${check.message}`;
+          totemCupomFeedback.style.color = '#B45309';
+          totemCupomFeedback.style.display = 'block';
+        }
+      } else {
+        totemCupomAplicado.desconto_calculado = check.desconto_calculado;
+      }
+    }
+
+    if (checkoutTotalLbl) {
+      if (totemCupomAplicado && totemCupomAplicado.desconto_calculado > 0) {
+        const finalVal = Math.max(0, subtotal - totemCupomAplicado.desconto_calculado);
+        checkoutTotalLbl.innerHTML = `<span style="font-size:0.95rem; text-decoration:line-through; color:#94A3B8; margin-right:6px;">${fmtMoeda(subtotal)}</span> ${fmtMoeda(finalVal)} <span style="font-size:0.85rem; color:#15803D; font-weight:700;">(-${fmtMoeda(totemCupomAplicado.desconto_calculado)})</span>`;
+      } else {
+        checkoutTotalLbl.textContent = fmtMoeda(subtotal);
+      }
+    }
   }
+
+  btnTotemAplicarCupom?.addEventListener('click', async () => {
+    const code = (totemInputCupom?.value || '').trim();
+    if (!code) {
+      if (totemCupomFeedback) {
+        totemCupomFeedback.textContent = 'Informe o código do cupom.';
+        totemCupomFeedback.style.color = '#DC2626';
+        totemCupomFeedback.style.display = 'block';
+      }
+      return;
+    }
+
+    const subtotal = calcularTotalCarrinho();
+    const validator = window.couponValidator;
+    const sb = window.cafeteriaSupabase;
+
+    let res = null;
+    if (validator && sb) {
+      res = await validator.validateCouponWithSupabase(sb, code, subtotal);
+    } else {
+      res = { valid: false, message: 'Validador de cupons não disponível.' };
+    }
+
+    if (res && res.valid) {
+      totemCupomAplicado = res;
+      if (totemCupomFeedback) {
+        totemCupomFeedback.textContent = `🎉 ${res.message} (- ${fmtMoeda(res.desconto_calculado)})`;
+        totemCupomFeedback.style.color = '#15803D';
+        totemCupomFeedback.style.display = 'block';
+      }
+    } else {
+      totemCupomAplicado = null;
+      if (totemCupomFeedback) {
+        totemCupomFeedback.textContent = `❌ ${res ? res.message : 'Cupom inválido.'}`;
+        totemCupomFeedback.style.color = '#DC2626';
+        totemCupomFeedback.style.display = 'block';
+      }
+    }
+    renderizarListaCheckout();
+  });
 
   btnComerAqui?.addEventListener('click', () => {
     paraViagem = false;
@@ -771,10 +864,14 @@
     btnEnviarPedido.innerHTML = '⏳ Gerando sua senha...';
 
     try {
+      const subtotalPedido = calcularTotalCarrinho();
       const payload = {
         cliente_nome: nome,
         para_viagem: paraViagem,
         forma_pagamento: formaPagamentoEscolhida,
+        cupom_codigo: totemCupomAplicado?.cupom_codigo || null,
+        campanha_id: totemCupomAplicado?.campanha_id || null,
+        desconto_cupom: totemCupomAplicado?.desconto_calculado || 0,
         itens: carrinho.map((item) => ({
           produto_id: item.produto.id,
           quantidade: item.quantidade,
@@ -796,6 +893,14 @@
 
       if (error) throw error;
 
+      if (totemCupomAplicado && totemCupomAplicado.campanha_id && window.couponValidator) {
+        const finalVal = Math.max(0, subtotalPedido - (totemCupomAplicado.desconto_calculado || 0));
+        window.couponValidator.registerCouponUsage(window.cafeteriaSupabase, totemCupomAplicado.campanha_id, finalVal);
+      }
+      totemCupomAplicado = null;
+      if (totemInputCupom) totemInputCupom.value = '';
+      if (totemCupomFeedback) totemCupomFeedback.style.display = 'none';
+
       ultimoPedidoGerado = {
         numero_pedido: data.numero_pedido || data.pedido_id,
         total: Number(data.total || calcularTotalCarrinho()),
@@ -806,6 +911,15 @@
       };
 
       modalCheckout.classList.add('hidden');
+
+      if (window.cafeteriaMenuAnalytics) {
+        window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+          canal: 'totem',
+          tipoEvento: 'purchase',
+          valor: valorTotalComDesconto
+        });
+      }
+
       await exibirTelaSenhaFinal(ultimoPedidoGerado);
       limparCarrinhoSilencioso();
     } catch (err) {
@@ -925,6 +1039,13 @@
     atualizarStatusRede();
     const ok = await validarSessao();
     if (ok) {
+      if (window.cafeteriaMenuAnalytics) {
+        window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
+          canal: 'totem',
+          tipoEvento: 'sessao_cardapio'
+        });
+      }
+
       await carregarDadosCardapio();
       registrarToqueAtividade();
     }
@@ -934,6 +1055,15 @@
         validarSessao();
       }
     }, 60000);
+
+    // CAF-000064: Manter tela do totem sempre ligada
+    if (window.WakeLockUtil) {
+      window.WakeLockUtil.setupAutoWakeLock({ defaultActive: true });
+    } else {
+      window.addEventListener('load', () => {
+        window.WakeLockUtil?.setupAutoWakeLock({ defaultActive: true });
+      });
+    }
   }
 
   init();

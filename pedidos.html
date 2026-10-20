@@ -58,6 +58,9 @@
           <span id="sound-toggle-icon">🔔</span>
           <span class="sound-toggle-label">Som</span>
         </button>
+        <button id="btn-toggle-wake-lock" class="btn-sound-toggle" type="button" title="Tela sempre ligada" aria-label="Tela sempre ligada">
+          🔆 <span class="wake-lock-label">Tela acesa</span>
+        </button>
         <button id="btn-offline-queue" class="btn-ghost-small hidden" style="background-color: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">
           0 Pendentes
         </button>
@@ -220,7 +223,16 @@
           </div>
 
           <div class="form-group">
-            <label for="pedido-obs">Observações gerais:</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;">
+              <label for="pedido-obs" style="margin:0;">Observações gerais:</label>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:#6b21a8; background:#f5f3ff; border:1px solid #ddd6fe; padding:2px 8px; border-radius:12px; cursor:pointer;" id="lbl-check-intervalo" title="Marcar pedido para retirada no intervalo do espetáculo">
+                  <input type="checkbox" id="check-pedido-intervalo" style="width:13px; height:13px;" />
+                  <span>🎭 Intervalo</span>
+                </label>
+                <button type="button" id="btn-voice-pedido-obs" class="btn-voice-dictation" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:12px; padding:3px 8px; font-size:12px; cursor:pointer;" title="Ditar observação por voz (pt-BR)">🎤 Ditar</button>
+              </div>
+            </div>
             <textarea id="pedido-obs" placeholder="Ex: Entregar com rapidez, cliente com pressa..."></textarea>
           </div>
 
@@ -359,6 +371,10 @@
             <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Para viagem '">Para viagem</button>
             <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Sem cebola '">Sem cebola</button>
           </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label style="font-size:12px; font-weight:bold; color:var(--marrom-escuro);">Observação específica:</label>
+            <button type="button" id="btn-voice-montagem-obs" class="btn-voice-dictation" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:12px; padding:3px 8px; font-size:12px; cursor:pointer;" title="Ditar observação por voz (pt-BR)">🎤 Ditar</button>
+          </div>
           <textarea id="modal-montagem-obs" rows="2" placeholder="Ex: sem açúcar, copo grande..."></textarea>
         </div>
       </div>
@@ -378,7 +394,10 @@
         <button id="modal-obs-close" class="btn-close">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-subtitle">Ex: sem açúcar, leite de aveia, canela extra, bem quente...</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <p class="modal-subtitle" style="margin:0;">Ex: sem açúcar, leite de aveia, canela extra, bem quente...</p>
+          <button type="button" id="btn-voice-modal-obs" class="btn-voice-dictation" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:12px; padding:3px 8px; font-size:12px; cursor:pointer;" title="Ditar observação por voz (pt-BR)">🎤 Ditar</button>
+        </div>
         <textarea id="modal-obs-input" rows="3" placeholder="Digite a preferência do cliente..."></textarea>
       </div>
       <div class="modal-footer">
@@ -398,9 +417,13 @@
       <div class="modal-body" id="modal-mesa-body">
         <!-- Detalhes preenchidos via JS -->
       </div>
-      <div class="modal-footer" style="justify-content: space-between;">
-        <button id="modal-mesa-print" class="btn-secondary">🖨 Imprimir Prévia da Conta</button>
-        <div style="display:flex; gap: 8px;">
+      <div class="modal-footer" style="justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div style="display:flex; gap: 6px; flex-wrap: wrap;">
+          <button id="modal-mesa-print" class="btn-secondary">🖨 Imprimir Prévia</button>
+          <button type="button" id="btn-mesa-whatsapp" class="btn-secondary" style="background:#25D366; color:white; border-color:#25D366;">📲 WhatsApp</button>
+          <button type="button" id="btn-mesa-share" class="btn-ghost" title="Compartilhar ou copiar resumo">📤 Compartilhar</button>
+        </div>
+        <div style="display:flex; gap: 8px; flex-wrap: wrap;">
           <button id="btn-mesa-transferir" class="btn-ghost" style="color: var(--primaria); border-color: var(--primaria);">↔ Transferir Mesa</button>
           <button id="btn-mesa-juntar" class="btn-ghost" style="color: var(--primaria); border-color: var(--primaria);">⊕ Juntar com…</button>
           <button id="btn-mesa-repetir-rodada" class="btn-ghost" style="color: var(--caramelo); border-color: var(--caramelo);">🔁 Repetir Rodada</button>
@@ -575,6 +598,15 @@
               <strong id="fechar-conta-taxa-val-lbl">R$ 0,00</strong>
             </div>
 
+            <div id="fechar-conta-div-cupom" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--cinza-borda);">
+              <label style="font-size: 13px; font-weight: bold; color: var(--marrom-escuro); display: block; margin-bottom: 6px;">🎟️ Cupom Promocional</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="fechar-conta-cupom-input" class="input-padrao" style="flex: 1; text-transform: uppercase;" placeholder="Ex: VOLTEI10">
+                <button type="button" id="btn-fechar-conta-aplicar-cupom" class="btn btn--secondary" style="padding: 6px 14px; font-size: 13px; font-weight: bold; white-space: nowrap;">Aplicar</button>
+              </div>
+              <div id="fechar-conta-cupom-msg" style="font-size: 12px; margin-top: 5px; font-weight: 600; display: none;"></div>
+            </div>
+
             <div id="fechar-conta-btn-pedir-desconto-container" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--cinza-borda);">
               <button type="button" id="btn-solicitar-desconto-pin" class="btn-ghost" style="width: 100%; border: 1px dashed #d97706; color: #b45309; font-size: 12px; padding: 6px; border-radius: 6px;">
                 🔒 Solicitar Desconto c/ PIN de Supervisor
@@ -685,6 +717,8 @@
             <input type="checkbox" id="fechar-conta-imprimir-cupom" checked>
             <span>Imprimir Cupom</span>
           </label>
+          <button type="button" id="btn-fechar-conta-whatsapp" class="btn-secondary" style="background:#25D366; color:white; border-color:#25D366; display:inline-flex; align-items:center; gap:4px;" title="Enviar comprovante pelo WhatsApp">📲 WhatsApp</button>
+          <button type="button" id="btn-fechar-conta-share" class="btn-ghost" title="Compartilhar ou copiar comprovante">📤 Compartilhar</button>
           <button type="button" id="modal-fechar-conta-cancelar" class="btn-ghost">Cancelar</button>
           <button type="button" id="btn-fechar-conta-next-1" class="btn-primary btn-fechar-step-next">Ajustes ➔</button>
           <button type="button" id="btn-fechar-conta-next-2" class="btn-primary btn-fechar-step-next hidden">Pagamento ➔</button>
@@ -845,6 +879,14 @@
   <script src="js/libs/qrcode.min.js"></script>
   <script src="js/pix-brcode.js"></script>
   <script src="js/pedido-print.js"></script>
+  <script type="module" src="js/utils/wake-lock.js"></script>
+  <script type="module" src="js/utils/smart-search.js"></script>
+  <script type="module" src="js/utils/receipt-formatter.js"></script>
+  <script type="module" src="js/utils/voice-dictation.js"></script>
+  <script type="module" src="js/utils/swipe-action.js"></script>
+  <script type="module" src="js/utils/coupon-validator.js"></script>
+  <script type="module" src="js/utils/theater-mode.js"></script>
+  <script type="module" src="js/utils/cashback.js"></script>
   <script src="js/pedidos.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

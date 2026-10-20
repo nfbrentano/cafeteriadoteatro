@@ -83,14 +83,21 @@
     const search  = (el.search.value || '').toLowerCase();
 
     const produtos = admin.appData.produtos || [];
-    const filtered = produtos.filter(p => {
+    let filtered = produtos.filter(p => {
       const pCatId = p.categoria_id || p.categoriaId; // Compatibilidade
       if (catF    && pCatId !== catF) return false;
       if (statusF === 'ativo' && !p.ativo)  return false;
       if (statusF === 'inativo' && p.ativo) return false;
-      if (search  && !p.nome.toLowerCase().includes(search)) return false;
       return true;
     });
+
+    if (search) {
+      if (window.SmartSearch?.filterProducts) {
+        filtered = window.SmartSearch.filterProducts(filtered, search);
+      } else {
+        filtered = filtered.filter(p => p.nome.toLowerCase().includes(search));
+      }
+    }
 
     if (filtered.length === 0) {
       el.tableBody.innerHTML = `<tr><td colspan="7"><div class="empty-state">🍽️<br>Nenhum produto encontrado</div></td></tr>`;

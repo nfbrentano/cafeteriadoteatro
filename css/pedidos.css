@@ -3199,3 +3199,34 @@ body {
   background: #d97706;
   color: #fff;
 }
+
+/* CAF-000067: Ditado por voz na observação */
+.btn-voice-dictation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-voice-dictation.is-listening {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  font-weight: bold;
+  animation: pulse-recording 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-recording {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 1; }
+}

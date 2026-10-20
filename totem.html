@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#3B2314" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -228,6 +228,24 @@
           </div>
         </div>
 
+        <div style="margin-bottom:20px; background:var(--totem-surface-alt); border-radius:16px; padding:14px; border:2px solid var(--totem-border);">
+          <label for="totem-input-cupom" style="display:block; font-weight:800; margin-bottom:8px; font-size:1.05rem;">
+            🎟️ Possui cupom de desconto? (Opcional)
+          </label>
+          <div style="display:flex; gap:10px;">
+            <input
+              type="text"
+              id="totem-input-cupom"
+              placeholder="Ex: VOLTEI10"
+              style="flex:1; height:56px; border-radius:12px; border:2px solid var(--totem-border); padding:0 14px; font-size:1.15rem; font-weight:700; text-transform:uppercase;"
+            />
+            <button type="button" id="btn-totem-aplicar-cupom" class="totem-btn totem-btn--ghost" style="height:56px; padding:0 20px; font-weight:800; font-size:1.1rem;">
+              Aplicar
+            </button>
+          </div>
+          <div id="totem-cupom-feedback" style="font-size:1rem; margin-top:8px; font-weight:700; display:none;"></div>
+        </div>
+
         <div style="background:var(--totem-surface-alt); border-radius:16px; padding:16px; border:2px solid var(--totem-border);">
           <div style="font-weight:800; margin-bottom:10px;">Itens do seu pedido:</div>
           <div id="totem-checkout-items-list" style="display:flex; flex-direction:column; gap:10px; max-height:190px; overflow-y:auto;"></div>
@@ -291,6 +309,11 @@
   <script src="js/db.js"></script>
   <script src="js/vendor/qrcode.js"></script>
   <script src="js/pix-brcode.js"></script>
+  <script type="module" src="js/utils/wake-lock.js"></script>
+  <script type="module" src="js/utils/coupon-validator.js"></script>
+  <script type="module" src="js/utils/theater-mode.js"></script>
+  <script type="module" src="js/utils/cashback.js"></script>
+  <script type="module" src="js/utils/menu-analytics.js"></script>
   <script src="js/totem.js"></script>
 </body>
 </html>
