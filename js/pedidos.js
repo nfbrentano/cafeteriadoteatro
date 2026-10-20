@@ -1386,8 +1386,8 @@
         .order('ordem');
 
       if (!error && produtosData) {
-        allProducts = produtosData;
-        localStorage.setItem('cafeteria_cache_pdv_produtos', JSON.stringify(produtosData));
+        allProducts = produtosData.filter(p => !p.apenas_encomenda);
+        localStorage.setItem('cafeteria_cache_pdv_produtos', JSON.stringify(allProducts));
       } else {
         throw error || new Error('Falha ao carregar produtos');
       }
@@ -1395,7 +1395,7 @@
       console.warn('[PDV Cache] Carregando produtos do cache local:', e);
       const cached = localStorage.getItem('cafeteria_cache_pdv_produtos');
       if (cached) {
-        try { allProducts = JSON.parse(cached); } catch {}
+        try { allProducts = JSON.parse(cached).filter(p => !p.apenas_encomenda); } catch {}
       }
     }
 
@@ -2146,6 +2146,8 @@
       document.body.classList.remove('has-cart-bar');
       cartItemsContainer.innerHTML = '<div class="cart-empty">Nenhum item adicionado.</div>';
       cartTotalValue.textContent = 'R$ 0,00';
+      ultimoTotalCarrinhoCalculado = 0;
+      document.getElementById('pix-cart-preview')?.classList.add('hidden');
       if (mobileCartBar) mobileCartBar.classList.add('hidden');
       closeCartDrawer();
       checkFormValidity();
@@ -2280,6 +2282,8 @@
     });
 
     cartTotalValue.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    ultimoTotalCarrinhoCalculado = total;
+    atualizarPreviewPixCarrinho(total);
 
     // Atualizar Barra Mobile Flutuante
     const totalItens = cart.reduce((acc, item) => acc + item.quantidade, 0);
@@ -2290,6 +2294,77 @@
     checkFormValidity();
     salvarRascunhoCarrinho();
     syncProductCardsWithCart();
+  }
+
+  let ultimoTotalCarrinhoCalculado = 0;
+  let ultimoPayloadPixCarrinho = '';
+
+  async function atualizarPreviewPixCarrinho(totalForcado) {
+    const box = document.getElementById('pix-cart-preview');
+    if (!box) return;
+    const total = totalForcado !== undefined ? totalForcado : ultimoTotalCarrinhoCalculado;
+
+    if (!pedidoPagamento || pedidoPagamento.value !== 'pix' || cart.length === 0 || total <= 0) {
+      box.classList.add('hidden');
+      ultimoPayloadPixCarrinho = '';
+      return;
+    }
+
+    box.classList.remove('hidden');
+    const lblVal = document.getElementById('pix-cart-valor-lbl');
+    const qrContainer = document.getElementById('pix-cart-qr-svg');
+    const avisoSemChave = document.getElementById('pix-cart-aviso-sem-chave');
+    if (lblVal) lblVal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+    if (!window.cafeteriaPix) return;
+    const cfg = await window.cafeteriaPix.obterConfigPix();
+    const res = window.cafeteriaPix.gerarPayloadPix({
+      chave: cfg.chave,
+      recebedor: cfg.recebedor,
+      cidade: cfg.cidade,
+      valor: total,
+      txid: 'CAFBALCAO'
+    });
+
+    if (!res.ok) {
+      ultimoPayloadPixCarrinho = '';
+      if (qrContainer) qrContainer.style.display = 'none';
+      if (avisoSemChave) avisoSemChave.classList.remove('hidden');
+    } else {
+      ultimoPayloadPixCarrinho = res.payload;
+      if (avisoSemChave) avisoSemChave.classList.add('hidden');
+      if (qrContainer) {
+        qrContainer.style.display = 'flex';
+        qrContainer.innerHTML = window.cafeteriaPix.gerarQrSvg(res.payload, 3, 1);
+      }
+    }
+  }
+
+  document.getElementById('btn-pix-cart-copiar')?.addEventListener('click', function () {
+    if (!ultimoPayloadPixCarrinho) {
+      showToast('Configure a chave Pix no Admin primeiro.', 'warn');
+      return;
+    }
+    window.cafeteriaPix?.copiarCodigoPix(ultimoPayloadPixCarrinho, this);
+    showToast('Código Pix Copia e Cola copiado!', 'success');
+  });
+
+  document.getElementById('btn-pix-cart-fullscreen')?.addEventListener('click', () => {
+    window.cafeteriaPix?.abrirModalClienteTelaCheia({
+      valor: ultimoTotalCarrinhoCalculado,
+      txid: 'CAFBALCAO',
+      subtitulo: mesaSelect?.value ? `Mesa ${mesaSelect.value}` : 'Pedido Balcão / Para Viagem'
+    });
+  });
+
+  if (pedidoPagamento) {
+    pedidoPagamento.addEventListener('change', () => {
+      if (pedidoPagamento.value === 'pix') {
+        atualizarPreviewPixCarrinho();
+      } else {
+        document.getElementById('pix-cart-preview')?.classList.add('hidden');
+      }
+    });
   }
 
   let isRenderingProducts = false;
@@ -2832,7 +2907,7 @@
             pedido_item_adicionais (*)
           )
         `)
-        .or(`status.in.(pendente,em_preparo),status_pagamento.eq.pendente,status_pagamento.is.null,and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
+        .or(`status.in.(pendente,em_preparo,aguardando_pagamento),status_pagamento.eq.pendente,status_pagamento.is.null,and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -2874,7 +2949,7 @@
   }
 
   // -----------------------------------------------------
-  // CAF-000037: FUNÇÕES DE TRIAGEM QR E CHAMADOS DE MESA
+  // CAF-000037 & CAF-000038: FUNÇÕES DE TRIAGEM QR / ONLINE E CHAMADOS DE MESA
   // -----------------------------------------------------
   function tocarAlertaNovoPedidoCliente() {
     if (!isSomAtivo()) return;
@@ -2963,7 +3038,7 @@
         <div style="text-align: center; padding: 40px 20px; color: #64748b;">
           <div style="font-size: 2.5rem; margin-bottom: 8px;">✨</div>
           <strong style="color: #334155;">Nenhum pedido de cliente aguardando aprovação</strong>
-          <p style="margin-top: 4px; font-size: 0.9rem;">Novos pedidos enviados pelo QR Code aparecerão aqui em tempo real.</p>
+          <p style="margin-top: 4px; font-size: 0.9rem;">Novos pedidos enviados pelo QR Code da mesa ou pelo Link Online aparecerão aqui em tempo real.</p>
         </div>
       `;
       return;
@@ -2985,29 +3060,37 @@
       }).join('');
 
       const hora = new Date(pedido.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const isOnline = pedido.origem === 'online' || pedido.origem === 'online_retirada' || pedido.mesa_codigo === 'RETIRADA';
+      let retiradaBadge = '';
+      if (pedido.retirada_em) {
+        const dtRet = new Date(pedido.retirada_em);
+        const retStr = dtRet.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' às ' + dtRet.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        retiradaBadge = `<span style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:700; margin-left:6px;">🕒 Retirada: ${retStr}</span>`;
+      }
 
       return `
-        <div class="card-pedido-triagem" style="border: 1px solid #c7d2fe; border-left: 5px solid #4f46e5; border-radius: 8px; padding: 14px; background: #faf5ff;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div class="card-pedido-triagem" style="border: 1px solid ${isOnline ? '#86efac' : '#c7d2fe'}; border-left: 5px solid ${isOnline ? '#059669' : '#4f46e5'}; border-radius: 8px; padding: 14px; background: ${isOnline ? '#f0fdf4' : '#faf5ff'};">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap:wrap; gap:6px;">
             <div>
-              <span style="background: #4f46e5; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">
-                Mesa ${pedido.mesa_codigo}
+              <span style="background: ${isOnline ? '#059669' : '#4f46e5'}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">
+                ${isOnline ? '🌐 Online / Encomenda' : `Mesa ${pedido.mesa_codigo}`}
               </span>
               <span style="font-weight: 600; margin-left: 8px; color: #1e293b;">
-                ${pedido.cliente_nome || 'Cliente na Mesa'}
+                ${pedido.cliente_nome || 'Cliente'} ${pedido.cliente_telefone ? `<small style="color:#475569;">(${pedido.cliente_telefone})</small>` : ''}
               </span>
               <span style="font-size: 0.8rem; color: #64748b; margin-left: 6px;">
                 às ${hora}
               </span>
+              ${retiradaBadge}
             </div>
             <strong style="font-size: 1.1rem; color: #1e1b4b;">
               R$ ${Number(pedido.total || 0).toFixed(2)}
             </strong>
           </div>
 
-          ${pedido.observacoes_gerais ? `
+          ${(pedido.observacoes_gerais || pedido.observacoes) ? `
             <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; color: #92400e; margin-bottom: 8px;">
-              <strong>Observação da mesa:</strong> ${pedido.observacoes_gerais}
+              <strong>Observação:</strong> ${pedido.observacoes_gerais || pedido.observacoes}
             </div>
           ` : ''}
 
@@ -3015,12 +3098,12 @@
             ${itensHtml}
           </div>
 
-          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
             <button type="button" class="btn-recusar-pedido-cliente" data-id="${pedido.id}" style="background: #fff; border: 1px solid #fca5a5; color: #dc2626; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
               ✕ Recusar
             </button>
-            <button type="button" class="btn-aprovar-pedido-cliente" data-id="${pedido.id}" style="background: #4f46e5; border: none; color: white; padding: 7px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);">
-              ✓ Aprovar & Enviar à Cozinha
+            <button type="button" class="btn-aprovar-pedido-cliente" data-id="${pedido.id}" style="background: ${isOnline ? '#059669' : '#4f46e5'}; border: none; color: white; padding: 7px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+              ✓ Aprovar ${isOnline ? '& Confirmar no WhatsApp' : '& Enviar à Cozinha'}
             </button>
           </div>
         </div>
@@ -3038,11 +3121,26 @@
 
   async function aprovarPedidoCliente(pedidoId) {
     try {
+      const pedidoAlvo = pedidosClienteAguardando.find(p => p.id === pedidoId);
       if (window.showToast) window.showToast('Aprovando pedido...', 'info');
       await window.cafeteriaDB.clientePedido.aprovar(pedidoId);
-      if (window.showToast) window.showToast('Pedido aprovado com sucesso! Enviado à cozinha.', 'success');
+      if (window.showToast) window.showToast('Pedido aprovado com sucesso!', 'success');
 
-      // Tentar auto-impressão da comanda se configurado
+      // CAF-000038: Se for pedido online com telefone, abre WhatsApp com mensagem de confirmação
+      if (pedidoAlvo && (pedidoAlvo.origem === 'online' || pedidoAlvo.mesa_codigo === 'RETIRADA') && pedidoAlvo.cliente_telefone) {
+        const numPed = pedidoAlvo.numero_pedido || pedidoAlvo.id;
+        let horarioTxt = 'em breve';
+        if (pedidoAlvo.retirada_em) {
+          const dt = new Date(pedidoAlvo.retirada_em);
+          horarioTxt = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        const linkTrack = `${window.location.origin}/cardapio.html?pedido=${pedidoAlvo.pedido_token}`;
+        const msg = `Olá, ${pedidoAlvo.cliente_nome || 'Cliente'}! ☕ Seu pedido #${numPed} na Cafeteria do Teatro foi confirmado para retirada em ${horarioTxt}. Acompanhe o status aqui: ${linkTrack}`;
+        const foneClean = String(pedidoAlvo.cliente_telefone).replace(/\D/g, '');
+        window.open(`https://wa.me/${foneClean}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+      }
+
+      // Tentar auto-impressão da comanda se não for agendado distante
       try {
         const { data: pData } = await window.cafeteriaSupabase
           .from('pedidos')
@@ -3055,7 +3153,8 @@
           `)
           .eq('id', pedidoId)
           .single();
-        if (pData && window.imprimirCupomPedido) {
+        const isAgendadoDistante = pData?.retirada_em && (new Date(pData.retirada_em).getTime() - Date.now() > 25 * 60 * 1000);
+        if (pData && !isAgendadoDistante && window.imprimirCupomPedido) {
           window.imprimirCupomPedido(pData, false);
         }
       } catch (errPrint) {
@@ -3263,7 +3362,7 @@
   function renderPedidosCards() {
     pedidosCardsGrid.innerHTML = '';
 
-    let list = activePedidos.filter(p => p.status !== 'entregue');
+    let list = activePedidos.filter(p => p.status !== 'entregue' && p.status !== 'cancelado');
 
     // Filtro de escopo (Meus Pedidos vs Todos) - CAF-000059
     if (currentFilterScope === 'meus') {
@@ -3273,7 +3372,10 @@
       }
     }
 
-    if (currentFilterStatus !== 'todos') {
+    const agoraMs = Date.now();
+    if (currentFilterStatus === 'agendado') {
+      list = list.filter(p => p.retirada_em && (new Date(p.retirada_em).getTime() - agoraMs > 20 * 60 * 1000));
+    } else if (currentFilterStatus !== 'todos') {
       list = list.filter(p => p.status === currentFilterStatus);
     }
 
@@ -3286,12 +3388,17 @@
     }
 
     list.forEach(pedido => {
-      const isPronto = pedido.status === 'concluido';
-      const statusLabel = {
-        'pendente': '🟡 Na Fila (Pendente)',
-        'em_preparo': '🔵 Em Preparo',
-        'concluido': '🟢 PRONTO P/ SERVIR!'
-      }[pedido.status] || pedido.status;
+      const isPronto = pedido.status === 'concluido' || pedido.status === 'pronto';
+      const isAgendadoDistante = Boolean(pedido.retirada_em && (new Date(pedido.retirada_em).getTime() - agoraMs > 20 * 60 * 1000) && pedido.status === 'pendente');
+      const statusLabel = isAgendadoDistante
+        ? '📅 Agendado (Aguardando Horário)'
+        : ({
+            'aguardando_pagamento': '🖥️ Totem (Aguardando Pagamento)',
+            'pendente': '🟡 Na Fila (Pendente)',
+            'em_preparo': '🔵 Em Preparo',
+            'concluido': '🟢 PRONTO P/ SERVIR!',
+            'pronto': '🟢 PRONTO P/ SERVIR!'
+          }[pedido.status] || pedido.status);
 
       const isPrioritario = pedido.prioridade === 1;
       const prioridadeTag = isPrioritario
@@ -3315,7 +3422,7 @@
         let adicHtml = '';
         if (item.pedido_item_adicionais && item.pedido_item_adicionais.length > 0) {
           adicHtml = item.pedido_item_adicionais.map(ad => 
-            `<div style="font-size:12px; color:#666; margin-left:14px;">+ ${window.escapeHtml(ad.nome_adicional)}</div>`
+            `<div style="font-size:12px; color:#666; margin-left:14px;">+ ${window.escapeHtml(ad.nome_adicional || ad.nome)}</div>`
           ).join('');
         }
 
@@ -3327,24 +3434,62 @@
         `;
       });
 
-      const btnAcaoHtml = isPronto
-        ? `<div class="pedido-card-barista__actions">
+      const isOnlineOuRetirada = pedido.origem === 'online' || pedido.origem === 'online_retirada' || pedido.mesa_codigo === 'RETIRADA';
+      const btnWhatsappPronto = (pedido.cliente_telefone)
+        ? `<button type="button" class="btn-ghost-small" style="background:#dcfce7; color:#166534; border:1px solid #86efac; padding:5px 8px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer;" onclick="window.baristaAvisarWhatsAppPronto(${pedido.id})" title="Avisar cliente pelo WhatsApp">
+            📲 WhatsApp
+           </button>`
+        : '';
+      const btnNaoRetirado = isOnlineOuRetirada
+        ? `<button type="button" class="btn-ghost-small" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:5px 8px; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer;" onclick="window.baristaMarcarNaoRetirado(${pedido.id})" title="Marcar pedido como não retirado pelo cliente">
+            🚫 Não retirado
+           </button>`
+        : '';
+
+      let btnAcaoHtml = '';
+      if (pedido.status === 'aguardando_pagamento') {
+        btnAcaoHtml = `
+          <div class="pedido-card-barista__actions" style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button type="button" class="btn-entregar" style="background:#0f766e;" onclick="window.baristaReceberPedidoTotem(${pedido.id})">
+              💰 Receber & Enviar à Cozinha
+            </button>
+          </div>
+        `;
+      } else if (isPronto) {
+        btnAcaoHtml = `
+          <div class="pedido-card-barista__actions" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            ${btnWhatsappPronto}
             <button class="btn-chamar-voz" data-pedido-id="${pedido.id}" title="Fazer chamada por voz">
               📢 Chamar
             </button>
             <button class="btn-entregar" onclick="window.baristaMarcarEntregue(${pedido.id})">
               ✅ Entregue
             </button>
-          </div>`
-        : `<span style="font-size:12px; color:#888;">Operador: ${pedido.criado_por_nome || 'Barista'}</span>`;
+            ${btnNaoRetirado}
+          </div>`;
+      } else {
+        btnAcaoHtml = `
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            ${btnWhatsappPronto}
+            ${btnNaoRetirado}
+            <span style="font-size:12px; color:#888;">Operador: ${pedido.criado_por_nome || (isOnlineOuRetirada ? 'Online' : 'Barista')}</span>
+          </div>
+        `;
+      }
 
       const viagemTag = pedido.para_viagem ? `<span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">🥡 VIAGEM</span>` : '';
-      const nomeClienteHtml = pedido.cliente_nome ? `<div style="font-size:14px; font-weight:bold; color:var(--marrom-escuro); margin-top:4px;">${window.escapeHtml(pedido.cliente_nome)}</div>` : '';
+      let retiradaTag = '';
+      if (pedido.retirada_em) {
+        const dt = new Date(pedido.retirada_em);
+        const retFmt = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        retiradaTag = `<span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:6px; font-weight:bold;">🕒 Retirada: ${retFmt}</span>`;
+      }
+      const nomeClienteHtml = pedido.cliente_nome ? `<div style="font-size:14px; font-weight:bold; color:var(--marrom-escuro); margin-top:4px;">${window.escapeHtml(pedido.cliente_nome)} ${pedido.cliente_telefone ? `<small style="font-weight:normal; color:#64748b;">(${pedido.cliente_telefone})</small>` : ''}</div>` : '';
 
       card.innerHTML = `
         <div class="pedido-card-barista__header">
-          <span class="pedido-card-barista__mesa">${pedido.mesa_codigo} (Pedido #${pedido.numero_pedido || pedido.id})${viagemTag} ${prioridadeTag}</span>
-          <span class="pedido-card-barista__status status-chip--${pedido.status === 'concluido' ? 'pronto' : pedido.status === 'em_preparo' ? 'preparo' : 'pendente'}">
+          <span class="pedido-card-barista__mesa">${pedido.mesa_codigo} (Pedido #${pedido.numero_pedido || pedido.id})${viagemTag}${retiradaTag} ${prioridadeTag}</span>
+          <span class="pedido-card-barista__status status-chip--${isPronto ? 'pronto' : pedido.status === 'em_preparo' ? 'preparo' : 'pendente'}">
             ${statusLabel}
           </span>
         </div>
@@ -3364,6 +3509,85 @@
       pedidosCardsGrid.appendChild(card);
     });
   }
+
+  window.baristaAvisarWhatsAppPronto = function (pedidoId) {
+    const pedido = activePedidos.find(p => p.id === pedidoId);
+    if (!pedido || !pedido.cliente_telefone) return;
+    const foneClean = String(pedido.cliente_telefone).replace(/\D/g, '');
+    const numPed = pedido.numero_pedido || pedido.id;
+    const isPronto = pedido.status === 'concluido' || pedido.status === 'pronto';
+    const msg = isPronto
+      ? `Olá, ${pedido.cliente_nome || 'Cliente'}! ☕🎉 Seu pedido #${numPed} já está PRONTO para retirada no balcão da Cafeteria do Teatro!`
+      : `Olá, ${pedido.cliente_nome || 'Cliente'}! ☕ Sobre o seu pedido #${numPed} na Cafeteria do Teatro: `;
+    window.open(`https://wa.me/${foneClean}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  };
+
+  window.baristaMarcarNaoRetirado = async function (pedidoId) {
+    const pedido = activePedidos.find(p => p.id === pedidoId);
+    if (!pedido) return;
+    const motivo = prompt('Confirmar que o cliente NÃO compareceu para retirar o pedido? Informe observação:', 'Não retirado pelo cliente no horário agendado');
+    if (motivo === null) return;
+    try {
+      await window.cafeteriaDB.clientePedido.marcarNaoRetirado(pedidoId, motivo);
+      showToast('Pedido marcado como não retirado e registrado no histórico do cliente.', 'info');
+      await loadActivePedidos();
+    } catch (err) {
+      console.error('Erro ao marcar como não retirado:', err);
+      showToast('Erro: ' + (err.message || err), 'error');
+    }
+  };
+
+  window.baristaReceberPedidoTotem = async function (pedidoId) {
+    const pedido = activePedidos.find(p => p.id === pedidoId);
+    if (!pedido) return;
+    const numPed = pedido.numero_pedido || pedido.id;
+    const valorNum = Number(pedido.total || 0);
+    const forma = prompt(
+      `Receber Pedido #${numPed} (${pedido.cliente_nome || 'Totem'}) — Total R$ ${valorNum.toFixed(2).replace('.', ',')}\nInforme a forma de pagamento (pix, dinheiro, cartao_debito, cartao_credito):`,
+      pedido.forma_pagamento || 'pix'
+    );
+    if (!forma) return;
+    const formaNorm = ['pix', 'dinheiro', 'cartao_debito', 'cartao_credito', 'outros'].includes(forma.trim().toLowerCase())
+      ? forma.trim().toLowerCase()
+      : 'pix';
+
+    if (formaNorm === 'pix' && window.cafeteriaPix && confirm('Deseja exibir o QR Code Pix na tela para o cliente pagar antes de liberar?')) {
+      window.cafeteriaPix.abrirModalClienteTelaCheia({
+        valor: valorNum,
+        txid: `CAFTOTEM${numPed}`,
+        subtitulo: `Totem Senha #${numPed} · ${pedido.cliente_nome || 'Balcão'}`
+      });
+    }
+
+    try {
+      const { error: rpcErr } = await window.cafeteriaSupabase.rpc('receber_pedido_totem', {
+        p_pedido_id: pedidoId,
+        p_forma_pagamento: formaNorm
+      });
+
+      if (rpcErr) {
+        const { error } = await window.cafeteriaSupabase
+          .from('pedidos')
+          .update({
+            status: 'pendente',
+            forma_pagamento: formaNorm,
+            status_pagamento: 'pago',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', pedidoId);
+        if (error) throw error;
+      }
+
+      showToast(`Pagamento recebido! Pedido #${numPed} liberado para a cozinha.`, 'success');
+      if (window.imprimirCupomPedido) {
+        window.imprimirCupomPedido({ ...pedido, status: 'pendente', status_pagamento: 'pago', forma_pagamento: formaNorm }, false);
+      }
+      await loadActivePedidos();
+    } catch (err) {
+      console.error('Erro ao receber pedido do totem:', err);
+      showToast('Erro ao liberar pedido: ' + err.message, 'error');
+    }
+  };
 
   window.baristaTogglePrioridade = async function (pedidoId) {
     const pedido = activePedidos.find(p => p.id === pedidoId);
@@ -4215,10 +4439,18 @@
 
     pt.pagamentos.forEach(pag => {
       totalPagoParte += pag.valor;
+      const isPix = pag.forma === 'pix';
+      const txidPag = `CAF${String(currentFechamento?.mesaCodigo || '').replace(/[^A-Za-z0-9]/g, '')}P${pt.id}`;
+      const botoesPixHtml = isPix
+        ? `<button type="button" class="btn-ghost-small" style="color:#047857; padding:2px 6px; font-weight:700;" onclick="window.mostrarQrPixPagamento(${pag.valor}, '${txidPag}', '${window.escapeHtml(pt.nome)}')">📱 QR Pix</button>`
+        : '';
       htmlLista += `
-        <div style="display:flex; justify-content: space-between; align-items:center; background:#f9f9f9; border:1px solid #ddd; padding:6px; border-radius:4px; margin-bottom:4px; font-size:13px;">
+        <div style="display:flex; justify-content: space-between; align-items:center; background:#f9f9f9; border:1px solid #ddd; padding:6px; border-radius:4px; margin-bottom:4px; font-size:13px; gap:6px;">
           <span>${formasNomes[pag.forma] || pag.forma}: <strong>R$ ${pag.valor.toFixed(2).replace('.', ',')}</strong></span>
-          <button class="btn-ghost-small" style="color:red; padding:2px 6px;" onclick="window.removerPagamentoFechamento(${pag.id})">X</button>
+          <div style="display:flex; align-items:center; gap:4px;">
+            ${botoesPixHtml}
+            <button type="button" class="btn-ghost-small" style="color:red; padding:2px 6px;" onclick="window.removerPagamentoFechamento(${pag.id})">X</button>
+          </div>
         </div>
       `;
     });
@@ -4246,14 +4478,118 @@
     } else {
       fecharContaTrocoLbl.textContent = `R$ 0,00`;
     }
+
+    atualizarPixFechamentoBox(pt, faltaParte);
   }
+
+  let ultimoPixFechamentoState = { payload: '', valor: 0, txid: '', subtitulo: '' };
+
+  async function atualizarPixFechamentoBox(pt, faltaParte) {
+    const divPix = document.getElementById('div-pix-fechamento');
+    if (!divPix) return;
+
+    if (fecharContaForma.value !== 'pix' || !pt) {
+      divPix.classList.add('hidden');
+      return;
+    }
+
+    const valorDigitado = Number(fecharContaValor.value) || 0;
+    const valorPix =
+      valorDigitado > 0
+        ? valorDigitado
+        : faltaParte > 0
+        ? faltaParte
+        : pt.valor_devido || 0;
+
+    if (valorPix <= 0) {
+      divPix.classList.add('hidden');
+      return;
+    }
+
+    divPix.classList.remove('hidden');
+    const lblVal = document.getElementById('fechar-conta-pix-valor-lbl');
+    const qrBox = document.getElementById('fechar-conta-pix-qr');
+    const avisoSemChave = document.getElementById('fechar-conta-pix-sem-chave');
+    if (lblVal) lblVal.textContent = `R$ ${valorPix.toFixed(2).replace('.', ',')}`;
+
+    const mesaCod = currentFechamento?.mesaCodigo || 'MESA';
+    const numPed = currentFechamento?.pedidos?.[0]?.numero_pedido || currentFechamento?.pedidos?.[0]?.id || '';
+    const txid = `CAF${String(numPed || mesaCod).replace(/[^A-Za-z0-9]/g, '')}P${pt.id}`;
+    const subtitulo = `Mesa ${mesaCod} · ${pt.nome}`;
+
+    if (!window.cafeteriaPix) return;
+    const cfg = await window.cafeteriaPix.obterConfigPix();
+    const res = window.cafeteriaPix.gerarPayloadPix({
+      chave: cfg.chave,
+      recebedor: cfg.recebedor,
+      cidade: cfg.cidade,
+      valor: valorPix,
+      txid
+    });
+
+    ultimoPixFechamentoState = {
+      payload: res.ok ? res.payload : '',
+      valor: valorPix,
+      txid,
+      subtitulo
+    };
+
+    if (!res.ok) {
+      if (qrBox) qrBox.style.display = 'none';
+      if (avisoSemChave) avisoSemChave.classList.remove('hidden');
+    } else {
+      if (avisoSemChave) avisoSemChave.classList.add('hidden');
+      if (qrBox) {
+        qrBox.style.display = 'flex';
+        qrBox.innerHTML = window.cafeteriaPix.gerarQrSvg(res.payload, 3, 1);
+      }
+    }
+  }
+
+  window.mostrarQrPixPagamento = function (valor, txid, parteNome) {
+    const mesaCod = currentFechamento?.mesaCodigo || '';
+    window.cafeteriaPix?.abrirModalClienteTelaCheia({
+      valor: Number(valor || 0),
+      txid: txid || 'CAFMESA',
+      subtitulo: `Mesa ${mesaCod} · ${parteNome || ''}`
+    });
+  };
+
+  document.getElementById('btn-fechar-pix-copiar')?.addEventListener('click', function () {
+    if (!ultimoPixFechamentoState.payload) {
+      showToast('Chave Pix não configurada no Admin.', 'warn');
+      return;
+    }
+    window.cafeteriaPix?.copiarCodigoPix(ultimoPixFechamentoState.payload, this);
+    showToast('Código Pix Copia e Cola copiado!', 'success');
+  });
+
+  document.getElementById('btn-fechar-pix-fullscreen')?.addEventListener('click', () => {
+    window.cafeteriaPix?.abrirModalClienteTelaCheia({
+      valor: ultimoPixFechamentoState.valor,
+      txid: ultimoPixFechamentoState.txid,
+      subtitulo: ultimoPixFechamentoState.subtitulo
+    });
+  });
+
+  fecharContaValor.addEventListener('input', () => {
+    if (fecharContaForma.value === 'pix' && parteAtivaId) {
+      const pt = currentPartes.find(x => x.id === parteAtivaId);
+      if (pt) {
+        const pago = pt.pagamentos.reduce((s, p) => s + p.valor, 0);
+        atualizarPixFechamentoBox(pt, pt.valor_devido - pago);
+      }
+    }
+  });
 
   fecharContaForma.addEventListener('change', () => {
     if (fecharContaForma.value === 'dinheiro') {
       divDinheiroRecebido.classList.remove('hidden');
+      document.getElementById('div-pix-fechamento')?.classList.add('hidden');
       renderPainelPagamento();
     } else {
       divDinheiroRecebido.classList.add('hidden');
+      renderPainelPagamento();
     }
   });
 

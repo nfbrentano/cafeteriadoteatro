@@ -43,6 +43,8 @@ export default defineConfig({
         pedidos: resolve(import.meta.dirname, 'pedidos.html'),
         cozinha: resolve(import.meta.dirname, 'cozinha.html'),
         retirada: resolve(import.meta.dirname, 'retirada.html'),
+        totem: resolve(import.meta.dirname, 'totem.html'),
+        avaliar: resolve(import.meta.dirname, 'avaliar.html'),
         notfound: resolve(import.meta.dirname, '404.html')
       }
     }

@@ -3,7 +3,7 @@
 Levantamento feito a partir do código atual do PDV (`pedidos.html`, `js/pedidos.js`, `css/pedidos.css`), pensando no garçom ou barista que anota pedidos **em pé, com uma mão só, no celular**, circulando pelo salão e muitas vezes com internet fraca.
 Cada proposta abaixo pode virar uma CAF própria, criada a partir do [MODELO_ATIVIDADE.md](MODELO_ATIVIDADE.md), depois que você aprovar.
 
-> **Situação em 2026-10-16:** as propostas 1 a 8 do resumo (CAF-000051 a 058) foram implementadas; o código ainda não foi commitado. Os números de linha citados em "O que já temos" e "Problemas encontrados" são do código **antes** dessas mudanças e não valem mais. Fica aberta só a [CAF-000059](CAF-000059-filtro-meus-pedidos-e-troco-rapido.md) (C2, D2, E3), revisada contra o código atual.
+> **Situação em 2026-10-19:** todas as propostas 1 a 9 do resumo (CAF-000051 a 059) foram implementadas e concluídas. Os números de linha citados em "O que já temos" e "Problemas encontrados" são do código **antes** dessas mudanças.
 
 > **Fora desta análise (já têm CAF):**
 > - Pedido feito pelo próprio cliente via QR Code na mesa: [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md).

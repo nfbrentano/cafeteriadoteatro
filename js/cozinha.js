@@ -168,17 +168,38 @@
   }
 
   // -----------------------------------------------------
-  // CAF-000028: CONFIGURAÇÃO DESTA TELA (IMPRESSORA & ESTAÇÃO)
+  // CAF-000028 & CAF-000043: CONFIGURAÇÃO DESTA TELA (IMPRESSORA & ETIQUETAS)
   // -----------------------------------------------------
   const CONFIG_STORAGE_KEY_AUTOPRINT = 'cafeteria_kds_auto_print';
   const CONFIG_STORAGE_KEY_ESTACAO = 'cafeteria_kds_print_estacao';
   const CONFIG_STORAGE_KEY_DEVICE = 'cafeteria_kds_device_name';
+  const CONFIG_STORAGE_KEY_AUTO_ETIQUETA = 'cafeteria_kds_auto_etiqueta';
+  const CONFIG_STORAGE_KEY_ETQ_TAMANHO = 'cafeteria_kds_etq_tamanho';
+  const CONFIG_STORAGE_KEY_ETQ_GATILHO = 'cafeteria_kds_etq_gatilho';
+  const CONFIG_STORAGE_KEY_ETQ_CATS_OFF = 'cafeteria_kds_etq_cats_off';
+
+  const cfgAutoEtiqueta = document.getElementById('cfg-auto-etiqueta');
+  const cfgEtiquetaTamanho = document.getElementById('cfg-etiqueta-tamanho');
+  const cfgEtiquetaGatilho = document.getElementById('cfg-etiqueta-gatilho');
+  const cfgEtiquetaCategoriasBox = document.getElementById('cfg-etiqueta-categorias-box');
+  const btnCfgTestarEtiqueta = document.getElementById('btn-cfg-testar-etiqueta');
 
   function getTelaPrintConfig() {
+    let catsOff = [];
+    try {
+      catsOff = JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY_ETQ_CATS_OFF) || '[]');
+      if (!Array.isArray(catsOff)) catsOff = [];
+    } catch (e) {
+      catsOff = [];
+    }
     return {
-      autoPrint: localStorage.getItem(CONFIG_STORAGE_KEY_AUTOPRINT) === 'true', // padrão: false (não imprime)
+      autoPrint: localStorage.getItem(CONFIG_STORAGE_KEY_AUTOPRINT) === 'true',
       estacao: localStorage.getItem(CONFIG_STORAGE_KEY_ESTACAO) || 'todas',
-      deviceName: localStorage.getItem(CONFIG_STORAGE_KEY_DEVICE) || ('KDS-' + Math.random().toString(36).substring(2, 6).toUpperCase())
+      deviceName: localStorage.getItem(CONFIG_STORAGE_KEY_DEVICE) || ('KDS-' + Math.random().toString(36).substring(2, 6).toUpperCase()),
+      autoEtiqueta: localStorage.getItem(CONFIG_STORAGE_KEY_AUTO_ETIQUETA) === 'true',
+      etiquetaTamanho: localStorage.getItem(CONFIG_STORAGE_KEY_ETQ_TAMANHO) || '50x30',
+      etiquetaGatilho: localStorage.getItem(CONFIG_STORAGE_KEY_ETQ_GATILHO) || 'iniciar',
+      etiquetaCatsOff: catsOff
     };
   }
 
@@ -186,46 +207,81 @@
     localStorage.setItem(CONFIG_STORAGE_KEY_AUTOPRINT, cfg.autoPrint ? 'true' : 'false');
     localStorage.setItem(CONFIG_STORAGE_KEY_ESTACAO, cfg.estacao);
     localStorage.setItem(CONFIG_STORAGE_KEY_DEVICE, cfg.deviceName.trim());
+    localStorage.setItem(CONFIG_STORAGE_KEY_AUTO_ETIQUETA, cfg.autoEtiqueta ? 'true' : 'false');
+    localStorage.setItem(CONFIG_STORAGE_KEY_ETQ_TAMANHO, cfg.etiquetaTamanho || '50x30');
+    localStorage.setItem(CONFIG_STORAGE_KEY_ETQ_GATILHO, cfg.etiquetaGatilho || 'iniciar');
+    localStorage.setItem(CONFIG_STORAGE_KEY_ETQ_CATS_OFF, JSON.stringify(cfg.etiquetaCatsOff || []));
     updateTopbarPrinterStatusUI();
   }
 
   function updateTopbarPrinterStatusUI() {
     if (!topbarPrinterStatus) return;
     const cfg = getTelaPrintConfig();
-    if (!cfg.autoPrint) {
+    if (!cfg.autoPrint && !cfg.autoEtiqueta) {
       topbarPrinterStatus.textContent = 'Não imprime';
       topbarPrinterStatus.className = '';
       if (btnConfigTela) btnConfigTela.title = 'Esta tela não imprime automaticamente (Toque para configurar)';
     } else {
       const mapaEst = { 'todas': 'Todas', 'cozinha': 'Cozinha', 'bar': 'Bar' };
-      topbarPrinterStatus.textContent = mapaEst[cfg.estacao] || 'Ativa';
+      const partes = [];
+      if (cfg.autoPrint) partes.push(mapaEst[cfg.estacao] || 'Comanda');
+      if (cfg.autoEtiqueta) partes.push('🏷️ Etiquetas');
+      topbarPrinterStatus.textContent = partes.join(' + ');
       topbarPrinterStatus.className = 'ativo';
-      if (btnConfigTela) btnConfigTela.title = `Esta tela imprime automaticamente: ${mapaEst[cfg.estacao] || cfg.estacao} [${cfg.deviceName}]`;
+      if (btnConfigTela) btnConfigTela.title = `Esta tela imprime: ${partes.join(' + ')} [${cfg.deviceName}]`;
     }
   }
 
   function atualizarResumoConfigModal() {
     if (!cfgStatusSummary) return;
-    const isAtivo = cfgAutoPrint.checked;
-    const est = cfgPrintEstacao.value;
-    const dev = cfgDeviceName.value.trim() || 'Dispositivo sem nome';
+    const isAtivo = cfgAutoPrint?.checked;
+    const isEtqAtivo = cfgAutoEtiqueta?.checked;
+    const est = cfgPrintEstacao?.value || 'todas';
+    const dev = cfgDeviceName?.value.trim() || 'Dispositivo sem nome';
 
-    if (!isAtivo) {
+    if (!isAtivo && !isEtqAtivo) {
       cfgStatusSummary.className = 'config-info-box inativo';
-      cfgStatusSummary.innerHTML = `<strong>⚠️ Impressão automática desativada nesta tela.</strong><br>Este dispositivo só imprimirá quando alguém tocar no botão "🖨 Comanda" manualmente.`;
+      cfgStatusSummary.innerHTML = `<strong>⚠️ Impressão automática desativada nesta tela.</strong><br>Este dispositivo só imprimirá quando alguém tocar nos botões "🖨 Comanda" ou "🏷️ Etiquetas" manualmente.`;
     } else {
       const mapaEst = { 'todas': 'Cozinha & Bar', 'cozinha': 'apenas Cozinha', 'bar': 'apenas Bar' };
+      const descricoes = [];
+      if (isAtivo) descricoes.push(`comandas de <strong>${mapaEst[est] || est}</strong>`);
+      if (isEtqAtivo) descricoes.push(`etiquetas <strong>${cfgEtiquetaTamanho?.value || '50x30'} mm</strong> (${cfgEtiquetaGatilho?.value === 'chegar' ? 'ao chegar' : 'ao iniciar preparo'})`);
       cfgStatusSummary.className = 'config-info-box';
-      cfgStatusSummary.innerHTML = `<strong>✓ Impressora Ativa:</strong> Este dispositivo (<em>${dev}</em>) imprimirá automaticamente as comandas de <strong>${mapaEst[est] || est}</strong> com trava anti-duplicação.`;
+      cfgStatusSummary.innerHTML = `<strong>✓ Impressora Ativa:</strong> Este dispositivo (<em>${dev}</em>) imprimirá automaticamente ${descricoes.join(' e ')} com trava anti-duplicação.`;
     }
+  }
+
+  function renderCategoriasEtiquetaModal(catsOff = []) {
+    if (!cfgEtiquetaCategoriasBox) return;
+    const entries = Object.entries(categoriasInfo || {});
+    if (entries.length === 0) {
+      cfgEtiquetaCategoriasBox.innerHTML = '<span style="font-size:12px; color:#aaa;">Todas as categorias ativas</span>';
+      return;
+    }
+    const offSet = new Set(catsOff.map(String));
+    cfgEtiquetaCategoriasBox.innerHTML = entries.map(([catId, info]) => {
+      const checked = !offSet.has(String(catId)) ? 'checked' : '';
+      const nome = window.escapeHtml ? window.escapeHtml(info.nome || catId) : (info.nome || catId);
+      return `
+        <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; background:rgba(255,255,255,0.08); padding:4px 8px; border-radius:4px; cursor:pointer;">
+          <input type="checkbox" class="cfg-etq-cat-check" value="${catId}" ${checked} />
+          <span>${nome}</span>
+        </label>
+      `;
+    }).join('');
   }
 
   function abrirModalConfigTela() {
     if (!modalConfigTela) return;
     const cfg = getTelaPrintConfig();
-    cfgAutoPrint.checked = cfg.autoPrint;
-    cfgPrintEstacao.value = cfg.estacao;
-    cfgDeviceName.value = cfg.deviceName;
+    if (cfgAutoPrint) cfgAutoPrint.checked = cfg.autoPrint;
+    if (cfgPrintEstacao) cfgPrintEstacao.value = cfg.estacao;
+    if (cfgDeviceName) cfgDeviceName.value = cfg.deviceName;
+    if (cfgAutoEtiqueta) cfgAutoEtiqueta.checked = cfg.autoEtiqueta;
+    if (cfgEtiquetaTamanho) cfgEtiquetaTamanho.value = cfg.etiquetaTamanho || '50x30';
+    if (cfgEtiquetaGatilho) cfgEtiquetaGatilho.value = cfg.etiquetaGatilho || 'iniciar';
+    renderCategoriasEtiquetaModal(cfg.etiquetaCatsOff || []);
     atualizarResumoConfigModal();
     modalConfigTela.classList.remove('hidden');
   }
@@ -249,18 +305,30 @@
   if (cfgAutoPrint) cfgAutoPrint.addEventListener('change', atualizarResumoConfigModal);
   if (cfgPrintEstacao) cfgPrintEstacao.addEventListener('change', atualizarResumoConfigModal);
   if (cfgDeviceName) cfgDeviceName.addEventListener('input', atualizarResumoConfigModal);
+  if (cfgAutoEtiqueta) cfgAutoEtiqueta.addEventListener('change', atualizarResumoConfigModal);
+  if (cfgEtiquetaTamanho) cfgEtiquetaTamanho.addEventListener('change', atualizarResumoConfigModal);
+  if (cfgEtiquetaGatilho) cfgEtiquetaGatilho.addEventListener('change', atualizarResumoConfigModal);
 
   if (btnCfgSalvar) {
     btnCfgSalvar.addEventListener('click', async () => {
+      const catsOff = [];
+      if (cfgEtiquetaCategoriasBox) {
+        cfgEtiquetaCategoriasBox.querySelectorAll('.cfg-etq-cat-check').forEach((chk) => {
+          if (!chk.checked) catsOff.push(chk.value);
+        });
+      }
       const novoCfg = {
-        autoPrint: cfgAutoPrint.checked,
-        estacao: cfgPrintEstacao.value,
-        deviceName: cfgDeviceName.value.trim() || 'KDS-TELA'
+        autoPrint: Boolean(cfgAutoPrint?.checked),
+        estacao: cfgPrintEstacao?.value || 'todas',
+        deviceName: cfgDeviceName?.value.trim() || 'KDS-TELA',
+        autoEtiqueta: Boolean(cfgAutoEtiqueta?.checked),
+        etiquetaTamanho: cfgEtiquetaTamanho?.value || '50x30',
+        etiquetaGatilho: cfgEtiquetaGatilho?.value || 'iniciar',
+        etiquetaCatsOff: catsOff
       };
       saveTelaPrintConfig(novoCfg);
       fecharModalConfigTela();
 
-      // Se ativou impressão automática, verificar pendências do dia
       if (novoCfg.autoPrint) {
         await verificarImpressaoPendentesAoConectar();
       }
@@ -292,10 +360,30 @@
     });
   }
 
+  if (btnCfgTestarEtiqueta) {
+    btnCfgTestarEtiqueta.addEventListener('click', () => {
+      const tam = cfgEtiquetaTamanho ? cfgEtiquetaTamanho.value : '50x30';
+      const fakePedido = {
+        id: 45,
+        numero_pedido: 45,
+        mesa_codigo: 'BALCÃO',
+        cliente_nome: 'Ana Silva',
+        para_viagem: true
+      };
+      const fakeItens = [
+        { id: 1, quantidade: 1, nome_produto: 'Cappuccino', pedido_item_adicionais: [], observacoes: '' },
+        { id: 2, quantidade: 1, nome_produto: 'Cappuccino', pedido_item_adicionais: [{ nome_adicional: 'Leite vegetal' }], observacoes: 'Sem açúcar' }
+      ];
+      if (window.cafeteriaPrint && window.cafeteriaPrint.printEtiquetas) {
+        window.cafeteriaPrint.printEtiquetas(fakePedido, fakeItens, { tamanho: tam });
+      }
+    });
+  }
+
   updateTopbarPrinterStatusUI();
 
   // -----------------------------------------------------
-  // CAF-000028: TRAVA ATÔMICA & IMPRESSÃO POR ESTAÇÃO
+  // CAF-000028 & CAF-000043: TRAVA ATÔMICA & IMPRESSÃO POR ESTAÇÃO
   // -----------------------------------------------------
   async function carregarLogsImpressoes(pedidoIds) {
     if (!pedidoIds || pedidoIds.length === 0) return;
@@ -308,7 +396,6 @@
       if (!error && data) {
         data.forEach(log => {
           const list = mapaImpressoes.get(log.pedido_id) || [];
-          // Evita duplicar no cache em memória
           if (!list.some(x => x.estacao === log.estacao && x.tipo === log.tipo)) {
             list.push(log);
           }
@@ -330,7 +417,6 @@
       });
 
       if (error) {
-        // Fallback caso a função RPC ainda não tenha sido aplicada no banco
         const { data: insData, error: insErr } = await window.cafeteriaSupabase
           .from('pedido_impressoes')
           .insert({
@@ -362,22 +448,80 @@
     renderPedidos();
   }
 
-  async function tentarTravarEImprimir(pedido, tipo = 'comanda', itensCustom = null) {
+  let antecedenciaKdsMin = 20;
+
+  function isPedidoLiberadoParaKds(p) {
+    if (!p || p.status === 'aguardando_aprovacao' || p.status === 'aguardando_pagamento') return false;
+    if (!p.retirada_em) return true;
+    const retMs = new Date(p.retirada_em).getTime();
+    if (isNaN(retMs)) return true;
+    const agoraMs = getNowAdjusted().getTime();
+    return (retMs - agoraMs) <= (antecedenciaKdsMin * 60 * 1000);
+  }
+
+  function filtrarItensParaEtiqueta(itens, cfg) {
+    const offSet = new Set((cfg.etiquetaCatsOff || []).map(String));
+    return (itens || []).filter(it => {
+      if (it.cancelado) return false;
+      const pInfo = produtosInfo[it.produto_id];
+      const catId = pInfo ? String(pInfo.categoria_id || '') : '';
+      if (catId && offSet.has(catId)) return false;
+      if (catId && categoriasInfo[catId] && categoriasInfo[catId].imprimir_etiqueta === false) return false;
+      return true;
+    });
+  }
+
+  async function tentarTravarEImprimirEtiquetas(pedido, estacaoEspecifica = null) {
+    if (!isPedidoLiberadoParaKds(pedido)) return;
     const cfg = getTelaPrintConfig();
-    if (!cfg.autoPrint) return; // Dispositivo configurado para não imprimir automaticamente
+    if (!cfg.autoEtiqueta || !window.cafeteriaPrint || !window.cafeteriaPrint.printEtiquetas) return;
+
+    const itensValidos = filtrarItensParaEtiqueta(pedido.pedido_itens || [], cfg);
+    if (itensValidos.length === 0) return;
+
+    const itensCozinha = itensValidos.filter(it => getItemEstacao(it) === 'cozinha');
+    const itensBar = itensValidos.filter(it => getItemEstacao(it) === 'bar');
+
+    const podeCozinha = (cfg.estacao === 'todas' || cfg.estacao === 'cozinha') && (!estacaoEspecifica || estacaoEspecifica === 'cozinha') && itensCozinha.length > 0;
+    const podeBar = (cfg.estacao === 'todas' || cfg.estacao === 'bar') && (!estacaoEspecifica || estacaoEspecifica === 'bar') && itensBar.length > 0;
+
+    if (podeCozinha) {
+      const ok = await requisitarTravaImpressao(pedido.id, 'cozinha', 'etiqueta', cfg.deviceName);
+      if (ok) {
+        window.cafeteriaPrint.printEtiquetas(pedido, itensCozinha, { tamanho: cfg.etiquetaTamanho });
+        registrarImpressaoLocal(pedido.id, 'cozinha', 'etiqueta', cfg.deviceName);
+      }
+    }
+
+    if (podeBar) {
+      const ok = await requisitarTravaImpressao(pedido.id, 'bar', 'etiqueta', cfg.deviceName);
+      if (ok) {
+        window.cafeteriaPrint.printEtiquetas(pedido, itensBar, { tamanho: cfg.etiquetaTamanho });
+        registrarImpressaoLocal(pedido.id, 'bar', 'etiqueta', cfg.deviceName);
+      }
+    }
+  }
+
+  async function tentarTravarEImprimir(pedido, tipo = 'comanda', itensCustom = null) {
+    if (!isPedidoLiberadoParaKds(pedido)) return;
+    const cfg = getTelaPrintConfig();
+
+    // Se etiquetas automáticas estiverem configuradas para "quando o pedido chega"
+    if (tipo === 'comanda' && cfg.autoEtiqueta && cfg.etiquetaGatilho === 'chegar') {
+      await tentarTravarEImprimirEtiquetas(pedido, null);
+    }
+
+    if (!cfg.autoPrint) return;
 
     const itensParaAvaliar = itensCustom || pedido.pedido_itens || [];
     if (!itensParaAvaliar || itensParaAvaliar.length === 0) return;
 
-    // Separar itens por estação
     const itensCozinha = itensParaAvaliar.filter(it => !it.cancelado && getItemEstacao(it) === 'cozinha');
     const itensBar = itensParaAvaliar.filter(it => !it.cancelado && getItemEstacao(it) === 'bar');
 
-    // Avaliar estações que esta tela deve imprimir
     const deveImprimirCozinha = (cfg.estacao === 'todas' || cfg.estacao === 'cozinha') && itensCozinha.length > 0;
     const deveImprimirBar = (cfg.estacao === 'todas' || cfg.estacao === 'bar') && itensBar.length > 0;
 
-    // 1. Emissão da Comanda da Cozinha
     if (deveImprimirCozinha) {
       const obteveTrava = await requisitarTravaImpressao(pedido.id, 'cozinha', tipo, cfg.deviceName);
       if (obteveTrava && window.cafeteriaPrint) {
@@ -389,7 +533,6 @@
       }
     }
 
-    // 2. Emissão da Comanda do Bar
     if (deveImprimirBar) {
       const obteveTrava = await requisitarTravaImpressao(pedido.id, 'bar', tipo, cfg.deviceName);
       if (obteveTrava && window.cafeteriaPrint) {
@@ -406,7 +549,7 @@
     const cfg = getTelaPrintConfig();
     if (!cfg.autoPrint) return;
 
-    const pedidosAtivos = pedidos.filter(p => p.status === 'pendente' || p.status === 'em_preparo');
+    const pedidosAtivos = pedidos.filter(p => (p.status === 'pendente' || p.status === 'em_preparo') && isPedidoLiberadoParaKds(p));
     for (const ped of pedidosAtivos) {
       const logs = mapaImpressoes.get(ped.id) || [];
       const temComanda = logs.some(l => l.tipo === 'comanda');
@@ -415,6 +558,14 @@
       }
     }
   }
+
+  // Checa a cada 30s se algum pedido agendado atingiu a janela de entrada no KDS (CAF-000038)
+  setInterval(() => {
+    if (pedidos && pedidos.length > 0) {
+      renderPedidos();
+      verificarImpressaoPendentesAoConectar();
+    }
+  }, 30000);
 
 
   // -----------------------------------------------------
@@ -950,6 +1101,7 @@
 
     pedidos.forEach(p => {
       if (p.status === 'cancelado') return;
+      if (!isPedidoLiberadoParaKds(p)) return;
 
       const info = getPedidoEstacaoInfo(p);
 
@@ -1184,11 +1336,16 @@
             </div>`;
           }
 
+          const btnEtiquetaItemHtml = !isCancelado
+            ? `<button type="button" class="btn-item-etiqueta" onclick="event.stopPropagation(); window.cozinhaImprimirEtiquetaItem(${pedido.id}, ${item.id})" title="Imprimir etiqueta deste item" style="margin-left:auto; background:transparent; border:1px solid rgba(0,0,0,0.18); border-radius:4px; padding:1px 5px; font-size:11px; cursor:pointer;">🏷</button>`
+            : '';
+
           itensHtml += `
             <div class="item-row ${actionClass} ${prontoClass} ${lancadoDepoisClass}" ${onClick}>
-              <div class="item-main" ${cancelClass}>
+              <div class="item-main" ${cancelClass} style="display:flex; align-items:center; gap:6px; width:100%;">
                 <span class="item-qty">${item.quantidade}x</span>
                 <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${novoLabel} ${cancelLabel}</span>
+                ${btnEtiquetaItemHtml}
               </div>
               ${saboresHtml}
               ${adicHtml}
@@ -1239,8 +1396,9 @@
       let botoesHtml = '';
       if (tipo === 'pendente') {
         botoesHtml = `
-          <div style="display:flex; gap:6px; align-items:center;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda">🖨 Comanda</button>
+            <button class="btn-card--print" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
@@ -1257,8 +1415,9 @@
           ? 'Pronto! (Concluir)' 
           : (isBar ? 'Pronto! (Bar)' : 'Pronto! (Cozinha)');
         botoesHtml = `
-          <div style="display:flex; gap:6px; align-items:center;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda">🖨 Comanda</button>
+            <button class="btn-card--print" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
@@ -1281,8 +1440,9 @@
         `;
 
         botoesHtml = `
-          <div style="display:flex; gap:6px; align-items:center;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir">🖨 Comanda</button>
+            <button class="btn-card--print" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Reimprimir Etiquetas">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
@@ -1806,6 +1966,12 @@
       await fetchPedidosIniciais();
       return;
     }
+
+    // CAF-000043: Dispara etiquetas automaticamente ao iniciar preparo da estação (com trava de duplicidade)
+    const cfg = getTelaPrintConfig();
+    if (p && cfg.autoEtiqueta && cfg.etiquetaGatilho === 'iniciar') {
+      await tentarTravarEImprimirEtiquetas(p, estacao);
+    }
   };
 
   window.concluirPreparoEstacao = async function(pedidoId) {
@@ -2324,6 +2490,35 @@
     // Registrar log de reimpressão sem conflitar com concorrência
     await requisitarTravaImpressao(pedido.id, estacaoAlvo, 'reimpressao', cfg.deviceName);
     registrarImpressaoLocal(pedido.id, estacaoAlvo, 'reimpressao', cfg.deviceName);
+  };
+
+  window.cozinhaImprimirEtiquetas = async function (pedidoId) {
+    const pedido = pedidos.find(p => p.id === pedidoId) || historicoPedidosRecentes.find(p => p.id === pedidoId);
+    if (!pedido || !window.cafeteriaPrint || !window.cafeteriaPrint.printEtiquetas) return;
+
+    const cfg = getTelaPrintConfig();
+    const itensEstacao = getItensDaEstacaoAtual(pedido.pedido_itens || []);
+    const itensFiltrados = filtrarItensParaEtiqueta(itensEstacao, cfg);
+
+    if (itensFiltrados.length === 0) {
+      alert('Não há itens elegíveis para etiqueta nesta estação (verifique o filtro de categorias na configuração desta tela).');
+      return;
+    }
+
+    const estacaoAlvo = estacaoSelecionada === 'todas' ? 'todas' : estacaoSelecionada;
+    window.cafeteriaPrint.printEtiquetas(pedido, itensFiltrados, { tamanho: cfg.etiquetaTamanho });
+    await requisitarTravaImpressao(pedido.id, estacaoAlvo, 'reimpressao', cfg.deviceName);
+  };
+
+  window.cozinhaImprimirEtiquetaItem = async function (pedidoId, itemId) {
+    const pedido = pedidos.find(p => p.id === pedidoId) || historicoPedidosRecentes.find(p => p.id === pedidoId);
+    if (!pedido || !window.cafeteriaPrint || !window.cafeteriaPrint.printEtiquetas) return;
+
+    const item = (pedido.pedido_itens || []).find(i => i.id === itemId);
+    if (!item || item.cancelado) return;
+
+    const cfg = getTelaPrintConfig();
+    window.cafeteriaPrint.printEtiquetas(pedido, [item], { tamanho: cfg.etiquetaTamanho });
   };
 
   // -----------------------------------------------------

@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cardápio público + admin + banco | 🟢 Baixa | P | Especificação · aguardando revisão |
+| Cardápio público + admin + banco | 🟢 Baixa | P | Concluída |
 
 ---
 
@@ -22,20 +22,20 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Tabela `avaliacoes (id, pedido_id UNIQUE, nota_produto SMALLINT 1–5, nota_atendimento SMALLINT 1–5, comentario TEXT ≤ 500, origem ['qr_mesa','online','totem','cupom'], created_at)` e `avaliacao_itens (avaliacao_id, produto_id, nota)` (opcional, por produto).
-- [ ] Pontos de coleta:
+- [x] Tabela `avaliacoes (id, pedido_id UNIQUE, nota_produto SMALLINT 1–5, nota_atendimento SMALLINT 1–5, comentario TEXT ≤ 500, origem ['qr_mesa','online','totem','cupom'], created_at)` e `avaliacao_itens (avaliacao_id, produto_id, nota)` (opcional, por produto).
+- [x] Pontos de coleta:
   - página de acompanhamento do pedido ([CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md) e [CAF-000038](CAF-000038-pedido-online-para-retirada.md)), quando o pedido fica `entregue`;
   - **QR Code impresso na conta/comprovante** (`js/pedido-print.js`), que abre `avaliar.html?t=<token>` — funciona também para pedidos feitos pelo barista;
   - tela final do totem ([CAF-000040](CAF-000040-totem-de-autoatendimento-no-balcao.md)), opcional.
-- [ ] RPC `registrar_avaliacao(p_token, p_payload)` para `anon`: token de uso único ligado ao pedido e válido por 48 h; uma avaliação por pedido.
-- [ ] Nota ≥ 4: mostrar "Que bom! Pode deixar sua avaliação no Google?" com o link já configurado no site. Nota ≤ 2: mostrar "Sentimos muito. Quer que a gente entre em contato?" com campo de telefone opcional (com consentimento).
-- [ ] Admin: aba "Avaliações" com média geral e por período, distribuição das notas, ranking de produtos por nota, lista de comentários com filtro (≤ 2 estrelas primeiro) e link para o pedido.
-- [ ] Alerta no admin (e opcional no PDV) para avaliação ≤ 2 recebida no dia.
+- [x] RPC `registrar_avaliacao(p_token, p_payload)` para `anon`: token de uso único ligado ao pedido e válido por 48 h; uma avaliação por pedido.
+- [x] Nota ≥ 4: mostrar "Que bom! Pode deixar sua avaliação no Google?" com o link já configurado no site. Nota ≤ 2: mostrar "Sentimos muito. Quer que a gente entre em contato?" com campo de telefone opcional (com consentimento).
+- [x] Admin: aba "Avaliações" com média geral e por período, distribuição das notas, ranking de produtos por nota, lista de comentários com filtro (≤ 2 estrelas primeiro) e link para o pedido.
+- [x] Alerta no admin (e opcional no PDV) para avaliação ≤ 2 recebida no dia.
 
 ### Requisitos não funcionais
-- [ ] **Anti-abuso:** token de uso único por pedido; sem token, não há avaliação.
-- [ ] **Privacidade:** o comentário não é público; contato só com consentimento.
-- [ ] **Leveza:** `avaliar.html` com < 50 KB de JS, funcionando bem em 3G.
+- [x] **Anti-abuso:** token de uso único por pedido; sem token, não há avaliação.
+- [x] **Privacidade:** o comentário não é público; contato só com consentimento.
+- [x] **Leveza:** `avaliar.html` com < 50 KB de JS, funcionando bem em 3G.
 
 ### Dependências técnicas
 - Token por pedido (o mesmo `pedido_token` da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md), ou um gerado na impressão da conta).
@@ -48,10 +48,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a conta foi impressa com QR, **quando** o cliente escaneia e dá 5 estrelas, **então** a avaliação é gravada e aparece o convite para o Google.
-- [ ] **Dado que** o cliente já avaliou aquele pedido, **quando** tenta avaliar de novo, **então** vê "Avaliação já registrada, obrigado!".
-- [ ] **Dado que** chegou uma avaliação de 1 estrela, **quando** o admin abre o painel, **então** vê o alerta e o comentário no topo.
-- [ ] **Dado que** houve 20 avaliações no mês, **quando** o admin abre o ranking, **então** vê a média por produto avaliado.
+- [x] **Dado que** a conta foi impressa com QR, **quando** o cliente escaneia e dá 5 estrelas, **então** a avaliação é gravada e aparece o convite para o Google.
+- [x] **Dado que** o cliente já avaliou aquele pedido, **quando** tenta avaliar de novo, **então** vê "Avaliação já registrada, obrigado!".
+- [x] **Dado que** chegou uma avaliação de 1 estrela, **quando** o admin abre o painel, **então** vê o alerta e o comentário no topo.
+- [x] **Dado que** houve 20 avaliações no mês, **quando** o admin abre o ranking, **então** vê a média por produto avaliado.
 
 ---
 

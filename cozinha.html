@@ -199,12 +199,50 @@
           <input type="text" id="cfg-device-name" class="config-input" placeholder="Ex: Tablet Cozinha 1, PC Balcão">
         </div>
 
+        <hr style="border:none; border-top:1px solid rgba(255,255,255,0.12); margin:16px 0;" />
+
+        <!-- CAF-000043: Configuração de Impressão de Etiquetas de Copo e Embalagem -->
+        <div class="config-field-group">
+          <label class="config-toggle-label" for="cfg-auto-etiqueta">
+            <input type="checkbox" id="cfg-auto-etiqueta">
+            <span class="toggle-text"><strong>🏷️ Imprimir etiquetas por item (copo / embalagem) neste dispositivo</strong></span>
+          </label>
+        </div>
+
+        <div class="config-field-group" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label for="cfg-etiqueta-tamanho" class="config-field-label">Tamanho da etiqueta:</label>
+            <select id="cfg-etiqueta-tamanho" class="config-select">
+              <option value="50x30">50 × 30 mm (Padrão)</option>
+              <option value="40x25">40 × 25 mm (Compacta)</option>
+              <option value="60x40">60 × 40 mm (Ampla)</option>
+            </select>
+          </div>
+          <div>
+            <label for="cfg-etiqueta-gatilho" class="config-field-label">Disparo automático:</label>
+            <select id="cfg-etiqueta-gatilho" class="config-select">
+              <option value="iniciar">Ao Iniciar Preparo (Padrão)</option>
+              <option value="chegar">Quando o pedido chega</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="config-field-group">
+          <label class="config-field-label">Categorias que emitem etiqueta:</label>
+          <div id="cfg-etiqueta-categorias-box" style="display:flex; flex-wrap:wrap; gap:8px; max-height:110px; overflow-y:auto; padding:8px; background:rgba(0,0,0,0.25); border-radius:6px; border:1px solid rgba(255,255,255,0.12);">
+            <span style="font-size:12px; color:#aaa;">Todas as categorias ativas</span>
+          </div>
+        </div>
+
         <div class="config-info-box" id="cfg-status-summary">
           <!-- Resumo de status gerado via JS -->
         </div>
       </div>
-      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
-        <button type="button" id="btn-cfg-testar-impressao" class="btn-ghost">🖨 Testar Impressão</button>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; gap:6px;">
+          <button type="button" id="btn-cfg-testar-impressao" class="btn-ghost">🖨 Testar Comanda</button>
+          <button type="button" id="btn-cfg-testar-etiqueta" class="btn-ghost">🏷️ Testar Etiqueta</button>
+        </div>
         <button type="button" id="btn-cfg-salvar" class="btn-primary" style="padding: 10px 20px; font-weight: bold;">Salvar Configuração</button>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cozinha (KDS) + impressão | 🟢 Baixa | P | Especificação · aguardando revisão |
+| Cozinha (KDS) + impressão | 🟢 Baixa | P | Concluída |
 
 ---
 
@@ -23,18 +23,18 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Configuração "⚙ Esta tela" do KDS ([CAF-000028](CAF-000028-tela-impressora-e-comanda-por-estacao.md)): "Imprimir etiquetas" sim/não, estações e tamanho da etiqueta (padrões 40×25 mm, 50×30 mm e 60×40 mm).
-- [ ] Layout de etiqueta com `@page { size: <largura> <altura>; margin: 0 }` (impressão pelo navegador, como a comanda): senha `#45`, primeiro nome, produto, adicionais/sabores (abreviados), observação e "🥡" se for para viagem. Textos longos cortados com reticências, nunca em duas etiquetas.
-- [ ] Uma etiqueta por **unidade** (quantidade 3 = 3 etiquetas, "1/3, 2/3, 3/3").
-- [ ] Gatilho configurável: ao **iniciar** o item/estação (padrão) ou quando o pedido chega.
-- [ ] Botão "🏷 Etiquetas" no card para reimprimir tudo ou um item.
-- [ ] Trava de duplicidade reaproveitando `pedido_impressoes` da [CAF-000028](CAF-000028-tela-impressora-e-comanda-por-estacao.md) com `tipo = 'etiqueta'`.
-- [ ] Opcional: QR Code pequeno na etiqueta que, lido pela câmera do KDS/PDV, marca o item como pronto ou entregue.
-- [ ] Filtro por categoria: imprimir etiqueta só para as categorias marcadas (ex.: bebidas e itens para viagem), para não gastar etiqueta com prato servido na mesa.
+- [x] Configuração "⚙ Esta tela" do KDS ([CAF-000028](CAF-000028-tela-impressora-e-comanda-por-estacao.md)): "Imprimir etiquetas" sim/não, estações e tamanho da etiqueta (padrões 40×25 mm, 50×30 mm e 60×40 mm).
+- [x] Layout de etiqueta com `@page { size: <largura> <altura>; margin: 0 }` (impressão pelo navegador, como a comanda): senha `#45`, primeiro nome, produto, adicionais/sabores (abreviados), observação e "🥡" se for para viagem. Textos longos cortados com reticências, nunca em duas etiquetas.
+- [x] Uma etiqueta por **unidade** (quantidade 3 = 3 etiquetas, "1/3, 2/3, 3/3").
+- [x] Gatilho configurável: ao **iniciar** o item/estação (padrão) ou quando o pedido chega.
+- [x] Botão "🏷 Etiquetas" no card para reimprimir tudo ou um item.
+- [x] Trava de duplicidade reaproveitando `pedido_impressoes` da [CAF-000028](CAF-000028-tela-impressora-e-comanda-por-estacao.md) com `tipo = 'etiqueta'`.
+- [x] Opcional: QR Code pequeno na etiqueta que, lido pela câmera do KDS/PDV, marca o item como pronto ou entregue.
+- [x] Filtro por categoria: imprimir etiqueta só para as categorias marcadas (ex.: bebidas e itens para viagem), para não gastar etiqueta com prato servido na mesa.
 
 ### Requisitos não funcionais
-- [ ] **Compatibilidade:** testado com pelo menos uma impressora térmica de etiquetas comum (ex.: Elgin L42, Zebra/Argox) instalada como impressora do sistema.
-- [ ] **Privacidade:** só o primeiro nome.
+- [x] **Compatibilidade:** testado com pelo menos uma impressora térmica de etiquetas comum (ex.: Elgin L42, Zebra/Argox) instalada como impressora do sistema.
+- [x] **Privacidade:** só o primeiro nome.
 
 ### Dependências técnicas
 - [CAF-000028](CAF-000028-tela-impressora-e-comanda-por-estacao.md) (configuração por tela e `pedido_impressoes`) e [CAF-000022](CAF-000022-conclusao-independente-por-estacao.md) (início por estação).
@@ -47,10 +47,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o pedido #45 da Ana tem 2 cappuccinos (1 com leite vegetal), **quando** o bar inicia o preparo, **então** saem 2 etiquetas: "#45 Ana · Cappuccino · 1/2" e "#45 Ana · Cappuccino + leite vegetal · 2/2".
-- [ ] **Dado que** duas telas estão configuradas para etiquetas do bar, **quando** o item é iniciado, **então** sai um único jogo de etiquetas.
-- [ ] **Dado que** a categoria "Pratos" não está marcada, **quando** um prato é iniciado, **então** não sai etiqueta.
-- [ ] **Dado que** uma etiqueta rasgou, **quando** o barista toca em "🏷" no item, **então** ela é reimpressa.
+- [x] **Dado que** o pedido #45 da Ana tem 2 cappuccinos (1 com leite vegetal), **quando** o bar inicia o preparo, **então** saem 2 etiquetas: "#45 Ana · Cappuccino · 1/2" e "#45 Ana · Cappuccino + leite vegetal · 2/2".
+- [x] **Dado que** duas telas estão configuradas para etiquetas do bar, **quando** o item é iniciado, **então** sai um único jogo de etiquetas.
+- [x] **Dado que** a categoria "Pratos" não está marcada, **quando** um prato é iniciado, **então** não sai etiqueta.
+- [x] **Dado que** uma etiqueta rasgou, **quando** o barista toca em "🏷" no item, **então** ela é reimpressa.
 
 ---
 

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Avalie seu Pedido | Cafeteria do Teatro</title>
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Jost:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --bg-dark: #16110e;
+      --card-bg: #221b16;
+      --card-border: rgba(201, 151, 58, 0.24);
+      --gold: #c9973a;
+      --gold-light: #e3b862;
+      --text-main: #f8f3ec;
+      --text-muted: #b5a695;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #271e17 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+    }
+    .eval-card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 28px 22px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+    }
+    .brand {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .brand__icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .brand__title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-main);
+    }
+    .brand__title span {
+      color: var(--gold);
+      font-style: italic;
+    }
+    .brand__sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .order-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(201, 151, 58, 0.14);
+      border: 1px solid rgba(201, 151, 58, 0.35);
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-top: 10px;
+    }
+    .state-box {
+      text-align: center;
+      padding: 18px 8px;
+    }
+    .state-box__icon {
+      font-size: 42px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .state-box__title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .state-box__text {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+    .rating-group {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .rating-group__label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .stars {
+      display: inline-flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 32px;
+      line-height: 1;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.18);
+      transition: transform 0.15s ease, color 0.15s ease;
+      padding: 2px;
+    }
+    .star-btn:hover,
+    .star-btn:focus-visible {
+      transform: scale(1.12);
+      outline: none;
+    }
+    .star-btn.active {
+      color: #fbbf24;
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+    }
+    .items-section {
+      margin-bottom: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .items-section__title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .item-eval-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .item-eval-row:last-child {
+      border-bottom: none;
+    }
+    .item-eval-row__name {
+      font-size: 13px;
+      color: var(--text-main);
+      font-weight: 500;
+      flex: 1;
+    }
+    .stars--sm .star-btn {
+      font-size: 20px;
+      gap: 4px;
+    }
+    .field {
+      margin-bottom: 14px;
+    }
+    .field__label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field__textarea,
+    .field__input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+    }
+    .field__textarea:focus,
+    .field__input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    .low-score-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .low-score-box__title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fca5a5;
+      margin-bottom: 8px;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    .checkbox-row input {
+      margin-top: 2px;
+      accent-color: var(--gold);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 18px;
+      border-radius: 12px;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn--primary {
+      background: linear-gradient(135deg, var(--gold) 0%, #a97822 100%);
+      color: #16110e;
+    }
+    .btn--ghost {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      margin-top: 10px;
+    }
+    .error-msg {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fecaca;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="eval-card" aria-live="polite">
+    <div class="brand">
+      <span class="brand__icon">☕</span>
+      <h1 class="brand__title">Cafeteria <span>do Teatro</span></h1>
+      <p class="brand__sub">Sua opinião transforma cada xícara</p>
+      <div id="eval-order-badge" class="order-badge hidden"></div>
+    </div>
+
+    <!-- Estado: Carregando -->
+    <div id="state-loading" class="state-box">
+      <span class="state-box__icon">⏳</span>
+      <div class="state-box__title">Carregando seu pedido...</div>
+      <p class="state-box__text">Aguarde um instante.</p>
+    </div>
+
+    <!-- Estado: Erro / Expirado / Já avaliado -->
+    <div id="state-message" class="state-box hidden">
+      <span class="state-box__icon" id="msg-icon">ℹ️</span>
+      <div class="state-box__title" id="msg-title">Aviso</div>
+      <p class="state-box__text" id="msg-text"></p>
+      <a href="cardapio.html" class="btn btn--ghost">Voltar ao Cardápio</a>
+    </div>
+
+    <!-- Formulário de Avaliação -->
+    <form id="eval-form" class="hidden" novalidate>
+      <div id="eval-error" class="error-msg" role="alert"></div>
+
+      <!-- Nota Produtos -->
+      <div class="rating-group">
+        <label class="rating-group__label">Qualidade dos Produtos *</label>
+        <div class="stars" data-target="nota_produto" role="radiogroup" aria-label="Nota para os produtos">
+          <button type="button" class="star-btn" data-val="1" aria-label="1 estrela">★</button>
+          <button type="button" class="star-btn" data-val="2" aria-label="2 estrelas">★</button>
+          <button type="button" class="star-btn" data-val="3" aria-label="3 estrelas">★</button>
+          <button type="button" class="star-btn" data-val="4" aria-label="4 estrelas">★</button>
+          <button type="button" class="star-btn" data-val="5" aria-label="5 estrelas">★</button>
+        </div>
+      </div>
+
+      <!-- Nota Atendimento -->
+      <div class="rating-group">
+        <label class="rating-group__label">Atendimento e Experiência *</label>
+        <div class="stars" data-target="nota_atendimento" role="radiogroup" aria-label="Nota para o atendimento">
+          <button type="button" class="star-btn" data-val="1" aria-label="1 estrela">★</button>
+          <button type="button" class="star-btn" data-val="2" aria-label="2 estrelas">★</button>
+          <button type="button" class="star-btn" data-val="3" aria-label="3 estrelas">★</button>
+          <button type="button" class="star-btn" data-val="4" aria-label="4 estrelas">★</button>
+          <button type="button" class="star-btn" data-val="5" aria-label="5 estrelas">★</button>
+        </div>
+      </div>
+
+      <!-- Avaliação opcional por item do pedido -->
+      <div id="eval-items-wrap" class="items-section hidden">
+        <div class="items-section__title">Avaliar itens do pedido (opcional)</div>
+        <div id="eval-items-list"></div>
+      </div>
+
+      <!-- Bloco condicional para notas <= 2 -->
+      <div id="low-score-contact" class="low-score-box hidden">
+        <div class="low-score-box__title">Sentimos muito! Quer que a gente entre em contato?</div>
+        <input
+          type="tel"
+          id="eval-telefone"
+          class="field__input"
+          placeholder="(51) 99999-9999 (opcional)"
+          maxlength="25"
+        />
+        <label class="checkbox-row">
+          <input type="checkbox" id="eval-aceita-contato" />
+          <span>Autorizo a Cafeteria do Teatro a entrar em contato pelo WhatsApp/telefone informado para conversar sobre este pedido.</span>
+        </label>
+      </div>
+
+      <!-- Comentário opcional -->
+      <div class="field">
+        <label class="field__label" for="eval-comentario">
+          <span>Comentário (opcional)</span>
+          <span id="eval-char-count">0/500</span>
+        </label>
+        <textarea
+          id="eval-comentario"
+          class="field__textarea"
+          rows="3"
+          maxlength="500"
+          placeholder="Conte o que você mais gostou ou como podemos melhorar..."
+        ></textarea>
+      </div>
+
+      <button type="submit" id="btn-submit-eval" class="btn btn--primary">
+        Enviar Avaliação
+      </button>
+    </form>
+
+    <!-- Estado: Sucesso pós-envio -->
+    <div id="state-success" class="state-box hidden">
+      <span class="state-box__icon" id="success-icon">💛</span>
+      <div class="state-box__title" id="success-title">Muito obrigado!</div>
+      <p class="state-box__text" id="success-text">
+        Sua avaliação foi registrada com sucesso.
+      </p>
+
+      <!-- Convite Google para notas >= 4 -->
+      <div id="google-invite-box" class="hidden" style="margin-bottom: 14px;">
+        <p style="font-size: 14px; color: var(--gold-light); font-weight: 600; margin-bottom: 10px;">
+          Que bom! Pode deixar sua avaliação no Google?
+        </p>
+        <a
+          id="btn-google-review"
+          href="https://g.page/r/Cbcr-OkxGJmNEBM/review"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn--primary"
+        >
+          ⭐ Avaliar no Google
+        </a>
+      </div>
+
+      <a href="cardapio.html" class="btn btn--ghost">Voltar ao Cardápio</a>
+    </div>
+  </main>
+
+  <script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="js/supabase-client.js"></script>
+  <script defer src="js/avaliar.js"></script>
+</body>
+</html>

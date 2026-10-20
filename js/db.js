@@ -1712,6 +1712,53 @@
           db.logger.error('clientePedido.recusar', err);
           throw err;
         }
+      },
+
+      async criarOnline(payload, idempotencyKey = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('criar_pedido_online', {
+              p_payload: payload,
+              p_idempotency_key: idempotencyKey
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.criarOnline', err);
+          throw err;
+        }
+      },
+
+      async consultarJanelasOnline(dataIso) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('consultar_janelas_ocupadas_online', {
+              p_data: dataIso
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.consultarJanelasOnline', err);
+          return null;
+        }
+      },
+
+      async marcarNaoRetirado(pedidoId, motivo = 'Não retirado pelo cliente') {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('marcar_pedido_nao_retirado', {
+              p_pedido_id: pedidoId,
+              p_motivo: motivo
+            });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('clientePedido.marcarNaoRetirado', err);
+          throw err;
+        }
       }
     },
 

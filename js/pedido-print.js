@@ -302,12 +302,16 @@
 
       const totalStr = totalGeral.toFixed(2).replace('.', ',');
 
-      html += `
+      const finalizarImpressaoConferencia = (pixBlockHtml = '') => {
+        const docHtml =
+          html +
+          `
           </table>
           <div class="divider"></div>
           <div class="bold" style="font-size: 17px; text-align: right;">
             TOTAL A PAGAR: R$ ${totalStr}
           </div>
+          ${pixBlockHtml}
           <div class="divider"></div>
           <div class="center" style="font-size: 11px; margin-top: 8px;">
             Agradecemos a sua preferência!<br>
@@ -316,8 +320,45 @@
         </body>
         </html>
       `;
+        executePrint(docHtml);
+      };
 
-      executePrint(html);
+      if (window.cafeteriaPix && totalGeral > 0) {
+        window.cafeteriaPix
+          .obterConfigPix()
+          .then((cfg) => {
+            if (cfg && cfg.imprimirNaConta !== false && cfg.chave) {
+              const pedNum =
+                (pedidosMesa && pedidosMesa[0] && (pedidosMesa[0].numero_pedido || pedidosMesa[0].id)) ||
+                mesaCodigo;
+              const res = window.cafeteriaPix.gerarPayloadPix({
+                chave: cfg.chave,
+                recebedor: cfg.recebedor,
+                cidade: cfg.cidade,
+                valor: totalGeral,
+                txid: `CAF${String(pedNum).replace(/[^A-Za-z0-9]/g, '')}`
+              });
+              if (res.ok) {
+                const qrDataUrl = window.cafeteriaPix.gerarQrDataUrl(res.payload, 4, 1);
+                if (qrDataUrl) {
+                  finalizarImpressaoConferencia(`
+                    <div class="divider"></div>
+                    <div class="center bold" style="font-size: 12px; margin-bottom: 4px;">PAGUE COM PIX (R$ ${totalStr})</div>
+                    <div class="center">
+                      <img src="${qrDataUrl}" alt="QR Code PIX" style="width: 145px; height: 145px; display: inline-block;" />
+                    </div>
+                    <div class="center" style="font-size: 10px;">Aponte a câmera do app do seu banco e avise o atendente</div>
+                  `);
+                  return;
+                }
+              }
+            }
+            finalizarImpressaoConferencia('');
+          })
+          .catch(() => finalizarImpressaoConferencia(''));
+      } else {
+        finalizarImpressaoConferencia('');
+      }
     },
 
     // Fechamento da Conta (Comprovante de Pagamento)
@@ -519,11 +560,180 @@
         `;
       }
 
+      // CAF-000042: QR Code opcional "Avalie seu pedido" no comprovante impresso
+      let qrAvaliacaoHtml = '';
+      const pedidoComToken = (pedidosMesa || []).find(p => p && p.pedido_token);
+      if (pedidoComToken && pedidoComToken.pedido_token && typeof qrcode === 'function') {
+        try {
+          const urlAvaliar = `${window.location.origin}/avaliar.html?t=${pedidoComToken.pedido_token}`;
+          const qr = qrcode(0, 'M');
+          qr.addData(urlAvaliar);
+          qr.make();
+          const qrImgTag = qr.createImgTag(3, 1);
+          qrAvaliacaoHtml = `
+            <div class="divider"></div>
+            <div class="center bold" style="font-size: 11px; margin-bottom: 4px;">⭐ AVALIE SEU PEDIDO</div>
+            <div class="center">${qrImgTag}</div>
+            <div class="center" style="font-size: 10px;">Aponte a câmera e conte como foi sua experiência!</div>
+          `;
+        } catch (e) {}
+      }
+
       html += `
+          ${qrAvaliacaoHtml}
           <div class="divider"></div>
           <div class="center" style="font-size: 11px; margin-top: 8px;">
             Muito obrigado e volte sempre!
           </div>
+        </body>
+        </html>
+      `;
+
+      executePrint(html);
+    },
+
+    // CAF-000043: Impressão de Etiquetas Adesivas por Unidade (Copo / Embalagem)
+    printEtiquetas: function (pedido, itens, options = {}) {
+      const listaItens = (itens || []).filter(it => !it.cancelado);
+      if (listaItens.length === 0) return;
+
+      const tamanho = options.tamanho || '50x30';
+      const dimMap = {
+        '40x25': { w: 40, h: 25, fontTop: '9px', fontProd: '11px', fontSub: '8.5px' },
+        '50x30': { w: 50, h: 30, fontTop: '10px', fontProd: '12px', fontSub: '9.5px' },
+        '60x40': { w: 60, h: 40, fontTop: '11px', fontProd: '14px', fontSub: '10.5px' }
+      };
+      const dim = dimMap[tamanho] || dimMap['50x30'];
+
+      const esc = (s) => (window.escapeHtml ? window.escapeHtml(String(s ?? '')) : String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+
+      // Privacidade (CAF-000043 RNF): apenas o primeiro nome do cliente
+      const nomeCompleto = String(pedido.cliente_nome || '').trim();
+      const primeiroNome = nomeCompleto ? nomeCompleto.split(/\s+/)[0] : (pedido.mesa_codigo || 'Balcão');
+      const numSenha = pedido.numero_pedido || pedido.id;
+      const iconeViagem = pedido.para_viagem ? ' 🥡' : '';
+
+      // Expande itens em unidades individuais (ex: quantidade 3 => 3 etiquetas)
+      const unidades = [];
+      listaItens.forEach(item => {
+        const qtd = Math.max(1, parseInt(item.quantidade, 10) || 1);
+        const adics = (item.pedido_item_adicionais || [])
+          .map(a => a.nome_adicional || a.nome || '')
+          .filter(Boolean);
+        const sabores = (item.pedido_item_sabores || [])
+          .map(s => '½ ' + (s.nome || ''))
+          .filter(Boolean);
+        const obs = String(item.observacoes || '').trim();
+
+        for (let u = 0; u < qtd; u++) {
+          unidades.push({
+            itemId: item.id,
+            nomeProduto: item.nome_produto || 'Item',
+            variacoes: [...sabores, ...adics.map(a => '+ ' + a)].join(', '),
+            obs: obs
+          });
+        }
+      });
+
+      const totalUnidades = unidades.length;
+      if (totalUnidades === 0) return;
+
+      const etiquetasHtml = unidades.map((un, idx) => {
+        const indiceStr = `${idx + 1}/${totalUnidades}`;
+        return `
+          <div class="etiqueta-page">
+            <div class="etq-header">
+              <span class="etq-senha">#${esc(numSenha)} ${esc(primeiroNome)}${iconeViagem}</span>
+              <span class="etq-counter">${indiceStr}</span>
+            </div>
+            <div class="etq-prod">${esc(un.nomeProduto)}</div>
+            ${un.variacoes ? `<div class="etq-var">${esc(un.variacoes)}</div>` : ''}
+            ${un.obs ? `<div class="etq-obs">Obs: ${esc(un.obs)}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            @page {
+              size: ${dim.w}mm ${dim.h}mm;
+              margin: 0;
+            }
+            html, body {
+              width: ${dim.w}mm;
+              font-family: Arial, Helvetica, sans-serif;
+              color: #000;
+              background: #fff;
+            }
+            .etiqueta-page {
+              width: ${dim.w}mm;
+              height: ${dim.h}mm;
+              padding: 1.5mm 2mm;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              page-break-after: always;
+              break-after: page;
+            }
+            .etiqueta-page:last-child {
+              page-break-after: auto;
+              break-after: auto;
+            }
+            .etq-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: ${dim.fontTop};
+              font-weight: 900;
+              border-bottom: 1px solid #000;
+              padding-bottom: 0.6mm;
+              margin-bottom: 0.8mm;
+              white-space: nowrap;
+            }
+            .etq-senha {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 76%;
+            }
+            .etq-counter {
+              font-weight: 900;
+            }
+            .etq-prod {
+              font-size: ${dim.fontProd};
+              font-weight: 800;
+              line-height: 1.15;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              margin-bottom: 0.5mm;
+            }
+            .etq-var {
+              font-size: ${dim.fontSub};
+              font-weight: 700;
+              line-height: 1.15;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .etq-obs {
+              font-size: ${dim.fontSub};
+              font-style: italic;
+              line-height: 1.15;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              margin-top: auto;
+            }
+          </style>
+        </head>
+        <body>
+          ${etiquetasHtml}
         </body>
         </html>
       `;

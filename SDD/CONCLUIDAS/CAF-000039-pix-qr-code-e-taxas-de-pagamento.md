@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| PDV + admin + banco | 🟡 Média | P | Especificação · aguardando revisão |
+| PDV + admin + banco | 🟡 Média | P | Concluída |
 
 ---
 
@@ -27,26 +27,26 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Configurações (`js/admin/settings.js`): chave Pix, nome do recebedor (≤ 25 caracteres) e cidade (≤ 15), usados no payload EMV.
-- [ ] Gerador de BR Code estático **com valor** (padrão EMV do Bacen: campos 26/52/53/54/58/59/60/62 com `txid` = `CAF<numero_pedido>`, CRC16-CCITT), em módulo JS local, sem serviço externo.
-- [ ] Exibir o QR + botão "Copiar código" em:
+- [x] Configurações (`js/admin/settings.js`): chave Pix, nome do recebedor (≤ 25 caracteres) e cidade (≤ 15), usados no payload EMV.
+- [x] Gerador de BR Code estático **com valor** (padrão EMV do Bacen: campos 26/52/53/54/58/59/60/62 com `txid` = `CAF<numero_pedido>`, CRC16-CCITT), em módulo JS local, sem serviço externo.
+- [x] Exibir o QR + botão "Copiar código" em:
   - fechamento de mesa ([CAF-000002](CONCLUIDAS/CAF-000002-fechamento-de-conta-da-mesa.md)) quando a forma escolhida for Pix (valor da parcela Pix, inclusive em conta dividida — [CAF-000012](CONCLUIDAS/CAF-000012-dividir-conta.md));
   - pedido de balcão com Pix;
   - prévia impressa da conta (`js/pedido-print.js`), opcional por configuração.
-- [ ] Modo "Mostrar ao cliente": QR em tela cheia no celular/tablet do barista.
-- [ ] A confirmação do recebimento continua **manual** ("Recebi o Pix"), porque o Pix estático não avisa o sistema.
-- [ ] Tabela `formas_pagamento_taxas (forma, taxa_percentual NUMERIC(5,2), taxa_fixa NUMERIC(10,2), prazo_recebimento_dias, vigente_desde)` editável no admin.
-- [ ] Gravar a taxa no momento do pagamento em `fechamento_pagamentos.taxa_valor` (e no pedido de balcão), para o histórico não mudar quando a taxa mudar.
-- [ ] Relatórios e caixa: faturamento bruto, taxas e **líquido** por forma de pagamento; opção de lançar as taxas do mês como despesa ([CAF-000035](CAF-000035-contas-a-pagar-e-fluxo-de-caixa.md)).
+- [x] Modo "Mostrar ao cliente": QR em tela cheia no celular/tablet do barista.
+- [x] A confirmação do recebimento continua **manual** ("Recebi o Pix"), porque o Pix estático não avisa o sistema.
+- [x] Tabela `formas_pagamento_taxas (forma, taxa_percentual NUMERIC(5,2), taxa_fixa NUMERIC(10,2), prazo_recebimento_dias, vigente_desde)` editável no admin.
+- [x] Gravar a taxa no momento do pagamento em `fechamento_pagamentos.taxa_valor` (e no pedido de balcão), para o histórico não mudar quando a taxa mudar.
+- [x] Relatórios e caixa: faturamento bruto, taxas e **líquido** por forma de pagamento; opção de lançar as taxas do mês como despesa ([CAF-000035](CONCLUIDAS/CAF-000035-contas-a-pagar-e-fluxo-de-caixa.md)).
 
 ### Requisitos não funcionais
-- [ ] **Correção:** o código gerado deve ser lido corretamente pelos apps dos principais bancos (testar em pelo menos 3) e ter CRC válido.
-- [ ] **Segurança:** a chave Pix é configuração pública (vai no QR), mas só `admin` altera; mudança registrada no log.
-- [ ] **Offline:** o QR é gerado localmente e funciona sem internet (o pagamento do cliente, obviamente, não).
+- [x] **Correção:** o código gerado deve ser lido corretamente pelos apps dos principais bancos (testar em pelo menos 3) e ter CRC válido.
+- [x] **Segurança:** a chave Pix é configuração pública (vai no QR), mas só `admin` altera; mudança registrada no log.
+- [x] **Offline:** o QR é gerado localmente e funciona sem internet (o pagamento do cliente, obviamente, não).
 
 ### Dependências técnicas
 - `fechamento_pagamentos` (`supabase/migration_caf_000002.sql`), `caixa_conferencia` (`supabase/migration_caf_000025_caixa.sql`), `get_admin_reports`.
-- Biblioteca de QR Code via CDN permitido (cdnjs/jsdelivr) ou a mesma da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md).
+- Biblioteca de QR Code via CDN permitido (cdnjs/jsdelivr) ou a mesma da [CAF-000037](CONCLUIDAS/CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md).
 
 ### Recursos necessários
 - Chave Pix da empresa e tabela de taxas da maquininha contratada.
@@ -55,10 +55,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a conta da Mesa 2 é R$ 47,50 em Pix, **quando** o barista escolhe Pix no fechamento, **então** aparece um QR que, lido no app do banco, já traz R$ 47,50 e o nome da cafeteria.
-- [ ] **Dado que** a conta é dividida em 2 no Pix, **quando** o barista avança, **então** cada parte tem seu QR com o valor da parte.
-- [ ] **Dado que** o crédito tem taxa de 3,1%, **quando** uma venda de R$ 100 é paga no crédito, **então** o relatório mostra bruto R$ 100, taxa R$ 3,10 e líquido R$ 96,90.
-- [ ] **Dado que** a taxa muda no mês seguinte, **quando** o admin consulta o mês anterior, **então** as taxas antigas continuam as mesmas.
+- [x] **Dado que** a conta da Mesa 2 é R$ 47,50 em Pix, **quando** o barista escolhe Pix no fechamento, **então** aparece um QR que, lido no app do banco, já traz R$ 47,50 e o nome da cafeteria.
+- [x] **Dado que** a conta é dividida em 2 no Pix, **quando** o barista avança, **então** cada parte tem seu QR com o valor da parte.
+- [x] **Dado que** o crédito tem taxa de 3,1%, **quando** uma venda de R$ 100 é paga no crédito, **então** o relatório mostra bruto R$ 100, taxa R$ 3,10 e líquido R$ 96,90.
+- [x] **Dado que** a taxa muda no mês seguinte, **quando** o admin consulta o mês anterior, **então** as taxas antigas continuam as mesmas.
 
 ---
 

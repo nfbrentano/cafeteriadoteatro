@@ -132,24 +132,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('relatorio-fila').textContent = data.tempo_preparo?.media_fila_minutos ? Math.round(data.tempo_preparo.media_fila_minutos) + ' min' : '0 min';
     document.getElementById('relatorio-preparo').textContent = data.tempo_preparo?.media_preparo_minutos ? Math.round(data.tempo_preparo.media_preparo_minutos) + ' min' : '0 min';
 
-    // 2. KPIs Financeiros e CMV (CAF-000032)
+    // 2. KPIs Financeiros e CMV (CAF-000032 + CAF-000039)
     const cmv = data.cmv_resumo || {};
     const elCmvTotal = document.getElementById('relatorio-cmv-total');
     const elCmvPct = document.getElementById('relatorio-cmv-pct');
     const elLucroBruto = document.getElementById('relatorio-lucro-bruto');
     const elMargemMedia = document.getElementById('relatorio-margem-media');
     const elCustoCortesias = document.getElementById('relatorio-custo-cortesias');
+    const elTaxasPag = document.getElementById('relatorio-taxas-pagamento');
+    const elFatLiquido = document.getElementById('relatorio-faturamento-liquido');
+
+    const totalBruto = Number(data.resumo?.faturamento_total || 0);
+    const totalTaxas = Number(
+      data.resumo?.taxas_pagamento_total ?? cmv.taxas_pagamento_total ?? 0
+    );
+    const totalLiquido = Number(
+      data.resumo?.faturamento_liquido ?? Math.max(0, totalBruto - totalTaxas)
+    );
 
     if (elCmvTotal) elCmvTotal.textContent = formatarDinheiro(cmv.cmv_total || 0);
     if (elCmvPct) elCmvPct.textContent = `${Number(cmv.cmv_percentual || 0).toFixed(1)}%`;
     if (elLucroBruto) elLucroBruto.textContent = formatarDinheiro(cmv.lucro_bruto_total || 0);
     if (elMargemMedia) elMargemMedia.textContent = `${Number(cmv.margem_media_percentual || 0).toFixed(1)}%`;
     if (elCustoCortesias) elCustoCortesias.textContent = formatarDinheiro(cmv.custo_cortesias || 0);
+    if (elTaxasPag) elTaxasPag.textContent = formatarDinheiro(totalTaxas);
+    if (elFatLiquido) elFatLiquido.textContent = formatarDinheiro(totalLiquido);
 
     // 3. Charts
     renderChartHorariosHora(data.horarios_pico_hora || []);
     renderChartHorariosDia(data.horarios_pico_dia || []);
     renderChartPagamentos(data.pagamentos || []);
+    renderTablePagamentos(data.pagamentos || []);
 
     // 4. Tables
     ultimosDadosMargem = data.margem_produtos || [];
@@ -260,12 +273,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const NOMES_FORMAS_PAG = {
+    pix: 'PIX',
+    dinheiro: 'Dinheiro',
+    cartao_credito: 'Cartão de Crédito',
+    credito: 'Cartão de Crédito',
+    cartao_debito: 'Cartão de Débito',
+    debito: 'Cartão de Débito',
+    conta_cliente: 'Conta do Cliente',
+    outros: 'Outros'
+  };
+
   function renderChartPagamentos(dados) {
     const ctx = document.getElementById('chartPagamentos').getContext('2d');
     if (chartPagamentos) chartPagamentos.destroy();
 
-    const labels = dados.map(d => String(d.metodo).toUpperCase());
-    const valores = dados.map(d => Number(d.total));
+    const labels = (dados || []).map(d => {
+      const f = d.forma || d.metodo || 'outros';
+      return NOMES_FORMAS_PAG[f] || String(f).toUpperCase();
+    });
+    const valores = (dados || []).map(d => Number(d.total_bruto ?? d.total_valor ?? d.total ?? 0));
 
     chartPagamentos = new Chart(ctx, {
       type: 'pie',
@@ -273,12 +300,92 @@ document.addEventListener('DOMContentLoaded', () => {
         labels: labels,
         datasets: [{
           data: valores,
-          backgroundColor: ['#a37153', '#53a38a', '#5365a3', '#a3536b', '#c2c2c2']
+          backgroundColor: ['#a37153', '#53a38a', '#5365a3', '#a3536b', '#d97706', '#c2c2c2']
         }]
       },
       options: { responsive: true }
     });
   }
+
+  function renderTablePagamentos(dados) {
+    const tbody = document.getElementById('relatorio-pagamentos-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!dados || dados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Sem pagamentos no período</td></tr>';
+      return;
+    }
+
+    let somaBruto = 0;
+    let somaTaxa = 0;
+    let somaLiquido = 0;
+
+    dados.forEach(d => {
+      const f = d.forma || d.metodo || 'outros';
+      const bruto = Number(d.total_bruto ?? d.total_valor ?? d.total ?? 0);
+      const taxa = Number(d.total_taxa || 0);
+      const liquido = Number(d.total_liquido ?? Math.max(0, bruto - taxa));
+
+      somaBruto += bruto;
+      somaTaxa += taxa;
+      somaLiquido += liquido;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${NOMES_FORMAS_PAG[f] || String(f).toUpperCase()}</strong></td>
+        <td style="text-align:right;">${formatarDinheiro(bruto)}</td>
+        <td style="text-align:right; color:#ef4444;">-${formatarDinheiro(taxa)}</td>
+        <td style="text-align:right; font-weight:700; color:#059669;">${formatarDinheiro(liquido)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const trTot = document.createElement('tr');
+    trTot.style.fontWeight = '700';
+    trTot.style.background = 'var(--bg-card)';
+    trTot.innerHTML = `
+      <td>TOTAL</td>
+      <td style="text-align:right;">${formatarDinheiro(somaBruto)}</td>
+      <td style="text-align:right; color:#ef4444;">-${formatarDinheiro(somaTaxa)}</td>
+      <td style="text-align:right; color:#059669;">${formatarDinheiro(somaLiquido)}</td>
+    `;
+    tbody.appendChild(trTot);
+  }
+
+  document.getElementById('btn-lancar-taxas-despesa')?.addEventListener('click', async () => {
+    const now = new Date();
+    const mes = now.getMonth() + 1;
+    const ano = now.getFullYear();
+    const btn = document.getElementById('btn-lancar-taxas-despesa');
+    if (btn) btn.disabled = true;
+
+    try {
+      const { data, error } = await window.cafeteriaSupabase.rpc('lancar_taxas_pagamento_despesa', {
+        p_ano: ano,
+        p_mes: mes
+      });
+      if (error) throw error;
+      if (window.cafeteriaAdmin?.toast) {
+        window.cafeteriaAdmin.toast(
+          'Despesa Lançada',
+          `${data.descricao}: ${formatarDinheiro(data.valor)} lançado em Contas a Pagar!`,
+          'success'
+        );
+      } else {
+        alert(`${data.descricao}: ${formatarDinheiro(data.valor)} lançado com sucesso!`);
+      }
+    } catch (err) {
+      console.error('Erro ao lançar taxas como despesa:', err);
+      if (window.cafeteriaAdmin?.toast) {
+        window.cafeteriaAdmin.toast('Aviso', err.message || 'Erro ao lançar despesa.', 'warn');
+      } else {
+        alert(err.message || 'Erro ao lançar despesa.');
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
 
   function renderTableMaisVendidos(dados) {
     const tbody = document.getElementById('relatorio-mais-vendidos');
@@ -290,8 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dados.forEach(d => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${d.produto_nome}</td>
-        <td>${d.quantidade}</td>
+        <td>${window.escapeHtml(d.nome_produto || d.produto_nome || '')}</td>
+        <td>${d.quantidade_vendida ?? d.quantidade ?? 0}</td>
         <td>${formatarDinheiro(d.faturamento)}</td>
       `;
       tbody.appendChild(tr);

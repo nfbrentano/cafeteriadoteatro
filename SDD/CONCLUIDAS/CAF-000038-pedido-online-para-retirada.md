@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Cardápio público + PDV + banco | 🟡 Média | M | Especificação · aguardando revisão |
+| Cardápio público + PDV + banco | 🟡 Média | M | Concluída |
 
 ---
 
@@ -29,24 +29,24 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Modo "Pedido para retirada" no `cardapio.html` (sem mesa), ativado por configuração `pedido_online_ativo` e respeitando `business_hours`.
-- [ ] Checkout com nome e telefone obrigatórios (cria ou reaproveita o cliente da [CAF-000033](CAF-000033-cadastro-de-clientes.md), com consentimento LGPD) e escolha de horário:
+- [x] Modo "Pedido para retirada" no `cardapio.html` (sem mesa), ativado por configuração `pedido_online_ativo` e respeitando `business_hours`.
+- [x] Checkout com nome e telefone obrigatórios (cria ou reaproveita o cliente da [CAF-000033](CAF-000033-cadastro-de-clientes.md), com consentimento LGPD) e escolha de horário:
   - "O quanto antes" (mostra o tempo estimado configurável, ex.: 15 min).
   - Agendado em janelas de 15 min dentro do horário de funcionamento, com antecedência mínima por produto (`produtos.antecedencia_min_horas`, ex.: bolo inteiro = 24 h).
-- [ ] Produtos marcáveis como "Só por encomenda" (não aparecem no PDV do dia, só no agendamento).
-- [ ] RPC `criar_pedido_online(p_payload, p_idempotency_key)` (`anon`, mesma validação e recálculo de preço da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md)), criando pedido com `origem = 'online'`, `para_viagem = true`, `retirada_em TIMESTAMPTZ` e `status = 'aguardando_aprovacao'`.
-- [ ] Limite de pedidos por janela de horário (configurável) para não lotar o intervalo do espetáculo.
-- [ ] PDV: seção "🌐 Online / Encomendas" com alerta; **Aprovar** / **Recusar** (com motivo). Na aprovação, abre o WhatsApp do cliente com mensagem pronta ("Pedido #52 confirmado para 19h45").
-- [ ] Encomendas agendadas entram no KDS só **X minutos antes** do horário de retirada (configurável por estação, padrão 20 min); antes disso ficam numa lista "Agendados" no PDV e no admin (agenda por dia).
-- [ ] Ao ficar pronto: aparece no painel de retirada ([CAF-000027](CAF-000027-painel-de-senhas-retirada.md)) e o PDV oferece "Avisar pelo WhatsApp" (link com mensagem pronta).
-- [ ] Página de acompanhamento com `pedido_token` (status e horário), igual à [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md).
-- [ ] Pagamento na retirada (formas atuais). Sinal/pagamento antecipado de encomenda pode ser feito com o Pix da [CAF-000039](CAF-000039-pix-qr-code-e-taxas-de-pagamento.md), confirmado manualmente pelo barista.
-- [ ] Botão "Compartilhar cardápio" no admin com o link e um QR para Instagram/cartaz.
+- [x] Produtos marcáveis como "Só por encomenda" (não aparecem no PDV do dia, só no agendamento).
+- [x] RPC `criar_pedido_online(p_payload, p_idempotency_key)` (`anon`, mesma validação e recálculo de preço da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md)), criando pedido com `origem = 'online'`, `para_viagem = true`, `retirada_em TIMESTAMPTZ` e `status = 'aguardando_aprovacao'`.
+- [x] Limite de pedidos por janela de horário (configurável) para não lotar o intervalo do espetáculo.
+- [x] PDV: seção "🌐 Online / Encomendas" com alerta; **Aprovar** / **Recusar** (com motivo). Na aprovação, abre o WhatsApp do cliente com mensagem pronta ("Pedido #52 confirmado para 19h45").
+- [x] Encomendas agendadas entram no KDS só **X minutos antes** do horário de retirada (configurável por estação, padrão 20 min); antes disso ficam numa lista "Agendados" no PDV e no admin (agenda por dia).
+- [x] Ao ficar pronto: aparece no painel de retirada ([CAF-000027](CAF-000027-painel-de-senhas-retirada.md)) e o PDV oferece "Avisar pelo WhatsApp" (link com mensagem pronta).
+- [x] Página de acompanhamento com `pedido_token` (status e horário), igual à [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md).
+- [x] Pagamento na retirada (formas atuais). Sinal/pagamento antecipado de encomenda pode ser feito com o Pix da [CAF-000039](CAF-000039-pix-qr-code-e-taxas-de-pagamento.md), confirmado manualmente pelo barista.
+- [x] Botão "Compartilhar cardápio" no admin com o link e um QR para Instagram/cartaz.
 
 ### Requisitos não funcionais
-- [ ] **Segurança:** mesmas regras da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md) (RPC, preço do banco, rate limit, aprovação humana). Telefone validado no formato BR.
-- [ ] **Não-comparecimento:** marcar pedido como "não retirado" (vira cancelado com motivo e estorno de estoque) e registrar no cadastro do cliente.
-- [ ] **SEO:** o link do cardápio continua indexável; páginas de acompanhamento com `noindex`.
+- [x] **Segurança:** mesmas regras da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md) (RPC, preço do banco, rate limit, aprovação humana). Telefone validado no formato BR.
+- [x] **Não-comparecimento:** marcar pedido como "não retirado" (vira cancelado com motivo e estorno de estoque) e registrar no cadastro do cliente.
+- [x] **SEO:** o link do cardápio continua indexável; páginas de acompanhamento com `noindex`.
 
 ### Dependências técnicas
 - [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md) (montagem de pedido no cardápio, RPC pública, status `aguardando_aprovacao`), [CAF-000033](CAF-000033-cadastro-de-clientes.md).
@@ -59,11 +59,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o pedido online está ativo, **quando** o cliente abre o link sem mesa, **então** pode montar o pedido e escolher "o quanto antes" ou um horário.
-- [ ] **Dado que** o bolo inteiro exige 24 h, **quando** o cliente tenta agendar para daqui a 3 h, **então** o horário não é oferecido.
-- [ ] **Dado que** o barista aprova um pedido, **quando** confirma, **então** o WhatsApp abre com a mensagem de confirmação para o telefone do cliente.
-- [ ] **Dado que** uma encomenda é para 15h, **quando** são 14h40, **então** ela entra no KDS (e não antes).
-- [ ] **Dado que** a janela das 19h30 atingiu o limite, **quando** outro cliente tenta agendar, **então** essa janela aparece indisponível.
+- [x] **Dado que** o pedido online está ativo, **quando** o cliente abre o link sem mesa, **então** pode montar o pedido e escolher "o quanto antes" ou um horário.
+- [x] **Dado que** o bolo inteiro exige 24 h, **quando** o cliente tenta agendar para daqui a 3 h, **então** o horário não é oferecido.
+- [x] **Dado que** o barista aprova um pedido, **quando** confirma, **então** o WhatsApp abre com a mensagem de confirmação para o telefone do cliente.
+- [x] **Dado que** uma encomenda é para 15h, **quando** são 14h40, **então** ela entra no KDS (e não antes).
+- [x] **Dado que** a janela das 19h30 atingiu o limite, **quando** outro cliente tenta agendar, **então** essa janela aparece indisponível.
 
 ---
 

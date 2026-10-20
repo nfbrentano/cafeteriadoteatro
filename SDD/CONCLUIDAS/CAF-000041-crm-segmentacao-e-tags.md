@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Admin + banco | 🟢 Baixa | M | Especificação · aguardando revisão |
+| Admin + banco | 🟢 Baixa | M | Concluída |
 
 ---
 
@@ -27,26 +27,26 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] View `v_clientes_rfv` com, por cliente: data da última compra, nº de pedidos nos últimos 90 dias, total gasto nos últimos 90 dias e **segmento**:
+- [x] View `v_clientes_rfv` com, por cliente: data da última compra, nº de pedidos nos últimos 90 dias, total gasto nos últimos 90 dias e **segmento**:
   - **Novo:** 1ª compra há ≤ 30 dias.
   - **Fiel:** ≥ 4 pedidos em 90 dias e última compra há ≤ 30 dias.
   - **Ativo:** última compra há ≤ 30 dias (e não é fiel nem novo).
   - **Em risco:** última compra entre 31 e 90 dias.
   - **Perdido:** última compra há mais de 90 dias.
   Os limites ficam em `configuracoes` e podem ser ajustados.
-- [ ] Tabelas `cliente_tags (id, nome, cor)` e `cliente_tag_vinculos (cliente_id, tag_id)`; aplicar ou remover tag na ficha e em lote na lista.
-- [ ] Aba "Clientes" ([CAF-000033](CAF-000033-cadastro-de-clientes.md)): filtros por segmento, tag, produto já comprado e período; cartões com a quantidade por segmento e a variação em relação ao mês anterior.
-- [ ] "Campanhas":
+- [x] Tabelas `cliente_tags (id, nome, cor)` e `cliente_tag_vinculos (cliente_id, tag_id)`; aplicar ou remover tag na ficha e em lote na lista.
+- [x] Aba "Clientes" ([CAF-000033](CAF-000033-cadastro-de-clientes.md)): filtros por segmento, tag, produto já comprado e período; cartões com a quantidade por segmento e a variação em relação ao mês anterior.
+- [x] "Campanhas":
   - criar campanha com nome, filtro salvo e mensagem com variáveis (`{primeiro_nome}`, `{produto_favorito}`);
   - lista de destinatários **só com `aceita_contato = true`**;
   - botão "Enviar" por destinatário abre o `wa.me` com o texto pronto e marca como enviado (tabela `campanha_envios`);
   - opcional: cupom da campanha, ligado a uma promoção existente ([CAF-000017](CONCLUIDAS/CAF-000017-aba-promos-no-cardapio-publico.md)), para medir conversão.
-- [ ] Relatório da campanha: enviados, clientes que compraram nos 7 dias seguintes e faturamento gerado.
+- [x] Relatório da campanha: enviados, clientes que compraram nos 7 dias seguintes e faturamento gerado.
 
 ### Requisitos não funcionais
-- [ ] **LGPD:** só clientes com consentimento aparecem nas campanhas; link "não quero mais receber" registrado como `aceita_contato = false` pelo barista ou admin; exportação só para `admin`.
-- [ ] **Desempenho:** view com índice em `pedidos(cliente_id, created_at)`; lista de 5 mil clientes em < 1 s.
-- [ ] **Anti-spam:** limite de uma campanha por cliente a cada 7 dias (configurável).
+- [x] **LGPD:** só clientes com consentimento aparecem nas campanhas; link "não quero mais receber" registrado como `aceita_contato = false` pelo barista ou admin; exportação só para `admin`.
+- [x] **Desempenho:** view com índice em `pedidos(cliente_id, created_at)`; lista de 5 mil clientes em < 1 s.
+- [x] **Anti-spam:** limite de uma campanha por cliente a cada 7 dias (configurável).
 
 ### Dependências técnicas
 - [CAF-000033](CAF-000033-cadastro-de-clientes.md) (clientes e `pedidos.cliente_id`).
@@ -59,10 +59,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a Ana não compra há 45 dias, **quando** o admin abre os clientes, **então** ela aparece como "Em risco".
-- [ ] **Dado que** o admin cria a campanha "Sentimos sua falta" para "Em risco" + "aceita contato", **quando** clica em Enviar na linha da Ana, **então** o WhatsApp abre com "Oi Ana, …" e o envio fica registrado.
-- [ ] **Dado que** um cliente não aceitou contato, **quando** a lista da campanha é montada, **então** ele não aparece.
-- [ ] **Dado que** a Ana comprou 3 dias depois do envio, **quando** o admin abre o relatório da campanha, **então** ela conta como conversão.
+- [x] **Dado que** a Ana não compra há 45 dias, **quando** o admin abre os clientes, **então** ela aparece como "Em risco".
+- [x] **Dado que** o admin cria a campanha "Sentimos sua falta" para "Em risco" + "aceita contato", **quando** clica em Enviar na linha da Ana, **então** o WhatsApp abre com "Oi Ana, …" e o envio fica registrado.
+- [x] **Dado que** um cliente não aceitou contato, **quando** a lista da campanha é montada, **então** ele não aparece.
+- [x] **Dado que** a Ana comprou 3 dias depois do envio, **quando** o admin abre o relatório da campanha, **então** ela conta como conversão.
 
 ---
 

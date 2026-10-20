@@ -420,6 +420,569 @@
         }
       });
     }
+
+    // Conferência Cega e Limite de Diferença de Caixa (CAF-000044)
+    const toggleCaixaCego = document.getElementById('config-caixa-conferencia-cega');
+    const inputLimiteCaixa = document.getElementById('config-caixa-limite-diferenca');
+    const btnSalvarConfigCaixa = document.getElementById('btn-salvar-config-caixa');
+
+    if (toggleCaixaCego || inputLimiteCaixa) {
+      (async () => {
+        try {
+          const { data } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', ['caixa_conferencia_cega', 'caixa_limite_diferenca_obs']);
+          if (Array.isArray(data)) {
+            data.forEach((row) => {
+              if (row.chave === 'caixa_conferencia_cega' && toggleCaixaCego) {
+                toggleCaixaCego.checked =
+                  typeof row.valor === 'boolean'
+                    ? row.valor
+                    : String(row.valor) !== 'false';
+              }
+              if (row.chave === 'caixa_limite_diferenca_obs' && inputLimiteCaixa) {
+                inputLimiteCaixa.value = Number(row.valor || 5).toFixed(2);
+              }
+            });
+          }
+        } catch (err) {
+          console.warn('Erro ao carregar configurações de caixa:', err);
+        }
+      })();
+
+      toggleCaixaCego?.addEventListener('change', async (e) => {
+        const ativo = e.target.checked;
+        try {
+          const { error } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert({
+              chave: 'caixa_conferencia_cega',
+              valor: ativo,
+              updated_at: new Date().toISOString()
+            });
+          if (error) throw error;
+          if (window.cafeteriaDB?.settings?.update) {
+            await window.cafeteriaDB.settings.update('caixa_conferencia_cega', String(ativo));
+          }
+          admin.toast('Sucesso', `Conferência cega ${ativo ? 'ativada' : 'desativada'}.`, 'success');
+        } catch (err) {
+          console.error('Erro ao salvar caixa_conferencia_cega:', err);
+          admin.toast('Erro', 'Falha ao salvar configuração de conferência cega.', 'error');
+          e.target.checked = !ativo;
+        }
+      });
+
+      btnSalvarConfigCaixa?.addEventListener('click', async () => {
+        const val = Math.max(0, parseFloat(inputLimiteCaixa?.value) || 0);
+        btnSalvarConfigCaixa.disabled = true;
+        try {
+          const { error } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert({
+              chave: 'caixa_limite_diferenca_obs',
+              valor: val,
+              updated_at: new Date().toISOString()
+            });
+          if (error) throw error;
+          if (window.cafeteriaDB?.settings?.update) {
+            await window.cafeteriaDB.settings.update('caixa_limite_diferenca_obs', val.toFixed(2));
+          }
+          admin.toast('Sucesso', `Limite de diferença atualizado para R$ ${val.toFixed(2)}.`, 'success');
+        } catch (err) {
+          console.error('Erro ao salvar limite de diferença:', err);
+          admin.toast('Erro', 'Falha ao salvar limite de diferença.', 'error');
+        } finally {
+          btnSalvarConfigCaixa.disabled = false;
+        }
+      });
+
+      // --- CAF-000039: PIX QR CODE (BR CODE EMV) E TAXAS DE PAGAMENTO ---
+      const inputPixChave = document.getElementById('config-pix-chave');
+      const inputPixRecebedor = document.getElementById('config-pix-recebedor');
+      const inputPixCidade = document.getElementById('config-pix-cidade');
+      const togglePixImprimir = document.getElementById('config-pix-imprimir-conta');
+      const btnSalvarPix = document.getElementById('btn-salvar-config-pix');
+      const btnTestarPix = document.getElementById('btn-testar-qr-pix');
+      const previewPixBox = document.getElementById('config-pix-teste-preview');
+
+      const tbodyTaxas = document.getElementById('config-taxas-pagamento-tbody');
+      const btnSalvarTaxas = document.getElementById('btn-salvar-taxas-pagamento');
+
+      async function carregarConfigPixETaxas() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const { data: pixRows } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', ['pix_chave', 'pix_nome_recebedor', 'pix_cidade', 'pix_imprimir_na_conta']);
+
+          (pixRows || []).forEach((r) => {
+            const valStr = typeof r.valor === 'string' ? r.valor : (r.valor !== null && r.valor !== undefined ? String(r.valor).replace(/^"|"$/g, '') : '');
+            if (r.chave === 'pix_chave' && inputPixChave) inputPixChave.value = valStr;
+            if (r.chave === 'pix_nome_recebedor' && inputPixRecebedor) inputPixRecebedor.value = valStr || 'CAFETERIA DO TEATRO';
+            if (r.chave === 'pix_cidade' && inputPixCidade) inputPixCidade.value = valStr || 'FORTALEZA';
+            if (r.chave === 'pix_imprimir_na_conta' && togglePixImprimir) {
+              togglePixImprimir.checked = r.valor === true || r.valor === 'true';
+            }
+          });
+        } catch (err) {
+          console.warn('Erro ao carregar configurações Pix:', err);
+        }
+
+        if (tbodyTaxas) {
+          try {
+            const { data: taxasRows, error } = await window.cafeteriaSupabase
+              .from('formas_pagamento_taxas')
+              .select('*')
+              .order('codigo', { ascending: true });
+            if (error) throw error;
+
+            const lista = taxasRows && taxasRows.length > 0 ? taxasRows : [
+              { codigo: 'dinheiro', nome: 'Dinheiro', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true },
+              { codigo: 'pix', nome: 'Pix', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true },
+              { codigo: 'cartao_debito', nome: 'Cartão de Débito', taxa_percentual: 1.39, taxa_fixa: 0, prazo_recebimento_dias: 1, ativo: true },
+              { codigo: 'cartao_credito', nome: 'Cartão de Crédito', taxa_percentual: 3.19, taxa_fixa: 0, prazo_recebimento_dias: 30, ativo: true },
+              { codigo: 'outros', nome: 'Outros / Vale', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true }
+            ];
+
+            tbodyTaxas.innerHTML = lista.map((t) => `
+              <tr data-codigo="${t.codigo}">
+                <td style="font-weight:600;">${t.nome || t.codigo}</td>
+                <td>
+                  <input type="number" class="field__input taxa-perc-input" step="0.01" min="0" max="100" value="${Number(t.taxa_percentual || 0).toFixed(2)}" style="max-width:110px;" />
+                </td>
+                <td>
+                  <input type="number" class="field__input taxa-fixa-input" step="0.01" min="0" value="${Number(t.taxa_fixa || 0).toFixed(2)}" style="max-width:110px;" />
+                </td>
+                <td>
+                  <input type="number" class="field__input taxa-prazo-input" step="1" min="0" value="${parseInt(t.prazo_recebimento_dias || 0, 10)}" style="max-width:95px;" />
+                </td>
+                <td style="text-align:center;">
+                  <input type="checkbox" class="taxa-ativo-input" ${t.ativo !== false ? 'checked' : ''} />
+                </td>
+              </tr>
+            `).join('');
+          } catch (err) {
+            console.warn('Erro ao carregar formas_pagamento_taxas:', err);
+            tbodyTaxas.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#dc2626;">Erro ao carregar taxas de pagamento. Execute a migration CAF-000039.</td></tr>';
+          }
+        }
+      }
+
+      carregarConfigPixETaxas();
+
+      btnSalvarPix?.addEventListener('click', async () => {
+        const chave = (inputPixChave?.value || '').trim();
+        const recebedor = (inputPixRecebedor?.value || 'CAFETERIA DO TEATRO').trim().slice(0, 25);
+        const cidade = (inputPixCidade?.value || 'FORTALEZA').trim().slice(0, 15);
+        const imprimir = Boolean(togglePixImprimir?.checked);
+
+        btnSalvarPix.disabled = true;
+        try {
+          const payload = [
+            { chave: 'pix_chave', valor: chave, updated_at: new Date().toISOString() },
+            { chave: 'pix_nome_recebedor', valor: recebedor, updated_at: new Date().toISOString() },
+            { chave: 'pix_cidade', valor: cidade, updated_at: new Date().toISOString() },
+            { chave: 'pix_imprimir_na_conta', valor: imprimir, updated_at: new Date().toISOString() }
+          ];
+          const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
+          if (error) throw error;
+
+          if (window.cafeteriaPix) {
+            await window.cafeteriaPix.getPixConfig(true);
+          }
+          admin.toast('Sucesso', 'Configurações Pix salvas com sucesso!', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar configurações Pix:', err);
+          admin.toast('Erro', 'Não foi possível salvar configurações Pix.', 'error');
+        } finally {
+          btnSalvarPix.disabled = false;
+        }
+      });
+
+      btnTestarPix?.addEventListener('click', () => {
+        const chave = (inputPixChave?.value || '').trim();
+        if (!chave) {
+          admin.toast('Chave Pix vazia', 'Informe uma chave Pix para testar o QR Code.', 'error');
+          return;
+        }
+        const recebedor = (inputPixRecebedor?.value || 'CAFETERIA DO TEATRO').trim();
+        const cidade = (inputPixCidade?.value || 'FORTALEZA').trim();
+
+        if (!window.cafeteriaPix) {
+          admin.toast('Erro', 'Módulo Pix (pix-brcode.js) não carregado.', 'error');
+          return;
+        }
+
+        const brCode = window.cafeteriaPix.gerarPayload({
+          chave,
+          nomeRecebedor: recebedor,
+          cidade,
+          valor: 1.00,
+          txid: 'TESTE01'
+        });
+        const svgHtml = window.cafeteriaPix.gerarQrSvg(brCode, 4);
+
+        if (previewPixBox) {
+          previewPixBox.style.display = 'block';
+          previewPixBox.innerHTML = `
+            <div style="font-weight:700; margin-bottom:6px; color:#0f766e;">QR Code Pix de Teste (R$ 1,00)</div>
+            <div style="display:inline-block; background:#fff; padding:8px; border-radius:8px; border:1px solid #e2e8f0;">${svgHtml}</div>
+            <div style="margin-top:8px; font-family:monospace; font-size:0.72rem; word-break:break-all; background:#fff; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">${brCode}</div>
+          `;
+        }
+      });
+
+      btnSalvarTaxas?.addEventListener('click', async () => {
+        if (!tbodyTaxas || !window.cafeteriaSupabase) return;
+        const rows = Array.from(tbodyTaxas.querySelectorAll('tr[data-codigo]'));
+        if (!rows.length) return;
+
+        btnSalvarTaxas.disabled = true;
+        try {
+          for (const tr of rows) {
+            const codigo = tr.getAttribute('data-codigo');
+            const taxaPerc = Math.max(0, parseFloat(tr.querySelector('.taxa-perc-input')?.value) || 0);
+            const taxaFixa = Math.max(0, parseFloat(tr.querySelector('.taxa-fixa-input')?.value) || 0);
+            const prazo = Math.max(0, parseInt(tr.querySelector('.taxa-prazo-input')?.value, 10) || 0);
+            const ativo = Boolean(tr.querySelector('.taxa-ativo-input')?.checked);
+
+            const { error } = await window.cafeteriaSupabase
+              .from('formas_pagamento_taxas')
+              .update({
+                taxa_percentual: taxaPerc,
+                taxa_fixa: taxaFixa,
+                prazo_recebimento_dias: prazo,
+                ativo,
+                updated_at: new Date().toISOString()
+              })
+              .eq('codigo', codigo);
+            if (error) throw error;
+          }
+          admin.toast('Sucesso', 'Taxas de pagamento atualizadas! Valem apenas para novas vendas.', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar taxas de pagamento:', err);
+          admin.toast('Erro', 'Não foi possível salvar as taxas de pagamento.', 'error');
+        } finally {
+          btnSalvarTaxas.disabled = false;
+        }
+      });
+
+      // --- CAF-000038: PEDIDO ONLINE PARA RETIRADA & ENCOMENDAS ---
+      const toggleOnlineAtivo = document.getElementById('config-pedido-online-ativo');
+      const inputOnlineTempo = document.getElementById('config-pedido-online-tempo');
+      const inputOnlineLimite = document.getElementById('config-pedido-online-limite');
+      const inputOnlineKds = document.getElementById('config-pedido-online-kds');
+      const btnSalvarOnline = document.getElementById('btn-salvar-config-online');
+      const btnCompartilharCardapio = document.getElementById('btn-compartilhar-cardapio-online');
+      const shareBoxOnline = document.getElementById('config-online-qr-share-box');
+
+      async function carregarConfigOnline() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const { data } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', ['pedido_online_ativo', 'pedido_online_tempo_estimado_min', 'pedido_online_limite_janela', 'pedido_online_antecedencia_kds_min']);
+          (data || []).forEach((r) => {
+            if (r.chave === 'pedido_online_ativo' && toggleOnlineAtivo) {
+              toggleOnlineAtivo.checked = !(r.valor === false || r.valor === 'false');
+            }
+            if (r.chave === 'pedido_online_tempo_estimado_min' && inputOnlineTempo) {
+              inputOnlineTempo.value = parseInt(r.valor, 10) || 15;
+            }
+            if (r.chave === 'pedido_online_limite_janela' && inputOnlineLimite) {
+              inputOnlineLimite.value = parseInt(r.valor, 10) || 5;
+            }
+            if (r.chave === 'pedido_online_antecedencia_kds_min' && inputOnlineKds) {
+              inputOnlineKds.value = parseInt(r.valor, 10) || 20;
+            }
+          });
+        } catch (e) {
+          console.warn('Erro ao carregar configurações de pedido online:', e);
+        }
+      }
+      carregarConfigOnline();
+
+      btnSalvarOnline?.addEventListener('click', async () => {
+        if (!window.cafeteriaSupabase) return;
+        btnSalvarOnline.disabled = true;
+        try {
+          const payload = [
+            { chave: 'pedido_online_ativo', valor: Boolean(toggleOnlineAtivo?.checked), updated_at: new Date().toISOString() },
+            { chave: 'pedido_online_tempo_estimado_min', valor: Math.max(5, parseInt(inputOnlineTempo?.value, 10) || 15), updated_at: new Date().toISOString() },
+            { chave: 'pedido_online_limite_janela', valor: Math.max(1, parseInt(inputOnlineLimite?.value, 10) || 5), updated_at: new Date().toISOString() },
+            { chave: 'pedido_online_antecedencia_kds_min', valor: Math.max(5, parseInt(inputOnlineKds?.value, 10) || 20), updated_at: new Date().toISOString() }
+          ];
+          const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Configurações de pedido online salvas!', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar configurações online:', err);
+          admin.toast('Erro', 'Falha ao salvar configurações online.', 'error');
+        } finally {
+          btnSalvarOnline.disabled = false;
+        }
+      });
+
+      btnCompartilharCardapio?.addEventListener('click', () => {
+        if (!shareBoxOnline) return;
+        const urlCardapio = `${window.location.origin}/cardapio.html`;
+        let svgQr = '';
+        if (typeof qrcode === 'function') {
+          try {
+            const qr = qrcode(0, 'M');
+            qr.addData(urlCardapio);
+            qr.make();
+            svgQr = qr.createSvgTag(4, 2);
+          } catch (e) {}
+        }
+        shareBoxOnline.style.display = 'block';
+        shareBoxOnline.innerHTML = `
+          <div style="font-weight:700; margin-bottom:8px;">📲 Link & QR Code para Bio do Instagram, WhatsApp e Cartaz</div>
+          ${svgQr ? `<div style="display:inline-block; background:#fff; padding:10px; border-radius:8px; margin-bottom:10px;">${svgQr}</div>` : ''}
+          <div style="display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;">
+            <input type="text" class="field__input" value="${urlCardapio}" readonly style="max-width:340px; text-align:center;" id="input-share-url-cardapio" />
+            <button type="button" class="btn btn--primary" id="btn-copy-url-cardapio">📋 Copiar Link</button>
+          </div>
+        `;
+        document.getElementById('btn-copy-url-cardapio')?.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(urlCardapio);
+            admin.toast('Copiado!', 'Link do cardápio copiado para a área de transferência.', 'success');
+          } catch (e) {
+            document.getElementById('input-share-url-cardapio')?.select();
+            document.execCommand('copy');
+            admin.toast('Copiado!', 'Link do cardápio copiado.', 'success');
+          }
+        });
+      });
+
+      // --- CAF-000040: TOTEM DE AUTOATENDIMENTO NO BALCÃO ---
+      const btnGerarTotem = document.getElementById('btn-gerar-pareamento-totem');
+      const boxCodigoTotem = document.getElementById('totem-codigo-gerado-box');
+      const tbodyTotens = document.getElementById('totens-table-body');
+      const inputTotemExpiracao = document.getElementById('config-totem-expiracao');
+      const inputTotemAvisoTitulo = document.getElementById('config-totem-aviso-titulo');
+      const inputTotemAvisoSub = document.getElementById('config-totem-aviso-sub');
+      const btnSalvarConfigTotem = document.getElementById('btn-salvar-config-totem');
+      const selTotemSugCategoria = document.getElementById('totem-sug-categoria');
+      const selTotemSugProduto = document.getElementById('totem-sug-produto');
+      const inputTotemSugFrase = document.getElementById('totem-sug-frase');
+      const btnAddTotemSugestao = document.getElementById('btn-add-totem-sugestao');
+      const tbodyTotemSugestoes = document.getElementById('totem-sugestoes-tbody');
+
+      async function carregarConfigTotem() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const { data } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', ['totem_expiracao_pagamento_min', 'totem_aviso_teatro_titulo', 'totem_aviso_teatro_subtitulo']);
+          (data || []).forEach((r) => {
+            if (r.chave === 'totem_expiracao_pagamento_min' && inputTotemExpiracao) {
+              inputTotemExpiracao.value = parseInt(r.valor, 10) || 15;
+            }
+            if (r.chave === 'totem_aviso_teatro_titulo' && inputTotemAvisoTitulo) {
+              inputTotemAvisoTitulo.value = String(r.valor ?? '').replace(/^"|"$/g, '') || '🎭 Hoje no Teatro Univates';
+            }
+            if (r.chave === 'totem_aviso_teatro_subtitulo' && inputTotemAvisoSub) {
+              inputTotemAvisoSub.value = String(r.valor ?? '').replace(/^"|"$/g, '') || '';
+            }
+          });
+        } catch (e) {
+          console.warn('Erro ao carregar opções do totem:', e);
+        }
+      }
+      carregarConfigTotem();
+
+      btnSalvarConfigTotem?.addEventListener('click', async () => {
+        if (!window.cafeteriaSupabase) return;
+        btnSalvarConfigTotem.disabled = true;
+        try {
+          const payload = [
+            { chave: 'totem_expiracao_pagamento_min', valor: Math.max(5, parseInt(inputTotemExpiracao?.value, 10) || 15), updated_at: new Date().toISOString() },
+            { chave: 'totem_aviso_teatro_titulo', valor: (inputTotemAvisoTitulo?.value || '🎭 Hoje no Teatro Univates').trim(), updated_at: new Date().toISOString() },
+            { chave: 'totem_aviso_teatro_subtitulo', valor: (inputTotemAvisoSub?.value || '').trim(), updated_at: new Date().toISOString() }
+          ];
+          const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Opções do Totem salvas!', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar opções do totem:', err);
+          admin.toast('Erro', 'Não foi possível salvar opções do Totem.', 'error');
+        } finally {
+          btnSalvarConfigTotem.disabled = false;
+        }
+      });
+
+      async function carregarSelectsSugestoesTotem() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const [{ data: cats }, { data: prods }] = await Promise.all([
+            window.cafeteriaSupabase.from('categorias').select('id, nome').eq('ativo', true).order('ordem'),
+            window.cafeteriaSupabase.from('produtos').select('id, nome, preco').eq('ativo', true).order('nome')
+          ]);
+          if (selTotemSugCategoria && cats) {
+            selTotemSugCategoria.innerHTML = `<option value="">Qualquer categoria no carrinho</option>` +
+              cats.map((c) => `<option value="${c.id}">${window.escapeHtml ? window.escapeHtml(c.nome) : c.nome}</option>`).join('');
+          }
+          if (selTotemSugProduto && prods) {
+            selTotemSugProduto.innerHTML = `<option value="">Selecione um produto...</option>` +
+              prods.map((p) => `<option value="${p.id}">${window.escapeHtml ? window.escapeHtml(p.nome) : p.nome} (R$ ${Number(p.preco || 0).toFixed(2).replace('.', ',')})</option>`).join('');
+          }
+        } catch (e) {}
+      }
+
+      async function carregarSugestoesTotem() {
+        if (!tbodyTotemSugestoes || !window.cafeteriaSupabase) return;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('totem_sugestoes')
+            .select('id, gatilho_categoria_id, produto_sugerido_id, frase_destaque, categorias(nome), produtos!totem_sugestoes_produto_sugerido_id_fkey(nome, preco)')
+            .eq('ativo', true)
+            .order('ordem');
+          if (error) throw error;
+          if (!data || data.length === 0) {
+            tbodyTotemSugestoes.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Nenhuma sugestão personalizada cadastrada (o totem usará sugestões automáticas).</td></tr>';
+            return;
+          }
+          tbodyTotemSugestoes.innerHTML = data.map((s) => {
+            const catNome = s.categorias?.nome || 'Qualquer item no carrinho';
+            const prodNome = s.produtos?.nome || s.produto_sugerido_id;
+            const prodPreco = s.produtos?.preco ? ` (R$ ${Number(s.produtos.preco).toFixed(2).replace('.', ',')})` : '';
+            return `
+              <tr>
+                <td>${window.escapeHtml ? window.escapeHtml(catNome) : catNome}</td>
+                <td><strong>${window.escapeHtml ? window.escapeHtml(prodNome) : prodNome}</strong>${prodPreco}</td>
+                <td>${window.escapeHtml ? window.escapeHtml(s.frase_destaque || '') : (s.frase_destaque || '')}</td>
+                <td>
+                  <button type="button" class="btn btn--danger btn--sm btn-del-totem-sug" data-id="${s.id}">Excluir</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          tbodyTotemSugestoes.querySelectorAll('.btn-del-totem-sug').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+              const id = btn.getAttribute('data-id');
+              await window.cafeteriaSupabase.from('totem_sugestoes').delete().eq('id', id);
+              carregarSugestoesTotem();
+            });
+          });
+        } catch (e) {
+          tbodyTotemSugestoes.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Execute a migration CAF-000040 para configurar sugestões.</td></tr>';
+        }
+      }
+      carregarSelectsSugestoesTotem();
+      carregarSugestoesTotem();
+
+      btnAddTotemSugestao?.addEventListener('click', async () => {
+        const prodId = selTotemSugProduto?.value;
+        if (!prodId) {
+          admin.toast('Atenção', 'Selecione o produto a ser sugerido.', 'error');
+          return;
+        }
+        const catId = selTotemSugCategoria?.value || null;
+        const frase = (inputTotemSugFrase?.value || 'Que tal acompanhar seu pedido?').trim();
+        try {
+          const { error } = await window.cafeteriaSupabase.from('totem_sugestoes').insert([{
+            gatilho_categoria_id: catId,
+            produto_sugerido_id: prodId,
+            frase_destaque: frase,
+            ativo: true
+          }]);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Sugestão de complemento adicionada!', 'success');
+          carregarSugestoesTotem();
+        } catch (err) {
+          console.error('Erro ao adicionar sugestão totem:', err);
+          admin.toast('Erro', 'Não foi possível adicionar a sugestão.', 'error');
+        }
+      });
+
+      async function carregarTotens() {
+        if (!tbodyTotens || !window.cafeteriaSupabase) return;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .from('totens')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          if (!data || data.length === 0) {
+            tbodyTotens.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-sec);">Nenhum totem pareado ainda.</td></tr>';
+            return;
+          }
+          tbodyTotens.innerHTML = data.map((t) => {
+            const ultimoStr = t.ultimo_acesso
+              ? new Date(t.ultimo_acesso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+              : 'Nunca acessou';
+            return `
+            <tr>
+              <td style="font-weight:600;">${window.escapeHtml ? window.escapeHtml(t.nome) : t.nome}</td>
+              <td><code>${t.codigo_pareamento || 'Pareado'}</code></td>
+              <td style="font-size:0.82rem; color:var(--text-sec);">${ultimoStr}</td>
+              <td>
+                <span class="status-pill ${t.ativo ? 'status-pill--ativo' : 'status-pill--inativo'}">
+                  ${t.ativo ? (t.pareado_em ? 'Pareado & Ativo' : 'Aguardando Tablet') : 'Revogado'}
+                </span>
+              </td>
+              <td>
+                ${t.ativo ? `<button type="button" class="btn btn--danger btn--sm btn-revogar-totem" data-id="${t.id}">Revogar</button>` : '—'}
+              </td>
+            </tr>
+          `;
+          }).join('');
+
+          tbodyTotens.querySelectorAll('.btn-revogar-totem').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+              const id = btn.getAttribute('data-id');
+              if (!confirm('Deseja revogar o acesso deste Totem? O tablet será desativado imediatamente.')) return;
+              const { error: revErr } = await window.cafeteriaSupabase
+                .from('totens')
+                .update({ ativo: false, updated_at: new Date().toISOString() })
+                .eq('id', id);
+              if (!revErr) {
+                admin.toast('Revogado', 'Acesso do totem revogado com sucesso.', 'info');
+                carregarTotens();
+              }
+            });
+          });
+        } catch (err) {
+          tbodyTotens.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-sec);">Execute a migration CAF-000040 para gerenciar totens.</td></tr>';
+        }
+      }
+      carregarTotens();
+
+      btnGerarTotem?.addEventListener('click', async () => {
+        const nome = prompt('Informe o nome deste Totem / Tablet (ex: Totem Balcão 01):', 'Totem Balcão 01');
+        if (!nome) return;
+        const codigo = String(Math.floor(100000 + Math.random() * 900000));
+        try {
+          const { error } = await window.cafeteriaSupabase
+            .from('totens')
+            .insert([{
+              nome: nome.trim(),
+              codigo_pareamento: codigo,
+              modo_operacao: 'pagamento',
+              ativo: true
+            }]);
+          if (error) throw error;
+          if (boxCodigoTotem) {
+            boxCodigoTotem.style.display = 'block';
+            boxCodigoTotem.innerHTML = `
+              <strong>✅ Código de Pareamento Gerado: <span style="font-size:1.3rem; letter-spacing:2px;">${codigo}</span></strong><br>
+              Abra <code>${window.location.origin}/totem.html</code> no tablet do balcão e digite este código para parear o dispositivo.
+            `;
+          }
+          carregarTotens();
+        } catch (err) {
+          console.error('Erro ao criar totem:', err);
+          admin.toast('Erro', 'Não foi possível gerar o código do totem.', 'error');
+        }
+      });
+    }
   });
 
 })();

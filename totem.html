@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#3B2314" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Autoatendimento · Cafeteria do Teatro</title>
+  <link rel="icon" type="image/webp" href="assets/images/logo.webp" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/totem.css" />
+</head>
+<body class="totem-body">
+
+  <!-- ── AVISO SEM INTERNET (CAF-000040 RNF) ── -->
+  <div id="totem-offline-overlay" class="totem-modal-backdrop hidden" style="z-index:500;">
+    <div class="totem-modal" style="text-align:center; padding:36px 28px;">
+      <div style="font-size:4rem; margin-bottom:12px;">📡</div>
+      <h2 style="margin:0 0 10px; font-size:1.8rem;">Faça seu pedido no caixa</h2>
+      <p style="font-size:1.15rem; color:var(--totem-text-sub); margin:0;">
+        Estamos temporariamente sem conexão de rede neste terminal. Nosso barista terá prazer em atendê-lo diretamente no balcão!
+      </p>
+    </div>
+  </div>
+
+  <!-- ── TELA DE PAREAMENTO / TOTEM REVOGADO ── -->
+  <div id="totem-pairing-screen" class="totem-modal-backdrop hidden" style="z-index:400; background:#231309;">
+    <div class="totem-modal" style="max-width:520px; text-align:center; padding:32px 26px;">
+      <img src="assets/images/logo.webp" alt="Logo" style="width:72px; height:72px; border-radius:18px; margin-bottom:12px;" />
+      <h2 id="totem-pairing-title" style="margin:0 0 8px; font-size:1.6rem;">Ativar Totem de Balcão</h2>
+      <p id="totem-pairing-desc" style="color:var(--totem-text-sub); margin:0 0 20px; font-size:1rem;">
+        No painel Admin (Configurações → Totem), clique em <strong>+ Parear Novo Tablet</strong> e digite o código de 6 dígitos abaixo:
+      </p>
+      <input
+        type="text"
+        id="totem-pairing-code-input"
+        inputmode="numeric"
+        maxlength="8"
+        placeholder="000000"
+        style="width:100%; height:72px; text-align:center; font-size:2rem; font-weight:800; letter-spacing:6px; border:3px solid var(--totem-border); border-radius:16px; margin-bottom:16px;"
+      />
+      <div id="totem-pairing-error" class="hidden" style="color:var(--totem-danger); font-weight:700; margin-bottom:14px;"></div>
+      <button type="button" id="btn-totem-pair-submit" class="totem-btn totem-btn--primary" style="width:100%;">
+        🔗 Parear Dispositivo
+      </button>
+    </div>
+  </div>
+
+  <!-- ── TELA DE DESCANSO (IDLE SCREEN - 60s) ── -->
+  <div id="totem-idle-screen" class="totem-idle-screen hidden">
+    <div>
+      <img src="assets/images/logo.webp" alt="Cafeteria do Teatro" style="width:88px; height:88px; border-radius:22px; margin-bottom:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" />
+      <h1 style="font-family:'Playfair Display',serif; font-size:2.4rem; margin:0 0 6px;">Cafeteria do Teatro</h1>
+      <p style="font-size:1.15rem; opacity:0.85; margin:0;">Autoatendimento Rápido · Sem Fila</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px; margin:20px 0;">
+      <div class="totem-idle-teatro-box" id="totem-idle-teatro-box">
+        <div id="totem-idle-teatro-titulo" style="font-size:1.45rem; font-weight:800; color:#FDE68A; margin-bottom:6px;">
+          🎭 Hoje no Teatro Univates
+        </div>
+        <div id="totem-idle-teatro-sub" style="font-size:1.08rem; opacity:0.95;">
+          Garanta seu café e lanche sem fila antes do espetáculo começar!
+        </div>
+      </div>
+
+      <div id="totem-idle-promo-container" class="totem-idle-promo-card hidden">
+        <!-- Preenchido dinamicamente pelo carrossel de promoções -->
+      </div>
+    </div>
+
+    <div>
+      <div class="totem-idle-cta">
+        👆 TOQUE NA TELA PARA FAZER SEU PEDIDO
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CABEÇALHO DO TOTEM ── -->
+  <header class="totem-header">
+    <div class="totem-brand">
+      <img src="assets/images/logo.webp" alt="Logo" class="totem-brand__logo" />
+      <div>
+        <h1 class="totem-brand__title">Cafeteria do Teatro</h1>
+        <p class="totem-brand__sub" id="totem-device-label">Faça seu pedido aqui e pague no caixa</p>
+      </div>
+    </div>
+    <div class="totem-header__actions">
+      <button type="button" class="totem-btn-a11y" id="btn-totem-font-toggle" title="Aumentar tamanho das letras">
+        🔠 Fonte Grande
+      </button>
+      <button type="button" class="totem-btn-a11y" id="btn-totem-fullscreen" title="Tela Cheia">
+        ⛶
+      </button>
+    </div>
+  </header>
+
+  <!-- ── CONTEÚDO PRINCIPAL: CATEGORIAS + PRODUTOS ── -->
+  <main class="totem-layout">
+    <nav class="totem-categories" id="totem-categories-bar" aria-label="Categorias do cardápio">
+      <!-- Botões >= 64px gerados via JS -->
+    </nav>
+
+    <section class="totem-products-area">
+      <div class="totem-products-grid" id="totem-products-grid">
+        <!-- Cards de produtos gerados via JS -->
+      </div>
+    </section>
+  </main>
+
+  <!-- ── BARRA INFERIOR DO CARRINHO ── -->
+  <footer class="totem-bottom-bar">
+    <div class="totem-cart-summary" id="btn-totem-ver-sacola" style="cursor:pointer;">
+      <div class="totem-cart-badge">
+        <span id="totem-cart-count" style="font-size:1.3rem;">0</span>
+        <small style="font-size:0.72rem;">itens</small>
+      </div>
+      <div class="totem-cart-total-wrap">
+        <span class="totem-cart-total-lbl">Total do seu pedido</span>
+        <span class="totem-cart-total-val" id="totem-cart-total">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div class="totem-bottom-actions">
+      <button type="button" class="totem-btn totem-btn--ghost" id="btn-totem-limpar" disabled>
+        🗑️ Recomeçar
+      </button>
+      <button type="button" class="totem-btn totem-btn--primary" id="btn-totem-avancar" disabled>
+        Finalizar Pedido →
+      </button>
+    </div>
+  </footer>
+
+  <!-- ── MODAL 1: PERSONALIZAÇÃO DO ITEM (ADICIONAIS / MEIO A MEIO / OBS) ── -->
+  <div id="totem-modal-item" class="totem-modal-backdrop hidden">
+    <div class="totem-modal">
+      <div class="totem-modal__header">
+        <h3 class="totem-modal__title" id="totem-item-modal-title">Personalizar Item</h3>
+        <button type="button" class="totem-modal__close" id="btn-close-item-modal">✕</button>
+      </div>
+      <div class="totem-modal__body" id="totem-item-modal-body">
+        <!-- Conteúdo dinâmico -->
+      </div>
+      <div class="totem-modal__footer">
+        <button type="button" class="totem-btn totem-btn--ghost" id="btn-cancel-item-modal">Voltar</button>
+        <button type="button" class="totem-btn totem-btn--primary" id="btn-confirm-item-modal" style="flex:1;">
+          + Adicionar ao Pedido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL 2: SUGESTÕES DE COMPLEMENTO (ATÉ 3 POR PEDIDO) ── -->
+  <div id="totem-modal-sugestoes" class="totem-modal-backdrop hidden">
+    <div class="totem-modal">
+      <div class="totem-modal__header">
+        <h3 class="totem-modal__title">🥐 Que tal acompanhar seu pedido?</h3>
+        <button type="button" class="totem-modal__close" id="btn-close-sugestoes-modal">✕</button>
+      </div>
+      <div class="totem-modal__body">
+        <p id="totem-sugestoes-frase" style="margin:0 0 16px; font-size:1.08rem; color:var(--totem-text-sub); font-weight:600;">
+          Separamos algumas sugestões deliciosas que combinam com sua escolha:
+        </p>
+        <div id="totem-sugestoes-list" style="display:flex; flex-direction:column; gap:14px;">
+          <!-- Até 3 sugestões -->
+        </div>
+      </div>
+      <div class="totem-modal__footer">
+        <button type="button" class="totem-btn totem-btn--primary" id="btn-pular-sugestoes" style="width:100%;">
+          Continuar para Finalizar →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL 3: REVISÃO E CHECKOUT (NOME + COMER AQUI / VIAGEM) ── -->
+  <div id="totem-modal-checkout" class="totem-modal-backdrop hidden">
+    <div class="totem-modal">
+      <div class="totem-modal__header">
+        <h3 class="totem-modal__title">Conferir e Finalizar Pedido</h3>
+        <button type="button" class="totem-modal__close" id="btn-close-checkout-modal">✕</button>
+      </div>
+      <div class="totem-modal__body">
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-weight:800; margin-bottom:10px; font-size:1.1rem;">1. Onde você vai consumir?</label>
+          <div class="totem-choice-grid">
+            <button type="button" class="totem-choice-btn is-selected" id="btn-totem-comer-aqui" data-viagem="false">
+              <span style="font-size:1.9rem;">🍽️</span>
+              <span>Comer Aqui</span>
+            </button>
+            <button type="button" class="totem-choice-btn" id="btn-totem-para-viagem" data-viagem="true">
+              <span style="font-size:1.9rem;">🥡</span>
+              <span>Para Viagem</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label for="totem-input-nome" style="display:block; font-weight:800; margin-bottom:8px; font-size:1.1rem;">
+            2. Qual é o seu primeiro nome? (Para chamarmos no painel)
+          </label>
+          <input
+            type="text"
+            id="totem-input-nome"
+            maxlength="40"
+            placeholder="Ex: Ana"
+            style="width:100%; height:68px; border-radius:16px; border:3px solid var(--totem-border); padding:0 18px; font-size:1.35rem; font-weight:700;"
+          />
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-weight:800; margin-bottom:10px; font-size:1.1rem;">3. Como prefere pagar no caixa?</label>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="totem-pagamento-choices">
+            <button type="button" class="totem-choice-btn is-selected" data-forma="pix" style="min-height:74px;">
+              <span>💠 PIX</span>
+            </button>
+            <button type="button" class="totem-choice-btn" data-forma="cartao_debito" style="min-height:74px;">
+              <span>💳 Cartão</span>
+            </button>
+            <button type="button" class="totem-choice-btn" data-forma="dinheiro" style="min-height:74px;">
+              <span>💵 Dinheiro</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="background:var(--totem-surface-alt); border-radius:16px; padding:16px; border:2px solid var(--totem-border);">
+          <div style="font-weight:800; margin-bottom:10px;">Itens do seu pedido:</div>
+          <div id="totem-checkout-items-list" style="display:flex; flex-direction:column; gap:10px; max-height:190px; overflow-y:auto;"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:2px dashed var(--totem-border); margin-top:12px; padding-top:12px; font-size:1.4rem; font-weight:900;">
+            <span>Total a pagar no caixa:</span>
+            <span id="totem-checkout-total-lbl">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+      <div class="totem-modal__footer">
+        <button type="button" class="totem-btn totem-btn--ghost" id="btn-back-checkout-modal">← Adicionar mais</button>
+        <button type="button" class="totem-btn totem-btn--primary" id="btn-totem-enviar-pedido" style="flex:1;">
+          ✅ Confirmar e Gerar Senha
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL 4: TELA FINAL DE SENHA (VOLTA SOZINHA EM 15s) ── -->
+  <div id="totem-success-screen" class="totem-modal-backdrop hidden" style="z-index:300;">
+    <div class="totem-modal" style="max-width:620px; text-align:center; padding:32px 26px;">
+      <div style="font-size:1.1rem; font-weight:800; color:var(--totem-success); text-transform:uppercase; letter-spacing:1px;">
+        🎉 Pedido Registrado com Sucesso!
+      </div>
+      <h2 style="margin:6px 0 4px; font-size:1.6rem;" id="totem-success-cliente-lbl">Olá!</h2>
+      <p style="margin:0; color:var(--totem-text-sub); font-size:1.05rem;">
+        Guarde sua senha abaixo e <strong>dirija-se ao caixa</strong> para realizar o pagamento:
+      </p>
+
+      <div class="totem-senha-box">
+        <div style="font-size:1rem; font-weight:800; text-transform:uppercase; color:var(--totem-text-sub);">Sua Senha</div>
+        <div class="totem-senha-numero" id="totem-success-senha">#00</div>
+        <div style="font-size:1.35rem; font-weight:800; color:var(--totem-primary);" id="totem-success-total">Total: R$ 0,00</div>
+      </div>
+
+      <div id="totem-success-pix-box" class="hidden" style="background:#f0fdf4; border:2px solid #86efac; border-radius:18px; padding:14px; margin-bottom:14px;">
+        <div style="font-weight:800; color:#166534; font-size:0.95rem; margin-bottom:6px;">
+          💠 Escaneie o QR Code PIX abaixo e mostre o comprovante no caixa:
+        </div>
+        <div id="totem-success-pix-qr" style="display:inline-flex; background:#fff; padding:8px; border-radius:12px;"></div>
+      </div>
+
+      <div style="background:var(--totem-surface-alt); border-radius:14px; padding:12px 16px; margin-bottom:18px; font-weight:700; color:var(--totem-text);">
+        📺 Após pagar no caixa, acompanhe sua senha na <strong>TV de Retirada</strong>!
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <button type="button" class="totem-btn totem-btn--ghost" id="btn-totem-print-senha">
+          🖨️ Imprimir Senha
+        </button>
+        <button type="button" class="totem-btn totem-btn--primary" id="btn-totem-novo-pedido" style="flex:1;">
+          Novo Pedido (<span id="totem-success-countdown">15</span>s)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/vendor/qrcode.js"></script>
+  <script src="js/pix-brcode.js"></script>
+  <script src="js/totem.js"></script>
+</body>
+</html>

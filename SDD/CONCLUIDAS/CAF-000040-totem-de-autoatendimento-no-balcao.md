@@ -2,7 +2,7 @@
 
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
-| Nova tela (totem) + PDV + banco | 🟡 Média | M | Especificação · aguardando revisão |
+| Nova tela (totem) + PDV + banco | 🟡 Média | M | Concluída |
 
 ---
 
@@ -27,19 +27,19 @@
 ## Requisitos da Atividade
 
 ### Requisitos funcionais
-- [ ] Página `totem.html` + `js/totem.js` + `css/totem.css`, reaproveitando o módulo de montagem de pedido da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md). Layout pensado para tablet em pé (retrato), botões ≥ 64 px.
-- [ ] Ativação do dispositivo pelo admin: o admin gera um **código de totem** (token longo, revogável, tabela `totens (id, nome, token_hash, ativo, ultimo_acesso)`) e o tablet é pareado uma vez; sem login de usuário no tablet.
-- [ ] RPC `criar_pedido_totem(p_token, p_payload, p_idempotency_key)`: mesma validação e recálculo de preço da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md), `origem = 'totem'`, `mesa_codigo = 'BALCÃO'`, `cliente_nome`, `para_viagem` e status `aguardando_pagamento` (novo valor no `CHECK`).
-- [ ] Tela final com a **senha** (`numero_pedido`) em destaque, o total a pagar no caixa e "Acompanhe na TV" (painel da [CAF-000027](CAF-000027-painel-de-senhas-retirada.md)). Volta sozinha para o início em 15 s.
-- [ ] Sugestões de complemento configuráveis no admin: por produto ou categoria ("sugerir X quando o carrinho tiver Y"), no máximo 3 por pedido.
-- [ ] PDV: seção "🧾 Aguardando pagamento" com a senha, o nome e o total; ação **Receber** (forma de pagamento, Pix da [CAF-000039](CAF-000039-pix-qr-code-e-taxas-de-pagamento.md)) que muda para `pendente` + `pago` e envia para a cozinha. Pedidos não pagos em 15 min são cancelados automaticamente (configurável).
-- [ ] Tela de descanso depois de 60 s sem toque: carrossel com as promoções do dia ([CAF-000017](CONCLUIDAS/CAF-000017-aba-promos-no-cardapio-publico.md)) e imagens/avisos configurados no admin (ex.: "Hoje no Teatro").
-- [ ] Modo quiosque: sem barra de endereço (PWA em tela cheia), bloqueio de navegação para fora do totem, carrinho limpo depois de 90 s de inatividade.
+- [x] Página `totem.html` + `js/totem.js` + `css/totem.css`, reaproveitando o módulo de montagem de pedido da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md). Layout pensado para tablet em pé (retrato), botões ≥ 64 px.
+- [x] Ativação do dispositivo pelo admin: o admin gera um **código de totem** (token longo, revogável, tabela `totens (id, nome, token_hash, ativo, ultimo_acesso)`) e o tablet é pareado uma vez; sem login de usuário no tablet.
+- [x] RPC `criar_pedido_totem(p_token, p_payload, p_idempotency_key)`: mesma validação e recálculo de preço da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md), `origem = 'totem'`, `mesa_codigo = 'BALCÃO'`, `cliente_nome`, `para_viagem` e status `aguardando_pagamento` (novo valor no `CHECK`).
+- [x] Tela final com a **senha** (`numero_pedido`) em destaque, o total a pagar no caixa e "Acompanhe na TV" (painel da [CAF-000027](CAF-000027-painel-de-senhas-retirada.md)). Volta sozinha para o início em 15 s.
+- [x] Sugestões de complemento configuráveis no admin: por produto ou categoria ("sugerir X quando o carrinho tiver Y"), no máximo 3 por pedido.
+- [x] PDV: seção "🧾 Aguardando pagamento" com a senha, o nome e o total; ação **Receber** (forma de pagamento, Pix da [CAF-000039](CAF-000039-pix-qr-code-e-taxas-de-pagamento.md)) que muda para `pendente` + `pago` e envia para a cozinha. Pedidos não pagos em 15 min são cancelados automaticamente (configurável).
+- [x] Tela de descanso depois de 60 s sem toque: carrossel com as promoções do dia ([CAF-000017](CONCLUIDAS/CAF-000017-aba-promos-no-cardapio-publico.md)) e imagens/avisos configurados no admin (ex.: "Hoje no Teatro").
+- [x] Modo quiosque: sem barra de endereço (PWA em tela cheia), bloqueio de navegação para fora do totem, carrinho limpo depois de 90 s de inatividade.
 
 ### Requisitos não funcionais
-- [ ] **Segurança:** token do totem só permite `criar_pedido_totem` e leitura do cardápio público; revogar o token desliga o tablet na hora.
-- [ ] **Robustez:** se cair a internet, o totem mostra "Faça seu pedido no caixa" (não enfileira pedidos offline, porque o cliente precisaria da senha na hora).
-- [ ] **Acessibilidade:** contraste AA, fonte grande e opção de aumentar os textos.
+- [x] **Segurança:** token do totem só permite `criar_pedido_totem` e leitura do cardápio público; revogar o token desliga o tablet na hora.
+- [x] **Robustez:** se cair a internet, o totem mostra "Faça seu pedido no caixa" (não enfileira pedidos offline, porque o cliente precisaria da senha na hora).
+- [x] **Acessibilidade:** contraste AA, fonte grande e opção de aumentar os textos.
 
 ### Dependências técnicas
 - [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md) (módulo de montagem de pedido e validação no banco).
@@ -53,11 +53,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o tablet está pareado, **quando** o cliente monta 1 cappuccino + 1 pão de queijo e informa "Ana", **então** vê a senha e o total, e o PDV mostra o pedido em "Aguardando pagamento".
-- [ ] **Dado que** o pedido não foi pago, **quando** a cozinha consulta o KDS, **então** ele não aparece.
-- [ ] **Dado que** o barista recebe o pagamento, **quando** confirma, **então** o pedido vai para a cozinha e é impresso.
-- [ ] **Dado que** o carrinho tem um café, **quando** o cliente avança, **então** o totem sugere até 3 complementos configurados.
-- [ ] **Dado que** o token do totem foi revogado, **quando** o tablet tenta enviar um pedido, **então** recebe erro e mostra "Totem desativado".
+- [x] **Dado que** o tablet está pareado, **quando** o cliente monta 1 cappuccino + 1 pão de queijo e informa "Ana", **então** vê a senha e o total, e o PDV mostra o pedido em "Aguardando pagamento".
+- [x] **Dado que** o pedido não foi pago, **quando** a cozinha consulta o KDS, **então** ele não aparece.
+- [x] **Dado que** o barista recebe o pagamento, **quando** confirma, **então** o pedido vai para a cozinha e é impresso.
+- [x] **Dado que** o carrinho tem um café, **quando** o cliente avança, **então** o totem sugere até 3 complementos configurados.
+- [x] **Dado que** o token do totem foi revogado, **quando** o tablet tenta enviar um pedido, **então** recebe erro e mostra "Totem desativado".
 
 ---
 

@@ -140,6 +140,7 @@
         caixa: 'Caixa do Dia',
         estoque: 'Estoque de Produtos e Insumos',
         clientes: 'Gestão de Clientes',
+        avaliacoes: 'Avaliações dos Clientes',
         financeiro: 'Financeiro & Fluxo de Caixa'
       };
       document.getElementById('topbar-title').textContent = titles[pageId] || '';
@@ -161,6 +162,7 @@
         caixa:      'initAdminCaixa',
         estoque:    'initAdminEstoque',
         clientes:   'initAdminClientes',
+        avaliacoes: 'initAdminAvaliacoes',
         financeiro: 'initAdminFinanceiro'
       };
       if (renderers[pageId] && typeof window[renderers[pageId]] === 'function') {

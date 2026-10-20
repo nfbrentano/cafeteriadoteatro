@@ -371,6 +371,10 @@
         }
         if (el.cbPermiteAdd) el.cbPermiteAdd.checked = !!p.permite_adicionais;
         if (el.selectEstoqueItem) el.selectEstoqueItem.value = p.estoque_item_id ? String(p.estoque_item_id) : '';
+        const inputAntec = document.getElementById('produto-antecedencia-horas');
+        const cbEncomenda = document.getElementById('produto-apenas-encomenda');
+        if (inputAntec) inputAntec.value = Number(p.antecedencia_min_horas || 0);
+        if (cbEncomenda) cbEncomenda.checked = Boolean(p.apenas_encomenda);
         
         // Badges
         (p.badges || []).forEach(b => {
@@ -410,6 +414,10 @@
       if (el.inputCustoManual) el.inputCustoManual.value = '';
       if (el.cbPermiteAdd) el.cbPermiteAdd.checked = false;
       if (el.selectEstoqueItem) el.selectEstoqueItem.value = '';
+      const inputAntec = document.getElementById('produto-antecedencia-horas');
+      const cbEncomenda = document.getElementById('produto-apenas-encomenda');
+      if (inputAntec) inputAntec.value = '0';
+      if (cbEncomenda) cbEncomenda.checked = false;
       activeFichaItens = [];
     }
 
@@ -444,6 +452,8 @@
     const disponivel = document.getElementById('produto-disponivel').checked;
     const permite_adicionais = el.cbPermiteAdd ? el.cbPermiteAdd.checked : false;
     const estoque_item_id = el.selectEstoqueItem?.value ? parseInt(el.selectEstoqueItem.value, 10) : null;
+    const antecedencia_min_horas = Math.max(0, parseInt(document.getElementById('produto-antecedencia-horas')?.value, 10) || 0);
+    const apenas_encomenda = Boolean(document.getElementById('produto-apenas-encomenda')?.checked);
 
     const tempoAlvoStr = document.getElementById('produto-tempo-alvo')?.value.trim();
     const tempo_alvo_min = tempoAlvoStr ? parseInt(tempoAlvoStr, 10) : null;
@@ -467,6 +477,8 @@
         estoque_item_id,
         preco_custo_manual,
         tempo_alvo_min,
+        antecedencia_min_horas,
+        apenas_encomenda,
         imagem_url: isNewImage ? null : dataUrl,
         updated_at: new Date().toISOString()
       }, imageBlob);

@@ -106,6 +106,10 @@
       <button class="sidebar__link" data-page="clientes" id="nav-clientes">
         <span class="sidebar__link-icon">👤</span> Clientes
       </button>
+      <button class="sidebar__link" data-page="avaliacoes" id="nav-avaliacoes">
+        <span class="sidebar__link-icon">⭐</span> Avaliações
+        <span id="nav-avaliacoes-badge" style="display:none; margin-left:auto; background:#ef4444; color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:999px;">0</span>
+      </button>
       <button class="sidebar__link" data-page="usuarios" id="nav-usuarios">
         <span class="sidebar__link-icon">👥</span> Usuários
       </button>
@@ -206,6 +210,15 @@
           <button type="button" class="btn btn--primary btn-sm" id="btn-dash-ir-financeiro" style="padding:4px 10px; font-size:12px;">Ver Contas a Pagar</button>
         </div>
 
+        <!-- Alerta de Avaliações Baixas no Dia (CAF-000042) -->
+        <div id="dash-alerta-avaliacoes" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-left:4px solid #ef4444; border-radius:8px; padding:12px 16px; margin-bottom:1.25rem; font-size:13px; color:#991b1b; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px;">🚨</span>
+            <span id="dash-alerta-avaliacoes-texto"><strong>Atenção:</strong> Avaliação ≤ 2 estrelas recebida hoje!</span>
+          </div>
+          <button type="button" class="btn btn--danger btn-sm" id="btn-dash-ir-avaliacoes" style="padding:4px 10px; font-size:12px;">Ver Avaliações</button>
+        </div>
+
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-card__icon">🍽️</div>
@@ -298,8 +311,8 @@
           </div>
         </div>
 
-        <!-- KPIs Financeiros e CMV (CAF-000032) -->
-        <div class="stats-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+        <!-- KPIs Financeiros e CMV (CAF-000032 + CAF-000039) -->
+        <div class="stats-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
           <div class="stat-card">
             <div class="stat-card__icon">📦</div>
             <div class="stat-card__value" id="relatorio-cmv-total">R$ 0,00</div>
@@ -309,6 +322,16 @@
             <div class="stat-card__icon">📈</div>
             <div class="stat-card__value" id="relatorio-lucro-bruto" style="color: #10b981;">R$ 0,00</div>
             <div class="stat-card__label">Lucro Bruto (Margem: <span id="relatorio-margem-media">0%</span>)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💳</div>
+            <div class="stat-card__value" id="relatorio-taxas-pagamento" style="color: #ef4444;">R$ 0,00</div>
+            <div class="stat-card__label">Taxas de Pagamento</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💵</div>
+            <div class="stat-card__value" id="relatorio-faturamento-liquido" style="color: #059669;">R$ 0,00</div>
+            <div class="stat-card__label">Faturamento Líquido (pós-taxas)</div>
           </div>
           <div class="stat-card">
             <div class="stat-card__icon">🎁</div>
@@ -363,13 +386,31 @@
             </div>
           </div>
 
-          <!-- Pagamentos -->
+          <!-- Pagamentos: Gráfico + Tabela Bruto / Taxas / Líquido (CAF-000039) -->
           <div class="section-card">
-            <div class="section-card__header">
-              <span class="section-card__title">Formas de Pagamento</span>
+            <div class="section-card__header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <span class="section-card__title">Formas de Pagamento (Bruto × Taxas × Líquido)</span>
+              <button type="button" class="btn btn--outline-dark" id="btn-lancar-taxas-despesa" style="padding:4px 10px; font-size:12px;" title="Lançar as taxas de pagamento do mês atual como despesa no módulo Financeiro">
+                💸 Lançar taxas do mês como despesa
+              </button>
             </div>
             <div class="section-card__body">
-              <canvas id="chartPagamentos" width="400" height="200"></canvas>
+              <canvas id="chartPagamentos" width="400" height="160"></canvas>
+              <div class="table-scroll" style="margin-top: 12px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Forma</th>
+                      <th style="text-align:right;">Bruto</th>
+                      <th style="text-align:right;">Taxa</th>
+                      <th style="text-align:right;">Líquido</th>
+                    </tr>
+                  </thead>
+                  <tbody id="relatorio-pagamentos-tbody">
+                    <tr><td colspan="4" class="text-center">Sem dados</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -546,11 +587,16 @@
         <div class="page-header">
           <div>
             <div class="page-header__title">Caixa do Dia</div>
-            <div class="page-header__sub">Controle de abertura, fechamento e sangrias/suprimentos</div>
+            <div class="page-header__sub">Controle de abertura, fechamento cego, sangrias/suprimentos e auditoria</div>
           </div>
-          <button class="btn btn--primary" id="btn-fechar-caixa" style="display:none;">
-            🔒 Fechar Caixa
-          </button>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn--ghost" id="btn-historico-caixas">
+              📜 Histórico de Caixas
+            </button>
+            <button class="btn btn--primary" id="btn-fechar-caixa" style="display:none;">
+              🔒 Fechar Caixa
+            </button>
+          </div>
         </div>
 
         <div id="caixa-estado-fechado" style="display:none; text-align:center; padding: 40px;">
@@ -558,8 +604,8 @@
           <p style="margin-bottom: 20px; color: var(--text-sec);">Abra o caixa para iniciar as operações do dia.</p>
           <div style="max-width: 400px; margin: 0 auto; text-align:left;">
             <div class="field">
-              <label class="field__label">Fundo de Troco (R$)</label>
-              <input class="field__input" type="number" id="caixa-fundo-troco" value="0.00" step="0.01" />
+              <label class="field__label" for="caixa-fundo-troco">Fundo de Troco (R$)</label>
+              <input class="field__input" type="number" id="caixa-fundo-troco" value="0.00" step="0.01" min="0" />
             </div>
             <button class="btn btn--primary btn--full" id="btn-abrir-caixa">Abrir Caixa</button>
           </div>
@@ -589,29 +635,58 @@
             </div>
           </div>
 
-          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
             <button class="btn btn--outline-dark" id="btn-suprimento">➕ Novo Suprimento</button>
             <button class="btn btn--outline-dark" id="btn-sangria">➖ Nova Sangria</button>
-            <button class="btn btn--ghost" id="btn-historico-caixas">📜 Histórico de Caixas</button>
           </div>
 
-          <div class="section-card">
-            <div class="section-card__header">
+          <div class="section-card" id="caixa-resumo-card">
+            <div class="section-card__header" style="display:flex; justify-content:space-between; align-items:center;">
               <span class="section-card__title">Resumo do Sistema</span>
+              <span id="badge-modo-caixa" class="status-pill status-pill--ativo" style="display:none;">🔒 Conferência Cega Ativa</span>
             </div>
             <div class="table-scroll">
               <table>
                 <thead>
                   <tr>
                     <th>Forma de Pagamento</th>
-                    <th>Valor Calculado</th>
+                    <th>Bruto Calculado</th>
+                    <th>Taxas Estimadas</th>
+                    <th>Líquido Estimado</th>
                   </tr>
                 </thead>
                 <tbody id="caixa-resumo-table-body">
-                  <tr><td colspan="2" class="text-center">Carregando...</td></tr>
+                  <tr><td colspan="4" class="text-center">Carregando...</td></tr>
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        <!-- Histórico de Caixas (Auditoria) -->
+        <div class="section-card" id="caixa-historico-section" style="margin-top: 24px; display:none;">
+          <div class="section-card__header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="section-card__title">📜 Histórico e Auditoria de Caixas</span>
+            <button class="btn btn--ghost" id="btn-atualizar-historico-caixas" style="padding:4px 10px; font-size:12px;">🔄 Atualizar</button>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Período (Abertura / Fechamento)</th>
+                  <th>Operadores</th>
+                  <th>Fundo / Mov.</th>
+                  <th>Esperado</th>
+                  <th>Contado</th>
+                  <th>Diferença</th>
+                  <th>Detalhes por Forma / Obs</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="caixa-historico-tbody">
+                <tr><td colspan="8" class="text-center">Carregando histórico...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -1394,6 +1469,218 @@
           </div>
         </div>
 
+        <!-- Conferência de Caixa (CAF-000044) -->
+        <div class="config-section">
+          <div class="config-section__title">🔒 Conferência e Fechamento de Caixa</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px;">
+            <div>
+              <strong>Conferência cega no fechamento de caixa</strong>
+              <p class="hint" style="margin:4px 0 0 0;">
+                Quando ativa, o operador informa os valores contados sem ver o valor esperado pelo sistema. O cálculo e a diferença só são exibidos após confirmar.
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-caixa-conferencia-cega" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="field" style="max-width:260px; margin-bottom:0;">
+            <label class="field__label" for="config-caixa-limite-diferenca">Limite de diferença sem justificativa (R$)</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input class="field__input" type="number" id="config-caixa-limite-diferenca" value="5.00" step="0.50" min="0" />
+              <button type="button" class="btn btn--outline-dark" id="btn-salvar-config-caixa" style="white-space:nowrap;">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PIX (BR Code) e Taxas por Forma de Pagamento (CAF-000039) -->
+        <div class="config-section">
+          <div class="config-section__title">💠 PIX com QR Code (BR Code) e Taxas de Pagamento</div>
+          <div class="form-grid" style="margin-bottom:14px;">
+            <div class="field">
+              <label class="field__label" for="config-pix-chave">Chave PIX da Cafeteria (CNPJ, CPF, E-mail, Celular ou EVP)</label>
+              <input class="field__input" type="text" id="config-pix-chave" placeholder="Ex: 00000000000191 ou pix@cafeteriadoteatro.com.br" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-recebedor">Nome do Recebedor (máx. 25 caracteres)</label>
+              <input class="field__input" type="text" id="config-pix-recebedor" maxlength="25" value="CAFETERIA DO TEATRO" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-cidade">Cidade (máx. 15 caracteres)</label>
+              <input class="field__input" type="text" id="config-pix-cidade" maxlength="15" value="LAJEADO" />
+            </div>
+            <div class="field" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <div>
+                <strong>Imprimir QR Code PIX na prévia da conta</strong>
+                <p class="hint" style="margin:2px 0 0 0;">Exibe o QR Code com o valor total no extrato impresso da mesa.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="config-pix-imprimir-conta" checked />
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+            <button type="button" class="btn btn--primary" id="btn-salvar-config-pix">💾 Salvar Dados do PIX</button>
+            <button type="button" class="btn btn--ghost" id="btn-testar-qr-pix">📱 Testar QR Code (R$ 1,00)</button>
+          </div>
+          <div id="config-pix-teste-preview" style="display:none; margin-bottom:20px; padding:12px; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; text-align:center;"></div>
+
+          <div style="border-top:1px solid var(--border); padding-top:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <strong>Taxas por Forma de Pagamento</strong>
+                <p class="hint" style="margin:2px 0 0 0;">As taxas são congeladas em cada venda no momento do pagamento, preservando o histórico de meses anteriores.</p>
+              </div>
+              <button type="button" class="btn btn--outline-dark" id="btn-salvar-taxas-pagamento">💾 Salvar Tabela de Taxas</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Forma de Pagamento</th>
+                    <th>Taxa Percentual (%)</th>
+                    <th>Taxa Fixa (R$)</th>
+                    <th>Prazo Recebimento (dias)</th>
+                    <th>Ativo</th>
+                  </tr>
+                </thead>
+                <tbody id="config-taxas-pagamento-tbody">
+                  <tr><td colspan="5" class="text-center">Carregando taxas...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pedido Online para Retirada e Encomendas (CAF-000038) -->
+        <div class="config-section">
+          <div class="config-section__title">🌐 Pedido Online para Retirada & Encomendas (Link do Cardápio)</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px;">
+            <div>
+              <strong>Aceitar pedidos online para retirada e encomendas agendadas</strong>
+              <p class="hint" style="margin:4px 0 0 0;">
+                Permite que clientes façam pedidos pelo link público do cardápio (WhatsApp, Instagram, Google) para retirar no balcão.
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-pedido-online-ativo" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="form-grid" style="margin-bottom:14px;">
+            <div class="field">
+              <label class="field__label" for="config-pedido-online-tempo">Tempo estimado "O quanto antes" (min)</label>
+              <input class="field__input" type="number" id="config-pedido-online-tempo" value="15" min="5" max="120" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pedido-online-limite">Limite de pedidos por janela (15 min)</label>
+              <input class="field__input" type="number" id="config-pedido-online-limite" value="5" min="1" max="50" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pedido-online-kds">Liberar encomenda no KDS antes do horário (min)</label>
+              <input class="field__input" type="number" id="config-pedido-online-kds" value="20" min="5" max="180" />
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn btn--primary" id="btn-salvar-config-online">💾 Salvar Configurações Online</button>
+            <button type="button" class="btn btn--ghost" id="btn-compartilhar-cardapio-online">📲 Compartilhar Cardápio & QR Code</button>
+          </div>
+          <div id="config-online-qr-share-box" style="display:none; margin-top:14px; padding:14px; background:var(--bg-sec); border:1px solid var(--border); border-radius:8px; text-align:center;"></div>
+        </div>
+
+        <!-- Totem de Autoatendimento no Balcão (CAF-000040) -->
+        <div class="config-section">
+          <div class="config-section__title">🖥️ Totem de Autoatendimento no Balcão (/totem.html)</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; flex-wrap:wrap;">
+            <div>
+              <strong>Habilitar Totens de Autoatendimento</strong>
+              <p class="hint" style="margin:4px 0 0 0;">
+                Tablets pareados no balcão enviam pedidos com senha de chamada e status "Aguardando pagamento".
+              </p>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a href="totem.html" target="_blank" class="btn btn--ghost" style="text-decoration:none;">🖥️ Abrir Tela do Totem</a>
+              <button type="button" class="btn btn--primary" id="btn-gerar-pareamento-totem">+ Parear Novo Tablet / Totem</button>
+            </div>
+          </div>
+          <div id="totem-codigo-gerado-box" style="display:none; margin-bottom:14px; padding:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; color:#92400e;"></div>
+          <div class="table-scroll" style="margin-bottom:18px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome do Totem</th>
+                  <th>Código de Pareamento</th>
+                  <th>Último Acesso</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="totens-table-body">
+                <tr><td colspan="5" class="text-center">Carregando totens...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="border-top:1px solid var(--border); padding-top:14px; margin-bottom:16px;">
+            <strong style="display:block; margin-bottom:8px;">🎭 Tela de Descanso & Expiração de Pagamento</strong>
+            <div class="form-grid" style="margin-bottom:10px;">
+              <div class="field">
+                <label class="field__label" for="config-totem-expiracao">Expirar pedido não pago após (min)</label>
+                <input class="field__input" type="number" id="config-totem-expiracao" value="15" min="5" max="120" />
+              </div>
+              <div class="field">
+                <label class="field__label" for="config-totem-aviso-titulo">Título do Aviso na Tela de Descanso</label>
+                <input class="field__input" type="text" id="config-totem-aviso-titulo" value="🎭 Hoje no Teatro Univates" maxlength="60" />
+              </div>
+              <div class="field">
+                <label class="field__label" for="config-totem-aviso-sub">Subtítulo / Programação do Teatro</label>
+                <input class="field__input" type="text" id="config-totem-aviso-sub" value="Garanta seu café e lanche sem fila antes do espetáculo começar!" maxlength="140" />
+              </div>
+            </div>
+            <button type="button" class="btn btn--outline-dark btn--sm" id="btn-salvar-config-totem">💾 Salvar Opções do Totem</button>
+          </div>
+
+          <div style="border-top:1px solid var(--border); padding-top:14px;">
+            <strong style="display:block; margin-bottom:4px;">🥐 Sugestões de Complemento ("Que tal um acompanhamento?")</strong>
+            <p class="hint" style="margin:0 0 10px 0;">Sugere até 3 produtos antes de finalizar o pedido no totem quando o carrinho tiver itens da categoria gatilho.</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px;">
+              <div class="field" style="flex:1; min-width:170px; margin-bottom:0;">
+                <label class="field__label" for="totem-sug-categoria">Quando tiver a Categoria</label>
+                <select class="field__select" id="totem-sug-categoria">
+                  <option value="">Qualquer categoria no carrinho</option>
+                </select>
+              </div>
+              <div class="field" style="flex:1; min-width:190px; margin-bottom:0;">
+                <label class="field__label" for="totem-sug-produto">Sugerir o Produto</label>
+                <select class="field__select" id="totem-sug-produto">
+                  <option value="">Selecione um produto...</option>
+                </select>
+              </div>
+              <div class="field" style="flex:1; min-width:190px; margin-bottom:0;">
+                <label class="field__label" for="totem-sug-frase">Frase de convite</label>
+                <input class="field__input" type="text" id="totem-sug-frase" value="Que tal acompanhar seu pedido?" maxlength="80" />
+              </div>
+              <button type="button" class="btn btn--secondary" id="btn-add-totem-sugestao">+ Adicionar Sugestão</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Quando o carrinho tiver</th>
+                    <th>Sugerir Produto</th>
+                    <th>Frase</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="totem-sugestoes-tbody">
+                  <tr><td colspan="4" class="text-center">Carregando sugestões...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- Danger zone -->
         <div class="config-section danger-zone">
           <div class="config-section__title">⚠️ Zona de Perigo</div>
@@ -1603,17 +1890,63 @@
       <section class="page" id="page-clientes">
         <div class="page-header">
           <div>
-            <div class="page-header__title">Gestão de Clientes</div>
-            <div class="page-header__sub">Cadastro de clientes, histórico de consumo, perfil de compras e conformidade LGPD</div>
+            <div class="page-header__title">Gestão de Clientes & CRM</div>
+            <div class="page-header__sub">Segmentação RFV automática, tags, campanhas WhatsApp, histórico de consumo e conformidade LGPD</div>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button class="btn btn--ghost" id="btn-export-clientes" title="Exportar lista de clientes para CSV">📄 Exportar CSV</button>
+            <button class="btn btn--ghost" id="btn-crm-tags" title="Gerenciar Tags e Limites de Segmentação RFV">🏷️ Tags & Regras RFV</button>
+            <button class="btn btn--secondary" id="btn-crm-campanhas" title="Criar listas de campanha e disparar pelo WhatsApp">📣 Campanhas WhatsApp</button>
+            <button class="btn btn--ghost" id="btn-export-clientes" title="Exportar lista de clientes para CSV (Apenas Admin)">📄 Exportar CSV</button>
             <button class="btn btn--primary" id="btn-novo-cliente">+ Novo Cliente</button>
           </div>
         </div>
 
-        <!-- KPIs de Clientes -->
-        <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <!-- Cartões de Segmentação RFV com Variação vs. Mês Anterior (CAF-000041) -->
+        <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+          <div class="kpi-card crm-seg-card" data-seg="Novo" style="cursor:pointer; border-left: 4px solid #3b82f6;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#1d4ed8; font-weight:700;">🌱 Novos</span>
+              <span class="kpi-card__icon" style="font-size:12px;" id="var-seg-Novo">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Novo">0</div>
+            <div class="kpi-card__subtitle">1ª compra ≤ 30 dias</div>
+          </div>
+          <div class="kpi-card crm-seg-card" data-seg="Fiel" style="cursor:pointer; border-left: 4px solid #eab308;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#a16207; font-weight:700;">👑 Fiéis</span>
+              <span class="kpi-card__icon" style="font-size:12px;" id="var-seg-Fiel">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Fiel">0</div>
+            <div class="kpi-card__subtitle">≥ 4 pedidos em 90d</div>
+          </div>
+          <div class="kpi-card crm-seg-card" data-seg="Ativo" style="cursor:pointer; border-left: 4px solid #22c55e;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#15803d; font-weight:700;">✅ Ativos</span>
+              <span class="kpi-card__icon" style="font-size:12px;" id="var-seg-Ativo">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Ativo">0</div>
+            <div class="kpi-card__subtitle">Última compra ≤ 30d</div>
+          </div>
+          <div class="kpi-card crm-seg-card" data-seg="Em risco" style="cursor:pointer; border-left: 4px solid #f97316;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#c2410c; font-weight:700;">⚠️ Em Risco</span>
+              <span class="kpi-card__icon" style="font-size:12px;" id="var-seg-Em risco">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Em risco">0</div>
+            <div class="kpi-card__subtitle">Sem comprar há 31–90d</div>
+          </div>
+          <div class="kpi-card crm-seg-card" data-seg="Perdido" style="cursor:pointer; border-left: 4px solid #ef4444;">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title" style="color:#b91c1c; font-weight:700;">💤 Perdidos</span>
+              <span class="kpi-card__icon" style="font-size:12px;" id="var-seg-Perdido">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Perdido">0</div>
+            <div class="kpi-card__subtitle">> 90 dias ou sem compra</div>
+          </div>
+        </div>
+
+        <!-- KPIs Gerais de Clientes -->
+        <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
           <div class="kpi-card">
             <div class="kpi-card__header">
               <span class="kpi-card__title">Total de Clientes</span>
@@ -1648,9 +1981,30 @@
           </div>
         </div>
 
-        <!-- Barra de busca e filtros -->
-        <div class="table-toolbar">
+        <!-- Barra de busca e filtros CRM -->
+        <div class="table-toolbar" style="flex-direction:column; align-items:stretch; gap:0.65rem;">
           <div class="table-filters" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select class="filter-select" id="filter-cliente-segmento" aria-label="Filtrar por segmento RFV">
+              <option value="">Todos os Segmentos</option>
+              <option value="Novo">🌱 Novo</option>
+              <option value="Fiel">👑 Fiel</option>
+              <option value="Ativo">✅ Ativo</option>
+              <option value="Em risco">⚠️ Em risco</option>
+              <option value="Perdido">💤 Perdido</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-tag" aria-label="Filtrar por Tag">
+              <option value="">Todas as Tags</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-produto" aria-label="Filtrar por produto já comprado">
+              <option value="">Qualquer produto comprado</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-periodo" aria-label="Filtrar por período da última compra">
+              <option value="">Qualquer período de compra</option>
+              <option value="7d">Comprou nos últimos 7 dias</option>
+              <option value="30d">Comprou nos últimos 30 dias</option>
+              <option value="31_90d">Última compra entre 31 e 90 dias</option>
+              <option value="mais_90d">Sem comprar há > 90 dias</option>
+            </select>
             <select class="filter-select" id="filter-cliente-contato" aria-label="Filtrar por autorização WhatsApp">
               <option value="">Todos os contatos</option>
               <option value="sim">Autoriza WhatsApp (LGPD)</option>
@@ -1667,27 +2021,41 @@
               <option value="todos">Todos (inclui inativos)</option>
             </select>
           </div>
-          <input type="search" class="search-input" id="search-cliente"
-                 placeholder="🔍  Buscar cliente por nome, telefone ou email..." aria-label="Buscar cliente" />
+          <div style="display:flex; gap:0.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+            <input type="search" class="search-input" id="search-cliente" style="flex:1; min-width:240px;"
+                   placeholder="🔍  Buscar cliente por nome, telefone, email ou produto favorito..." aria-label="Buscar cliente" />
+            <!-- Barra de Ações em Lote (Tags) -->
+            <div id="clientes-batch-bar" style="display:none; align-items:center; gap:6px; background:#eff6ff; border:1px solid #bfdbfe; padding:6px 10px; border-radius:8px; font-size:12px;">
+              <strong id="clientes-batch-count" style="color:#1e40af;">0 selecionados</strong>
+              <select class="filter-select" id="batch-tag-select" style="padding:4px 8px; font-size:12px;">
+                <option value="">Escolher Tag...</option>
+              </select>
+              <button type="button" class="btn btn--primary btn--sm" id="btn-batch-aplicar-tag" style="padding:4px 10px; font-size:12px;">+ Aplicar Tag</button>
+              <button type="button" class="btn btn--ghost btn--sm" id="btn-batch-remover-tag" style="padding:4px 10px; font-size:12px;">− Remover Tag</button>
+            </div>
+          </div>
         </div>
 
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Nome</th>
+                <th style="width:32px; text-align:center;">
+                  <input type="checkbox" id="chk-select-all-clientes" title="Selecionar todos da lista" />
+                </th>
+                <th>Nome & Favorito</th>
+                <th>Segmento & Tags</th>
                 <th>Telefone / WhatsApp</th>
-                <th>E-mail</th>
-                <th style="text-align:center;">Visitas</th>
+                <th style="text-align:center;">Pedidos (90d / Total)</th>
                 <th style="text-align:right;">Total Gasto</th>
                 <th style="text-align:center;">Conta / Saldo</th>
-                <th>Última Visita</th>
-                <th style="text-align:center;">WhatsApp</th>
+                <th>Última Compra</th>
+                <th style="text-align:center;">LGPD</th>
                 <th style="text-align:center;">Ações</th>
               </tr>
             </thead>
             <tbody id="tbody-clientes">
-              <tr><td colspan="9" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>
+              <tr><td colspan="10" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1962,6 +2330,135 @@
 
       </section>
 
+      <!-- ── AVALIAÇÕES DE CLIENTES (CAF-000042) ────────────────────── -->
+      <section class="page" id="page-avaliacoes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Avaliações dos Clientes</div>
+            <div class="page-header__sub">Notas de produtos, atendimento, ranking por item e comentários</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select class="filter-select" id="aval-filtro-periodo">
+              <option value="7">Últimos 7 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="todos">Todo o período</option>
+            </select>
+            <select class="filter-select" id="aval-filtro-origem">
+              <option value="todas">Todas as origens</option>
+              <option value="cupom">Cupom Impresso</option>
+              <option value="qr_mesa">QR na Mesa</option>
+              <option value="online">Pedido Online</option>
+              <option value="totem">Totem</option>
+            </select>
+            <button type="button" class="btn btn--ghost" id="btn-atualizar-avaliacoes">🔄 Atualizar</button>
+          </div>
+        </div>
+
+        <!-- Alerta de Avaliações Baixas Hoje -->
+        <div id="aval-alerta-hoje" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-left:4px solid #ef4444; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#991b1b; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px;">🚨</span>
+            <span id="aval-alerta-hoje-texto">Alerta de hoje: avaliações ≤ 2 estrelas recebidas.</span>
+          </div>
+          <button type="button" class="btn btn--danger btn-sm" id="btn-filtrar-baixas-hoje" style="padding:4px 10px; font-size:12px;">Filtrar ≤ 2★</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="stats-grid" style="margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-card__icon">🍽️</div>
+            <div class="stat-card__value" id="aval-kpi-produto">—</div>
+            <div class="stat-card__label">Média de Produtos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🤝</div>
+            <div class="stat-card__value" id="aval-kpi-atendimento">—</div>
+            <div class="stat-card__label">Média de Atendimento</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">⭐</div>
+            <div class="stat-card__value" id="aval-kpi-total">0</div>
+            <div class="stat-card__label">Total de Avaliações</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💚</div>
+            <div class="stat-card__value" id="aval-kpi-satisfacao">0%</div>
+            <div class="stat-card__label">Clientes Satisfeitos (≥ 4★)</div>
+          </div>
+        </div>
+
+        <!-- Distribuição de Notas & Ranking de Produtos -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:20px;">
+          <!-- Distribuição -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">📊 Distribuição das Notas</span>
+            </div>
+            <div id="aval-distribuicao-bars" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+              <!-- Gerado via JS -->
+            </div>
+          </div>
+
+          <!-- Ranking de Produtos -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">🏆 Ranking de Produtos Avaliados</span>
+            </div>
+            <div class="table-scroll" style="padding:8px 4px; max-height:260px; overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Avaliações</th>
+                    <th>Nota Média</th>
+                  </tr>
+                </thead>
+                <tbody id="aval-ranking-produtos-tbody">
+                  <tr><td colspan="3" style="text-align:center; padding:16px; color:#64748b;">Nenhuma avaliação por item no período.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Comentários e Avaliações -->
+        <div class="section-card">
+          <div class="section-card__header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <span class="section-card__title">💬 Avaliações e Comentários</span>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <select class="filter-select" id="aval-filtro-nota">
+                <option value="todas">Todas as notas</option>
+                <option value="baixas">Críticas (≤ 2 estrelas)</option>
+                <option value="neutras">Neutras (3 estrelas)</option>
+                <option value="altas">Elogios (≥ 4 estrelas)</option>
+              </select>
+              <select class="filter-select" id="aval-ordem">
+                <option value="baixas_primeiro">Priorizar ≤ 2★ primeiro</option>
+                <option value="recentes">Mais recentes primeiro</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-scroll" style="padding:8px 4px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Pedido</th>
+                  <th>Origem</th>
+                  <th>Nota Produto</th>
+                  <th>Nota Atend.</th>
+                  <th>Comentário & Contato</th>
+                </tr>
+              </thead>
+              <tbody id="aval-lista-tbody">
+                <tr><td colspan="6" style="text-align:center; padding:24px; color:#64748b;">Carregando avaliações...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div><!-- /main-wrap -->
 </div><!-- /admin-app -->
@@ -2178,6 +2675,24 @@
                 <tr><td colspan="5" style="text-align: center; color: var(--admin-text-sub); padding: 12px;">Nenhum insumo na ficha técnica.</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ENCOMENDAS / PEDIDO ONLINE (CAF-000038) -->
+        <div class="field" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:center; background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--admin-border2);">
+          <div>
+            <label class="field__label" for="produto-antecedencia-horas">Antecedência mínima p/ encomenda (horas)</label>
+            <input class="field__input" type="number" id="produto-antecedencia-horas" min="0" max="168" step="1" value="0" placeholder="0 = imediato" />
+            <div class="hint">Ex: 24 para bolos inteiros ou kits sob encomenda.</div>
+          </div>
+          <div>
+            <div class="toggle-wrap" style="margin-top:14px;">
+              <label class="toggle" for="produto-apenas-encomenda">
+                <input type="checkbox" id="produto-apenas-encomenda" />
+                <span class="toggle__slider"></span>
+              </label>
+              <span class="toggle-wrap__label">Só por encomenda (ocultar no PDV do dia)</span>
+            </div>
           </div>
         </div>
 
@@ -2966,46 +3481,88 @@
      MODAL DE FECHAMENTO DE CAIXA
 ════════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-fechar-caixa-overlay" role="dialog" aria-modal="true">
-  <div class="modal" id="modal-fechar-caixa" style="max-width: 600px;">
+  <div class="modal" id="modal-fechar-caixa" style="max-width: 680px;">
     <div class="modal__header">
-      <span class="modal__title">Fechamento de Caixa</span>
+      <span class="modal__title" id="modal-fechar-caixa-title">Fechamento de Caixa</span>
       <button class="modal__close" id="modal-fechar-caixa-close">✕</button>
     </div>
     <div class="modal__body">
-      <div id="alerta-mesas-abertas" class="alert alert--warn" style="display:none; margin-bottom: 20px;">
+      <div id="alerta-mesas-abertas" class="alert alert--warn" style="display:none; margin-bottom: 16px;">
         <div class="alert__icon">⚠️</div>
         <div class="alert__content">
           <strong>Atenção:</strong> Existem <span id="qtd-mesas-abertas">0</span> mesas/pedidos em aberto. O ideal é fechar as contas antes de encerrar o caixa.
         </div>
       </div>
 
-      <p style="margin-bottom:15px; color:var(--text-sec)">Informe o valor contado para cada forma de pagamento:</p>
-      
-      <form id="form-fechar-caixa" novalidate>
+      <!-- Etapa 1: Formulário de Contagem -->
+      <div id="fechar-caixa-step-contagem">
+        <div id="fechar-caixa-aviso-cego" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#334155;">
+          🔒 <strong>Conferência Cega:</strong> Informe o valor efetivamente contado em gaveta e nos comprovantes de cada forma de pagamento. O comparativo com o sistema será exibido após confirmar.
+        </div>
+
+        <!-- Calculadora de Cédulas e Moedas para Dinheiro -->
+        <details id="detalhes-contagem-cedulas" style="margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; background: var(--bg-card);">
+          <summary style="cursor: pointer; font-weight: 600; font-size: 13px; display:flex; justify-content:space-between; align-items:center;">
+            <span>💵 Contar Dinheiro por Cédulas e Moedas (Opcional)</span>
+            <span id="cedulas-soma-badge" style="color: var(--primary); font-weight: 700;">Total: R$ 0,00</span>
+          </summary>
+          <div id="cedulas-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 8px; margin-top: 12px;">
+            <!-- Gerado via JS -->
+          </div>
+          <div style="margin-top: 10px; display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn btn--ghost" id="btn-limpar-cedulas" style="padding:4px 10px; font-size:12px;">Limpar cédulas</button>
+          </div>
+        </details>
+
+        <form id="form-fechar-caixa" novalidate>
+          <div class="table-wrap">
+            <table style="margin-bottom: 16px;">
+              <thead id="fechar-caixa-thead">
+                <tr>
+                  <th>Forma de Pagamento</th>
+                  <th class="col-sistema-fechamento">Esperado (Sistema)</th>
+                  <th>Valor Contado (R$)</th>
+                  <th class="col-diferenca-fechamento">Diferença</th>
+                </tr>
+              </thead>
+              <tbody id="fechar-caixa-tbody">
+                <!-- Gerado via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div class="field">
+            <label class="field__label" for="fechar-caixa-observacoes" id="label-fechar-caixa-obs">Observações / Justificativa de Diferença</label>
+            <textarea class="field__textarea" id="fechar-caixa-observacoes" rows="2" placeholder="Obrigatório caso haja diferença acima do limite configurado"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Etapa 2: Resultado da Conferência após confirmação -->
+      <div id="fechar-caixa-step-resultado" style="display:none;">
+        <div id="fechar-caixa-resultado-banner" style="padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:14px;"></div>
         <div class="table-wrap">
-          <table style="margin-bottom: 20px;">
+          <table style="margin-bottom:16px;">
             <thead>
               <tr>
-                <th>Forma</th>
-                <th>Sistema</th>
-                <th>Contado (R$)</th>
+                <th>Forma de Pagamento</th>
+                <th>Esperado (Sistema)</th>
+                <th>Contado (Informado)</th>
                 <th>Diferença</th>
               </tr>
             </thead>
-            <tbody id="fechar-caixa-tbody">
-              <!-- Gerado via JS -->
-            </tbody>
+            <tbody id="fechar-caixa-resultado-tbody"></tbody>
           </table>
         </div>
-        <div class="field">
-          <label class="field__label" for="fechar-caixa-observacoes">Observações (Opcional)</label>
-          <textarea class="field__textarea" id="fechar-caixa-observacoes" rows="2"></textarea>
-        </div>
-      </form>
+        <div id="fechar-caixa-resultado-obs" style="font-size:13px; color:var(--text-sec); margin-bottom:8px;"></div>
+      </div>
     </div>
-    <div class="modal__footer">
+    <div class="modal__footer" id="fechar-caixa-footer-contagem">
       <button class="btn btn--ghost" id="modal-fechar-caixa-cancel">Cancelar</button>
       <button class="btn btn--primary" id="btn-confirmar-fechar-caixa">Confirmar Fechamento</button>
+    </div>
+    <div class="modal__footer" id="fechar-caixa-footer-resultado" style="display:none;">
+      <button class="btn btn--outline-dark" id="btn-imprimir-resumo-caixa">🖨️ Imprimir Resumo</button>
+      <button class="btn btn--primary" id="btn-concluir-fechar-caixa">Concluir</button>
     </div>
   </div>
 </div>
@@ -3378,6 +3935,26 @@
         <strong>Observações / Preferências:</strong> <span id="ficha-texto-obs"></span>
       </div>
 
+      <!-- Segmento RFV, Tags do Cliente e Opt-Out LGPD (CAF-000041) -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="font-size:13px; color:#1e293b;">🏷️ Segmento & Tags:</strong>
+            <span id="ficha-segmento-badge"></span>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm" id="btn-ficha-optout-lgpd" style="padding:3px 8px; font-size:11px; color:#b91c1c;">
+            🚫 Registrar "Não quero mais receber" (LGPD)
+          </button>
+        </div>
+        <div id="ficha-tags-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select class="filter-select" id="ficha-select-nova-tag" style="padding:4px 8px; font-size:12px;">
+            <option value="">+ Adicionar tag ao cliente...</option>
+          </select>
+          <button type="button" class="btn btn--secondary btn--sm" id="btn-ficha-add-tag" style="padding:4px 10px; font-size:12px;">Vincular Tag</button>
+        </div>
+      </div>
+
       <!-- Top 5 Produtos -->
       <div style="margin-bottom: 20px;">
         <h4 style="margin:0 0 8px 0; font-size:14px; color:#1e293b; display:flex; align-items:center; gap:6px;">
@@ -3425,6 +4002,166 @@
 
       <div class="modal__footer" style="display:flex; justify-content:flex-end; margin-top:20px;">
         <button type="button" class="btn btn--primary" id="btn-fechar-ficha-cliente">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: TAGS & LIMITES DE SEGMENTAÇÃO RFV (CAF-000041)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-crm-tags-overlay" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width: 600px; width: 95%;">
+    <div class="modal__header">
+      <span class="modal__title">🏷️ Tags de Clientes & Regras RFV</span>
+      <button class="modal__close" id="modal-crm-tags-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body" style="max-height: 75vh; overflow-y: auto;">
+      <!-- Criar Nova Tag -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:16px;">
+        <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:8px;">Criar Nova Tag Livre</div>
+        <form id="form-criar-tag-crm" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="text" class="field__input" id="crm-nova-tag-nome" placeholder="Ex: VIP, Funcionário Univates, Vegano..." required style="flex:1; min-width:180px;" />
+          <input type="color" id="crm-nova-tag-cor" value="#c9973a" title="Cor da Tag" style="width:42px; height:38px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:2px;" />
+          <button type="submit" class="btn btn--primary btn--sm">+ Criar Tag</button>
+        </form>
+        <div id="crm-lista-tags-existentes" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
+      </div>
+
+      <!-- Limites de Segmentação RFV -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+        <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:4px;">⚙️ Limites de Classificação RFV e Anti-Spam</div>
+        <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Ajuste os dias para reclassificar automaticamente os segmentos Novo, Ativo, Fiel, Em risco e Perdido.</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
+          <div class="field">
+            <label class="field__label" style="font-size:11px;" for="cfg-crm-dias-ativo">Dias p/ Novo e Ativo (≤)</label>
+            <input type="number" class="field__input" id="cfg-crm-dias-ativo" min="1" max="365" value="30" />
+          </div>
+          <div class="field">
+            <label class="field__label" style="font-size:11px;" for="cfg-crm-dias-perdido">Dias p/ Perdido (>)</label>
+            <input type="number" class="field__input" id="cfg-crm-dias-perdido" min="15" max="730" value="90" />
+          </div>
+          <div class="field">
+            <label class="field__label" style="font-size:11px;" for="cfg-crm-pedidos-fiel">Pedidos em 90d p/ Fiel (≥)</label>
+            <input type="number" class="field__input" id="cfg-crm-pedidos-fiel" min="2" max="50" value="4" />
+          </div>
+          <div class="field">
+            <label class="field__label" style="font-size:11px;" for="cfg-crm-antispam">Anti-spam Campanhas (dias)</label>
+            <input type="number" class="field__input" id="cfg-crm-antispam" min="1" max="60" value="7" />
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+          <button type="button" class="btn btn--primary btn--sm" id="btn-salvar-regras-rfv">💾 Salvar Limites RFV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CAMPANHAS WHATSAPP & CONVERSÃO (CAF-000041)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-crm-campanhas-overlay" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width: 860px; width: 96%;">
+    <div class="modal__header">
+      <span class="modal__title">📣 Campanhas Assistidas via WhatsApp & Relatório de Conversão</span>
+      <button class="modal__close" id="modal-crm-campanhas-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body" style="max-height: 80vh; overflow-y: auto;">
+      <!-- Nova Campanha & Disparo -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin-bottom:18px;">
+        <div style="font-weight:700; font-size:14px; color:#1e293b; margin-bottom:10px;">1. Configurar Campanha e Filtrar Destinatários (Apenas com Consentimento LGPD)</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Nome da Campanha *</label>
+            <input type="text" class="field__input" id="camp-nome" placeholder="Ex: Sentimos sua falta" />
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Segmento Alvo</label>
+            <select class="field__input" id="camp-segmento">
+              <option value="">Todos os segmentos</option>
+              <option value="Novo">🌱 Novo</option>
+              <option value="Fiel">👑 Fiel</option>
+              <option value="Ativo">✅ Ativo</option>
+              <option value="Em risco" selected>⚠️ Em risco</option>
+              <option value="Perdido">💤 Perdido</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Tag (Opcional)</label>
+            <select class="field__input" id="camp-tag">
+              <option value="">Qualquer tag</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Produto Já Comprado (Opcional)</label>
+            <select class="field__input" id="camp-produto">
+              <option value="">Qualquer produto</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="field__label" style="font-size:11px;">Cupom / Promoção (Opcional)</label>
+            <input type="text" class="field__input" id="camp-cupom" placeholder="Ex: VOLTEI10" />
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:10px;">
+          <label class="field__label" style="font-size:11px; display:flex; justify-content:space-between;">
+            <span>Mensagem do WhatsApp *</span>
+            <span style="color:#64748b;">Variáveis: <code>{primeiro_nome}</code>, <code>{produto_favorito}</code>, <code>{cupom}</code></span>
+          </label>
+          <textarea class="field__textarea" id="camp-mensagem" rows="3">Oi {primeiro_nome}, tudo bem? Sentimos sua falta aqui na Cafeteria do Teatro! ☕ Que tal passar hoje para saborear seu {produto_favorito}?</textarea>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div id="camp-resumo-elegiveis" style="font-size:12px; color:#475569;"></div>
+          <button type="button" class="btn btn--primary btn--sm" id="btn-salvar-criar-campanha">📋 Gerar Lista de Disparo desta Campanha</button>
+        </div>
+      </div>
+
+      <!-- Lista de Destinatários da Campanha Ativa -->
+      <div id="camp-disparo-box" style="display:none; margin-bottom:20px; border:1px solid #cbd5e1; border-radius:10px; padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="font-size:14px; color:#0f172a;" id="camp-disparo-titulo">Destinatários da Campanha</strong>
+          <span style="font-size:12px; color:#64748b;" id="camp-disparo-sub"></span>
+        </div>
+        <div class="table-wrap" style="max-height:240px; overflow-y:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Segmento</th>
+                <th>Produto Favorito</th>
+                <th>Prévia da Mensagem</th>
+                <th style="text-align:center;">Disparo Assistido</th>
+              </tr>
+            </thead>
+            <tbody id="camp-destinatarios-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Relatório de Campanhas e Conversão em 7 dias -->
+      <div>
+        <h4 style="margin:0 0 8px 0; font-size:14px; color:#1e293b;">📈 Histórico de Campanhas & Conversão (Compras em até 7 dias após envio)</h4>
+        <div class="table-wrap" style="border:1px solid #e2e8f0; border-radius:8px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Campanha</th>
+                <th>Data</th>
+                <th>Filtro</th>
+                <th style="text-align:center;">Enviados</th>
+                <th style="text-align:center;">Converteram (7d)</th>
+                <th style="text-align:right;">Faturamento Gerado (7d)</th>
+                <th style="text-align:center;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="camp-historico-tbody">
+              <tr><td colspan="7" style="text-align:center; padding:14px; color:#64748b;">Nenhuma campanha registrada ainda.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -3873,8 +4610,9 @@
 <script defer src="js/supabase-client.js"></script>
 <script defer src="js/db.js"></script>
 
-<!-- QR CODE GENERATOR (CAF-000037) -->
+<!-- QR CODE GENERATOR (CAF-000037 + CAF-000039) -->
 <script defer src="js/libs/qrcode.min.js"></script>
+<script defer src="js/pix-brcode.js"></script>
 
 <!-- ADMIN MODULES -->
 <script defer src="js/admin/main.js"></script>
@@ -3892,6 +4630,7 @@
 <script defer src="js/admin/caixa-admin.js"></script>
 <script defer src="js/admin/estoque.js"></script>
 <script defer src="js/admin/clientes-admin.js"></script>
+<script defer src="js/admin/avaliacoes-admin.js"></script>
 <script defer src="js/admin/financeiro-admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

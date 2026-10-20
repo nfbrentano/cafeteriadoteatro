@@ -242,6 +242,21 @@
               <input type="checkbox" id="pedido-pago" />
               <span>Marcar como <strong>Já Pago</strong></span>
             </label>
+
+            <!-- Bloco de QR Code PIX no Balcão / Novo Pedido (CAF-000039) -->
+            <div id="pix-cart-preview" class="hidden" style="margin-top:10px; padding:10px; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; text-align:center;">
+              <div style="font-size:12px; font-weight:700; color:#166534; margin-bottom:6px;">
+                💠 QR Code PIX (<span id="pix-cart-valor-lbl">R$ 0,00</span>)
+              </div>
+              <div id="pix-cart-qr-svg" style="width:140px; height:140px; margin:0 auto 8px auto; background:#fff; padding:6px; border-radius:8px; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center;"></div>
+              <div id="pix-cart-aviso-sem-chave" class="hidden" style="font-size:11px; color:#b45309; margin-bottom:6px;">
+                ⚠️ Configure a chave Pix no painel Admin → Configurações.
+              </div>
+              <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                <button type="button" id="btn-pix-cart-copiar" class="btn-ghost" style="font-size:12px; padding:5px 10px; background:#fff; border:1px solid #86efac;">📋 Copiar código</button>
+                <button type="button" id="btn-pix-cart-fullscreen" class="btn-primary-small" style="font-size:12px; padding:5px 10px; background:#059669;">📱 Mostrar ao cliente</button>
+              </div>
+            </div>
           </div>
           
           <div class="cart-total">
@@ -305,6 +320,8 @@
               <button class="filter-chip chip--prontos" data-filter="concluido">🟢 Prontos p/ Servir</button>
               <button class="filter-chip chip--preparo" data-filter="em_preparo">🔵 Em Preparo</button>
               <button class="filter-chip chip--pendente" data-filter="pendente">🟡 Na Fila</button>
+              <button class="filter-chip" data-filter="agendado">📅 Agendados</button>
+              <button class="filter-chip" data-filter="aguardando_pagamento">🖥️ Totem (A Receber)</button>
             </div>
           </div>
         </div>
@@ -615,6 +632,24 @@
               <button type="button" id="btn-add-pagamento" class="btn-primary" style="height: 44px; padding: 0 16px; font-weight: bold;">+ Lançar</button>
             </div>
 
+            <!-- Bloco de QR Code PIX no Fechamento (CAF-000039) -->
+            <div id="div-pix-fechamento" class="hidden" style="margin-top:10px; margin-bottom:10px; padding:12px; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; text-align:center;">
+              <div style="font-size:13px; font-weight:700; color:#166534; margin-bottom:6px;">
+                💠 QR Code PIX da Parte (<span id="fechar-conta-pix-valor-lbl">R$ 0,00</span>)
+              </div>
+              <div id="fechar-conta-pix-qr" style="width:156px; height:156px; margin:0 auto 8px auto; background:#fff; padding:6px; border-radius:8px; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center;"></div>
+              <div id="fechar-conta-pix-sem-chave" class="hidden" style="font-size:12px; color:#b45309; margin-bottom:8px;">
+                ⚠️ Chave Pix não configurada. Cadastre em Admin → Configurações.
+              </div>
+              <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                <button type="button" id="btn-fechar-pix-copiar" class="btn-ghost" style="font-size:12px; padding:6px 12px; background:#fff; border:1px solid #86efac;">📋 Copiar código</button>
+                <button type="button" id="btn-fechar-pix-fullscreen" class="btn-primary-small" style="font-size:12px; padding:6px 12px; background:#059669;">📱 Mostrar ao cliente</button>
+              </div>
+              <div style="font-size:11px; color:#15803d; margin-top:6px;">
+                Confirme o recebimento no app/comprovante e clique em <strong>+ Lançar</strong> (Recebi o Pix).
+              </div>
+            </div>
+
             <!-- Bloco de Dinheiro Recebido & Troco -->
             <div id="div-dinheiro-recebido" class="hidden fechar-conta-troco-box">
               <label style="font-size: 13px; display: block; margin-bottom: 4px; font-weight: bold; color: var(--verde-ok);">
@@ -807,6 +842,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/db.js"></script>
+  <script src="js/libs/qrcode.min.js"></script>
+  <script src="js/pix-brcode.js"></script>
   <script src="js/pedido-print.js"></script>
   <script src="js/pedidos.js"></script>
   <script>
