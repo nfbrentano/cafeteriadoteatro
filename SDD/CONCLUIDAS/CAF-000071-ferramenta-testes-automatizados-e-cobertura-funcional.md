@@ -45,11 +45,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o desenvolvedor executa `npm test` no terminal, quando o comando rodar, então o Vitest deve inicializar o ambiente DOM, executar todas as suítes em `tests/**/*.test.js` e retornar código de saída `0` quando todos os testes passarem.
-- [ ] **CA02:** Dado que um teste funcional exercita um módulo que consome o Supabase ou Web APIs (`localStorage`, `wakeLock`, `clipboard`, `fetch`), quando o teste rodar, então o helper de mock deve interceptar as chamadas sem realizar requisições reais para o banco de produção.
-- [ ] **CA03:** Dado que uma nova feature é solicitada ou implementada, quando o fluxo de trabalho do `GEMINI.md` for consultado, então deve constar explicitamente a exigência de escrever testes funcionais cobrindo todos os cenários (positivos, negativos, casos-limite e erros) e executá-los antes de concluir qualquer SDD.
-- [ ] **CA04:** Dado que uma regra de negócio testada sofra uma regressão proposital (ex.: cálculo incorreto de troco, desconto ou cashback ativado por engano), quando `npm test` for executado, então o teste correspondente deve falhar imediatamente apontando o cenário quebrado.
-- [ ] **CA05:** Dado que um push é enviado para a branch `main`, quando o GitHub Actions executar `.github/workflows/deploy.yml`, então a etapa `npm test` deve rodar obrigatoriamente antes do build e interromper o deploy se houver qualquer falha.
+- [x] **CA01:**** Dado que o desenvolvedor executa `npm test` no terminal, quando o comando rodar, então o Vitest deve inicializar o ambiente DOM, executar todas as suítes em `tests/**/*.test.js` e retornar código de saída `0` quando todos os testes passarem.
+- [x] **CA02:**** Dado que um teste funcional exercita um módulo que consome o Supabase ou Web APIs (`localStorage`, `wakeLock`, `clipboard`, `fetch`), quando o teste rodar, então o helper de mock deve interceptar as chamadas sem realizar requisições reais para o banco de produção.
+- [x] **CA03:**** Dado que uma nova feature é solicitada ou implementada, quando o fluxo de trabalho do `GEMINI.md` for consultado, então deve constar explicitamente a exigência de escrever testes funcionais cobrindo todos os cenários (positivos, negativos, casos-limite e erros) e executá-los antes de concluir qualquer SDD.
+- [x] **CA04:**** Dado que uma regra de negócio testada sofra uma regressão proposital (ex.: cálculo incorreto de troco, desconto ou cashback ativado por engano), quando `npm test` for executado, então o teste correspondente deve falhar imediatamente apontando o cenário quebrado.
+- [x] **CA05:**** Dado que um push é enviado para a branch `main`, quando o GitHub Actions executar `.github/workflows/deploy.yml`, então a etapa `npm test` deve rodar obrigatoriamente antes do build e interromper o deploy se houver qualquer falha.
 
 ## O que a atividade não inclui
 

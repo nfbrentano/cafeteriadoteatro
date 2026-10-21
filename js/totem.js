@@ -46,6 +46,10 @@
   const pairingError = document.getElementById('totem-pairing-error');
   const btnPairSubmit = document.getElementById('btn-totem-pair-submit');
 
+  let espetaculoTotemConfig = null;
+  let reservandoParaIntervaloTotem = false;
+  let termoBuscaTotem = '';
+
   const idleScreen = document.getElementById('totem-idle-screen');
   const idleTeatroTitulo = document.getElementById('totem-idle-teatro-titulo');
   const idleTeatroSub = document.getElementById('totem-idle-teatro-sub');
@@ -293,7 +297,7 @@
         window.cafeteriaSupabase.from('categorias').select('*').eq('ativo', true).order('ordem'),
         window.cafeteriaSupabase.from('produtos').select('*').eq('ativo', true).eq('disponivel', true).order('ordem'),
         window.cafeteriaSupabase.from('adicionais').select('*').eq('ativo', true).order('nome'),
-        window.cafeteriaSupabase.from('produto_adicionais_permitidos').select('*'),
+        window.cafeteriaSupabase.from('v_adicionais_produto').select('produto_id, adicional_id'),
         window.cafeteriaSupabase.from('promocoes').select('*').eq('ativo', true),
         window.cafeteriaSupabase.from('totem_sugestoes').select('*').eq('ativo', true).order('ordem')
       ]);
@@ -319,10 +323,95 @@
         categoriaAtivaId = categorias[0].id;
       }
 
+      // Configuração de Espetáculo (CAF-000084 / RF03)
+      try {
+        const { data: configs } = await window.cafeteriaSupabase
+          .from('configuracoes_sistema')
+          .select('chave, valor')
+          .like('chave', 'espetaculo_%');
+        const cfg = {};
+        (configs || []).forEach(r => {
+          const val = typeof r.valor === 'string' ? r.valor.replace(/^"|"$/g, '') : r.valor;
+          cfg[r.chave] = val;
+        });
+        espetaculoTotemConfig = cfg;
+        atualizarBannerEspetaculoTotem();
+      } catch (e) {
+        console.warn('Erro ao carregar espetáculo no totem:', e);
+      }
+
+      initBuscaTotem();
       renderizarCategorias();
       renderizarProdutos();
     } catch (err) {
       console.error('Erro ao carregar dados do totem:', err);
+    }
+  }
+
+  function atualizarBannerEspetaculoTotem() {
+    const banner = document.getElementById('totem-banner-espetaculo');
+    const tit = document.getElementById('totem-banner-espetaculo-titulo');
+    const desc = document.getElementById('totem-banner-espetaculo-desc');
+    const btn = document.getElementById('btn-totem-reservar-intervalo');
+
+    if (!banner) return;
+
+    const theaterHelper = window.TheaterMode || window.theaterMode;
+    const isActive = theaterHelper && typeof theaterHelper.isTheaterModeActive === 'function'
+      ? theaterHelper.isTheaterModeActive(espetaculoTotemConfig)
+      : false;
+
+    if (isActive) {
+      const info = (theaterHelper && typeof theaterHelper.getTheaterIntervalInfo === 'function')
+        ? theaterHelper.getTheaterIntervalInfo(espetaculoTotemConfig)
+        : { nome: espetaculoTotemConfig?.espetaculo_nome || 'Espetáculo', horario: espetaculoTotemConfig?.espetaculo_horario_intervalo || '21:00' };
+
+      if (tit) tit.textContent = `🎭 Hoje no Teatro Univates: ${info.nome}!`;
+      if (desc) desc.textContent = `Peça agora e retire sem fila no intervalo das ${info.horario}.`;
+      banner.classList.remove('hidden');
+
+      if (btn && !btn.dataset.bound) {
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', () => {
+          reservandoParaIntervaloTotem = !reservandoParaIntervaloTotem;
+          if (reservandoParaIntervaloTotem) {
+            btn.innerHTML = '✓ Reservado p/ Intervalo';
+            btn.style.background = '#22c55e';
+            btn.style.color = '#fff';
+          } else {
+            btn.innerHTML = '⚡ Reservar p/ o Intervalo';
+            btn.style.background = '#fff';
+            btn.style.color = '#6b21a8';
+          }
+        });
+      }
+    } else {
+      banner.classList.add('hidden');
+    }
+  }
+
+  function initBuscaTotem() {
+    const input = document.getElementById('totem-input-busca');
+    const btnLimpar = document.getElementById('btn-totem-limpar-busca');
+
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = 'true';
+      input.addEventListener('input', () => {
+        termoBuscaTotem = (input.value || '').trim();
+        if (btnLimpar) btnLimpar.style.display = termoBuscaTotem ? 'flex' : 'none';
+        renderizarProdutos();
+      });
+    }
+
+    if (btnLimpar && !btnLimpar.dataset.bound) {
+      btnLimpar.dataset.bound = 'true';
+      btnLimpar.addEventListener('click', () => {
+        if (input) input.value = '';
+        termoBuscaTotem = '';
+        btnLimpar.style.display = 'none';
+        renderizarProdutos();
+        if (input) input.focus();
+      });
     }
   }
 
@@ -354,9 +443,18 @@
 
   function renderizarProdutos() {
     if (!productsGrid) return;
-    const lista = categoriaAtivaId
+    let lista = categoriaAtivaId
       ? produtos.filter((p) => p.categoria_id === categoriaAtivaId)
       : produtos;
+
+    if (termoBuscaTotem) {
+      if (window.SmartSearch && typeof window.SmartSearch.filterProducts === 'function') {
+        lista = window.SmartSearch.filterProducts(produtos, termoBuscaTotem);
+      } else {
+        const q = termoBuscaTotem.toLowerCase();
+        lista = produtos.filter((p) => p.nome.toLowerCase().includes(q) || (p.descricao && p.descricao.toLowerCase().includes(q)));
+      }
+    }
 
     if (lista.length === 0) {
       productsGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:48px; color:var(--totem-text-sub); font-size:1.2rem;">Nenhum produto disponível nesta categoria no momento.</div>`;
@@ -404,11 +502,10 @@
 
   // ── 6. PERSONALIZAÇÃO DO ITEM ──
   function obterAdicionaisPermitidos(prod) {
-    if (!prod.permite_adicionais) return [];
+    if (!prod || !prod.permite_adicionais) return [];
     const idsPermitidos = vinculosAdicionais
       .filter((v) => v.produto_id === prod.id)
       .map((v) => v.adicional_id);
-    if (idsPermitidos.length === 0) return adicionais;
     return adicionais.filter((a) => idsPermitidos.includes(a.id));
   }
 
@@ -595,6 +692,13 @@
   function limparCarrinhoSilencioso() {
     carrinho = [];
     jaMostrouSugestoesNoCiclo = false;
+    reservandoParaIntervaloTotem = false;
+    const btnReservar = document.getElementById('btn-totem-reservar-intervalo');
+    if (btnReservar) {
+      btnReservar.innerHTML = '⚡ Reservar p/ o Intervalo';
+      btnReservar.style.background = '#fff';
+      btnReservar.style.color = '#6b21a8';
+    }
     if (inputNome) inputNome.value = '';
     atualizarBarraCarrinho();
   }
@@ -715,6 +819,34 @@
     }
 
     renderizarListaCheckout();
+
+    if (window.cafeteriaCashback) {
+      try {
+        const sb = window.cafeteriaSupabase || window.supabaseClient;
+        const promptEl = document.getElementById('totem-cashback-prompt');
+        if (promptEl) {
+          (async () => {
+            try {
+              const cfg = await (window.cafeteriaCashback.loadCashbackConfig 
+                ? window.cafeteriaCashback.loadCashbackConfig(sb) 
+                : Promise.resolve(null));
+              if (window.cafeteriaCashback.isCashbackActive(cfg)) {
+                const prompt = window.cafeteriaCashback.getCashbackPrompt(cfg);
+                if (prompt) {
+                  promptEl.textContent = prompt;
+                  promptEl.style.display = 'block';
+                  return;
+                }
+              }
+              promptEl.style.display = 'none';
+            } catch (_) {
+              promptEl.style.display = 'none';
+            }
+          })();
+        }
+      } catch (_) {}
+    }
+
     modalCheckout.classList.remove('hidden');
     setTimeout(() => inputNome?.focus(), 150);
   }
@@ -865,6 +997,13 @@
 
     try {
       const subtotalPedido = calcularTotalCarrinho();
+
+      let retiradaEmIso = null;
+      const theaterHelper = window.TheaterMode || window.theaterMode;
+      if (reservandoParaIntervaloTotem && espetaculoTotemConfig && theaterHelper?.calculateIntervalRetiradaEm) {
+        retiradaEmIso = theaterHelper.calculateIntervalRetiradaEm(espetaculoTotemConfig);
+      }
+
       const payload = {
         cliente_nome: nome,
         para_viagem: paraViagem,
@@ -872,6 +1011,10 @@
         cupom_codigo: totemCupomAplicado?.cupom_codigo || null,
         campanha_id: totemCupomAplicado?.campanha_id || null,
         desconto_cupom: totemCupomAplicado?.desconto_calculado || 0,
+        is_intervalo: Boolean(reservandoParaIntervaloTotem),
+        retirada_em: retiradaEmIso,
+        espetaculo_nome: (reservandoParaIntervaloTotem && espetaculoTotemConfig) ? (espetaculoTotemConfig.nome || espetaculoTotemConfig.espetaculo_nome) : null,
+        horario_retirada: (reservandoParaIntervaloTotem && espetaculoTotemConfig) ? (espetaculoTotemConfig.horario_intervalo || espetaculoTotemConfig.espetaculo_horario_intervalo) : null,
         itens: carrinho.map((item) => ({
           produto_id: item.produto.id,
           quantidade: item.quantidade,
@@ -893,9 +1036,21 @@
 
       if (error) throw error;
 
-      if (totemCupomAplicado && totemCupomAplicado.campanha_id && window.couponValidator) {
-        const finalVal = Math.max(0, subtotalPedido - (totemCupomAplicado.desconto_calculado || 0));
-        window.couponValidator.registerCouponUsage(window.cafeteriaSupabase, totemCupomAplicado.campanha_id, finalVal);
+      reservandoParaIntervaloTotem = false;
+      const btnReservar = document.getElementById('btn-totem-reservar-intervalo');
+      if (btnReservar) {
+        btnReservar.innerHTML = '⚡ Reservar p/ o Intervalo';
+        btnReservar.style.background = '#fff';
+        btnReservar.style.color = '#6b21a8';
+      }
+
+      const novoPedidoId = data?.pedido_id || data?.id;
+      if (totemCupomAplicado && totemCupomAplicado.campanha_id && window.couponValidator && novoPedidoId) {
+        try {
+          await window.couponValidator.registerCouponUsage(window.cafeteriaSupabase, totemCupomAplicado.campanha_id, novoPedidoId);
+        } catch (couponErr) {
+          console.warn('[Totem] Falha ao registrar uso de cupom:', couponErr);
+        }
       }
       totemCupomAplicado = null;
       if (totemInputCupom) totemInputCupom.value = '';

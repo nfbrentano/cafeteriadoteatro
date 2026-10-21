@@ -1,5 +1,8 @@
 # CAF-000011 — [PDV] [Banco] Transferir e juntar mesas
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + banco | 🟢 Baixa | M | A fazer |
@@ -40,10 +43,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a mesa 2 tem 2 pedidos a pagar, **quando** o barista transfere para a mesa 5, **então** os 2 pedidos passam a ser da mesa 5 e a mesa 2 fica livre.
-- [ ] **Dado que** a mesa 3 tem baguete com cortesia, **quando** é transferida, **então** a cortesia continua válida e o saldo de cortesia vai junto.
-- [ ] **Dado que** as mesas 1 e 4 querem conta única, **quando** o barista junta a 4 na 1, **então** a prévia da conta da mesa 1 mostra os pedidos das duas.
-- [ ] **Dado que** o pedido está na cozinha, **quando** a mesa é transferida, **então** o card da cozinha mostra a nova mesa.
+- [x] **Dado que** a mesa 2 tem 2 pedidos a pagar, **quando** o barista transfere para a mesa 5, **então** os 2 pedidos passam a ser da mesa 5 e a mesa 2 fica livre.
+- [x] **Dado que** a mesa 3 tem baguete com cortesia, **quando** é transferida, **então** a cortesia continua válida e o saldo de cortesia vai junto.
+- [x] **Dado que** as mesas 1 e 4 querem conta única, **quando** o barista junta a 4 na 1, **então** a prévia da conta da mesa 1 mostra os pedidos das duas.
+- [x] **Dado que** o pedido está na cozinha, **quando** a mesa é transferida, **então** o card da cozinha mostra a nova mesa.
 
 ---
 

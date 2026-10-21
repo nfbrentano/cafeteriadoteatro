@@ -1,7 +1,8 @@
 # [FEAT] CAF-000061 — Validação e Aplicação de Cupons de Desconto no Autoatendimento e PDV
 
-> **Status:** Concluída
-> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-20 · **Atualizada em:** 2026-10-20
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-20 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Uso único por pedido e rastreio de cupom no fechamento corrigidos via CAF-000077.
 
 ## Detalhes da Atividade
 

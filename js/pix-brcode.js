@@ -368,16 +368,28 @@
     });
   }
 
-  window.cafeteriaPix = {
+  const pixExport = {
     gerarPayloadPix,
+    gerarPayload: (opts) => gerarPayloadPix({ ...opts, recebedor: opts?.recebedor || opts?.nomeRecebedor }),
     gerarQrSvg,
     gerarQrDataUrl,
     crc16CCITT,
     normalizarChavePix,
     normalizarTextoEmv,
     obterConfigPix,
+    getPixConfig: obterConfigPix,
     atualizarCacheConfigPix,
     copiarCodigoPix,
     abrirModalClienteTelaCheia
   };
+
+  if (typeof window !== 'undefined') {
+    window.cafeteriaPix = pixExport;
+  }
+  if (typeof globalThis !== 'undefined') {
+    globalThis.cafeteriaPix = pixExport;
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = pixExport;
+  }
 })();

@@ -43,11 +43,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o operador está em `pedidos.html` em um navegador compatível com `SpeechRecognition`, quando tocar no botão `🎤` do campo de observação e falar *"sem gelo e com limão"*, então o texto deve ser preenchido automaticamente no campo de observação.
-- [ ] **CA02:** Dado que o navegador não suporta `SpeechRecognition` ou o usuário nega a permissão de microfone, quando interagir com o campo de observação, então a digitação manual deve continuar funcionando normalmente e sem erros não tratados.
-- [ ] **CA03:** Dado que um pedido está na aba Mesas no celular, quando o garçom deslizar o card para a direita além do limiar (`90px`) e soltar, então o pedido deve ser marcado como entregue com vibração tátil curta.
-- [ ] **CA04:** Dado que o garçom acabou de marcar um pedido como entregue, quando tocar em **"Desfazer"** no toast exibido nos 5 segundos seguintes, então o pedido deve voltar imediatamente ao status anterior na lista e no banco.
-- [ ] **CA05:** Dado que o garçom está rolando a lista de mesas verticalmente no celular, quando o movimento do dedo for predominantemente vertical, então o card não deve disparar o swipe de entrega acidentalmente.
+- [x] **CA01:**** Dado que o operador está em `pedidos.html` em um navegador compatível com `SpeechRecognition`, quando tocar no botão `🎤` do campo de observação e falar *"sem gelo e com limão"*, então o texto deve ser preenchido automaticamente no campo de observação.
+- [x] **CA02:**** Dado que o navegador não suporta `SpeechRecognition` ou o usuário nega a permissão de microfone, quando interagir com o campo de observação, então a digitação manual deve continuar funcionando normalmente e sem erros não tratados.
+- [x] **CA03:**** Dado que um pedido está na aba Mesas no celular, quando o garçom deslizar o card para a direita além do limiar (`90px`) e soltar, então o pedido deve ser marcado como entregue com vibração tátil curta.
+- [x] **CA04:**** Dado que o garçom acabou de marcar um pedido como entregue, quando tocar em **"Desfazer"** no toast exibido nos 5 segundos seguintes, então o pedido deve voltar imediatamente ao status anterior na lista e no banco.
+- [x] **CA05:**** Dado que o garçom está rolando a lista de mesas verticalmente no celular, quando o movimento do dedo for predominantemente vertical, então o card não deve disparar o swipe de entrega acidentalmente.
 
 ## O que a atividade não inclui
 

@@ -14,6 +14,67 @@ export const FORMAS_PAGAMENTO_ELEGIVEIS = new Set([
   'cartao_debito'
 ]);
 
+let _cachedConfig = null;
+let _cacheExpiresAt = 0;
+const CACHE_TTL_MS = 60 * 1000; // 1 minuto
+
+export function clearCashbackConfigCache() {
+  _cachedConfig = null;
+  _cacheExpiresAt = 0;
+}
+
+export async function loadCashbackConfig(supabaseClient, forceReload = false) {
+  const now = Date.now();
+  if (!forceReload && _cachedConfig && now < _cacheExpiresAt) {
+    return _cachedConfig;
+  }
+
+  const defaultConfig = {
+    ativo: false,
+    percentual: 5.0,
+    valor_minimo: 10.0
+  };
+
+  if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+    return defaultConfig;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('configuracoes_sistema')
+      .select('chave, valor')
+      .in('chave', ['cashback_ativo', 'cashback_percentual', 'cashback_valor_minimo']);
+
+    if (error || !data) {
+      return defaultConfig;
+    }
+
+    const map = {};
+    data.forEach(item => {
+      let val = item.valor;
+      if (typeof val === 'string') {
+        try { val = JSON.parse(val); } catch (_) {}
+      }
+      map[item.chave] = val;
+    });
+
+    const ativoVal = map['cashback_ativo'];
+    const ativo = ativoVal === true || ativoVal === 'true' || ativoVal === 1 || ativoVal === '1';
+    const percentual = Number(map['cashback_percentual']) || 5.0;
+    const valorMinimo = Number(map['cashback_valor_minimo']) || 10.0;
+
+    _cachedConfig = {
+      ativo,
+      percentual,
+      valor_minimo: valorMinimo
+    };
+    _cacheExpiresAt = now + CACHE_TTL_MS;
+    return _cachedConfig;
+  } catch (err) {
+    return defaultConfig;
+  }
+}
+
 export function isCashbackActive(config) {
   if (!config || typeof config !== 'object') return false;
   return config.ativo === true || config.cashback_ativo === true || config.cashback_ativo === 'true';
@@ -75,16 +136,30 @@ export function formatCashbackNotification(valorCashback, novoSaldo = null) {
   return `🎁 Você ganhou R$ ${valStr} de cashback na sua carteira!`;
 }
 
-export async function processOrderCashback(supabaseClient, pedidoId, clienteId, valorElegivel) {
-  if (!supabaseClient || !clienteId || !valorElegivel || valorElegivel <= 0) {
-    return { creditado: false };
+export async function processOrderCashback(supabaseClient, pedidoIdOrOpts, clienteIdArg, valorElegivelArg) {
+  let pedidoId = null;
+  let clienteId = null;
+  let valorElegivel = 0;
+
+  if (pedidoIdOrOpts && typeof pedidoIdOrOpts === 'object') {
+    pedidoId = pedidoIdOrOpts.pedidoId || pedidoIdOrOpts.p_pedido_id || null;
+    clienteId = pedidoIdOrOpts.clienteId || pedidoIdOrOpts.p_cliente_id || null;
+    valorElegivel = pedidoIdOrOpts.valorElegivel || pedidoIdOrOpts.p_valor_elegivel || 0;
+  } else {
+    pedidoId = pedidoIdOrOpts;
+    clienteId = clienteIdArg;
+    valorElegivel = valorElegivelArg;
+  }
+
+  if (!supabaseClient || !clienteId) {
+    return { creditado: false, error: 'Parâmetros insuficientes' };
   }
 
   try {
     const { data, error } = await supabaseClient.rpc('processar_cashback_pedido', {
       p_pedido_id: pedidoId ? Number(pedidoId) : null,
       p_cliente_id: clienteId,
-      p_valor_elegivel: Number(valorElegivel)
+      p_valor_elegivel: Number(valorElegivel) || 0
     });
 
     if (error) {
@@ -102,6 +177,8 @@ export async function processOrderCashback(supabaseClient, pedidoId, clienteId, 
 if (typeof window !== 'undefined') {
   window.cafeteriaCashback = {
     FORMAS_PAGAMENTO_ELEGIVEIS,
+    clearCashbackConfigCache,
+    loadCashbackConfig,
     isCashbackActive,
     calculateEligiblePaymentAmount,
     calculateCashback,

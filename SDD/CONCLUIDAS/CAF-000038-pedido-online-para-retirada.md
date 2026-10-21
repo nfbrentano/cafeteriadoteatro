@@ -1,5 +1,8 @@
 # CAF-000038 — [Cardápio] [PDV] Pedido online para retirada e encomendas pelo link (WhatsApp / Instagram)
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cardápio público + PDV + banco | 🟡 Média | M | Concluída |
@@ -12,7 +15,7 @@
   - "O quanto antes" (ex.: pedir o café no caminho para o espetáculo).
   - **Agendado / encomenda** (ex.: bolo inteiro ou kit de salgados para amanhã às 15h).
   O pedido chega no PDV para confirmação, igual ao da [CAF-000037](CAF-000037-qr-code-na-mesa-e-pedido-pelo-cliente.md), e o cliente recebe confirmação e aviso de pronto por link do WhatsApp.
-- **Por que é necessário:** hoje o botão flutuante do WhatsApp ([CAF-000020](CONCLUIDAS/CAF-000020-menu-flutuante-whatsapp.md), `cardapio.html:360`) só abre uma conversa; o pedido é digitado à mão pelo barista, com erro de item e de preço, e encomendas ficam anotadas em papel. Todos os concorrentes oferecem link de pedidos próprio, sem depender de marketplace.
+- **Por que é necessário:** hoje o botão flutuante do WhatsApp ([CAF-000020A](CAF-000020A-menu-flutuante-whatsapp.md), `cardapio.html:360`) só abre uma conversa; o pedido é digitado à mão pelo barista, com erro de item e de preço, e encomendas ficam anotadas em papel. Todos os concorrentes oferecem link de pedidos próprio, sem depender de marketplace.
 - **Qual valor será agregado:** venda antecipada antes do espetáculo, organização das encomendas e fim da digitação de pedidos que chegam por mensagem.
 - **Para quem é destinado:** clientes (público do teatro, comunidade da Univates) e baristas.
 

@@ -590,7 +590,15 @@
           if (error) throw error;
 
           if (window.cafeteriaPix) {
-            await window.cafeteriaPix.getPixConfig(true);
+            try {
+              if (typeof window.cafeteriaPix.obterConfigPix === 'function') {
+                await window.cafeteriaPix.obterConfigPix(true);
+              } else if (typeof window.cafeteriaPix.getPixConfig === 'function') {
+                await window.cafeteriaPix.getPixConfig(true);
+              }
+            } catch (cacheErr) {
+              console.warn('Aviso ao renovar cache Pix:', cacheErr);
+            }
           }
           admin.toast('Sucesso', 'Configurações Pix salvas com sucesso!', 'success');
         } catch (err) {
@@ -615,19 +623,28 @@
           return;
         }
 
-        const brCode = window.cafeteriaPix.gerarPayload({
+        const res = window.cafeteriaPix.gerarPayloadPix({
           chave,
-          nomeRecebedor: recebedor,
+          recebedor,
           cidade,
           valor: 1.00,
           txid: 'TESTE01'
         });
+
+        if (!res || !res.ok) {
+          admin.toast('Erro no Pix', (res && res.erro) || 'Chave Pix inválida ou erro na formatação.', 'error');
+          if (previewPixBox) previewPixBox.style.display = 'none';
+          return;
+        }
+
+        const brCode = res.payload;
         const svgHtml = window.cafeteriaPix.gerarQrSvg(brCode, 4);
 
         if (previewPixBox) {
           previewPixBox.style.display = 'block';
           previewPixBox.innerHTML = `
             <div style="font-weight:700; margin-bottom:6px; color:#0f766e;">QR Code Pix de Teste (R$ 1,00)</div>
+            ${res.chave ? `<div style="font-size:0.75rem; color:#64748b; margin-bottom:6px;">Chave: <strong>${res.chave}</strong></div>` : ''}
             <div style="display:inline-block; background:#fff; padding:8px; border-radius:8px; border:1px solid #e2e8f0;">${svgHtml}</div>
             <div style="margin-top:8px; font-family:monospace; font-size:0.72rem; word-break:break-all; background:#fff; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">${brCode}</div>
           `;

@@ -58,6 +58,7 @@
   justify-content: center;
   gap: var(--space-4);
   flex-wrap: wrap;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   opacity: 0;
   transform: translateY(16px);
   animation: heroActionsFadeUp 0.35s 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -1071,6 +1072,7 @@
     align-items: center;
     width: 100%;
     gap: var(--space-3);
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   }
   .hero__actions .btn {
     width: 100%;

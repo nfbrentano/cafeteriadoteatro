@@ -24,6 +24,7 @@
   const filterPeriodo = document.getElementById('filter-pedido-periodo');
   const filterPagamento = document.getElementById('filter-pedido-pagamento');
   const filterUsuario = document.getElementById('filter-pedido-usuario');
+  const filterBusca = document.getElementById('filter-pedido-busca');
 
   async function loadUsuariosFilter() {
     if (!filterUsuario) return;
@@ -140,30 +141,43 @@
       `)
       .order('created_at', { ascending: false });
 
-    // Filtro Período
+    // Filtro Período (CAF-000080: Sempre ancorado em America/Sao_Paulo)
     const periodoVal = filterPeriodo ? filterPeriodo.value : 'hoje';
     const now = new Date();
     let inicio, fim;
 
+    const datasHelper = window.datasSP || {
+      hojeSP: () => new Date().toISOString().split('T')[0],
+      inicioDoDiaSP: (d) => new Date(`${d || new Date().toISOString().split('T')[0]}T00:00:00-03:00`).toISOString(),
+      fimDoDiaSP: (d) => new Date(`${d || new Date().toISOString().split('T')[0]}T23:59:59.999-03:00`).toISOString()
+    };
+
     if (periodoVal === 'hoje') {
-      inicio = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-      fim = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-      query = query.gte('created_at', inicio.toISOString());
+      const hojeYmd = datasHelper.hojeSP();
+      inicio = datasHelper.inicioDoDiaSP(hojeYmd);
+      fim = datasHelper.fimDoDiaSP(hojeYmd);
+      query = query.gte('created_at', inicio);
     } else if (periodoVal === 'ontem') {
-      inicio = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
-      fim = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
-      query = query.gte('created_at', inicio.toISOString()).lte('created_at', fim.toISOString());
+      const hojeDt = new Date(datasHelper.inicioDoDiaSP());
+      hojeDt.setDate(hojeDt.getDate() - 1);
+      const ontemYmd = datasHelper.hojeSP(hojeDt);
+      inicio = datasHelper.inicioDoDiaSP(ontemYmd);
+      fim = datasHelper.fimDoDiaSP(ontemYmd);
+      query = query.gte('created_at', inicio).lte('created_at', fim);
     } else if (periodoVal === '7dias') {
-      inicio = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      fim = now;
-      query = query.gte('created_at', inicio.toISOString());
+      inicio = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      fim = now.toISOString();
+      query = query.gte('created_at', inicio);
     } else if (periodoVal === 'mes') {
-      inicio = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
-      fim = now;
-      query = query.gte('created_at', inicio.toISOString());
+      const partes = (window.datasSP && window.datasSP.getPartesDataSP)
+        ? window.datasSP.getPartesDataSP()
+        : { ano: now.getFullYear(), mes: String(now.getMonth() + 1).padStart(2, '0') };
+      inicio = new Date(`${partes.ano}-${partes.mes}-01T00:00:00-03:00`).toISOString();
+      fim = now.toISOString();
+      query = query.gte('created_at', inicio);
     } else {
-      inicio = new Date(2000,0,1);
-      fim = now;
+      inicio = new Date(2000, 0, 1).toISOString();
+      fim = now.toISOString();
     }
 
     // Filtro Status
@@ -205,7 +219,7 @@
   }
 
   async function loadPedidos() {
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center">Carregando pedidos...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center">Carregando pedidos...</td></tr>';
     
     updateKPIs();
 
@@ -214,17 +228,27 @@
     const { data, error } = await query;
 
     if (error) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="color:red;">Erro: ${error.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center" style="color:red;">Erro: ${error.message}</td></tr>`;
       return;
     }
 
-    if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center" style="color:#888; padding:24px;">Nenhum pedido encontrado para os filtros selecionados.</td></tr>';
+    let pedidosLista = data || [];
+    const termoBusca = (filterBusca ? filterBusca.value : '').trim().toLowerCase();
+    if (termoBusca) {
+      pedidosLista = pedidosLista.filter(p =>
+        (p.cliente_nome && p.cliente_nome.toLowerCase().includes(termoBusca)) ||
+        (p.mesa_codigo && p.mesa_codigo.toLowerCase().includes(termoBusca)) ||
+        (String(p.numero_pedido || p.id).includes(termoBusca))
+      );
+    }
+
+    if (pedidosLista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center" style="color:#888; padding:24px;">Nenhum pedido encontrado para os filtros selecionados.</td></tr>';
       return;
     }
 
     tbody.innerHTML = '';
-    data.forEach(pedido => {
+    pedidosLista.forEach(pedido => {
       const dataCriacao = new Date(pedido.created_at).toLocaleString('pt-BR');
       const total = Number(pedido.total).toFixed(2).replace('.', ',');
       const qtdItens = pedido.pedido_itens ? pedido.pedido_itens.reduce((acc, item) => acc + item.quantidade, 0) : 0;
@@ -239,12 +263,13 @@
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>#${pedido.numero_pedido || pedido.id}</strong></td>
-        <td><span style="font-weight:bold; font-size:14px;">${pedido.mesa_codigo}</span></td>
+        <td><span style="font-weight:bold; font-size:14px;">${window.escapeHtml(pedido.mesa_codigo)}</span></td>
+        <td>${pedido.cliente_nome ? window.escapeHtml(pedido.cliente_nome) : '<span style="color:#aaa;">—</span>'}</td>
         <td>${qtdItens} un</td>
         <td><strong style="color:var(--admin-primary, #C07F43);">R$ ${total}</strong></td>
         <td>${formatPagamento(pedido.forma_pagamento, pedido.status_pagamento)}</td>
         <td>${formatStatus(pedido.status)}${statusExtra}</td>
-        <td>${pedido.criado_por_nome || '—'}</td>
+        <td>${pedido.criado_por_nome ? window.escapeHtml(pedido.criado_por_nome) : '—'}</td>
         <td style="font-size:12px; color:#555;">${dataCriacao}</td>
         <td class="table-actions">
           <button class="btn btn--outline-dark btn-small btn-detalhes" title="Ver Detalhes">👁️</button>
@@ -613,6 +638,7 @@
   if (filterPeriodo) filterPeriodo.addEventListener('change', loadPedidos);
   if (filterPagamento) filterPagamento.addEventListener('change', loadPedidos);
   if (filterUsuario) filterUsuario.addEventListener('change', loadPedidos);
+  if (filterBusca) filterBusca.addEventListener('input', loadPedidos);
 
   // Expor init
   window.initAdminPedidos = () => {
@@ -636,7 +662,9 @@
       linhas.push(['Nº', 'Data/Hora', 'Mesa', 'Status', 'Pagamento', 'Total'].join(';'));
       
       data.forEach(p => {
-        const d = new Date(p.created_at).toLocaleString('pt-BR');
+        const d = (window.datasSP && window.datasSP.formatarDataHoraSP)
+          ? window.datasSP.formatarDataHoraSP(p.created_at)
+          : new Date(p.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
         const num = p.numero_pedido || p.id;
         const total = Number(p.total).toFixed(2).replace('.', ',');
         linhas.push([

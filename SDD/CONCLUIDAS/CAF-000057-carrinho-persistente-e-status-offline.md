@@ -1,5 +1,8 @@
 # CAF-000057 — [PDV] [Mobile] Confiabilidade móvel: carrinho salvo em rascunho e faixa de offline clara
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (JS + CSS + HTML) | 🟡 Média (P1) | P | Concluída |

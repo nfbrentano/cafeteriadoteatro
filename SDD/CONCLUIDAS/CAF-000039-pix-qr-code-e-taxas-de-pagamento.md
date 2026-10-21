@@ -1,5 +1,9 @@
 # CAF-000039 — [PDV] [Financeiro] Pix com QR Code no fechamento e taxas por forma de pagamento
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Pix admin e taxas no fechamento de caixa corrigidos via CAF-000079.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + admin + banco | 🟡 Média | P | Concluída |

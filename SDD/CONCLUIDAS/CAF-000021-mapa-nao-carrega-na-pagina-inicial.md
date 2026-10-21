@@ -1,8 +1,8 @@
 # CAF-000021 — [Bug] [Home] Mapa do Google Maps não carrega na página inicial
 
-| Área | Prioridade | Esforço | Status |
-|---|---|---|---|
-| Site público (home) | 🔴 Alta | P | Análise concluída · correção a fazer |
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Observação:** Implementada via CAF-000070 (fachada e carregamento sob demanda) e otimização do tamanho do mapa estático concluída via CAF-000084.
 
 ---
 
@@ -70,12 +70,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um visitante abre a página inicial, **quando** rola até "Como chegar", **então** vê a imagem do mapa com a localização do café, e não um quadro cinza.
-- [ ] **Dado que** o visitante toca em "Ver mapa interativo", **quando** a ação acontece, **então** o mapa do Google carrega dentro do quadro e pode ser arrastado e ampliado.
-- [ ] **Dado que** a página acabou de carregar, **quando** se olha a aba Network do navegador, **então** nenhuma requisição para `google.com/maps` foi feita antes do toque.
-- [ ] **Dado que** a imagem estática falha (404 ou rede), **quando** o erro acontece, **então** o iframe é carregado no lugar e o quadro não fica vazio.
-- [ ] **Dado que** o visitante já tinha o site em cache, **quando** abre a home depois do deploy, **então** vê a versão nova da seção.
-- [ ] **Dado que** o deploy foi feito, **quando** se acessa `https://cafeteriadoteatro.com.br/assets/images/mapa-estatico.webp`, **então** a resposta é HTTP 200.
+- [x] **Dado que** um visitante abre a página inicial, **quando** rola até "Como chegar", **então** vê a imagem do mapa com a localização do café, e não um quadro cinza. (CAF-000070)
+- [x] **Dado que** o visitante toca em "Ver mapa interativo", **quando** a ação acontece, **então** o mapa do Google carrega dentro do quadro e pode ser arrastado e ampliado. (CAF-000070)
+- [x] **Dado que** a página acabou de carregar, **quando** se olha a aba Network do navegador, **então** nenhuma requisição para `google.com/maps` foi feita antes do toque. (CAF-000070)
+- [x] **Dado que** a imagem estática falha (404 ou rede), **quando** o erro acontece, **então** o iframe é carregado no lugar e o quadro não fica vazio. (CAF-000070)
+- [x] **Dado que** o visitante já tinha o site em cache, **quando** abre a home depois do deploy, **então** vê a versão nova da seção. (CAF-000070)
+- [x] **Dado que** o deploy foi feito, **quando** se acessa `https://cafeteriadoteatro.com.br/assets/images/mapa-estatico.webp`, **então** a resposta é HTTP 200 (otimizado < 80 KB em CAF-000084).
 
 ---
 

@@ -1,5 +1,8 @@
 # CAF-000004 — [PDV] [Cozinha] Cancelar item individual
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + cozinha | 🔴 Alta | M | A fazer |
@@ -42,11 +45,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o pedido tem 2 itens somando R$ 40,00, **quando** o barista cancela um item de R$ 15,00, **então** o total do pedido passa a R$ 25,00 e o item fica marcado como cancelado.
-- [ ] **Dado que** um baguete liberou uma cortesia, **quando** o baguete é cancelado, **então** a cortesia vinculada também fica cancelada.
-- [ ] **Dado que** a cozinha está com o pedido na tela, **quando** um item é cancelado, **então** o item aparece riscado com "CANCELADO" e toca um aviso em até 2 s.
-- [ ] **Dado que** o item tinha promoção de 2ª unidade, **quando** uma das unidades é cancelada, **então** o desconto é recalculado.
-- [ ] **Dado que** o barista não informou o motivo, **quando** tenta confirmar, **então** o cancelamento é bloqueado.
+- [x] **Dado que** o pedido tem 2 itens somando R$ 40,00, **quando** o barista cancela um item de R$ 15,00, **então** o total do pedido passa a R$ 25,00 e o item fica marcado como cancelado.
+- [x] **Dado que** um baguete liberou uma cortesia, **quando** o baguete é cancelado, **então** a cortesia vinculada também fica cancelada.
+- [x] **Dado que** a cozinha está com o pedido na tela, **quando** um item é cancelado, **então** o item aparece riscado com "CANCELADO" e toca um aviso em até 2 s.
+- [x] **Dado que** o item tinha promoção de 2ª unidade, **quando** uma das unidades é cancelada, **então** o desconto é recalculado.
+- [x] **Dado que** o barista não informou o motivo, **quando** tenta confirmar, **então** o cancelamento é bloqueado.
 
 ---
 

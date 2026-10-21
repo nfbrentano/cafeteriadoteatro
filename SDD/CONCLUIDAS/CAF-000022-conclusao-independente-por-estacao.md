@@ -1,5 +1,8 @@
 # CAF-000022 — [Bug] [Cozinha] Conclusão independente por estação (bar × cozinha)
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha (KDS) + banco | 🔴 Alta | M | Concluído |

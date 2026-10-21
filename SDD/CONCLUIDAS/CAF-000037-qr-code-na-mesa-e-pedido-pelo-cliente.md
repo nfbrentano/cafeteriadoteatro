@@ -1,5 +1,9 @@
 # CAF-000037 — [Cardápio] [PDV] QR Code por mesa e pedido feito pelo cliente (com aprovação do barista)
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Bloqueio de PIN/RLS e sanitização corrigidos via CAF-000081 e CAF-000082.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cardápio público + PDV + banco | 🔴 Alta | G | Concluída |

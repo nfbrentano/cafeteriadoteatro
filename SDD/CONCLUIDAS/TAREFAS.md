@@ -45,18 +45,18 @@ Documento de planejamento com base na análise do código atual. Cada bloco traz
 - A legenda (`#carousel-caption`) é trocada por `js/hero-carousel.js:65-84` com fade a partir de `data-caption` / `data-subtitle`.
 
 **Tarefas**
-- [ ] 1.1 Reestruturar em duas faixas dentro da mesma `<section>`:
+- [x] 1.1 Reestruturar em duas faixas dentro da mesma `<section>`:
   - **Faixa superior (título):** tag "Galeria de Artes · Cafeteria do Teatro", `<h1>` e botões *Ver Cardápio / Como Chegar*, sobre **fundo sólido/textura** (`--espresso` com leve textura/gradiente e ornamento de cortina/teatro em CSS). Sem imagem.
   - **Faixa inferior (galeria):** carrossel, frame de museu, legenda (frase + sub-frase), setas, dots e barra de progresso.
-- [ ] 1.2 Mover `#carousel-caption` para a faixa da galeria (mesmo id/classes, sem mexer no JS).
-- [ ] 1.3 `css/home.css`:
+- [x] 1.2 Mover `#carousel-caption` para a faixa da galeria (mesmo id/classes, sem mexer no JS).
+- [x] 1.3 `css/home.css`:
   - `.hero--carousel` vira `display:grid; grid-template-rows: auto 1fr` em vez de conteúdo centralizado sobre a imagem.
   - `.hero-carousel` passa a ocupar só a faixa inferior.
   - `.hero__overlay`: remover o escurecimento do topo (existia para leitura do título); manter só gradiente na base para a legenda.
   - Rever `background-position: center 25%` e o Ken Burns para as 8 artes na área menor (sem cortar rostos).
-- [ ] 1.4 Mobile (`css/home.css:380-400`, `:1008`): título compacto, arte com `aspect-ratio` próximo do original (ex.: `4/5`) e legenda **abaixo** da arte.
-- [ ] 1.5 Swipe e pausa por hover (`js/hero-carousel.js:170-215`) só na faixa da galeria.
-- [ ] 1.6 Remover do pré-render (`index.html:83-110`) a variável `--dynamic-hero-bg` / `--hero-blur-bg` se deixar de ser usada no hero (conferir se o admin de "hero" ainda tem utilidade; senão, registrar como item de limpeza).
+- [x] 1.4 Mobile (`css/home.css:380-400`, `:1008`): título compacto, arte com `aspect-ratio` próximo do original (ex.: `4/5`) e legenda **abaixo** da arte.
+- [x] 1.5 Swipe e pausa por hover (`js/hero-carousel.js:170-215`) só na faixa da galeria.
+- [x] 1.6 Remover do pré-render (`index.html:83-110`) a variável `--dynamic-hero-bg` / `--hero-blur-bg` se deixar de ser usada no hero (conferir se o admin de "hero" ainda tem utilidade; senão, registrar como item de limpeza).
 
 **Aceite**
 - Título legível sem arte por trás; artes aparecem inteiras.
@@ -73,17 +73,17 @@ Documento de planejamento com base na análise do código atual. Cada bloco traz
 
 Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **autoritativo no banco**.
 
-- [ ] 2.1 Criar `public.criar_pedido(p_pedido JSONB)` (`SECURITY DEFINER`, valida `get_user_role() IN ('barista','admin')`), que em **uma transação**:
+- [x] 2.1 Criar `public.criar_pedido(p_pedido JSONB)` (`SECURITY DEFINER`, valida `get_user_role() IN ('barista','admin')`), que em **uma transação**:
   1. insere o pedido;
   2. insere os itens na ordem recebida, resolvendo referências internas (a cortesia no mesmo pedido aponta para o prato pelo índice no payload);
   3. recalcula preços a partir de `produtos`/`adicionais`, aplica promoções do dia (seção 7) e grava `pedidos.total`;
   4. retorna o pedido com itens.
-- [ ] 2.2 Criar `public.adicionar_itens_pedido(p_pedido_id, p_itens JSONB)` para lançar itens **depois** em um pedido/mesa existente (necessário para a cortesia "depois" — seção 5).
-- [ ] 2.3 `js/pedidos.js`: trocar os dois inserts por `window.cafeteriaSupabase.rpc('criar_pedido', {...})` (mesmo padrão de `js/admin/usuarios-admin.js:143`).
+- [x] 2.2 Criar `public.adicionar_itens_pedido(p_pedido_id, p_itens JSONB)` para lançar itens **depois** em um pedido/mesa existente (necessário para a cortesia "depois" — seção 5).
+- [x] 2.3 `js/pedidos.js`: trocar os dois inserts por `window.cafeteriaSupabase.rpc('criar_pedido', {...})` (mesmo padrão de `js/admin/usuarios-admin.js:143`).
 
 ### 2B. Adicionais
 
-- [ ] 2.4 Migration `supabase/migration_adicionais.sql`:
+- [x] 2.4 Migration `supabase/migration_adicionais.sql`:
   ```sql
   CREATE TABLE public.adicionais (
     id TEXT PRIMARY KEY,                 -- 'leite-vegetal', 'cheddar'
@@ -116,13 +116,13 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
   - `preco_unitario` = `preco_base` + soma dos adicionais; assim `subtotal` (coluna gerada) continua coerente.
   - A RPC valida que o adicional está vinculado à categoria/produto do item.
   - RLS: `SELECT` público; escrita só `admin` (padrão de `mesas`, `supabase/pedidos_schema.sql:65-74`).
-- [ ] 2.5 `js/db.js`: `adicionais.all()` e `adicionaisDoProduto(produto)`.
-- [ ] 2.6 Admin: nova aba **Adicionais** (`admin.html` + `js/admin/adicionais.js`) com CRUD e vínculo por categoria/produto.
-- [ ] 2.7 `js/pedidos.js` — **modal de montagem do item** ao clicar num produto que tenha adicionais, sabores (meio a meio) ou para inserir obs: checkboxes de adicionais com "+R$ x,xx", campo de observação, quantidade. Produtos simples continuam indo direto ao carrinho.
+- [x] 2.5 `js/db.js`: `adicionais.all()` e `adicionaisDoProduto(produto)`.
+- [x] 2.6 Admin: nova aba **Adicionais** (`admin.html` + `js/admin/adicionais.js`) com CRUD e vínculo por categoria/produto.
+- [x] 2.7 `js/pedidos.js` — **modal de montagem do item** ao clicar num produto que tenha adicionais, sabores (meio a meio) ou para inserir obs: checkboxes de adicionais com "+R$ x,xx", campo de observação, quantidade. Produtos simples continuam indo direto ao carrinho.
   - Carrinho: `{ produto, quantidade, adicionais: [], sabores: null, observacoes, origemIndex }`.
   - `addToCart` (linha 312): agrupar só itens com mesmo produto + mesmos adicionais + mesmos sabores + mesma obs.
   - `renderCart` / total: preço base + adicionais − descontos de promo (prévia; o valor final vem da RPC).
-- [ ] 2.8 Exibir adicionais em todos os lugares que listam itens: cozinha (`js/cozinha.js:318-330`), impressão (`js/pedido-print.js:~110`), barista (`js/pedidos.js:613`, `:680`), admin (`js/admin/pedidos-admin.js:183`). Incluir `pedido_item_adicionais(*)` nos selects (`js/cozinha.js:256`).
+- [x] 2.8 Exibir adicionais em todos os lugares que listam itens: cozinha (`js/cozinha.js:318-330`), impressão (`js/pedido-print.js:~110`), barista (`js/pedidos.js:613`, `:680`), admin (`js/admin/pedidos-admin.js:183`). Incluir `pedido_item_adicionais(*)` nos selects (`js/cozinha.js:256`).
 
 **Aceite**
 - Pedido é gravado inteiro ou não é gravado (sem pedido órfão).
@@ -132,16 +132,16 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
 
 ## 3. Leite vegetal em todos os cafés (+R$ 1,50)
 
-- [ ] 3.1 Cadastrar `leite-vegetal` — "Leite vegetal", R$ 1,50.
-- [ ] 3.2 Vincular às categorias `cafes-quentes`, `cafes-especiais`, `cafes-gelados`.
-- [ ] 3.3 Incluir no seed/migration para ficar versionado.
+- [x] 3.1 Cadastrar `leite-vegetal` — "Leite vegetal", R$ 1,50.
+- [x] 3.2 Vincular às categorias `cafes-quentes`, `cafes-especiais`, `cafes-gelados`.
+- [x] 3.3 Incluir no seed/migration para ficar versionado.
 
 ---
 
 ## 4. Cheddar nos baguetes (+R$ 3,50)
 
-- [ ] 4.1 Cadastrar `cheddar` — "Adicionar cheddar", R$ 3,50.
-- [ ] 4.2 Vincular à categoria `baguetes`.
+- [x] 4.1 Cadastrar `cheddar` — "Adicionar cheddar", R$ 3,50.
+- [x] 4.2 Vincular à categoria `baguetes`.
 
 ---
 
@@ -151,8 +151,8 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
 
 ### Modelagem
 
-- [ ] 5.1 Cadastrar produto `mini-cappuccino-cortesia` — "Mini Cappuccino (Cortesia)", R$ 0,00, em uma categoria nova `cortesias` (oculta no cardápio público; `categorias.ativo` ou flag `visivel_cardapio`).
-- [ ] 5.2 Tabela de regras (quem libera o quê):
+- [x] 5.1 Cadastrar produto `mini-cappuccino-cortesia` — "Mini Cappuccino (Cortesia)", R$ 0,00, em uma categoria nova `cortesias` (oculta no cardápio público; `categorias.ativo` ou flag `visivel_cardapio`).
+- [x] 5.2 Tabela de regras (quem libera o quê):
   ```sql
   CREATE TABLE public.cortesia_regras (
     id BIGSERIAL PRIMARY KEY,
@@ -165,7 +165,7 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
   );
   -- Regras iniciais: categorias baguetes, crepes-salgados, crepes-doces → mini-cappuccino-cortesia (1 por unidade)
   ```
-- [ ] 5.3 Vínculo do item cortesia com o prato que a liberou:
+- [x] 5.3 Vínculo do item cortesia com o prato que a liberou:
   ```sql
   ALTER TABLE public.pedido_itens
     ADD COLUMN IF NOT EXISTS cortesia_de_item_id BIGINT
@@ -173,13 +173,13 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
   CREATE INDEX IF NOT EXISTS idx_pedido_itens_cortesia_de ON public.pedido_itens(cortesia_de_item_id);
   ```
   - `ON DELETE RESTRICT`: não dá para remover o prato deixando a cortesia "solta".
-- [ ] 5.4 Trigger `BEFORE INSERT OR UPDATE` em `pedido_itens` (`validar_cortesia()`):
+- [x] 5.4 Trigger `BEFORE INSERT OR UPDATE` em `pedido_itens` (`validar_cortesia()`):
   - Se o produto é cortesia (aparece em `cortesia_regras.produto_cortesia_id`): exige `cortesia_de_item_id` não nulo.
   - O item de origem precisa: casar com uma regra ativa (produto ou categoria), estar em pedido **da mesma mesa**, com pedido não `cancelado`.
   - O item de origem não pode estar cancelado (`cancelado = false`, ver 5.5).
   - Soma de cortesias **não canceladas** já vinculadas àquele item ≤ `quantidade × qtd_por_unidade` → senão `RAISE EXCEPTION 'Cortesia já utilizada para este prato'`.
   - Se o produto **não** é cortesia, `cortesia_de_item_id` deve ser nulo.
-- [ ] 5.5 **Cancelamento em cascata da cortesia** (decisão do cliente):
+- [x] 5.5 **Cancelamento em cascata da cortesia** (decisão do cliente):
   - Adicionar cancelamento lógico no item, para não apagar o histórico:
     ```sql
     ALTER TABLE public.pedido_itens
@@ -192,18 +192,18 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
   - Cozinha/impressão/barista: item cancelado aparece riscado com a etiqueta "CANCELADO" em vez de sumir.
   - Relatórios e saldo de cortesia contam só itens com `cancelado = false`.
   - A FK `ON DELETE RESTRICT` continua: prato com cortesia não é apagado fisicamente, só cancelado.
-- [ ] 5.6 View de apoio `v_cortesias_disponiveis` (itens de prato não cancelados com saldo de cortesia > 0, por mesa, hoje) para a tela consultar.
+- [x] 5.6 View de apoio `v_cortesias_disponiveis` (itens de prato não cancelados com saldo de cortesia > 0, por mesa, hoje) para a tela consultar.
 
 ### PDV (barista)
 
-- [ ] 5.7 No card do produto cortesia e no modal da mesa (`js/pedidos.js:658`), botão **"🎁 Lançar cortesia"** habilitado **somente** quando a mesa tem saldo em `v_cortesias_disponiveis`; mostrar "Disponível: 2 (Baguete de Frango, Crepe de Chester)".
-- [ ] 5.8 Ao lançar, escolher o prato de origem (pré-selecionado quando só houver um) e gravar via `adicionar_itens_pedido` / `criar_pedido`.
-- [ ] 5.9 Permitir também lançar no mesmo pedido do prato (no carrinho, o item cortesia aparece habilitado quando há um prato liberador no carrinho; referência por índice resolvida na RPC — 2.1).
+- [x] 5.7 No card do produto cortesia e no modal da mesa (`js/pedidos.js:658`), botão **"🎁 Lançar cortesia"** habilitado **somente** quando a mesa tem saldo em `v_cortesias_disponiveis`; mostrar "Disponível: 2 (Baguete de Frango, Crepe de Chester)".
+- [x] 5.8 Ao lançar, escolher o prato de origem (pré-selecionado quando só houver um) e gravar via `adicionar_itens_pedido` / `criar_pedido`.
+- [x] 5.9 Permitir também lançar no mesmo pedido do prato (no carrinho, o item cortesia aparece habilitado quando há um prato liberador no carrinho; referência por índice resolvida na RPC — 2.1).
 
 ### Cozinha, impressão e relatório
 
-- [ ] 5.10 Cozinha/impressão: destacar "🎁 CORTESIA — ref. Baguete de Frango".
-- [ ] 5.11 Admin (pedidos/métricas — `js/admin/pedidos-admin.js`): card/relatório **"Cortesias concedidas"** por período, com quantidade total e por prato liberador.
+- [x] 5.10 Cozinha/impressão: destacar "🎁 CORTESIA — ref. Baguete de Frango".
+- [x] 5.11 Admin (pedidos/métricas — `js/admin/pedidos-admin.js`): card/relatório **"Cortesias concedidas"** por período, com quantidade total e por prato liberador.
 
 **Aceite**
 - Tentar inserir a cortesia direto na API sem prato de origem, ou além do saldo, falha no banco.
@@ -216,8 +216,8 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
 
 **Estado atual:** existe `crepe-meio-a-meio` (R$ 29,90 fixo) em `crepes-doces` (`supabase/cardapio_seed_completo.sql:116`); sabores vão por observação.
 
-- [ ] 6.1 Marcar o produto com `produtos.tipo_montagem TEXT` (`'simples'` | `'meio_a_meio'`) em vez de fixar id no código.
-- [ ] 6.2 Tabela de metades do item:
+- [x] 6.1 Marcar o produto com `produtos.tipo_montagem TEXT` (`'simples'` | `'meio_a_meio'`) em vez de fixar id no código.
+- [x] 6.2 Tabela de metades do item:
   ```sql
   CREATE TABLE public.pedido_item_sabores (
     id BIGSERIAL PRIMARY KEY,
@@ -229,16 +229,16 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
     UNIQUE (pedido_item_id, lado)
   );
   ```
-- [ ] 6.3 Regra de preço (decisão do cliente): **50% do preço de cada sabor, somados** — `ROUND(preço_doce × 0,5, 2) + ROUND(preço_salgado × 0,5, 2)`.
+- [x] 6.3 Regra de preço (decisão do cliente): **50% do preço de cada sabor, somados** — `ROUND(preço_doce × 0,5, 2) + ROUND(preço_salgado × 0,5, 2)`.
   - Ex.: Morango 23,90 → 11,95 + Carne de Panela 31,90 → 15,95 = **R$ 27,90**.
   - Cada metade fica gravada em `pedido_item_sabores.preco` já com os 50%, para a comanda e o relatório mostrarem a composição.
   - Sem arredondamento extra para cima: o valor é a soma exata das metades.
   - Calculado na RPC, numa única função SQL `preco_meio_a_meio(doce_id, salgado_id)`; o `preco` cadastrado no produto vira só referência ("a partir de") e não entra na conta.
   - Adicionais (ex.: cheddar, se vinculado) somam por cima do valor das metades.
-- [ ] 6.4 Modal do item (2.7): dois selects obrigatórios — "Metade doce" (crepes inteiros de `crepes-doces`, sem mini crepes/panquecas) e "Metade salgada" (`crepes-salgados`), com o preço calculado ao vivo.
-- [ ] 6.5 `nome_produto` gravado legível: "Crepe Meio a Meio — ½ Morango / ½ Carne de Panela".
-- [ ] 6.6 O meio a meio também libera cortesia (regra por categoria `crepes-doces` já cobre).
-- [ ] 6.7 Cardápio público: exibir "Escolha 1 sabor doce + 1 salgado · preço conforme os sabores".
+- [x] 6.4 Modal do item (2.7): dois selects obrigatórios — "Metade doce" (crepes inteiros de `crepes-doces`, sem mini crepes/panquecas) e "Metade salgada" (`crepes-salgados`), com o preço calculado ao vivo.
+- [x] 6.5 `nome_produto` gravado legível: "Crepe Meio a Meio — ½ Morango / ½ Carne de Panela".
+- [x] 6.6 O meio a meio também libera cortesia (regra por categoria `crepes-doces` já cobre).
+- [x] 6.7 Cardápio público: exibir "Escolha 1 sabor doce + 1 salgado · preço conforme os sabores".
 
 ---
 
@@ -248,7 +248,7 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
 
 ### Modelagem
 
-- [ ] 7.1 Migration `supabase/migration_promocoes.sql`:
+- [x] 7.1 Migration `supabase/migration_promocoes.sql`:
   ```sql
   CREATE TABLE public.promocoes (
     id BIGSERIAL PRIMARY KEY,
@@ -292,29 +292,29 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
   ```
   - `subtotal` é coluna gerada (`quantidade * preco_unitario`): recriar como `quantidade * preco_unitario - desconto` (DROP + ADD da coluna gerada na migration) e conferir relatórios que leem `subtotal`.
   - RLS: `SELECT` público; escrita só `admin`.
-- [ ] 7.2 Função `promocoes_do_dia(p_data DATE DEFAULT (now() AT TIME ZONE 'America/Sao_Paulo')::date)` que retorna promos ativas no dia da semana e dentro da vigência.
+- [x] 7.2 Função `promocoes_do_dia(p_data DATE DEFAULT (now() AT TIME ZONE 'America/Sao_Paulo')::date)` que retorna promos ativas no dia da semana e dentro da vigência.
 
 ### Regras de cálculo (na RPC `criar_pedido`, com prévia no carrinho)
 
-- [ ] 7.3 **Percentual:** `desconto = preco_unitario × qtd × %`.
-- [ ] 7.4 **Compre N leve M** (ex.: compre 1 leve 2): a cada M unidades, `M − N` saem grátis → `grátis = floor(qtd / M) × (M − N)`; `desconto = grátis × preco_unitario`. Com 3 unidades em "compre 1 leve 2": 1 grátis.
-- [ ] 7.5 **Segunda unidade com X%:** `desconto = floor(qtd / 2) × preco_unitario × %`.
-- [ ] 7.6 Promoções não acumulam (decisão do cliente): se um item casar com mais de uma, aplicar **só a de maior desconto em R$** para aquele item; em empate, a de menor `ordem`. Gravar em `pedido_itens.promocao_id` apenas a promo aplicada. Adicionais (leite vegetal, cheddar) **não** entram na base do desconto — só o preço do produto. Cortesias nunca recebem promo.
-- [ ] 7.7 O carrinho agrupa unidades do mesmo produto (independente de obs) para contar "compre N / 2ª unidade" — calcular a promo por produto somando as linhas do carrinho.
+- [x] 7.3 **Percentual:** `desconto = preco_unitario × qtd × %`.
+- [x] 7.4 **Compre N leve M** (ex.: compre 1 leve 2): a cada M unidades, `M − N` saem grátis → `grátis = floor(qtd / M) × (M − N)`; `desconto = grátis × preco_unitario`. Com 3 unidades em "compre 1 leve 2": 1 grátis.
+- [x] 7.5 **Segunda unidade com X%:** `desconto = floor(qtd / 2) × preco_unitario × %`.
+- [x] 7.6 Promoções não acumulam (decisão do cliente): se um item casar com mais de uma, aplicar **só a de maior desconto em R$** para aquele item; em empate, a de menor `ordem`. Gravar em `pedido_itens.promocao_id` apenas a promo aplicada. Adicionais (leite vegetal, cheddar) **não** entram na base do desconto — só o preço do produto. Cortesias nunca recebem promo.
+- [x] 7.7 O carrinho agrupa unidades do mesmo produto (independente de obs) para contar "compre N / 2ª unidade" — calcular a promo por produto somando as linhas do carrinho.
 
 ### Admin
 
-- [ ] 7.8 Nova aba **Promoções** no `admin.html` (`js/admin/promocoes.js`):
+- [x] 7.8 Nova aba **Promoções** no `admin.html` (`js/admin/promocoes.js`):
   - Lista com nome, tipo, dias (chips Seg…Dom), status, ações.
   - Formulário: nome, descrição, tipo (os campos mudam conforme o tipo), dias da semana (checkboxes), vigência opcional, produtos/categorias (busca com multi-seleção), imagem (reaproveitar upload de `promotions.upsert`, `js/db.js:314`), ativo.
   - Prévia do texto gerado: "Terça — 2ª unidade com 50% em Cappuccinos".
-- [ ] 7.9 `js/db.js`: `promocoes.all()`, `promocoes.doDia()`, `promocoes.upsert()`, `promocoes.delete()`.
+- [x] 7.9 `js/db.js`: `promocoes.all()`, `promocoes.doDia()`, `promocoes.upsert()`, `promocoes.delete()`.
 
 ### PDV e cardápio
 
-- [ ] 7.10 PDV (`js/pedidos.js:230` `renderCategories`): chip **"🔥 Promos de hoje"** filtrando os produtos em promoção; selo "PROMO" nos cards; carrinho mostra linha de desconto por item ("− R$ 6,45 · 2ª unidade 50%").
-- [ ] 7.11 Cardápio público (`cardapio.html` / `js/cardapio-dynamic.js`): aba **"Promos"** no topo com *Hoje* (dia atual) e *Na semana* (agenda Seg→Dom). Esconder quando não houver promo ativa.
-- [ ] 7.12 Cozinha/impressão/admin de pedidos: mostrar desconto aplicado e total com desconto.
+- [x] 7.10 PDV (`js/pedidos.js:230` `renderCategories`): chip **"🔥 Promos de hoje"** filtrando os produtos em promoção; selo "PROMO" nos cards; carrinho mostra linha de desconto por item ("− R$ 6,45 · 2ª unidade 50%").
+- [x] 7.11 Cardápio público (`cardapio.html` / `js/cardapio-dynamic.js`): aba **"Promos"** no topo com *Hoje* (dia atual) e *Na semana* (agenda Seg→Dom). Esconder quando não houver promo ativa.
+- [x] 7.12 Cozinha/impressão/admin de pedidos: mostrar desconto aplicado e total com desconto.
 
 **Aceite**
 - Promo de terça só aparece e só aplica às terças (fuso de São Paulo).
@@ -331,11 +331,11 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
 - Cozinha, impressão e admin já exibem as duas.
 
 **Tarefas**
-- [ ] 8.1 Campo "Observação do item" no modal de montagem (2.7), preenchido ao adicionar.
-- [ ] 8.2 No carrinho, trocar ✏️ por botão com texto ("+ Obs" / "Editar obs") e sempre mostrar a obs abaixo do item.
-- [ ] 8.3 "Observações gerais do pedido" mais visível no carrinho e no drawer mobile.
-- [ ] 8.4 (Opcional) Chips rápidos no modal: "Sem açúcar", "Bem quente", "Para viagem", "Sem cebola".
-- [ ] 8.5 **Correção de segurança (XSS):** textos do banco são injetados via `innerHTML` sem escape em `js/pedidos.js:389,613,680`, `js/cozinha.js:320,378`, `js/pedido-print.js:115,135`, `js/admin/pedidos-admin.js:183,197`. Criar `escapeHtml()` compartilhado e aplicar a obs, nomes, adicionais, sabores e promoções.
+- [x] 8.1 Campo "Observação do item" no modal de montagem (2.7), preenchido ao adicionar.
+- [x] 8.2 No carrinho, trocar ✏️ por botão com texto ("+ Obs" / "Editar obs") e sempre mostrar a obs abaixo do item.
+- [x] 8.3 "Observações gerais do pedido" mais visível no carrinho e no drawer mobile.
+- [x] 8.4 (Opcional) Chips rápidos no modal: "Sem açúcar", "Bem quente", "Para viagem", "Sem cebola".
+- [x] 8.5 **Correção de segurança (XSS):** textos do banco são injetados via `innerHTML` sem escape em `js/pedidos.js:389,613,680`, `js/cozinha.js:320,378`, `js/pedido-print.js:115,135`, `js/admin/pedidos-admin.js:183,197`. Criar `escapeHtml()` compartilhado e aplicar a obs, nomes, adicionais, sabores e promoções.
 
 **Aceite**
 - Obs do item preenchida sem sair do fluxo de adição.
@@ -345,15 +345,15 @@ Com adicionais, cortesias, meio a meio e promoções, o cálculo precisa ser **a
 
 ## Checklist de testes (antes de publicar)
 
-- [ ] Pedido com: café + leite vegetal, baguete + cheddar, crepe meio a meio, item com obs, obs geral → total no carrinho = `pedidos.total` = cozinha = impressão = admin.
-- [ ] Cortesia: sem prato → bloqueada; 2 pratos → no máx. 2 cortesias; lançada depois em outro pedido da mesma mesa → aceita; cancelar o pedido do prato → cortesia vinculada fica cancelada (mesmo em outro pedido) e sai da contagem; relatório conta corretamente.
-- [ ] Meio a meio: Morango (23,90) + Carne de Panela (31,90) = R$ 27,90; trocar os sabores atualiza o preço no modal e o valor gravado bate.
-- [ ] Item em duas promoções ao mesmo tempo → só a de maior desconto é aplicada e registrada.
-- [ ] Promoções: cada tipo com 1–4 unidades; promo fora do dia não aplica; duas promos no mesmo item → aplica a maior.
-- [ ] Falha no meio da criação do pedido não deixa pedido sem itens.
-- [ ] Realtime da cozinha recebe os novos campos (adicionais, sabores, cortesia, desconto).
-- [ ] Hero em 360px, 768px e desktop; seta, dot, teclado e swipe.
-- [ ] `npm run build` e conferir o `dist/`.
+- [x] Pedido com: café + leite vegetal, baguete + cheddar, crepe meio a meio, item com obs, obs geral → total no carrinho = `pedidos.total` = cozinha = impressão = admin.
+- [x] Cortesia: sem prato → bloqueada; 2 pratos → no máx. 2 cortesias; lançada depois em outro pedido da mesma mesa → aceita; cancelar o pedido do prato → cortesia vinculada fica cancelada (mesmo em outro pedido) e sai da contagem; relatório conta corretamente.
+- [x] Meio a meio: Morango (23,90) + Carne de Panela (31,90) = R$ 27,90; trocar os sabores atualiza o preço no modal e o valor gravado bate.
+- [x] Item em duas promoções ao mesmo tempo → só a de maior desconto é aplicada e registrada.
+- [x] Promoções: cada tipo com 1–4 unidades; promo fora do dia não aplica; duas promos no mesmo item → aplica a maior.
+- [x] Falha no meio da criação do pedido não deixa pedido sem itens.
+- [x] Realtime da cozinha recebe os novos campos (adicionais, sabores, cortesia, desconto).
+- [x] Hero em 360px, 768px e desktop; seta, dot, teclado e swipe.
+- [x] `npm run build` e conferir o `dist/`.
 
 ## Pendências de confirmação
 

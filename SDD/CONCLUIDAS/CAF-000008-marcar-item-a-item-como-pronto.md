@@ -1,5 +1,8 @@
 # CAF-000008 — [Cozinha] Marcar item a item como pronto
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha | 🟡 Média | M | A fazer |
@@ -41,11 +44,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um pedido tem 4 itens, **quando** a cozinha toca em 2 deles, **então** o card mostra "2/4" e os dois itens com ✓.
-- [ ] **Dado que** o pedido está "Na fila", **quando** a cozinha marca o primeiro item, **então** o pedido passa para "Em preparo".
-- [ ] **Dado que** faltava 1 item, **quando** a cozinha o marca, **então** o pedido vai para "Prontos" e o barista é avisado.
-- [ ] **Dado que** um item foi marcado por engano, **quando** a cozinha toca de novo, **então** ele volta a "não pronto".
-- [ ] **Dado que** um item foi cancelado, **quando** a cozinha vê o progresso, **então** o item não entra na contagem.
+- [x] **Dado que** um pedido tem 4 itens, **quando** a cozinha toca em 2 deles, **então** o card mostra "2/4" e os dois itens com ✓.
+- [x] **Dado que** o pedido está "Na fila", **quando** a cozinha marca o primeiro item, **então** o pedido passa para "Em preparo".
+- [x] **Dado que** faltava 1 item, **quando** a cozinha o marca, **então** o pedido vai para "Prontos" e o barista é avisado.
+- [x] **Dado que** um item foi marcado por engano, **quando** a cozinha toca de novo, **então** ele volta a "não pronto".
+- [x] **Dado que** um item foi cancelado, **quando** a cozinha vê o progresso, **então** o item não entra na contagem.
 
 ---
 

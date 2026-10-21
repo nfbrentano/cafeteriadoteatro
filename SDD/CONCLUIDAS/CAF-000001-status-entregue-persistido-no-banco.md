@@ -1,5 +1,8 @@
 # CAF-000001 — [PDV] [Banco] Status "entregue" persistido no banco
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + banco | 🔴 Alta | P | A fazer |
@@ -41,11 +44,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um pedido está "Pronto p/ servir", **quando** o barista toca em "Entregue", **então** o pedido some da lista de prontos e o status no banco fica `entregue`, com `entregue_em` preenchido.
-- [ ] **Dado que** um pedido foi marcado como entregue, **quando** o barista recarrega a página, **então** o pedido continua fora da lista de prontos.
-- [ ] **Dado que** dois celulares estão com o PDV aberto, **quando** um marca o pedido como entregue, **então** o outro remove o pedido da lista sem recarregar.
-- [ ] **Dado que** o barista marcou por engano, **quando** toca em "Desfazer" no toast, **então** o pedido volta para "Pronto p/ servir".
-- [ ] **Dado que** existem pedidos entregues hoje, **quando** o admin abre o painel, **então** eles aparecem com o status "Entregue" e entram no faturamento do dia.
+- [x] **Dado que** um pedido está "Pronto p/ servir", **quando** o barista toca em "Entregue", **então** o pedido some da lista de prontos e o status no banco fica `entregue`, com `entregue_em` preenchido.
+- [x] **Dado que** um pedido foi marcado como entregue, **quando** o barista recarrega a página, **então** o pedido continua fora da lista de prontos.
+- [x] **Dado que** dois celulares estão com o PDV aberto, **quando** um marca o pedido como entregue, **então** o outro remove o pedido da lista sem recarregar.
+- [x] **Dado que** o barista marcou por engano, **quando** toca em "Desfazer" no toast, **então** o pedido volta para "Pronto p/ servir".
+- [x] **Dado que** existem pedidos entregues hoje, **quando** o admin abre o painel, **então** eles aparecem com o status "Entregue" e entram no faturamento do dia.
 
 ---
 

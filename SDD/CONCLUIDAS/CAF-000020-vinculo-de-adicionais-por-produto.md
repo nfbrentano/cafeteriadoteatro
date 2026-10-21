@@ -1,8 +1,8 @@
 # CAF-000020 — [Admin] [PDV] [Banco] Vínculo de adicionais por produto
 
-| Área | Prioridade | Esforço | Status |
-|---|---|---|---|
-| Admin + PDV + banco | 🔴 Alta | M | A fazer |
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Validação de vínculos no PDV, RPCs e sanitização XSS de adicionais foram concluídas e corrigidas via CAF-000075 e CAF-000072.
 
 ---
 
@@ -73,14 +73,14 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o Cappuccino tem "Permite adicionais" ligado e a categoria `cafes-quentes` está vinculada ao Leite vegetal, **quando** o barista toca no Cappuccino, **então** o modal mostra só "Leite vegetal (+ R$ 1,50)".
-- [ ] **Dado que** o Baguete de Frango permite adicionais e o Cheddar está vinculado a `baguetes`, **quando** o barista abre o modal, **então** aparece só "Cheddar (+ R$ 3,50)", e não o Leite vegetal.
-- [ ] **Dado que** o Suco de Laranja está com "Permite adicionais" desligado, **quando** o barista toca no produto, **então** o modal não mostra a seção de adicionais.
-- [ ] **Dado que** o produto permite adicionais mas o admin o desliga, **quando** o barista abre o modal em seguida, **então** os adicionais deixam de aparecer para esse produto.
-- [ ] **Dado que** alguém envia pela API um pedido com Cheddar num Cappuccino, **quando** a RPC `criar_pedido` processa, **então** o pedido é recusado inteiro com a mensagem de adicional não permitido.
-- [ ] **Dado que** o admin vincula o Chantilly ao produto "Mocha" diretamente, **quando** salva, **então** o Mocha passa a mostrar Chantilly além do Leite vegetal herdado da categoria.
-- [ ] **Dado que** um adicional está vinculado ao produto e também à categoria dele, **quando** o barista abre o modal, **então** o adicional aparece uma única vez.
-- [ ] **Dado que** existem pedidos antigos com adicionais, **quando** um vínculo é removido, **então** esses pedidos continuam mostrando os adicionais na cozinha, na impressão e no admin.
+- [x] **Dado que** o Cappuccino tem "Permite adicionais" ligado e a categoria `cafes-quentes` está vinculada ao Leite vegetal, **quando** o barista toca no Cappuccino, **então** o modal mostra só "Leite vegetal (+ R$ 1,50)". (CAF-000075)
+- [x] **Dado que** o Baguete de Frango permite adicionais e o Cheddar está vinculado a `baguetes`, **quando** o barista abre o modal, **então** aparece só "Cheddar (+ R$ 3,50)", e não o Leite vegetal. (CAF-000075)
+- [x] **Dado que** o Suco de Laranja está com "Permite adicionais" desligado, **quando** o barista toca no produto, **então** o modal não mostra a seção de adicionais. (CAF-000075)
+- [x] **Dado que** o produto permite adicionais mas o admin o desliga, **quando** o barista abre o modal em seguida, **então** os adicionais deixam de aparecer para esse produto. (CAF-000075)
+- [x] **Dado que** alguém envia pela API um pedido com Cheddar num Cappuccino, **quando** a RPC `criar_pedido` processa, **então** o pedido é recusado inteiro com a mensagem de adicional não permitido. (CAF-000075)
+- [x] **Dado que** o admin vincula o Chantilly ao produto "Mocha" diretamente, **quando** salva, **então** o Mocha passa a mostrar Chantilly além do Leite vegetal herdado da categoria. (CAF-000075)
+- [x] **Dado que** um adicional está vinculado ao produto e também à categoria dele, **quando** o barista abre o modal, **então** o adicional aparece uma única vez. (CAF-000075)
+- [x] **Dado que** existem pedidos antigos com adicionais, **quando** um vínculo é removido, **então** esses pedidos continuam mostrando os adicionais na cozinha, na impressão e no admin. (CAF-000075)
 
 ---
 

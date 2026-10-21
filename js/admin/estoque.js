@@ -144,7 +144,7 @@
     const itens = state.itens;
 
     const totalItens = itens.length;
-    const abaixoMinimo = itens.filter(i => Number(i.saldo_atual || 0) <= Number(i.estoque_minimo || 0)).length;
+    const abaixoMinimo = itens.filter(i => Number(i.quantidade ?? i.saldo_atual ?? 0) <= Number(i.estoque_minimo || 0)).length;
 
     // Próximos 3 dias para validade
     const hoje = new Date();
@@ -160,8 +160,8 @@
 
     // Valor total do inventário (apenas saldo positivo * custo médio)
     const valorTotal = itens.reduce((acc, i) => {
-      const saldo = Math.max(0, Number(i.saldo_atual || 0));
-      const custo = Number(i.custo_unitario_medio || 0);
+      const saldo = Math.max(0, Number(i.quantidade ?? i.saldo_atual ?? 0));
+      const custo = Number(i.custo_medio ?? i.custo_unitario_medio ?? 0);
       return acc + (saldo * custo);
     }, 0);
 
@@ -196,7 +196,7 @@
       if (tipoF && item.tipo !== tipoF) return false;
 
       // Filtro de status
-      const saldo = Number(item.saldo_atual || 0);
+      const saldo = Number(item.quantidade ?? item.saldo_atual ?? 0);
       const min = Number(item.estoque_minimo || 0);
       const isVencendo = item.validade_proxima && (() => {
         const d = new Date(item.validade_proxima + 'T00:00:00');
@@ -223,18 +223,19 @@
     };
 
     el.tableBody.innerHTML = filtrados.map(item => {
-      const saldo = Number(item.saldo_atual || 0);
+      const saldo = Number(item.quantidade ?? item.saldo_atual ?? 0);
       const min = Number(item.estoque_minimo || 0);
-      const custo = Number(item.custo_unitario_medio || 0);
+      const un = item.unidade || item.unidade_medida || 'un';
+      const custo = Number(item.custo_medio ?? item.custo_unitario_medio ?? 0);
       const totalValor = Math.max(0, saldo) * custo;
 
       let badgeSaldo = '';
       if (saldo <= 0) {
-        badgeSaldo = `<span class="badge-estoque badge-estoque--critico" title="Estoque zerado ou negativo">⚠️ ${saldo} ${item.unidade_medida}</span>`;
+        badgeSaldo = `<span class="badge-estoque badge-estoque--critico" title="Estoque zerado ou negativo">⚠️ ${saldo} ${un}</span>`;
       } else if (saldo <= min) {
-        badgeSaldo = `<span class="badge-estoque badge-estoque--alerta" title="Estoque no limite de segurança">⚡ ${saldo} ${item.unidade_medida}</span>`;
+        badgeSaldo = `<span class="badge-estoque badge-estoque--alerta" title="Estoque no limite de segurança">⚡ ${saldo} ${un}</span>`;
       } else {
-        badgeSaldo = `<span class="badge-estoque badge-estoque--ok" title="Estoque regular">✓ ${saldo} ${item.unidade_medida}</span>`;
+        badgeSaldo = `<span class="badge-estoque badge-estoque--ok" title="Estoque regular">✓ ${saldo} ${un}</span>`;
       }
 
       let validadeHtml = '';
@@ -269,7 +270,7 @@
           </td>
           <td><span style="color:var(--admin-text-sub); font-size:12px;">${tiposLabels[item.tipo] || item.tipo}</span></td>
           <td>${badgeSaldo}</td>
-          <td><span style="font-size:12px; color:var(--admin-text-sub);">${min} ${item.unidade_medida}</span></td>
+          <td><span style="font-size:12px; color:var(--admin-text-sub);">${min} ${un}</span></td>
           <td class="td-price" style="font-size:12px;">R$ ${custo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           <td class="td-price" style="font-weight:600;">R$ ${totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           <td>
@@ -301,7 +302,7 @@
       if (item) {
         document.getElementById('estoque-item-nome').value = item.nome || '';
         document.getElementById('estoque-item-tipo').value = item.tipo || 'insumo';
-        document.getElementById('estoque-item-unidade').value = item.unidade_medida || 'un';
+        document.getElementById('estoque-item-unidade').value = item.unidade || item.unidade_medida || 'un';
         document.getElementById('estoque-item-minimo').value = item.estoque_minimo !== undefined ? item.estoque_minimo : 5;
         document.getElementById('estoque-item-codigo-barras').value = item.codigo_barras || '';
         document.getElementById('estoque-item-fornecedor').value = item.fornecedor_padrao_id || '';
@@ -322,7 +323,7 @@
     const idVal = document.getElementById('estoque-item-id').value;
     const nome = document.getElementById('estoque-item-nome').value.trim();
     const tipo = document.getElementById('estoque-item-tipo').value;
-    const unidade_medida = document.getElementById('estoque-item-unidade').value;
+    const unidade = document.getElementById('estoque-item-unidade').value;
     const estoque_minimo = parseFloat(document.getElementById('estoque-item-minimo').value);
     const fornecedor_padrao_id = document.getElementById('estoque-item-fornecedor').value || null;
     const codigo_barras = document.getElementById('estoque-item-codigo-barras').value.trim() || null;
@@ -339,7 +340,7 @@
     const payload = {
       nome,
       tipo,
-      unidade_medida,
+      unidade,
       estoque_minimo,
       fornecedor_padrao_id,
       codigo_barras,
@@ -397,7 +398,11 @@
 
     // Popular select de itens
     el.selectMovItem.innerHTML = '<option value="">Selecione um item...</option>' +
-      state.itens.map(i => `<option value="${i.id}" data-saldo="${i.saldo_atual || 0}" data-un="${i.unidade_medida}">${window.escapeHtml(i.nome)} (Saldo: ${i.saldo_atual || 0} ${i.unidade_medida})</option>`).join('');
+      state.itens.map(i => {
+        const s = i.quantidade ?? i.saldo_atual ?? 0;
+        const u = i.unidade || i.unidade_medida || 'un';
+        return `<option value="${i.id}" data-saldo="${s}" data-un="${u}">${window.escapeHtml(i.nome)} (Saldo: ${s} ${u})</option>`;
+      }).join('');
 
     if (preselectedItemId) {
       el.selectMovItem.value = String(preselectedItemId);
@@ -484,7 +489,7 @@
     }
 
     const item = state.itens.find(i => i.id === itemId);
-    const saldoAtual = Number(item ? item.saldo_atual : 0);
+    const saldoAtual = Number(item ? (item.quantidade ?? item.saldo_atual ?? 0) : 0);
 
     let qtdFinal = qtdInput;
     let motivoFinal = obs;
@@ -513,17 +518,7 @@
     el.btnSalvarMov.textContent = 'Registrando...';
 
     try {
-      // 1. Atualizar custo médio do item se fornecido na entrada
-      if (tipo === 'entrada' && custoUnit && custoUnit > 0 && window.cafeteriaSupabase) {
-        try {
-          await window.cafeteriaSupabase
-            .from('estoque_itens')
-            .update({ custo_medio: custoUnit, updated_at: new Date().toISOString() })
-            .eq('id', itemId);
-        } catch (cErr) {
-          console.warn('[Estoque] Erro ao atualizar custo_medio:', cErr);
-        }
-      }
+      // 1. O custo médio ponderado é calculado exclusivamente pelo trigger fn_estoque_recalcular_saldo no banco
 
       // 2. Se marcado para gerar lançamento em Contas a Pagar (CAF-000068)
       let despesaId = null;
@@ -584,7 +579,7 @@
         tipo,
         quantidade: qtdFinal,
         custo_unitario: custoUnit,
-        data_validade: dataValidade,
+        validade: dataValidade,
         fornecedor_id: fornId,
         despesa_id: despesaId,
         motivo: motivoFinal
@@ -705,8 +700,10 @@
 
     const item = state.itens.find(i => String(i.id) === String(itemId));
     if (item) {
+      const s = item.quantidade ?? item.saldo_atual ?? 0;
+      const u = item.unidade || item.unidade_medida || 'un';
       el.extratoTitle.textContent = `Extrato: ${item.nome}`;
-      el.extratoSub.textContent = `Saldo atual: ${item.saldo_atual} ${item.unidade_medida} | Mínimo: ${item.estoque_minimo} ${item.unidade_medida}`;
+      el.extratoSub.textContent = `Saldo atual: ${s} ${u} | Mínimo: ${item.estoque_minimo} ${u}`;
     } else {
       el.extratoTitle.textContent = 'Extrato Geral de Movimentações';
       el.extratoSub.textContent = 'Todas as entradas, saídas, perdas e ajustes';
@@ -768,12 +765,13 @@
     el.extratoTableBody.innerHTML = movs.map(m => {
       const d = new Date(m.created_at);
       const dFormatada = d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-      const un = m.estoque_itens ? m.estoque_itens.unidade_medida : 'un';
+      const un = m.estoque_itens ? (m.estoque_itens.unidade || m.estoque_itens.unidade_medida || 'un') : 'un';
       const qtdNum = Number(m.quantidade);
       const sinal = qtdNum > 0 ? `+${qtdNum}` : `${qtdNum}`;
       const corQtd = (m.tipo === 'entrada' || (m.tipo === 'ajuste' && qtdNum > 0) || m.tipo === 'estorno') ? '#10b981' : '#ef4444';
       const custoStr = m.custo_unitario ? `R$ ${Number(m.custo_unitario).toFixed(2)}` : '—';
-      const valStr = m.data_validade ? new Date(m.data_validade + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+      const valRaw = m.validade || m.data_validade;
+      const valStr = valRaw ? new Date(valRaw + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
       const itemNome = (!state.extratoItemId && m.estoque_itens) ? `<strong>${window.escapeHtml(m.estoque_itens.nome)}</strong> • ` : '';
 
       return `
@@ -928,14 +926,15 @@
     ];
 
     const rows = state.itens.map(i => {
-      const saldo = Number(i.saldo_atual || 0);
-      const custo = Number(i.custo_unitario_medio || 0);
+      const saldo = Number(i.quantidade ?? i.saldo_atual ?? 0);
+      const custo = Number(i.custo_medio ?? i.custo_unitario_medio ?? 0);
       const valor = Math.max(0, saldo) * custo;
+      const un = i.unidade || i.unidade_medida || 'un';
       return [
         i.id,
         `"${(i.nome || '').replace(/"/g, '""')}"`,
         i.tipo,
-        i.unidade_medida,
+        un,
         saldo.toFixed(3),
         Number(i.estoque_minimo || 0).toFixed(3),
         custo.toFixed(2),
@@ -972,7 +971,7 @@
 
       const rows = perdas.map(p => {
         const itemNome = p.estoque_itens ? p.estoque_itens.nome : '';
-        const un = p.estoque_itens ? p.estoque_itens.unidade_medida : 'un';
+        const un = p.estoque_itens ? (p.estoque_itens.unidade || p.estoque_itens.unidade_medida || 'un') : 'un';
         const qtd = Math.abs(Number(p.quantidade || 0));
         const custo = Number(p.custo_unitario || 0);
         const custoTotal = qtd * custo;

@@ -809,6 +809,7 @@
             <select class="filter-select" id="filter-pedido-usuario" title="Filtrar por atendente/operador">
               <option value="">Todos os atendentes</option>
             </select>
+            <input type="search" class="filter-input" id="filter-pedido-busca" placeholder="Buscar por cliente ou mesa..." style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--admin-border, #e2e8f0); font-size: 13px;" />
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button class="btn btn--ghost" id="btn-export-pedidos">⬇ Exportar Pedidos CSV</button>
@@ -823,6 +824,7 @@
               <tr>
                 <th>#</th>
                 <th>Mesa</th>
+                <th>Cliente</th>
                 <th>Itens</th>
                 <th>Total</th>
                 <th>Pagamento</th>
@@ -3595,8 +3597,9 @@
     <div class="modal__body">
       <div id="alerta-mesas-abertas" class="alert alert--warn" style="display:none; margin-bottom: 16px;">
         <div class="alert__icon">⚠️</div>
-        <div class="alert__content">
-          <strong>Atenção:</strong> Existem <span id="qtd-mesas-abertas">0</span> mesas/pedidos em aberto. O ideal é fechar as contas antes de encerrar o caixa.
+        <div class="alert__content" style="width: 100%;">
+          <strong>Atenção:</strong> Existem <span id="qtd-mesas-abertas">0</span> mesas/pedidos em aberto:
+          <div id="lista-mesas-abertas-detalhes"></div>
         </div>
       </div>
 
@@ -4549,7 +4552,7 @@
           <div class="field" style="flex:1; min-width:180px;">
             <label class="field__label" for="form-despesa-recorrencia">Recorrência *</label>
             <select class="field__select" id="form-despesa-recorrencia" required>
-              <option value="unica">Única (Não repete)</option>
+              <option value="nenhuma">Única (Não repete)</option>
               <option value="mensal">Mensal (Gera próximo mês na baixa)</option>
             </select>
           </div>
@@ -4815,6 +4818,8 @@
 <script type="module" src="js/utils/cashback.js"></script>
 <script type="module" src="js/utils/stock-purchase.js"></script>
 <script type="module" src="js/utils/menu-analytics.js"></script>
+<script type="module" src="js/utils/despesa-mapper.js"></script>
+<script type="module" src="js/utils/datas-sp.js"></script>
 <script defer src="js/admin/clientes-admin.js"></script>
 <script defer src="js/admin/avaliacoes-admin.js"></script>
 <script defer src="js/admin/financeiro-admin.js"></script>

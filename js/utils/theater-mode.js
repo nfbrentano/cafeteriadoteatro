@@ -77,11 +77,27 @@ export function formatIntervalBadge(pedido) {
   return `<span class="badge-intervalo-teatro" style="background:#7c3aed; color:#fff; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; margin-left:6px;">🎭 INTERVALO ${horario}</span>`;
 }
 
+export function calculateIntervalRetiradaEm(config, referenceDate = new Date()) {
+  const horarioStr = (config?.horario_intervalo || config?.espetaculo_horario_intervalo || '21:00').trim();
+  const mins = parseTimeToMinutes(horarioStr);
+  if (mins === null) return null;
+
+  const d = new Date(referenceDate);
+  d.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
+  return d.toISOString();
+}
+
+export const TheaterMode = {
+  parseTimeToMinutes,
+  isTheaterModeActive,
+  getTheaterIntervalInfo,
+  formatIntervalBadge,
+  calculateIntervalRetiradaEm
+};
+
+export default TheaterMode;
+
 if (typeof window !== 'undefined') {
-  window.theaterMode = {
-    parseTimeToMinutes,
-    isTheaterModeActive,
-    getTheaterIntervalInfo,
-    formatIntervalBadge
-  };
+  window.theaterMode = TheaterMode;
+  window.TheaterMode = TheaterMode;
 }

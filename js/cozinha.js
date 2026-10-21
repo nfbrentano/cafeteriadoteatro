@@ -420,17 +420,8 @@
       });
 
       if (error) {
-        const { data: insData, error: insErr } = await window.cafeteriaSupabase
-          .from('pedido_impressoes')
-          .insert({
-            pedido_id: pedidoId,
-            estacao: estacao,
-            tipo: tipo,
-            dispositivo: dispositivo
-          })
-          .select('id')
-          .single();
-        return !insErr && insData;
+        console.warn('[KDS Impressão] RPC travar_impressao_pedido retornou erro:', error);
+        return false;
       }
       return Boolean(data);
     } catch (e) {
@@ -1324,8 +1315,8 @@
           
           let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
           let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
-          let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
-          let novoLabel = isNovoNaoPronto ? '<span class="badge-item-novo" title="Item adicionado após o envio">NOVO</span>' : '';
+          let horaLancamentoStr = item.created_at ? new Date(item.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+          let novoLabel = isNovoNaoPronto ? `<span class="badge-item-novo" title="Item adicionado após o envio">NOVO${horaLancamentoStr ? ' ' + horaLancamentoStr : ''}</span>` : '';
           let prontoClass = item.pronto_em ? 'is-pronto' : '';
           let lancadoDepoisClass = isNovoNaoPronto ? 'is-lancado-depois' : '';
           let checkHtml = item.pronto_em ? '<span class="check-icon">✓</span>' : '';
@@ -1507,9 +1498,18 @@
         }
       }
 
+      const badgeNovos = novosPendentesCount > 0
+        ? `<span class="badge-novos-kds" style="background:#e74c3c; color:#fff; font-size:11px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-left:6px;">+${novosPendentesCount} itens novos</span>`
+        : '';
+
+      const isAdicional = Boolean(pedido.pedido_origem_id || pedido.is_adicional);
+      const mesaHeaderStr = isAdicional
+        ? `➕ ADICIONAL — Mesa ${pedido.mesa_codigo} (ref. #${pedido.pedido_origem_id || 'origem'})`
+        : `${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span>`;
+
       card.innerHTML = `
         <div class="pedido-header">
-          <div class="pedido-mesa">${pedido.mesa_codigo} <span style="font-size:14px; font-weight:normal; color:#888;">(#${pedido.numero_pedido || pedido.id})</span> ${viagemTag} ${badgeEntregue} ${seloAguardando} ${badgeNovos} ${prioridadeBadgeHtml} ${badgeImpressaoHtml} ${window.theaterMode ? window.theaterMode.formatIntervalBadge(pedido) : ''}</div>
+          <div class="pedido-mesa">${mesaHeaderStr} ${viagemTag} ${badgeEntregue} ${seloAguardando} ${badgeNovos} ${prioridadeBadgeHtml} ${badgeImpressaoHtml} ${window.theaterMode ? window.theaterMode.formatIntervalBadge(pedido) : ''}</div>
           ${progressHtml}
           <div class="pedido-tempo ${estadoTempo.semaforo} ${atrasadoClass}">${tempoStr}</div>
         </div>

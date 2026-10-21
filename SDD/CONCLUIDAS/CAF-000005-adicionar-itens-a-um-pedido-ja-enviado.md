@@ -1,5 +1,8 @@
 # CAF-000005 — [PDV] Adicionar itens a um pedido já enviado
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV | 🟡 Média | M | A fazer |
@@ -41,10 +44,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a mesa 4 tem um pedido em preparo, **quando** o barista toca em "+ Adicionar itens" e envia 1 café, **então** a cozinha recebe o café identificado como adicional da mesa 4.
-- [ ] **Dado que** o barista está no modo "adicionando", **quando** abre o carrinho, **então** a mesa já vem selecionada e não pode ser trocada sem sair do modo.
-- [ ] **Dado que** o item foi acrescentado, **quando** o barista abre a prévia da conta, **então** o novo item entra no total da mesa.
-- [ ] **Dado que** o barista desistiu, **quando** toca em "Cancelar adição", **então** volta ao PDV normal sem enviar nada.
+- [x] **Dado que** a mesa 4 tem um pedido em preparo, **quando** o barista toca em "+ Adicionar itens" e envia 1 café, **então** a cozinha recebe o café identificado como adicional da mesa 4.
+- [x] **Dado que** o barista está no modo "adicionando", **quando** abre o carrinho, **então** a mesa já vem selecionada e não pode ser trocada sem sair do modo.
+- [x] **Dado que** o item foi acrescentado, **quando** o barista abre a prévia da conta, **então** o novo item entra no total da mesa.
+- [x] **Dado que** o barista desistiu, **quando** toca em "Cancelar adição", **então** volta ao PDV normal sem enviar nada.
 
 ---
 

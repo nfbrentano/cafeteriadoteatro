@@ -1,5 +1,8 @@
 # CAF-000051 — [PDV] [Mobile] Correções de formulário mobile: anti-zoom no iOS e teclados semânticos
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (CSS + HTML) | 🔴 Alta (P0) | P | Concluída |

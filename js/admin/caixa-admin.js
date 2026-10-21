@@ -193,7 +193,7 @@ window.initAdminCaixa = async function () {
           raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
         if (mapaVendas[key] !== undefined) {
           const bruto = Number(row.total_vendas ?? row.total ?? 0);
-          const taxa = Number(row.total_taxas ?? 0);
+          const taxa = Number(row.total_taxas ?? row.total_taxa ?? 0);
           const liq = row.total_liquido !== undefined ? Number(row.total_liquido) : bruto - taxa;
           mapaVendas[key] += bruto;
           mapaTaxas[key] += taxa;
@@ -208,7 +208,7 @@ window.initAdminCaixa = async function () {
             raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
           if (mapaVendas[key] !== undefined) {
             const bruto = Number(row.total_vendas ?? row.total ?? 0);
-            const taxa = Number(row.total_taxas ?? 0);
+            const taxa = Number(row.total_taxas ?? row.total_taxa ?? 0);
             const liq = row.total_liquido !== undefined ? Number(row.total_liquido) : bruto - taxa;
             mapaVendas[key] = bruto;
             mapaTaxas[key] = taxa;
@@ -472,22 +472,45 @@ window.initAdminCaixa = async function () {
     const detailsCedulas = document.getElementById('detalhes-contagem-cedulas');
     if (detailsCedulas) detailsCedulas.open = false;
 
-    // Verificar pedidos com pagamento pendente
+    // Verificar pedidos com pagamento pendente (CAF-000083 / CA05)
     const qtdMesasAbertasEl = document.getElementById('qtd-mesas-abertas');
     const alertaMesasAbertas = document.getElementById('alerta-mesas-abertas');
+    const listaMesasDetalhes = document.getElementById('lista-mesas-abertas-detalhes');
 
     try {
-      const { count, error } = await supabase
+      const { data: pedidosAbertos, error } = await supabase
         .from('pedidos')
-        .select('*', { count: 'exact', head: true })
+        .select('id, mesa_codigo, total, created_at, cliente_nome')
         .neq('status', 'cancelado')
-        .neq('status_pagamento', 'pago');
+        .neq('status_pagamento', 'pago')
+        .order('created_at', { ascending: true })
+        .limit(20);
 
-      if (!error && count > 0) {
-        qtdMesasAbertasEl.textContent = count;
+      if (!error && pedidosAbertos && pedidosAbertos.length > 0) {
+        qtdMesasAbertasEl.textContent = pedidosAbertos.length;
         alertaMesasAbertas.style.display = 'flex';
+
+        if (listaMesasDetalhes) {
+          const agora = Date.now();
+          let html = '<div style="margin-top: 8px; font-size: 13px; max-height: 120px; overflow-y: auto;">';
+          pedidosAbertos.forEach(p => {
+            const criadoEm = new Date(p.created_at).getTime();
+            const min = Math.max(0, Math.floor((agora - criadoEm) / 60000));
+            const tempoTxt = min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min} min`;
+            const mesaTxt = p.mesa_codigo ? `Mesa ${p.mesa_codigo}` : 'Balcão';
+            const valTxt = Number(p.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            html += `<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dashed #fecaca;">
+              <span><strong>${mesaTxt}</strong> (${tempoTxt} aberta)</span>
+              <span>${valTxt}</span>
+            </div>`;
+          });
+          html += `<div style="margin-top: 6px;"><a href="pedidos.html" target="_blank" style="color: #b91c1c; font-weight: bold; text-decoration: underline;">👉 Abrir PDV para fechar contas</a></div>`;
+          html += '</div>';
+          listaMesasDetalhes.innerHTML = html;
+        }
       } else {
         alertaMesasAbertas.style.display = 'none';
+        if (listaMesasDetalhes) listaMesasDetalhes.innerHTML = '';
       }
     } catch (e) {
       console.error(e);
@@ -810,6 +833,11 @@ window.initAdminCaixa = async function () {
                     ? `<button type="button" class="btn btn--ghost" style="padding:4px 8px; font-size:12px;" onclick="window.imprimirCaixaHistorico(${idx})">🖨️</button>`
                     : ''
                 }
+                ${
+                  !isAberto && idx === 0 && (!currentCaixa || currentCaixa.status === 'fechado')
+                    ? `<button type="button" class="btn btn--danger" style="padding:4px 8px; font-size:12px; margin-left:4px;" title="Reabrir Caixa" onclick="window.reabrirCaixaAdmin('${cx.id}')">🔄 Reabrir</button>`
+                    : ''
+                }
               </td>
             </tr>
           `;
@@ -821,6 +849,30 @@ window.initAdminCaixa = async function () {
         '<tr><td colspan="8" class="text-center text-danger">Erro ao carregar histórico de caixas.</td></tr>';
     }
   }
+
+  window.reabrirCaixaAdmin = async function (caixaId) {
+    if (!caixaId) return;
+    const motivo = prompt('Digite o motivo obrigatório para reabrir este caixa:');
+    if (!motivo || motivo.trim().length < 5) {
+      admin.toast('Erro', 'O motivo deve conter no mínimo 5 caracteres.', 'warning');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('reabrir_caixa', {
+        p_caixa_id: caixaId,
+        p_motivo: motivo.trim()
+      });
+
+      if (error) throw error;
+
+      admin.toast('Sucesso', 'Caixa reaberto com sucesso!', 'success');
+      await Promise.all([initCaixa(), loadHistoricoCaixas()]);
+    } catch (err) {
+      console.error('Erro ao reabrir caixa:', err);
+      admin.toast('Erro', err.message || 'Falha ao reabrir caixa.', 'error');
+    }
+  };
 
   window.imprimirCaixaHistorico = function (idx) {
     const cx = window._historicoCaixasCache?.[idx];

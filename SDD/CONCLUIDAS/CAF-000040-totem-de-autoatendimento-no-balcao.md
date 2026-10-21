@@ -1,5 +1,8 @@
 # CAF-000040 — [Salão] [Cardápio] Totem / tablet de autoatendimento no balcão
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Nova tela (totem) + PDV + banco | 🟡 Média | M | Concluída |

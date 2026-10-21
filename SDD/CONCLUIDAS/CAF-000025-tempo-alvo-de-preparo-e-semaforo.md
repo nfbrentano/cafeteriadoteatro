@@ -1,5 +1,9 @@
 # CAF-000025 — [Cozinha] [Admin] Tempo alvo de preparo por categoria/produto e semáforo no KDS
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Visualização e horários de semáforo refinados via CAF-000084.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha (KDS) + admin + banco | 🟡 Média | M | 🟢 Concluído |

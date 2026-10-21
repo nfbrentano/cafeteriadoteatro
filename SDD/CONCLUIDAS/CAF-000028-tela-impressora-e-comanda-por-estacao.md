@@ -1,5 +1,9 @@
 # CAF-000028 — [Cozinha] [Impressão] Tela responsável pela impressão e comanda por estação (sem impressão duplicada)
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Segurança e comanda impressa corrigidas via CAF-000082 e CAF-000084.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha (KDS) + impressão + banco | 🟡 Média | P | Concluída |

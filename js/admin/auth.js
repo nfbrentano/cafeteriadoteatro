@@ -53,13 +53,19 @@
     window.location.reload(); // Simplifica o reset de estado
   }
 
-  function showApp() {
+  async function showApp() {
     loginScreen.classList.add('hidden');
     adminApp.classList.remove('hidden');
     
     const user = window.cafeteriaAdmin.session.user;
-    document.getElementById('user-name-display').textContent = user.email.split('@')[0];
-    document.getElementById('user-avatar').textContent = user.email[0].toUpperCase();
+    if (user && user.email) {
+      document.getElementById('user-name-display').textContent = user.email.split('@')[0];
+      document.getElementById('user-avatar').textContent = user.email[0].toUpperCase();
+    }
+
+    if (typeof window.cafeteriaAdmin.carregarPermissoes === 'function') {
+      await window.cafeteriaAdmin.carregarPermissoes();
+    }
 
     window.cafeteriaAdmin.loadData();
     window.cafeteriaAdmin.navigateTo('dashboard');

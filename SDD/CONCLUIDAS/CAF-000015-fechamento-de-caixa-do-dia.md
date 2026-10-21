@@ -1,5 +1,9 @@
 # CAF-000015 — [Admin] Fechamento de caixa do dia
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Totais esperados com taxas e reabertura de caixa corrigidos via CAF-000079 e CAF-000083.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin | 🟡 Média | M | A fazer |
@@ -40,10 +44,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o caixa abriu com R$ 100,00 de troco e o sistema registrou R$ 350,00 em dinheiro, **quando** o responsável conta R$ 445,00, **então** o fechamento mostra diferença de −R$ 5,00.
-- [ ] **Dado que** houve sangria de R$ 200,00, **quando** o caixa é fechado, **então** o esperado em dinheiro desconta a sangria.
-- [ ] **Dado que** a mesa 3 tem pedido não pago, **quando** o responsável tenta fechar, **então** o sistema avisa e lista a mesa.
-- [ ] **Dado que** já existe um caixa aberto, **quando** alguém tenta abrir outro, **então** o sistema recusa.
+- [x] **Dado que** o caixa abriu com R$ 100,00 de troco e o sistema registrou R$ 350,00 em dinheiro, **quando** o responsável conta R$ 445,00, **então** o fechamento mostra diferença de −R$ 5,00.
+- [x] **Dado que** houve sangria de R$ 200,00, **quando** o caixa é fechado, **então** o esperado em dinheiro desconta a sangria.
+- [x] **Dado que** a mesa 3 tem pedido não pago, **quando** o responsável tenta fechar, **então** o sistema avisa e lista a mesa.
+- [x] **Dado que** já existe um caixa aberto, **quando** alguém tenta abrir outro, **então** o sistema recusa.
 
 ---
 

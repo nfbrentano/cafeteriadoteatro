@@ -1,5 +1,9 @@
 # CAF-000044 — [Bug] [Caixa] Fechamento de caixa cego e correção do contrato entre tela e banco
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Totais e reabertura de caixa corrigidos via CAF-000079 e CAF-000083.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin (caixa) + banco | 🔴 Alta | P | Concluída |

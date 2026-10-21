@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
   workflow_dispatch:
 
 permissions:
@@ -16,7 +22,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  db-tests:
+    name: Database & pgTAP Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SQL pgTAP contracts & security tests
+        run: npm run test:db
+
   build-and-deploy:
+    name: Build & Deploy
+    needs: [db-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

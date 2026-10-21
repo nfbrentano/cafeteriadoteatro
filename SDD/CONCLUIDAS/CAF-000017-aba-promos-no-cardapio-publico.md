@@ -1,5 +1,8 @@
 # CAF-000017 — [Cardápio] Aba "Promos" no cardápio público
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cardápio | 🟢 Baixa | M | A fazer |
@@ -41,10 +44,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** existe "Terça do Cappuccino", **quando** um cliente abre o cardápio numa terça, **então** vê a promoção em "Hoje" e o selo nos cappuccinos.
-- [ ] **Dado que** é quarta, **quando** o cliente abre "Na semana", **então** vê a promoção de terça na agenda, mas sem selo nos produtos.
-- [ ] **Dado que** não há promoção ativa, **quando** o cardápio carrega, **então** a aba "Promos" não aparece.
-- [ ] **Dado que** a promoção terminou ontem (vigência), **quando** o cardápio carrega, **então** ela não aparece.
+- [x] **Dado que** existe "Terça do Cappuccino", **quando** um cliente abre o cardápio numa terça, **então** vê a promoção em "Hoje" e o selo nos cappuccinos.
+- [x] **Dado que** é quarta, **quando** o cliente abre "Na semana", **então** vê a promoção de terça na agenda, mas sem selo nos produtos.
+- [x] **Dado que** não há promoção ativa, **quando** o cardápio carrega, **então** a aba "Promos" não aparece.
+- [x] **Dado que** a promoção terminou ontem (vigência), **quando** o cardápio carrega, **então** ela não aparece.
 
 ---
 

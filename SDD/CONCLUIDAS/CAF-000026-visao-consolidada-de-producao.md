@@ -1,5 +1,8 @@
 # CAF-000026 — [Cozinha] Visão consolidada de produção (totais por produto)
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha (KDS) | 🟡 Média | P | 🟢 Concluído |

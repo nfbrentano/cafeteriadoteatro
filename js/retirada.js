@@ -188,12 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function pedidoElegivel(p) {
     // Por padrão na TV de retirada, exibe pedidos para viagem ou sem mesa específica
-    if (mostrarMesas) return true;
+    if (mostrarMesas || p.para_viagem === undefined) return true;
     return !!p.para_viagem || !p.mesa_codigo || p.mesa_codigo === 'BALCAO' || p.mesa_codigo === 'VIAGEM';
   }
 
   // -----------------------------------------------------
-  // 6. CARREGAMENTO DOS PEDIDOS (VIEW OU FALLBACK)
+  // 6. CARREGAMENTO DOS PEDIDOS (VIEW SEGURA v_painel_retirada)
   // -----------------------------------------------------
   async function carregarPedidos() {
     if (!window.cafeteriaSupabase) {
@@ -202,35 +202,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      // Data de corte: início do dia em São Paulo
-      const hoje = new Date();
-      const inicioDiaISO = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0).toISOString();
-
-      // Tentativa 1: Consulta na view v_painel_retirada (CAF-000027)
-      let { data, error } = await window.cafeteriaSupabase
+      // Consulta na view segura v_painel_retirada (CAF-000027 / CAF-000082)
+      const { data, error } = await window.cafeteriaSupabase
         .from('v_painel_retirada')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('numero_pedido, primeiro_nome, status, pronto_em');
 
-      // Fallback: caso a migration da view ainda não tenha sido aplicada no ambiente
       if (error) {
-        const fallbackRes = await window.cafeteriaSupabase
-          .from('pedidos')
-          .select('id, numero_pedido, cliente_nome, status, pronto_em, concluido_em, para_viagem, mesa_codigo, created_at')
-          .gte('created_at', inicioDiaISO)
-          .in('status', ['pendente', 'em_preparo', 'concluido'])
-          .order('created_at', { ascending: false });
-
-        if (fallbackRes.error) {
-          console.error('[Retirada] Erro ao carregar pedidos:', fallbackRes.error);
-          setStatusConexao('reconectando');
-          return;
-        }
-
-        data = (fallbackRes.data || []).map(p => ({
-          ...p,
-          primeiro_nome: extrairPrimeiroNome(p.cliente_nome)
-        }));
+        console.error('[Retirada] Erro ao carregar pedidos da view v_painel_retirada:', error);
+        setStatusConexao('reconectando');
+        return;
       }
 
       setStatusConexao('online');
@@ -261,16 +241,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const diffMs = agora - new Date(dataConclusao).getTime();
         
         if (diffMs <= limiteMs) {
+          const keyId = item.numero_pedido || item.id;
           novosProntos.push(item);
-          prontosIdsAtuais.add(item.id);
+          prontosIdsAtuais.add(keyId);
 
           // Verifica se virou pronto nesta atualização
-          if (!isPrimeiraCarga && !idsProntosAnteriores.has(item.id)) {
+          if (!isPrimeiraCarga && !idsProntosAnteriores.has(keyId)) {
             temNovoPronto = true;
-            idsNovosProntos.add(item.id);
+            idsNovosProntos.add(keyId);
             // Remove destaque após 15 segundos
             setTimeout(() => {
-              idsNovosProntos.delete(item.id);
+              idsNovosProntos.delete(keyId);
               renderPronto();
             }, 15000);
           }
@@ -331,10 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
     gridPronto.innerHTML = pedidosProntos.map(p => {
       const num = formatarNumeroPedido(p.numero_pedido, p.id);
       const nome = p.primeiro_nome || extrairPrimeiroNome(p.cliente_nome) || 'Cliente';
-      const isNovo = idsNovosProntos.has(p.id);
+      const keyId = p.numero_pedido || p.id;
+      const isNovo = idsNovosProntos.has(keyId);
 
       return `
-        <div class="card-senha-pronto ${isNovo ? 'pedido-novo-pronto' : ''}" data-id="${p.id}">
+        <div class="card-senha-pronto ${isNovo ? 'pedido-novo-pronto' : ''}" data-id="${keyId}">
           <div class="senha-numero">#${num}</div>
           <div class="senha-nome">${window.escapeHtml ? window.escapeHtml(nome) : nome}</div>
           <div class="senha-instrucao">✓ Retire no Balcão</div>

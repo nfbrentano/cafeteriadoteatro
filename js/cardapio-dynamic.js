@@ -11,6 +11,11 @@
     produtos: [{ id: '1', nome: 'Café Espresso', preco: 5.0, categoria_id: 'cafes', ativo: true }]
   };
 
+  let allCategorias = [];
+  let allProdutos = [];
+  let allPromosHoje = [];
+  let allPromosSemana = [];
+
   async function loadAndRender() {
     // Se o PDF estiver ativo, não faz nada
     if (window.cafeteriaPdfActive) {
@@ -28,10 +33,13 @@
         window.cafeteriaDB.promocoesCardapio ? window.cafeteriaDB.promocoesCardapio.all() : []
       ]);
 
-      // Processa Promoções
-      const todayInBrazil = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-      const currentDayOfWeek = todayInBrazil.getDay();
-      const currentDateString = todayInBrazil.toISOString().split('T')[0];
+      // Processa Promoções (CAF-000080: Fuso America/Sao_Paulo sem distorção UTC)
+      const currentDayOfWeek = (window.datasSP && window.datasSP.diaSemanaSP)
+        ? window.datasSP.diaSemanaSP()
+        : (new Date()).getDay();
+      const currentDateString = (window.datasSP && window.datasSP.hojeSP)
+        ? window.datasSP.hojeSP()
+        : (new Date()).toISOString().split('T')[0];
 
       const promosHoje = [];
       const promosSemana = [];
@@ -60,9 +68,14 @@
         });
       }
 
+      allCategorias = categoriasAtivas;
+      allProdutos = prods.filter(p => p.ativo);
+      allPromosHoje = promosHoje;
+      allPromosSemana = promosSemana;
+
       const data = { 
         categorias: categoriasAtivas, 
-        produtos: prods.filter(p => p.ativo) 
+        produtos: allProdutos 
       };
 
       if (data.categorias.length === 0) {
@@ -73,11 +86,82 @@
       renderNav(data.categorias, nav);
       renderContent(data.categorias, data.produtos, root, promosHoje, promosSemana);
       setupScrollSpy();
+      initBuscaCardapio();
     } catch (err) {
       console.error('Erro na carga dinâmica:', err);
       // Opcional: carregar do cache se falhar
     }
   }
+
+  function filtrarCardapio(termo) {
+    const root = document.getElementById('cardapio-root');
+    const nav = document.getElementById('dyn-cat-nav');
+    const btnLimpar = document.getElementById('btn-limpar-busca-cardapio');
+    const termoClean = (termo || '').trim();
+
+    if (btnLimpar) {
+      btnLimpar.style.display = termoClean ? 'flex' : 'none';
+    }
+
+    let prodsFiltrados = allProdutos;
+    if (termoClean) {
+      if (window.SmartSearch && typeof window.SmartSearch.filterProducts === 'function') {
+        prodsFiltrados = window.SmartSearch.filterProducts(allProdutos, termoClean);
+      } else {
+        const queryLower = termoClean.toLowerCase();
+        prodsFiltrados = allProdutos.filter(p => 
+          p.nome.toLowerCase().includes(queryLower) || 
+          (p.descricao && p.descricao.toLowerCase().includes(queryLower))
+        );
+      }
+    }
+
+    let catsFiltradas = allCategorias;
+    if (termoClean) {
+      const catIdsComProdutos = new Set(prodsFiltrados.map(p => p.categoria_id || p.categoriaId));
+      catsFiltradas = allCategorias.filter(c => catIdsComProdutos.has(c.id));
+    }
+
+    if (catsFiltradas.length === 0) {
+      if (nav) nav.innerHTML = '';
+      if (root) {
+        root.innerHTML = `
+          <div class="container text-center" style="padding:60px 0;">
+            <h3>Nenhum produto encontrado para "${window.escapeHtml ? window.escapeHtml(termoClean) : termoClean}".</h3>
+            <p style="color:var(--caramelo); opacity:0.8;">Tente buscar por outro termo ou limpe a busca.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    renderNav(catsFiltradas, nav);
+    renderContent(catsFiltradas, prodsFiltrados, root, termoClean ? [] : allPromosHoje, termoClean ? [] : allPromosSemana);
+    setupScrollSpy();
+  }
+
+  function initBuscaCardapio() {
+    const inputBusca = document.getElementById('input-busca-cardapio');
+    const btnLimpar = document.getElementById('btn-limpar-busca-cardapio');
+
+    if (inputBusca && !inputBusca.dataset.bound) {
+      inputBusca.dataset.bound = 'true';
+      inputBusca.addEventListener('input', () => {
+        filtrarCardapio(inputBusca.value);
+      });
+    }
+
+    if (btnLimpar && !btnLimpar.dataset.bound) {
+      btnLimpar.dataset.bound = 'true';
+      btnLimpar.addEventListener('click', () => {
+        if (inputBusca) inputBusca.value = '';
+        filtrarCardapio('');
+        if (inputBusca) inputBusca.focus();
+      });
+    }
+  }
+
+  window.filtrarCardapio = filtrarCardapio;
 
   function renderNav(cats, container) {
     if (!container) return;

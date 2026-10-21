@@ -1,5 +1,8 @@
 # CAF-000053 — [PDV] [Mobile] Aviso sonoro, tátil e notificação de pedido pronto no celular
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (JS + Supabase Realtime) | 🔴 Alta (P0) | M (G com WebPush) | Concluída |

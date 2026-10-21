@@ -1,5 +1,9 @@
 # CAF-000024 — [Cozinha] [PDV] Itens lançados depois do envio voltam para a fila, com destaque e comanda complementar
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Badge no KDS e comanda impressa de adicionais refinados via CAF-000084.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha (KDS) + banco + impressão | 🔴 Alta | M | Concluído |

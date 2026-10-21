@@ -1,5 +1,8 @@
 # CAF-000016 — [Admin] Exportar pedidos em CSV
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin | 🟢 Baixa | P | A fazer |
@@ -39,9 +42,9 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o filtro é "últimos 7 dias" e "pago", **quando** o admin exporta, **então** o CSV traz só esses pedidos.
-- [ ] **Dado que** o arquivo é aberto no Excel em português, **quando** é carregado, **então** as colunas e os acentos aparecem corretos.
-- [ ] **Dado que** uma observação tem `;` e quebra de linha, **quando** é exportada, **então** continua numa única célula.
+- [x] **Dado que** o filtro é "últimos 7 dias" e "pago", **quando** o admin exporta, **então** o CSV traz só esses pedidos.
+- [x] **Dado que** o arquivo é aberto no Excel em português, **quando** é carregado, **então** as colunas e os acentos aparecem corretos.
+- [x] **Dado que** uma observação tem `;` e quebra de linha, **quando** é exportada, **então** continua numa única célula.
 
 ---
 

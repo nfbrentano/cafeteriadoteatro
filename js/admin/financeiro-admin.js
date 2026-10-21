@@ -338,7 +338,8 @@
       }
       const db = window.cafeteriaDB?.financeiro?.despesas;
       if (!db) return;
-      despesasCache = await db.all();
+      const raw = await db.all();
+      despesasCache = (raw || []).map(d => window.cafeteriaDespesaMapper ? window.cafeteriaDespesaMapper.normalizeDespesaFromDB(d) : d);
       renderTabelaDespesas();
     } catch (err) {
       console.error('Erro ao carregar despesas:', err);
@@ -406,7 +407,7 @@
 
     return despesasCache.filter(d => {
       const diffDias = calcularDiferencaDias(d.vencimento);
-      const isPaga = d.status === 'pago';
+      const isPaga = Boolean(d.pago_em);
 
       // Filtro Status
       if (fStatus === 'pendentes' && isPaga) return false;
@@ -437,7 +438,7 @@
       if (termo) {
         const desc = (d.descricao || '').toLowerCase();
         const fornecedorNome = (d.fornecedor?.nome || '').toLowerCase();
-        const doc = (d.documento_numero || '').toLowerCase();
+        const doc = (d.documento || d.documento_numero || '').toLowerCase();
         const catNome = (d.categoria?.nome || '').toLowerCase();
         if (!desc.includes(termo) && !fornecedorNome.includes(termo) && !doc.includes(termo) && !catNome.includes(termo)) {
           return false;
@@ -464,21 +465,23 @@
       return;
     }
 
-    // Ordena: vencidas e mais próximas primeiro, depois as pagas
+    // Ordena: pendentes primeiro (por vencimento), depois pagas
     lista.sort((a, b) => {
-      if (a.status === 'aberto' && b.status === 'pago') return -1;
-      if (a.status === 'pago' && b.status === 'aberto') return 1;
+      const isPagaA = Boolean(a.pago_em);
+      const isPagaB = Boolean(b.pago_em);
+      if (!isPagaA && isPagaB) return -1;
+      if (isPagaA && !isPagaB) return 1;
       return (a.vencimento || '').localeCompare(b.vencimento || '');
     });
 
     tbodyDespesas.innerHTML = lista.map(d => {
-      const isPaga = d.status === 'pago';
+      const isPaga = Boolean(d.pago_em);
       const diffDias = calcularDiferencaDias(d.vencimento);
 
       // Status Badge
       let statusHtml = '';
       if (isPaga) {
-        statusHtml = `<span style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:12px; font-size:11px; display:inline-block;">🟢 Paga em ${formatarData(d.data_pagamento)}</span>`;
+        statusHtml = `<span style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:12px; font-size:11px; display:inline-block;">🟢 Paga em ${formatarData(d.pago_em)}</span>`;
       } else if (diffDias < 0) {
         statusHtml = `<span style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:3px 8px; border-radius:12px; font-size:11px; display:inline-block;">🔴 Vencida (${Math.abs(diffDias)}d)</span>`;
       } else if (diffDias === 0) {
@@ -508,8 +511,8 @@
       const catNome = d.categoria ? `${d.categoria.icone || '🏷️'} ${d.categoria.nome}` : '--';
 
       // Doc / NF
-      const docHtml = d.documento_numero
-        ? `<div style="font-size:11px; color:#64748b;">Doc: ${d.documento_numero}</div>`
+      const docHtml = (d.documento || d.documento_numero)
+        ? `<div style="font-size:11px; color:#64748b;">Doc: ${d.documento || d.documento_numero}</div>`
         : '';
 
       // Ações
@@ -534,8 +537,8 @@
           <td style="padding:10px 12px; text-align:center;">${tipoBadge}</td>
           <td style="padding:10px 12px; text-align:center;">${recBadge}</td>
           <td style="padding:10px 12px; text-align:right; font-weight:700; font-size:13px; color:#0f172a;">
-            ${formatarMoeda(d.valor_total)}
-            ${isPaga && Number(d.valor_pago) !== Number(d.valor_total) ? `<div style="font-size:10px; color:#15803d;">Pago: ${formatarMoeda(d.valor_pago)}</div>` : ''}
+            ${formatarMoeda(d.valor)}
+            ${isPaga && Number(d.valor_pago) !== Number(d.valor) ? `<div style="font-size:10px; color:#15803d;">Pago: ${formatarMoeda(d.valor_pago)}</div>` : ''}
           </td>
           <td style="padding:10px 12px; text-align:center;">${statusHtml}</td>
           <td style="padding:10px 12px; text-align:center;">
@@ -585,13 +588,13 @@
       modalDespesaTitle.textContent = 'Editar Despesa';
       formDespesaId.value = despesa.id;
       formDespesaDescricao.value = despesa.descricao || '';
-      formDespesaValor.value = Number(despesa.valor_total).toFixed(2);
+      formDespesaValor.value = Number(despesa.valor).toFixed(2);
       formDespesaVencimento.value = despesa.vencimento || '';
       formDespesaCategoria.value = despesa.categoria_id || '';
       formDespesaFornecedor.value = despesa.fornecedor_id || '';
       formDespesaTipo.value = despesa.tipo || 'variavel';
-      formDespesaRecorrencia.value = despesa.recorrencia || 'unica';
-      formDespesaDoc.value = despesa.documento_numero || '';
+      formDespesaRecorrencia.value = despesa.recorrencia || 'nenhuma';
+      formDespesaDoc.value = despesa.documento || despesa.documento_numero || '';
       formDespesaObs.value = despesa.observacoes || '';
 
       if (boxDespesaPagaCriacao) boxDespesaPagaCriacao.style.display = 'none';
@@ -600,7 +603,7 @@
       formDespesaId.value = '';
       formDespesaVencimento.value = getHojeYMD();
       formDespesaTipo.value = 'variavel';
-      formDespesaRecorrencia.value = 'unica';
+      formDespesaRecorrencia.value = 'nenhuma';
 
       if (boxDespesaPagaCriacao) {
         boxDespesaPagaCriacao.style.display = 'block';
@@ -625,8 +628,8 @@
     const categoria_id = formDespesaCategoria.value;
     const fornecedor_id = formDespesaFornecedor.value || null;
     const tipo = formDespesaTipo.value;
-    const recorrencia = formDespesaRecorrencia.value;
-    const documento_numero = formDespesaDoc.value.trim() || null;
+    const recorrencia = formDespesaRecorrencia.value === 'mensal' ? 'mensal' : 'nenhuma';
+    const documento = formDespesaDoc.value.trim() || null;
     const observacoes = formDespesaObs.value.trim() || null;
 
     if (!descricao || isNaN(valor) || valor <= 0 || !vencimento || !categoria_id) {
@@ -636,21 +639,19 @@
 
     const payload = {
       descricao,
-      valor_total: valor,
+      valor,
       vencimento,
-      categoria_id,
+      categoria_id: Number(categoria_id),
       fornecedor_id,
-      tipo,
       recorrencia,
-      documento_numero,
+      documento,
       observacoes
     };
 
     // Caso de nova despesa já paga no momento da criação
     if (!id && formDespesaJaPaga && formDespesaJaPaga.checked) {
-      payload.status = 'pago';
       payload.valor_pago = valor;
-      payload.data_pagamento = formDespesaDataPagamento.value || getHojeYMD();
+      payload.pago_em = formDespesaDataPagamento.value || getHojeYMD();
       payload.forma_pagamento = formDespesaFormaPagamento.value || 'pix';
     }
 
@@ -679,7 +680,7 @@
     const despesa = despesasCache.find(d => d.id === id);
     if (!despesa) return;
 
-    const conf = confirm(`Deseja realmente excluir a despesa "${despesa.descricao}" no valor de ${formatarMoeda(despesa.valor_total)}?`);
+    const conf = confirm(`Deseja realmente excluir a despesa "${despesa.descricao}" no valor de ${formatarMoeda(despesa.valor)}?`);
     if (!conf) return;
 
     try {
@@ -703,9 +704,9 @@
     formBaixarId.value = despesa.id;
     if (baixarInfoDescricao) baixarInfoDescricao.textContent = despesa.descricao;
     if (baixarInfoVencimento) baixarInfoVencimento.textContent = formatarData(despesa.vencimento);
-    if (baixarInfoValorOriginal) baixarInfoValorOriginal.textContent = formatarMoeda(despesa.valor_total);
+    if (baixarInfoValorOriginal) baixarInfoValorOriginal.textContent = formatarMoeda(despesa.valor);
 
-    formBaixarValor.value = Number(despesa.valor_total).toFixed(2);
+    formBaixarValor.value = Number(despesa.valor).toFixed(2);
     formBaixarData.value = getHojeYMD();
     formBaixarForma.value = 'pix';
     formBaixarComprovante.value = '';
@@ -727,12 +728,12 @@
     e.preventDefault();
     const id = formBaixarId.value;
     const valor_pago = parseFloat(formBaixarValor.value);
-    const data_pagamento = formBaixarData.value;
+    const pago_em = formBaixarData.value;
     const forma_pagamento = formBaixarForma.value;
     const comprovante = formBaixarComprovante.value.trim() || null;
     const obs = formBaixarObs.value.trim() || null;
 
-    if (!id || isNaN(valor_pago) || valor_pago <= 0 || !data_pagamento) {
+    if (!id || isNaN(valor_pago) || valor_pago <= 0 || !pago_em) {
       showToast('Informe o valor e a data de pagamento.', 'warning');
       return;
     }
@@ -743,7 +744,7 @@
 
       const res = await db.baixar(id, {
         valor_pago,
-        data_pagamento,
+        pago_em,
         forma_pagamento,
         comprovante,
         obs
@@ -985,8 +986,8 @@
 
     // Filtra as despesas pagas do mês selecionado
     const pagasNoMes = despesasCache.filter(d => {
-      if (d.status !== 'pago' || !d.data_pagamento) return false;
-      return d.data_pagamento.substring(0, 7) === mesYM;
+      if (!d.pago_em) return false;
+      return d.pago_em.substring(0, 7) === mesYM;
     });
 
     const mapaVariaveis = new Map();
@@ -994,7 +995,7 @@
 
     pagasNoMes.forEach(d => {
       const catNome = d.categoria ? `${d.categoria.icone || '🏷️'} ${d.categoria.nome}` : 'Outros';
-      const val = Number(d.valor_pago || d.valor_total) || 0;
+      const val = Number(d.valor_pago || d.valor) || 0;
       if (d.tipo === 'variavel') {
         mapaVariaveis.set(catNome, (mapaVariaveis.get(catNome) || 0) + val);
       } else {
@@ -1040,7 +1041,7 @@
       'Fornecedor',
       'Tipo',
       'Recorrência',
-      'Valor Total',
+      'Valor',
       'Status',
       'Data Pagamento',
       'Valor Pago',
@@ -1049,21 +1050,27 @@
       'Observações'
     ];
 
-    const rows = lista.map(d => [
-      d.vencimento || '',
-      `"${(d.descricao || '').replace(/"/g, '""')}"`,
-      `"${(d.categoria?.nome || '').replace(/"/g, '""')}"`,
-      `"${(d.fornecedor?.nome || '').replace(/"/g, '""')}"`,
-      d.tipo || '',
-      d.recorrencia || '',
-      (Number(d.valor_total) || 0).toFixed(2).replace('.', ','),
-      d.status || '',
-      d.data_pagamento || '',
-      d.valor_pago ? (Number(d.valor_pago) || 0).toFixed(2).replace('.', ',') : '',
-      d.forma_pagamento || '',
-      `"${(d.documento_numero || '').replace(/"/g, '""')}"`,
-      `"${(d.observacoes || '').replace(/"/g, '""')}"`
-    ]);
+    const rows = lista.map(d => {
+      const isPaga = Boolean(d.pago_em);
+      const diffDias = calcularDiferencaDias(d.vencimento);
+      const statusLabel = isPaga ? 'Pago' : (diffDias < 0 ? 'Vencida' : 'Em Aberto');
+
+      return [
+        d.vencimento || '',
+        `"${(d.descricao || '').replace(/"/g, '""')}"`,
+        `"${(d.categoria?.nome || '').replace(/"/g, '""')}"`,
+        `"${(d.fornecedor?.nome || '').replace(/"/g, '""')}"`,
+        d.tipo || '',
+        d.recorrencia || '',
+        (Number(d.valor) || 0).toFixed(2).replace('.', ','),
+        statusLabel,
+        d.pago_em || '',
+        d.valor_pago ? (Number(d.valor_pago) || 0).toFixed(2).replace('.', ',') : '',
+        d.forma_pagamento || '',
+        `"${(d.documento || d.documento_numero || '').replace(/"/g, '""')}"`,
+        `"${(d.observacoes || '').replace(/"/g, '""')}"`
+      ];
+    });
 
     const csvContent = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\r\n');
     const nomeArquivo = `despesas_financeiro_${getHojeYMD()}.csv`;

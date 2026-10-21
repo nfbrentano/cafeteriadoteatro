@@ -9,8 +9,10 @@ Tags padronizadas (use sempre colchetes, alinhadas aos tipos de commit do reposi
 [REFACTOR] refatoração sem mudança de comportamento · [CHORE] infraestrutura/configuração · [DOCS] documentação
 -->
 
-> **Status:** Rascunho | Em revisão | Aprovada | Em andamento | Concluída
+> **Status:** Rascunho | Em revisão | Aprovada | Em andamento | Concluída | Concluída com ressalvas
 > **Autor:** · **Revisor:** · **Criada em:** AAAA-MM-DD · **Atualizada em:** AAAA-MM-DD
+> <!-- Se o status for "Concluída com ressalvas", inclua a linha abaixo: -->
+> <!-- **Ressalvas:** [descrição do bug/pendência] → CAF-0000NN -->
 
 ## Detalhes da Atividade
 

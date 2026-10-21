@@ -733,7 +733,7 @@
             *,
             estoque_itens:item_id (
               nome,
-              unidade_medida,
+              unidade,
               codigo_barras
             )
           `)
@@ -760,13 +760,31 @@
           db.logger.error('estoque.getMovimentos', error);
           throw error;
         }
-        return data || [];
+        return (data || []).map(m => {
+          if (m.estoque_itens && !m.estoque_itens.unidade_medida) {
+            m.estoque_itens.unidade_medida = m.estoque_itens.unidade;
+          }
+          if (!m.data_validade && m.validade) {
+            m.data_validade = m.validade;
+          }
+          return m;
+        });
       },
       async criarMovimento(movimento) {
         if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const movPayload = {
+          item_id: movimento.item_id,
+          tipo: movimento.tipo,
+          quantidade: movimento.quantidade,
+          custo_unitario: movimento.custo_unitario,
+          validade: movimento.validade || movimento.data_validade || null,
+          fornecedor_id: movimento.fornecedor_id || null,
+          despesa_id: movimento.despesa_id || null,
+          motivo: movimento.motivo || null
+        };
         const { data, error } = await window.cafeteriaSupabase
           .from('estoque_movimentos')
-          .insert(movimento)
+          .insert(movPayload)
           .select()
           .single();
         if (error) {
@@ -788,15 +806,21 @@
             estoque_itens:estoque_item_id (
               id,
               nome,
-              unidade_medida,
-              custo_unitario_medio
+              unidade,
+              custo_medio
             )
           `);
         if (error) {
           db.logger.error('fichasTecnicas.all', error);
           throw error;
         }
-        return data || [];
+        return (data || []).map(ft => {
+          if (ft.estoque_itens) {
+            ft.estoque_itens.unidade_medida = ft.estoque_itens.unidade;
+            ft.estoque_itens.custo_unitario_medio = ft.estoque_itens.custo_medio;
+          }
+          return ft;
+        });
       },
       async getByProduto(produtoId) {
         if (!window.cafeteriaSupabase) return [];
@@ -807,8 +831,8 @@
             estoque_itens:estoque_item_id (
               id,
               nome,
-              unidade_medida,
-              custo_unitario_medio
+              unidade,
+              custo_medio
             )
           `)
           .eq('produto_id', produtoId);
@@ -816,7 +840,13 @@
           db.logger.error('fichasTecnicas.getByProduto', error);
           throw error;
         }
-        return data || [];
+        return (data || []).map(ft => {
+          if (ft.estoque_itens) {
+            ft.estoque_itens.unidade_medida = ft.estoque_itens.unidade;
+            ft.estoque_itens.custo_unitario_medio = ft.estoque_itens.custo_medio;
+          }
+          return ft;
+        });
       },
       async getByAdicional(adicionalId) {
         if (!window.cafeteriaSupabase) return [];
@@ -827,8 +857,8 @@
             estoque_itens:estoque_item_id (
               id,
               nome,
-              unidade_medida,
-              custo_unitario_medio
+              unidade,
+              custo_medio
             )
           `)
           .eq('adicional_id', adicionalId);
@@ -836,7 +866,13 @@
           db.logger.error('fichasTecnicas.getByAdicional', error);
           throw error;
         }
-        return data || [];
+        return (data || []).map(ft => {
+          if (ft.estoque_itens) {
+            ft.estoque_itens.unidade_medida = ft.estoque_itens.unidade;
+            ft.estoque_itens.custo_unitario_medio = ft.estoque_itens.custo_medio;
+          }
+          return ft;
+        });
       },
       async saveFichaProduto(produtoId, itens = []) {
         if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
@@ -1198,18 +1234,25 @@
           if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
           try {
             const user = (await window.cafeteriaSupabase.auth.getUser()).data.user;
+            const valNum = dados.valor !== undefined && dados.valor !== null ? Number(dados.valor) : Number(dados.valor_total);
+            const pagoEm = dados.pago_em || dados.data_pagamento || null;
+            const valorPago = dados.valor_pago !== undefined && dados.valor_pago !== null 
+              ? Number(dados.valor_pago) 
+              : (pagoEm ? valNum : null);
+
             const row = {
-              descricao: dados.descricao.trim(),
+              descricao: (dados.descricao || '').trim(),
               fornecedor_id: dados.fornecedor_id || null,
               categoria_id: Number(dados.categoria_id),
-              valor: Number(dados.valor),
+              valor: valNum,
               vencimento: dados.vencimento,
-              pago_em: dados.pago_em || null,
-              valor_pago: dados.valor_pago ? Number(dados.valor_pago) : null,
+              pago_em: pagoEm,
+              valor_pago: valorPago,
               forma_pagamento: dados.forma_pagamento || null,
               origem: dados.origem || 'manual',
-              recorrencia: dados.recorrencia || 'nenhuma',
+              recorrencia: dados.recorrencia === 'mensal' ? 'mensal' : 'nenhuma',
               observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+              documento: dados.documento || dados.documento_numero || null,
               anexo_url: dados.anexo_url || null,
               criado_por: user ? user.id : null,
               criado_por_nome: user ? (user.user_metadata?.nome || user.email) : 'Admin'
@@ -1232,19 +1275,25 @@
         async update(id, dados) {
           if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
           try {
+            const valNum = dados.valor !== undefined && dados.valor !== null ? Number(dados.valor) : Number(dados.valor_total);
             const row = {
-              descricao: dados.descricao.trim(),
+              descricao: (dados.descricao || '').trim(),
               fornecedor_id: dados.fornecedor_id || null,
               categoria_id: Number(dados.categoria_id),
-              valor: Number(dados.valor),
+              valor: valNum,
               vencimento: dados.vencimento,
               forma_pagamento: dados.forma_pagamento || null,
-              recorrencia: dados.recorrencia || 'nenhuma',
+              recorrencia: dados.recorrencia === 'mensal' ? 'mensal' : 'nenhuma',
               observacoes: dados.observacoes ? dados.observacoes.trim() : null,
+              documento: dados.documento || dados.documento_numero || null,
               updated_at: new Date().toISOString()
             };
-            if (dados.pago_em !== undefined) row.pago_em = dados.pago_em;
-            if (dados.valor_pago !== undefined) row.valor_pago = dados.valor_pago ? Number(dados.valor_pago) : null;
+            if (dados.pago_em !== undefined || dados.data_pagamento !== undefined) {
+              row.pago_em = dados.pago_em || dados.data_pagamento || null;
+            }
+            if (dados.valor_pago !== undefined) {
+              row.valor_pago = dados.valor_pago ? Number(dados.valor_pago) : null;
+            }
 
             const { data, error } = await window.cafeteriaSupabase
               .from('despesas')
@@ -1276,15 +1325,29 @@
           }
         },
 
-        async baixar({ id, pagoEm, valorPago, formaPagamento }) {
+        async baixar(idOrOpts, optsIfId) {
           if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
           try {
+            let id, pagoEm, valorPago, formaPagamento;
+            if (typeof idOrOpts === 'object' && idOrOpts !== null) {
+              id = idOrOpts.id || idOrOpts.despesa_id;
+              pagoEm = idOrOpts.pagoEm || idOrOpts.pago_em || idOrOpts.data_pagamento;
+              valorPago = idOrOpts.valorPago ?? idOrOpts.valor_pago;
+              formaPagamento = idOrOpts.formaPagamento || idOrOpts.forma_pagamento;
+            } else {
+              id = idOrOpts;
+              const opts = optsIfId || {};
+              pagoEm = opts.pagoEm || opts.pago_em || opts.data_pagamento;
+              valorPago = opts.valorPago ?? opts.valor_pago;
+              formaPagamento = opts.formaPagamento || opts.forma_pagamento;
+            }
+
             const { data, error } = await window.cafeteriaSupabase
               .rpc('baixar_despesa', {
-                p_despesa_id: id,
+                p_despesa_id: Number(id),
                 p_pago_em: pagoEm || new Date().toISOString().slice(0, 10),
                 p_valor_pago: Number(valorPago),
-                p_forma_pagamento: formaPagamento
+                p_forma_pagamento: formaPagamento || 'pix'
               });
             if (error) throw error;
             return data;
@@ -1504,16 +1567,20 @@
         }
       },
 
-      async validarPin(pin, permissaoNecessaria, motivo = null, contexto = null) {
+      async validarPin(pin, permissaoNecessaria, motivo = null, contexto = null, autorizadorId = null) {
         if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
         try {
+          const params = {
+            p_pin: pin,
+            p_permissao_necessaria: permissaoNecessaria,
+            p_motivo: motivo,
+            p_contexto: contexto
+          };
+          if (autorizadorId) {
+            params.p_autorizador_id = autorizadorId;
+          }
           const { data, error } = await window.cafeteriaSupabase
-            .rpc('validar_pin_autorizacao', {
-              p_pin: pin,
-              p_permissao_necessaria: permissaoNecessaria,
-              p_motivo: motivo,
-              p_contexto: contexto
-            });
+            .rpc('validar_pin_autorizacao', params);
           if (error) throw error;
           return data;
         } catch (err) {

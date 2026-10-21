@@ -38,10 +38,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o operador abre `cozinha.html`, `retirada.html` ou `totem.html` em um navegador compatível, quando a página estiver visível, então o Wake Lock de tela deve ser ativado automaticamente para impedir o desligamento da tela.
-- [ ] **CA02:** Dado que o Wake Lock estava ativo e o usuário minimizou o navegador ou trocou de aba (liberando o lock nativamente), quando o usuário voltar para a aba do sistema (`document.visibilityState === 'visible'`), então o Wake Lock deve ser readquirido automaticamente.
-- [ ] **CA03:** Dado que o operador está em `pedidos.html`, quando clicar no botão de controle `🔆 Tela acesa`, então o sistema deve alternar entre manter a tela sempre ligada ou permitir o bloqueio padrão do aparelho, persistindo a escolha no `localStorage`.
-- [ ] **CA04:** Dado que o usuário acessa o sistema em um navegador antigo ou com Modo de Pouca Energia que rejeita `navigator.wakeLock.request`, quando a página carregar ou o botão for acionado, então nenhum erro não tratado deve ocorrer no console e o restante da tela deve funcionar normalmente.
+- [x] **CA01:**** Dado que o operador abre `cozinha.html`, `retirada.html` ou `totem.html` em um navegador compatível, quando a página estiver visível, então o Wake Lock de tela deve ser ativado automaticamente para impedir o desligamento da tela.
+- [x] **CA02:**** Dado que o Wake Lock estava ativo e o usuário minimizou o navegador ou trocou de aba (liberando o lock nativamente), quando o usuário voltar para a aba do sistema (`document.visibilityState === 'visible'`), então o Wake Lock deve ser readquirido automaticamente.
+- [x] **CA03:**** Dado que o operador está em `pedidos.html`, quando clicar no botão de controle `🔆 Tela acesa`, então o sistema deve alternar entre manter a tela sempre ligada ou permitir o bloqueio padrão do aparelho, persistindo a escolha no `localStorage`.
+- [x] **CA04:**** Dado que o usuário acessa o sistema em um navegador antigo ou com Modo de Pouca Energia que rejeita `navigator.wakeLock.request`, quando a página carregar ou o botão for acionado, então nenhum erro não tratado deve ocorrer no console e o restante da tela deve funcionar normalmente.
 
 ## O que a atividade não inclui
 

@@ -1,5 +1,8 @@
 # CAF-000007 — [Cozinha] [Banco] Separação por estação (bar × cozinha)
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha + banco | 🟡 Média | M | A fazer |
@@ -42,10 +45,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** um pedido tem 1 cappuccino e 1 baguete, **quando** ele é enviado, **então** o KDS do bar mostra só o cappuccino e o da cozinha só o baguete.
-- [ ] **Dado que** o bar terminou o cappuccino, **quando** a cozinha ainda não terminou o baguete, **então** o pedido continua em preparo para o barista.
-- [ ] **Dado que** as duas estações terminaram, **quando** a última marca pronto, **então** o pedido vai para "Prontos" e o barista é avisado.
-- [ ] **Dado que** o KDS foi aberto sem parâmetro, **quando** chega um pedido, **então** mostra todos os itens, como hoje.
+- [x] **Dado que** um pedido tem 1 cappuccino e 1 baguete, **quando** ele é enviado, **então** o KDS do bar mostra só o cappuccino e o da cozinha só o baguete.
+- [x] **Dado que** o bar terminou o cappuccino, **quando** a cozinha ainda não terminou o baguete, **então** o pedido continua em preparo para o barista.
+- [x] **Dado que** as duas estações terminaram, **quando** a última marca pronto, **então** o pedido vai para "Prontos" e o barista é avisado.
+- [x] **Dado que** o KDS foi aberto sem parâmetro, **quando** chega um pedido, **então** mostra todos os itens, como hoje.
 
 ---
 

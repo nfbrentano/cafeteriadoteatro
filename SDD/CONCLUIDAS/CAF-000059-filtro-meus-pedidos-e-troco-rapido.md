@@ -1,5 +1,8 @@
 # CAF-000059 — [PDV] [Mobile] Operação ágil de salão: filtro Meus Pedidos, troco rápido e envio otimista
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (JS + CSS + HTML) | 🟡 Média (P1) | M | Concluída |

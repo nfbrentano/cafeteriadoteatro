@@ -123,14 +123,15 @@
         if (p.estoque_item_id) {
           const estItem = estoqueItens.find(i => String(i.id) === String(p.estoque_item_id));
           if (estItem) {
-            const saldo = Number(estItem.saldo_atual || 0);
+            const saldo = Number(estItem.quantidade ?? estItem.saldo_atual ?? 0);
             const min = Number(estItem.estoque_minimo || 0);
+            const un = estItem.unidade || estItem.unidade_medida || 'un';
             if (saldo <= 0) {
-              stockBadge = `<span class="badge-estoque badge-estoque--critico" title="Estoque zerado ou negativo">Estoque: ${saldo} ${estItem.unidade_medida}</span>`;
+              stockBadge = `<span class="badge-estoque badge-estoque--critico" title="Estoque zerado ou negativo">Estoque: ${saldo} ${un}</span>`;
             } else if (saldo <= min) {
-              stockBadge = `<span class="badge-estoque badge-estoque--alerta" title="Estoque no limite mínimo">Estoque: ${saldo} ${estItem.unidade_medida}</span>`;
+              stockBadge = `<span class="badge-estoque badge-estoque--alerta" title="Estoque no limite mínimo">Estoque: ${saldo} ${un}</span>`;
             } else {
-              stockBadge = `<span class="badge-estoque badge-estoque--ok" title="Estoque regular">Estoque: ${saldo} ${estItem.unidade_medida}</span>`;
+              stockBadge = `<span class="badge-estoque badge-estoque--ok" title="Estoque regular">Estoque: ${saldo} ${un}</span>`;
             }
           } else {
             stockBadge = `<span class="badge-estoque" style="background:rgba(255,255,255,0.06);color:var(--admin-text-sub);" title="Item de estoque vinculado">📦 Vinculado</span>`;
@@ -146,7 +147,7 @@
         if (prodFichas.length > 0) {
           custoProd = prodFichas.reduce((acc, f) => {
             const ei = f.estoque_itens || (estoqueItens || []).find(i => String(i.id) === String(f.estoque_item_id));
-            return acc + (Number(f.quantidade || 0) * Number(ei?.custo_unitario_medio || 0));
+            return acc + (Number(f.quantidade || 0) * Number(ei?.custo_medio ?? ei?.custo_unitario_medio ?? 0));
           }, 0);
           temCusto = true;
         } else if (p.preco_custo_manual !== null && p.preco_custo_manual !== undefined && p.preco_custo_manual !== '') {
@@ -155,7 +156,7 @@
         } else if (p.estoque_item_id) {
           const ei = (estoqueItens || []).find(i => String(i.id) === String(p.estoque_item_id));
           if (ei) {
-            custoProd = Number(ei.custo_unitario_medio || 0);
+            custoProd = Number(ei.custo_medio ?? ei.custo_unitario_medio ?? 0);
             temCusto = true;
           }
         }
@@ -256,12 +257,13 @@
       el.tbodyFichaInsumos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--admin-text-sub); padding: 12px;">Nenhum insumo na ficha técnica.</td></tr>`;
     } else {
       el.tbodyFichaInsumos.innerHTML = activeFichaItens.map((item, idx) => {
-        const custoUnit = Number(item.custo_unitario_medio || 0);
+        const custoUnit = Number(item.custo_medio ?? item.custo_unitario_medio ?? 0);
         const subtotal = Number(item.quantidade) * custoUnit;
+        const un = item.unidade || item.unidade_medida || 'un';
         return `
           <tr style="border-bottom: 1px solid var(--admin-border2);">
             <td style="padding: 6px 8px; font-weight: 600;">${window.escapeHtml(item.nome)}</td>
-            <td style="padding: 6px 8px;">${item.quantidade} ${item.unidade_medida}</td>
+            <td style="padding: 6px 8px;">${item.quantidade} ${un}</td>
             <td style="padding: 6px 8px;">R$ ${custoUnit.toFixed(2)}</td>
             <td style="padding: 6px 8px; font-weight: 600;">R$ ${subtotal.toFixed(2)}</td>
             <td style="padding: 6px 8px; text-align: right;">
@@ -282,7 +284,7 @@
     let custoTotal = 0;
     if (activeFichaItens.length > 0) {
       custoTotal = activeFichaItens.reduce((acc, item) => {
-        return acc + (Number(item.quantidade) * Number(item.custo_unitario_medio || 0));
+        return acc + (Number(item.quantidade) * Number(item.custo_medio ?? item.custo_unitario_medio ?? 0));
       }, 0);
     } else if (!isNaN(custoManual) && custoManual > 0) {
       custoTotal = custoManual;
@@ -303,7 +305,11 @@
     }
 
     if (el.fichaAlertaMargem) {
-      if (precoVenda > 0 && custoTotal > 0 && margem < 50) {
+      const margemMinima = (window.cafeteriaConfig && window.cafeteriaConfig.ficha_margem_minima_percentual)
+        ? Number(window.cafeteriaConfig.ficha_margem_minima_percentual)
+        : (window._margemMinimaFicha || 50);
+
+      if (precoVenda > 0 && custoTotal > 0 && margem < margemMinima) {
         el.fichaAlertaMargem.style.display = 'block';
       } else {
         el.fichaAlertaMargem.style.display = 'none';
@@ -353,11 +359,19 @@
       const itens = admin.appData.estoqueItens || [];
       if (el.selectEstoqueItem) {
         el.selectEstoqueItem.innerHTML = '<option value="">-- Sem controle de revenda direta --</option>' +
-          itens.map(i => `<option value="${i.id}">${window.escapeHtml(i.nome)} (Saldo: ${i.saldo_atual} ${i.unidade_medida})</option>`).join('');
+          itens.map(i => {
+            const s = i.quantidade ?? i.saldo_atual ?? 0;
+            const u = i.unidade || i.unidade_medida || 'un';
+            return `<option value="${i.id}">${window.escapeHtml(i.nome)} (Saldo: ${s} ${u})</option>`;
+          }).join('');
       }
       if (el.selectFichaInsumo) {
         el.selectFichaInsumo.innerHTML = '<option value="">Selecione um insumo...</option>' +
-          itens.map(i => `<option value="${i.id}" data-un="${i.unidade_medida}" data-custo="${i.custo_unitario_medio || 0}">${window.escapeHtml(i.nome)} (${i.unidade_medida} · Custo: R$ ${Number(i.custo_unitario_medio || 0).toFixed(2)})</option>`).join('');
+          itens.map(i => {
+            const u = i.unidade || i.unidade_medida || 'un';
+            const c = Number(i.custo_medio ?? i.custo_unitario_medio ?? 0);
+            return `<option value="${i.id}" data-un="${u}" data-custo="${c}">${window.escapeHtml(i.nome)} (${u} · Custo: R$ ${c.toFixed(2)})</option>`;
+          }).join('');
       }
     }
 
@@ -404,12 +418,16 @@
           const fichas = await window.cafeteriaDB.fichasTecnicas.getByProduto(id);
           activeFichaItens = (fichas || []).map(f => {
             const ei = f.estoque_itens || (admin.appData.estoqueItens || []).find(i => String(i.id) === String(f.estoque_item_id));
+            const u = ei?.unidade || ei?.unidade_medida || 'un';
+            const c = Number(ei?.custo_medio ?? ei?.custo_unitario_medio ?? 0);
             return {
               estoque_item_id: f.estoque_item_id,
               quantidade: f.quantidade,
               nome: ei?.nome || 'Insumo',
-              unidade_medida: ei?.unidade_medida || 'un',
-              custo_unitario_medio: ei?.custo_unitario_medio || 0
+              unidade: u,
+              unidade_medida: u,
+              custo_medio: c,
+              custo_unitario_medio: c
             };
           });
         } catch(e) {
@@ -617,12 +635,16 @@
         if (existingIdx >= 0) {
           activeFichaItens[existingIdx].quantidade = qtd;
         } else {
+          const u = insumo.unidade || insumo.unidade_medida || 'un';
+          const c = Number(insumo.custo_medio ?? insumo.custo_unitario_medio ?? 0);
           activeFichaItens.push({
             estoque_item_id: insumo.id,
             quantidade: qtd,
             nome: insumo.nome,
-            unidade_medida: insumo.unidade_medida,
-            custo_unitario_medio: insumo.custo_unitario_medio || 0
+            unidade: u,
+            unidade_medida: u,
+            custo_medio: c,
+            custo_unitario_medio: c
           });
         }
 

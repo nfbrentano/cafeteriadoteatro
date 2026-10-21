@@ -246,6 +246,7 @@
   let activeObsCartIndex = null;
   let activeMontagemItem = null; // Guardará o item temporário da montagem
   let currentSelectedMesaParaConta = null;
+  let pedidoOrigemIdAdicao = null;
   
   let currentFechamento = {
     mesaCodigo: null,
@@ -802,14 +803,18 @@
     }
   }, 15000);
 
-  // --- CONTROLE DE ACESSO GRANULAR & AUTORIZAÇÃO POR PIN (CAF-000036) ---
+  // --- CONTROLE DE ACESSO GRANULAR & AUTORIZAÇÃO POR PIN (CAF-000036 / CAF-000081) ---
   function usuarioTemPermissao(permissao) {
     if (!currentUser) return false;
     if (currentUser.is_admin || currentUser.perfil?.role === 'admin') return true;
-    if (currentUser.permissoes && currentUser.permissoes.includes(permissao)) return true;
-    // Fallbacks de retrocompatibilidade
-    if (permissao === 'pdv.vender' && currentUser.perfil?.role === 'barista') return true;
-    if (permissao === 'pdv.desconto' && currentUser.perfil?.pode_dar_desconto) return true;
+    if (Array.isArray(currentUser.permissoes)) {
+      return currentUser.permissoes.includes(permissao);
+    }
+    // Fallbacks de retrocompatibilidade SOMENTE para usuários sem cargo atribuído
+    if (!currentUser.perfil?.cargo_id) {
+      if (permissao === 'pdv.vender' && currentUser.perfil?.role === 'barista') return true;
+      if (permissao === 'pdv.desconto' && currentUser.perfil?.pode_dar_desconto) return true;
+    }
     return false;
   }
 
@@ -818,6 +823,7 @@
       const modal = document.getElementById('modal-autorizacao-pin');
       const descEl = document.getElementById('modal-pin-descricao-acao');
       const inputPin = document.getElementById('input-pin-supervisor');
+      const selectSupervisor = document.getElementById('select-pin-supervisor');
       const inputMotivo = document.getElementById('input-pin-motivo');
       const erroEl = document.getElementById('modal-pin-erro');
       const btnConfirmar = document.getElementById('btn-confirmar-pin');
@@ -856,6 +862,7 @@
       async function onConfirmar() {
         const pin = inputPin.value.trim();
         const motivo = inputMotivo ? inputMotivo.value.trim() : '';
+        const autorizadorId = selectSupervisor ? (selectSupervisor.value || null) : null;
 
         if (!pin || pin.length < 4 || pin.length > 8) {
           if (erroEl) {
@@ -875,7 +882,8 @@
             pin, 
             permissaoNecessaria, 
             motivo || `Autorizado na tela PDV (${permissaoNecessaria})`, 
-            contexto
+            contexto,
+            autorizadorId
           );
 
           if (res && res.autorizado) {
@@ -1919,8 +1927,8 @@
     } else {
       modalMontagemList.innerHTML = adsDoProduto.map(ad => `
         <label class="adicional-checkbox">
-          <input type="checkbox" value="${ad.id}" data-preco="${ad.preco}" data-nome="${ad.nome}" class="chk-adicional">
-          <span class="adicional-checkbox__label">${ad.nome} (+ R$ ${Number(ad.preco).toFixed(2).replace('.', ',')})</span>
+          <input type="checkbox" value="${window.escapeHtml(ad.id)}" data-preco="${ad.preco}" data-nome="${window.escapeHtml(ad.nome)}" class="chk-adicional">
+          <span class="adicional-checkbox__label">${window.escapeHtml(ad.nome)} (+ R$ ${Number(ad.preco).toFixed(2).replace('.', ',')})</span>
         </label>
       `).join('');
       
@@ -2738,11 +2746,21 @@
       cortesia_de_item_index: item.cortesia_de_item_index !== undefined ? item.cortesia_de_item_index : null
     }));
 
+    let retiradaEm = null;
+    if (isIntervalo) {
+      const horaInt = (typeof espetaculoHojeConfig !== 'undefined' && espetaculoHojeConfig?.espetaculo_horario_intervalo)
+        || window.espetaculoHojeConfig?.espetaculo_horario_intervalo
+        || '21:30';
+      const hojeYmd = (window.datasSP && window.datasSP.hojeSP) ? window.datasSP.hojeSP() : new Date().toISOString().split('T')[0];
+      retiradaEm = new Date(`${hojeYmd}T${horaInt}:00-03:00`).toISOString();
+    }
+
     const payload = {
       client_id: clientId,
       mesa_codigo: mesaCodigo || (paraViagem ? 'BALCAO' : 'BALCAO'),
       observacoes: finalObsGeral,
       is_intervalo: isIntervalo,
+      retirada_em: retiradaEm,
       cliente_nome: clienteNome,
       cliente_id: clienteId,
       para_viagem: paraViagem,
@@ -2750,6 +2768,8 @@
       prioridade_motivo: prioridadeMotivo,
       forma_pagamento: formaPag,
       status_pagamento: statusPag,
+      pedido_origem_id: pedidoOrigemIdAdicao || null,
+      is_adicional: Boolean(pedidoOrigemIdAdicao),
       itens: itensParaRpc
     };
 
@@ -2909,7 +2929,17 @@
   // -----------------------------------------------------
   async function loadActivePedidos() {
     try {
-      const inicioDoDia = window.getInicioDoDiaSaoPaulo();
+      const inicioDoDia = (window.datasSP && window.datasSP.inicioDoDiaSP)
+        ? window.datasSP.inicioDoDiaSP()
+        : window.getInicioDoDiaSaoPaulo();
+      const doisDiasAtras = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+
+      const filtroAtivos = [
+        'status.in.(pendente,em_preparo,aguardando_pagamento,pronto)',
+        `and(status.in.(concluido,entregue),created_at.gte.${inicioDoDia})`,
+        `and(status_pagamento.eq.pendente,status.not.in.(cancelado,finalizado),created_at.gte.${doisDiasAtras})`
+      ].join(',');
+
       const { data, error } = await window.cafeteriaSupabase
         .from('pedidos')
         .select(`
@@ -2919,7 +2949,7 @@
             pedido_item_adicionais (*)
           )
         `)
-        .or(`status.in.(pendente,em_preparo,aguardando_pagamento),status_pagamento.eq.pendente,status_pagamento.is.null,and(status.eq.concluido,created_at.gte.${inicioDoDia})`)
+        .or(filtroAtivos)
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -3177,7 +3207,7 @@
       await loadActivePedidos();
     } catch (err) {
       console.error('Erro ao aprovar pedido:', err);
-      alert('Erro ao aprovar pedido: ' + (err.message || err));
+      if (window.showToast) window.showToast('Erro ao aprovar pedido: ' + (err.message || err), { tipo: 'error' });
     }
   }
 
@@ -3190,7 +3220,7 @@
       await loadPedidosClienteAguardando();
     } catch (err) {
       console.error('Erro ao recusar pedido:', err);
-      alert('Erro ao recusar pedido: ' + (err.message || err));
+      if (window.showToast) window.showToast('Erro ao recusar pedido: ' + (err.message || err), { tipo: 'error' });
     }
   }
 
@@ -3219,7 +3249,7 @@
       await loadChamadosMesa();
     } catch (err) {
       console.error('Erro ao atender chamado:', err);
-      alert('Erro ao atender chamado: ' + (err.message || err));
+      if (window.showToast) window.showToast('Erro ao atender chamado: ' + (err.message || err), { tipo: 'error' });
     }
   }
 
@@ -3518,8 +3548,9 @@
         </div>
       `;
 
-      // CAF-000067: Gesto de deslizar para a direita para marcar como entregue no celular
-      if (window.SwipeAction && typeof window.SwipeAction.bindSwipeRight === 'function' && isPronto) {
+      // CAF-000067 / CAF-000084: Gesto de deslizar para a direita para marcar como entregue no celular
+      const podeEntregar = isPronto || pedido.status === 'pronto' || pedido.status === 'concluido';
+      if (window.SwipeAction && typeof window.SwipeAction.bindSwipeRight === 'function' && podeEntregar) {
         window.SwipeAction.bindSwipeRight(card, () => {
           window.baristaMarcarEntregue(pedido.id);
         });
@@ -3570,12 +3601,23 @@
       ? forma.trim().toLowerCase()
       : 'pix';
 
-    if (formaNorm === 'pix' && window.cafeteriaPix && confirm('Deseja exibir o QR Code Pix na tela para o cliente pagar antes de liberar?')) {
-      window.cafeteriaPix.abrirModalClienteTelaCheia({
-        valor: valorNum,
-        txid: `CAFTOTEM${numPed}`,
-        subtitulo: `Totem Senha #${numPed} · ${pedido.cliente_nome || 'Balcão'}`
-      });
+    if (formaNorm === 'pix' && window.cafeteriaPix) {
+      let exibirPix = true;
+      if (typeof window.showConfirmBottomSheet === 'function') {
+        exibirPix = await window.showConfirmBottomSheet({
+          titulo: 'Exibir QR Code Pix?',
+          mensagem: 'Deseja exibir o QR Code Pix na tela para o cliente pagar antes de liberar?',
+          textoConfirmar: 'Exibir Pix',
+          textoCancelar: 'Não, liberar direto'
+        });
+      }
+      if (exibirPix) {
+        window.cafeteriaPix.abrirModalClienteTelaCheia({
+          valor: valorNum,
+          txid: `CAFTOTEM${numPed}`,
+          subtitulo: `Totem Senha #${numPed} · ${pedido.cliente_nome || 'Balcão'}`
+        });
+      }
     }
 
     try {
@@ -3686,8 +3728,9 @@
       return;
     }
 
-    // Otimista
+    // Otimista (CAF-000084: armazena status anterior exato para restauração)
     const p = activePedidos.find(x => x.id === pedidoId);
+    const statusAnterior = p ? p.status : 'pronto';
     if (p) p.status = 'entregue';
     
     renderPedidosCards();
@@ -3698,7 +3741,7 @@
         const { error: errRevert } = await window.cafeteriaSupabase
           .from('pedidos')
           .update({ 
-            status: 'concluido', 
+            status: statusAnterior, 
             entregue_em: null, 
             entregue_por: null, 
             updated_at: new Date().toISOString() 
@@ -3710,10 +3753,10 @@
           return;
         }
 
-        if (p) p.status = 'concluido';
+        if (p) p.status = statusAnterior;
         renderPedidosCards();
         updateProntosBadge();
-      });
+      }, 5000);
     }
   };
 
@@ -3753,7 +3796,7 @@
           disponiveis.forEach(d => {
             const prod = allProducts.find(pr => pr.id === d.produto_cortesia_id);
             if (prod) {
-              cortesiaHtml += `<button class="btn-ghost-small" style="font-size:11px; padding:2px 6px; margin-left:8px;" onclick="window.baristaLancarCortesia(${p.id}, ${it.id}, '${prod.id}')" title="Lançar ${prod.nome} como cortesia">🎁 ${prod.nome} (${d.saldo_disponivel})</button>`;
+              cortesiaHtml += `<button class="btn-ghost-small" style="font-size:11px; padding:2px 6px; margin-left:8px;" onclick="window.baristaLancarCortesia(${p.id}, ${it.id}, decodeURIComponent('${encodeURIComponent(prod.id)}'))" title="Lançar ${window.escapeHtml(prod.nome)} como cortesia">🎁 ${window.escapeHtml(prod.nome)} (${d.saldo_disponivel})</button>`;
             }
           });
         }
@@ -3762,7 +3805,7 @@
         let cancelLabel = it.cancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
         let btnCancelarItemHtml = '';
         if (!it.cancelado && p.status !== 'concluido' && p.status !== 'cancelado') {
-          btnCancelarItemHtml = `<button class="btn-ghost-small" style="color: #e74c3c; padding: 2px 6px; font-size: 11px; margin-left:8px;" onclick="window.baristaCancelarItem(${it.id}, ${p.id}, '${currentSelectedMesaParaConta.mesaCodigo}')">✕ Cancelar</button>`;
+          btnCancelarItemHtml = `<button class="btn-ghost-small" style="color: #e74c3c; padding: 2px 6px; font-size: 11px; margin-left:8px;" onclick="window.baristaCancelarItem(${it.id}, ${p.id}, decodeURIComponent('${encodeURIComponent(currentSelectedMesaParaConta.mesaCodigo)}'))">✕ Cancelar</button>`;
         }
         
         let obsLabel = it.observacoes ? `<em style="color:#D97706">(${window.escapeHtml(it.observacoes)})</em>` : '';
@@ -3791,6 +3834,7 @@
   [modalMesaClose, modalMesaFechar].forEach(b => b.addEventListener('click', fecharModalMesa));
 
   function resetarModoAdicao() {
+    pedidoOrigemIdAdicao = null;
     if (mesaSelect) mesaSelect.disabled = false;
     if (bannerAdicionandoItens) bannerAdicionandoItens.classList.add('hidden');
     if (lblMesaAdicionando) lblMesaAdicionando.textContent = '';
@@ -3814,6 +3858,9 @@
     btnMesaAdicionarItens.addEventListener('click', () => {
       if (!currentSelectedMesaParaConta) return;
       const mesa = currentSelectedMesaParaConta.mesaCodigo;
+      const pedidosMesa = currentSelectedMesaParaConta.pedidosMesa || [];
+      const ultimoPedido = pedidosMesa.find(p => p.status !== 'cancelado') || pedidosMesa[0];
+      pedidoOrigemIdAdicao = ultimoPedido ? (ultimoPedido.numero_pedido || ultimoPedido.id) : null;
       fecharModalMesa();
       
       switchTab('novo');
@@ -4358,21 +4405,17 @@
     if (num < 2) return;
     currentPartes = [];
     
-    const valorBase = Math.floor((currentFechamento.aPagar / num) * 100) / 100;
-    let sobra = currentFechamento.aPagar - (valorBase * num);
-    
-    for (let i = 1; i <= num; i++) {
-      let valor = valorBase;
-      if (i === 1) valor += sobra;
-      
-      currentPartes.push({
-        id: i,
-        nome: `Parte ${i}`,
-        valor_devido: valor,
-        pagamentos: [],
-        dinheiro_recebido: 0
-      });
-    }
+    const partesValores = window.cafeteriaDivisaoConta
+      ? window.cafeteriaDivisaoConta.dividirConta(currentFechamento.aPagar, num)
+      : [currentFechamento.aPagar];
+
+    currentPartes = partesValores.map((valor, idx) => ({
+      id: idx + 1,
+      nome: `Parte ${idx + 1}`,
+      valor_devido: valor,
+      pagamentos: [],
+      dinheiro_recebido: 0
+    }));
     parteAtivaId = 1;
     renderPartes();
   });
@@ -4621,7 +4664,7 @@
       const isPix = pag.forma === 'pix';
       const txidPag = `CAF${String(currentFechamento?.mesaCodigo || '').replace(/[^A-Za-z0-9]/g, '')}P${pt.id}`;
       const botoesPixHtml = isPix
-        ? `<button type="button" class="btn-ghost-small" style="color:#047857; padding:2px 6px; font-weight:700;" onclick="window.mostrarQrPixPagamento(${pag.valor}, '${txidPag}', '${window.escapeHtml(pt.nome)}')">📱 QR Pix</button>`
+        ? `<button type="button" class="btn-ghost-small" style="color:#047857; padding:2px 6px; font-weight:700;" onclick="window.mostrarQrPixPagamento(${pag.valor}, '${txidPag}', decodeURIComponent('${encodeURIComponent(pt.nome)}'))">📱 QR Pix</button>`
         : '';
       htmlLista += `
         <div style="display:flex; justify-content: space-between; align-items:center; background:#f9f9f9; border:1px solid #ddd; padding:6px; border-radius:4px; margin-bottom:4px; font-size:13px; gap:6px;">
@@ -4795,6 +4838,14 @@
       return;
     }
 
+    if (forma === 'conta_cliente') {
+      const clienteId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || currentFechamento.clienteId;
+      if (!clienteId) {
+        showToast('É necessário vincular um cliente cadastrado à mesa para pagar com Conta do Cliente.', 'warning');
+        return;
+      }
+    }
+
     pt.pagamentos.push({
       id: Date.now(),
       forma: forma,
@@ -4844,6 +4895,16 @@
       return;
     }
 
+    // Validação de Conta do Cliente (CAF-000083 / CA02, CA03)
+    const pagtoContaCliente = todosPagamentos.find(p => p.forma === 'conta_cliente');
+    if (pagtoContaCliente) {
+      const clienteId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || currentFechamento.clienteId;
+      if (!clienteId) {
+        showToast('Erro: mesa sem cliente vinculado para pagamento via Conta do Cliente.', 'error');
+        return;
+      }
+    }
+
     // Verificação de permissão para desconto (CAF-000036)
     if (currentFechamento.descontoAplicado > 0 && !usuarioTemPermissao('pdv.desconto') && !currentFechamento._supervisorDesconto) {
       const auth = await pedirAutorizacaoPin(
@@ -4862,48 +4923,89 @@
     fecharContaConfirmar.textContent = 'Fechando...';
 
     try {
+      if (pagtoContaCliente) {
+        const clienteId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || currentFechamento.clienteId;
+        if (window.cafeteriaDB && window.cafeteriaDB.clientes && window.cafeteriaDB.clientes.lancarMovimento) {
+          const resDebito = await window.cafeteriaDB.clientes.lancarMovimento(
+            clienteId,
+            'consumo',
+            -Math.abs(pagtoContaCliente.valor),
+            currentFechamento.pedidos[0]?.id || null,
+            null,
+            'conta_cliente',
+            `Fechamento Mesa ${currentFechamento.mesaCodigo}`
+          );
+          if (resDebito && !resDebito.sucesso) {
+            showToast(`Débito na conta recusado: ${resDebito?.mensagem || 'Saldo/limite insuficiente.'}`, 'error');
+            fecharContaConfirmar.disabled = false;
+            fecharContaConfirmar.textContent = 'Confirmar Fechamento';
+            return;
+          }
+        }
+      }
       const pagamentosPayload = todosPagamentos.map(p => ({
         forma: p.forma,
         valor: p.valor
       }));
 
+      const idempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+
       const { data, error } = await window.cafeteriaSupabase.rpc('fechar_conta_mesa', {
         p_mesa_codigo: currentFechamento.mesaCodigo,
         p_pagamentos: pagamentosPayload,
-        p_subtotal: currentFechamento.subtotal,
-        p_desconto: currentFechamento.descontoAplicado,
-        p_desconto_motivo: currentFechamento.descontoMotivo,
-        p_taxa_servico: currentFechamento.taxaServico
+        p_taxa_servico: Number(currentFechamento.taxaServico || 0),
+        p_desconto_manual: Number(currentFechamento.descontoAplicado || 0),
+        p_desconto_motivo: currentFechamento.descontoMotivo || null,
+        p_idempotency_key: idempotencyKey,
+        p_cupom_codigo: currentFechamento.cupomCodigo || null,
+        p_campanha_id: currentFechamento._cupomCampanhaId || null
       });
 
       if (error) throw error;
 
       if (currentFechamento._cupomCampanhaId && window.couponValidator) {
-        window.couponValidator.registerCouponUsage(
-          window.cafeteriaSupabase || window.supabaseClient,
-          currentFechamento._cupomCampanhaId,
-          currentFechamento.totalConta
-        );
+        try {
+          const primeiroPedidoId = currentFechamento.pedidos[0]?.id;
+          await window.couponValidator.registerCouponUsage(
+            window.cafeteriaSupabase || window.supabaseClient,
+            currentFechamento._cupomCampanhaId,
+            primeiroPedidoId
+          );
+        } catch (couponErr) {
+          console.warn('[Fechamento] Falha ao registrar estatística do cupom:', couponErr);
+          if (typeof showToast === 'function') {
+            showToast('Aviso: conta fechada, mas não foi possível registrar estatística do cupom.', 'warning');
+          }
+        }
       }
 
-      // CAF-000063: Fidelidade e Cashback Automático (Desativado por padrão, ativo apenas se configurado)
+      // CAF-000063 / CAF-000076: Fidelidade e Cashback Automático (Desativado por padrão, ativo apenas se configurado)
       if (window.cafeteriaCashback) {
         try {
           const sbClient = window.cafeteriaSupabase || window.supabaseClient;
-          const isCashbackAtivo = await window.cafeteriaCashback.isCashbackActive(sbClient);
-          if (isCashbackAtivo) {
+          const cbConfig = await (window.cafeteriaCashback.loadCashbackConfig
+            ? window.cafeteriaCashback.loadCashbackConfig(sbClient)
+            : Promise.resolve(null));
+
+          if (window.cafeteriaCashback.isCashbackActive(cbConfig)) {
             const clienteComId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || null;
             if (clienteComId) {
               const valorElegivel = window.cafeteriaCashback.calculateEligiblePaymentAmount(todosPagamentos);
               if (valorElegivel > 0) {
-                const cbResult = await window.cafeteriaCashback.processOrderCashback(sbClient, {
-                  clienteId: clienteComId,
-                  valorElegivel: valorElegivel,
-                  pedidoId: currentFechamento.pedidos[0]?.id || null,
-                  mesaCodigo: currentFechamento.mesaCodigo
-                });
-                if (cbResult && cbResult.cashbackGerado > 0) {
-                  showToast(`🪙 ${cbResult.mensagem}`, 'info');
+                const cbResult = await window.cafeteriaCashback.processOrderCashback(
+                  sbClient,
+                  currentFechamento.pedidos[0]?.id || null,
+                  clienteComId,
+                  valorElegivel
+                );
+                if (cbResult && cbResult.creditado && cbResult.valor_cashback > 0) {
+                  const msg = window.cafeteriaCashback.formatCashbackNotification(
+                    cbResult.valor_cashback,
+                    cbResult.novo_saldo
+                  );
+                  showToast(msg || `🎁 Cashback de R$ ${Number(cbResult.valor_cashback).toFixed(2).replace('.', ',')} creditado!`, 'info');
                 }
               }
             }
@@ -5622,11 +5724,20 @@
   }
 
   if (btnChamadosMesaNav) {
-    btnChamadosMesaNav.addEventListener('click', () => {
+    btnChamadosMesaNav.addEventListener('click', async () => {
       if (chamadosMesaPendentes.length > 0) {
         const primeiro = chamadosMesaPendentes[0];
         const tipoTxt = primeiro.tipo === 'conta' ? 'Pedir a Conta' : 'Chamar Garçom';
-        if (confirm(`Marcar chamado da Mesa ${primeiro.mesa_codigo} (${tipoTxt}) como atendido?`)) {
+        let confirmado = true;
+        if (typeof window.showConfirmBottomSheet === 'function') {
+          confirmado = await window.showConfirmBottomSheet({
+            titulo: 'Atender chamado?',
+            mensagem: `Marcar chamado da Mesa ${primeiro.mesa_codigo} (${tipoTxt}) como atendido?`,
+            textoConfirmar: 'Sim, atendido',
+            textoCancelar: 'Cancelar'
+          });
+        }
+        if (confirmado) {
           atenderChamadoMesa(primeiro.id);
         }
       }

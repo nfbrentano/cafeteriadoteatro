@@ -1,5 +1,8 @@
 # CAF-000009 — [Cozinha] Realtime da cozinha também em `pedido_itens`
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha | 🟡 Média | P | A fazer |
@@ -39,11 +42,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a cozinha está com um pedido na tela, **quando** um item é cancelado, **então** o item aparece riscado em até 2 s sem recarregar.
-- [ ] **Dado que** uma cortesia é lançada depois num pedido existente, **quando** a RPC termina, **então** a cortesia aparece no card da cozinha.
-- [ ] **Dado que** o tablet ficou em repouso por 10 min, **quando** volta a ser usado, **então** a lista é recarregada e mostra os pedidos novos.
-- [ ] **Dado que** a conexão caiu, **quando** isso acontece, **então** o indicador fica vermelho, e volta a verde quando reconectar.
-- [ ] **Dado que** um pedido novo chega, **quando** os eventos de `pedidos` e `pedido_itens` chegam juntos, **então** a comanda é impressa só uma vez.
+- [x] **Dado que** a cozinha está com um pedido na tela, **quando** um item é cancelado, **então** o item aparece riscado em até 2 s sem recarregar.
+- [x] **Dado que** uma cortesia é lançada depois num pedido existente, **quando** a RPC termina, **então** a cortesia aparece no card da cozinha.
+- [x] **Dado que** o tablet ficou em repouso por 10 min, **quando** volta a ser usado, **então** a lista é recarregada e mostra os pedidos novos.
+- [x] **Dado que** a conexão caiu, **quando** isso acontece, **então** o indicador fica vermelho, e volta a verde quando reconectar.
+- [x] **Dado que** um pedido novo chega, **quando** os eventos de `pedidos` e `pedido_itens` chegam juntos, **então** a comanda é impressa só uma vez.
 
 ---
 

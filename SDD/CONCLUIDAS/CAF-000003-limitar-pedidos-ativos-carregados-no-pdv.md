@@ -1,5 +1,8 @@
 # CAF-000003 — [PDV] Limitar pedidos ativos carregados no PDV
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV | 🔴 Alta | P | A fazer |
@@ -38,10 +41,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** existem pedidos concluídos ontem na mesa 2, **quando** o barista abre a aba Mesas hoje, **então** a mesa 2 não mostra esse consumo.
-- [ ] **Dado que** um pedido de ontem ficou `pendente`, **quando** o barista abre o PDV, **então** ele aparece na lista de pedidos ativos.
-- [ ] **Dado que** são 00:30 no horário de Brasília, **quando** o PDV carrega, **então** o corte de "hoje" usa o fuso de São Paulo, e não o UTC.
-- [ ] **Dado que** a base tem 10 mil pedidos, **quando** o PDV carrega, **então** a consulta volta em menos de 1 s.
+- [x] **Dado que** existem pedidos concluídos ontem na mesa 2, **quando** o barista abre a aba Mesas hoje, **então** a mesa 2 não mostra esse consumo.
+- [x] **Dado que** um pedido de ontem ficou `pendente`, **quando** o barista abre o PDV, **então** ele aparece na lista de pedidos ativos.
+- [x] **Dado que** são 00:30 no horário de Brasília, **quando** o PDV carrega, **então** o corte de "hoje" usa o fuso de São Paulo, e não o UTC.
+- [x] **Dado que** a base tem 10 mil pedidos, **quando** o PDV carrega, **então** a consulta volta em menos de 1 s.
 
 ---
 

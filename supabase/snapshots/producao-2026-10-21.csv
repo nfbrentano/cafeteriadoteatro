@@ -1,0 +1,45 @@
+secao,item,detalhe
+1_funcao,adicionar_itens_pedido,"(p_pedido_id bigint, p_itens jsonb) | definer=true | anon_exec=false"
+1_funcao,cancelar_item,"(p_item_id bigint, p_motivo text) | definer=true | anon_exec=false"
+1_funcao,criar_pedido,"(p_payload jsonb) | definer=true | anon_exec=false"
+1_funcao,criar_pedido_cliente,"(p_mesa_codigo text, p_itens jsonb, p_observacoes text, p_cliente_nome text, p_cliente_telefone text) | definer=true | anon_exec=true"
+1_funcao,criar_pedido_online,"(p_itens jsonb, p_observacoes text, p_cliente_nome text, p_cliente_telefone text, p_tipo_entrega text, p_endereco text) | definer=true | anon_exec=true"
+1_funcao,criar_pedido_totem,"(p_itens jsonb, p_observacoes text, p_cliente_nome text, p_forma_pagamento text) | definer=true | anon_exec=true"
+1_funcao,fechar_conta_mesa,"(p_mesa_codigo text, p_pagamentos jsonb, p_taxa_servico numeric, p_desconto_manual numeric, p_desconto_motivo text, p_idempotency_key text, p_cupom_codigo text, p_campanha_id bigint) | definer=true | anon_exec=false"
+1_funcao,fn_calcular_custo_adicional,"(p_adicional_id bigint) | definer=true | anon_exec=false"
+1_funcao,fn_calcular_custo_produto,"(p_produto_id bigint) | definer=true | anon_exec=false"
+1_funcao,fn_calcular_totais_caixa_interno,"(p_caixa_id bigint) | definer=true | anon_exec=false"
+1_funcao,get_user_role,"() | definer=true | anon_exec=true"
+1_funcao,lancar_movimento_conta,"(p_cliente_id bigint, p_tipo text, p_valor numeric, p_motivo text, p_pedido_id bigint) | definer=true | anon_exec=false"
+1_funcao,processar_cashback_pedido,"(p_pedido_id bigint) | definer=true | anon_exec=false"
+1_funcao,registrar_impressao,"(p_pedido_id bigint) | definer=true | anon_exec=false"
+1_funcao,registrar_uso_cupom,"(p_campanha_id bigint, p_pedido_id bigint) | definer=true | anon_exec=false"
+1_funcao,tem_permissao,"(p_recurso text, p_acao text) | definer=true | anon_exec=true"
+1_funcao,transferir_mesa,"(p_origem text, p_destino text) | definer=true | anon_exec=false"
+1_funcao,validar_pin_autorizacao,"(p_pin text) | definer=true | anon_exec=false"
+2_corpo,fechar_conta_mesa,p_desconto_manual = true
+2_corpo,fechar_conta_mesa,taxa = true
+2_corpo,fechar_conta_mesa,FOR UPDATE = true
+2_corpo,processar_cashback_pedido,FOR UPDATE = true
+3_coluna,campanhas,"id:bigint, nome:character varying, tipo:character varying, valor:numeric, valor_minimo_pedido:numeric, percentual:numeric, data_inicio:timestamp with time zone, data_fim:timestamp with time zone, limite_usos:integer, usos_atual:integer, limite_por_cliente:integer, codigo_cupom:character varying, dias_semana:ARRAY, ativo:boolean, criado_em:timestamp with time zone, atualizado_em:timestamp with time zone"
+3_coluna,clientes,"id:bigint, nome:character varying, telefone:character varying, email:character varying, cpf:character varying, saldo_conta:numeric, saldo_cashback:numeric, criado_em:timestamp with time zone, atualizado_em:timestamp with time zone"
+3_coluna,despesas,"id:bigint, descricao:character varying, valor:numeric, data:date, categoria:character varying, categoria_id:bigint, forma_pagamento:character varying, observacoes:text, comprovante_url:character varying, criado_em:timestamp with time zone, atualizado_em:timestamp with time zone, caixa_id:bigint, usuario_id:uuid, recorrencia:character varying, data_vencimento:date, pago:boolean"
+3_coluna,estoque_itens,"id:bigint, insumo_id:bigint, nome:character varying, quantidade:numeric, estoque_minimo:numeric, custo_medio:numeric, custo_unitario_medio:numeric, unidade_medida:character varying, atualizado_em:timestamp with time zone"
+3_coluna,estoque_movimentos,"id:bigint, estoque_item_id:bigint, tipo:character varying, quantidade:numeric, motivo:text, pedido_id:bigint, criado_em:timestamp with time zone, usuario_id:uuid, custo_unitario:numeric"
+3_coluna,fechamentos,"id:bigint, mesa_codigo:character varying, total:numeric, subtotal:numeric, taxa_servico:numeric, desconto:numeric, pagamentos:jsonb, criado_em:timestamp with time zone, fechado_por:uuid, caixa_id:bigint, idempotency_key:character varying, cupom_codigo:character varying, campanha_id:bigint"
+3_coluna,fichas_tecnicas,"id:bigint, produto_id:bigint, adicional_id:bigint, insumo_id:bigint, estoque_item_id:bigint, quantidade:numeric, rendimento:numeric, criado_em:timestamp with time zone, atualizado_em:timestamp with time zone"
+3_coluna,pedido_itens,"id:bigint, pedido_id:bigint, produto_id:bigint, quantidade:integer, preco_unitario:numeric, adicionais:jsonb, observacoes:text, criado_em:timestamp with time zone, cancelado:boolean, motivo_cancelamento:text, cancelado_em:timestamp with time zone, cancelado_por:uuid, estacao:character varying, pronto_em:timestamp with time zone"
+3_coluna,pedidos,"id:bigint, codigo:character varying, tipo:character varying, mesa_codigo:character varying, status:character varying, total:numeric, criado_em:timestamp with time zone, atualizado_em:timestamp with time zone, cliente_nome:character varying, cliente_telefone:character varying, cliente_id:bigint, caixa_id:bigint, desconto:numeric, taxa_servico:numeric, subtotal:numeric, impresso:boolean, impresso_em:timestamp with time zone, retirado:boolean, retirado_em:timestamp with time zone, retirada_em:timestamp with time zone, cancelado_motivo:text, pedido_origem_id:bigint"
+3_coluna,perfis,"id:uuid, nome:character varying, cargo:character varying, role:character varying, ativo:boolean, pin_autorizacao:character varying, criado_em:timestamp with time zone, atualizado_em:timestamp with time zone"
+3_coluna,produto_adicionais_permitidos,"produto_id:bigint, adicional_id:bigint"
+4_relacao,produto_adicionais_permitidos,r
+4_relacao,v_adicionais_produto,v | SELECT pa.produto_id, a.id AS adicional_id, a.nome, a.preco, a.categoria_id FROM produto_adicionais_permitidos pa JOIN adicionais a ON a.id = pa.adicional_id WHERE a.ativo = true
+5_trigger,pedidos.trg_audit_pedidos,CREATE TRIGGER trg_audit_pedidos AFTER INSERT OR UPDATE ON public.pedidos FOR EACH ROW EXECUTE FUNCTION fn_audit_pedidos()
+5_trigger,pedido_itens.trg_audit_pedido_itens,CREATE TRIGGER trg_audit_pedido_itens AFTER INSERT OR UPDATE ON public.pedido_itens FOR EACH ROW EXECUTE FUNCTION fn_audit_pedido_itens()
+6_check,campanhas.check_tipo_desconto,CHECK (tipo::text = ANY (ARRAY['percentual'::character varying, 'valor_fixo'::character varying]::text[]))
+6_check,despesas.despesas_recorrencia_check,CHECK (recorrencia::text = ANY (ARRAY['nenhuma'::text, 'diaria'::text, 'semanal'::text, 'mensal'::text, 'anual'::text]))
+7_view,v_adicionais_produto,security_invoker=true | anon_select=true | auth_select=true
+7_view,v_painel_retirada,security_invoker=true | anon_select=true | auth_select=true
+8_policy,pedidos.pedidos_select,SELECT | roles={anon,authenticated} | using=true | check=-
+9_config,postgres_version,PostgreSQL 15.6 on aarch64-unknown-linux-gnu
+9_config,timezone,America/Sao_Paulo

@@ -184,14 +184,18 @@ export function filterProducts(products, query) {
   return scored.map(item => item.product);
 }
 
+export const SmartSearch = {
+  removeAccents,
+  normalizePhonetic,
+  getAcronyms,
+  levenshteinDistance,
+  calculateMatchScore,
+  filterProducts
+};
+
 // Global browser attachment
 if (typeof window !== 'undefined') {
-  window.SmartSearch = {
-    removeAccents,
-    normalizePhonetic,
-    getAcronyms,
-    levenshteinDistance,
-    calculateMatchScore,
-    filterProducts
-  };
+  window.SmartSearch = SmartSearch;
 }
+
+export default SmartSearch;

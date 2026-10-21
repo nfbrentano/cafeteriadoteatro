@@ -1,3 +1,4 @@
+-- Implementa: CAF-000024
 -- =========================================================
 -- MIGRATION: CAF-000024 / CAF-000028 — Itens lançados depois voltam para a fila com destaque e comanda complementar
 -- =========================================================

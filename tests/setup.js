@@ -68,4 +68,17 @@ if (typeof window !== 'undefined') {
       requestPermission: vi.fn(() => Promise.resolve('granted'))
     };
   }
+
+  // escapeHtml global (presente em js/supabase-client.js)
+  if (!window.escapeHtml) {
+    window.escapeHtml = function(unsafe) {
+      if (!unsafe) return '';
+      return unsafe.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+  }
 }

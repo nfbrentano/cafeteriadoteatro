@@ -1,5 +1,8 @@
 # [CHORE] Atualização de Dependências (sharp e vite)
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 <!--
 Propósito: identificação rápida e clara da tarefa. Título conciso e significativo,
 que permita a qualquer membro do time compreender imediatamente o objetivo.

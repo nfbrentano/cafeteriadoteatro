@@ -1,5 +1,9 @@
 # CAF-000034 — [PDV] [Financeiro] Conta do cliente: fiado (pós-pago) e créditos pré-pagos
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Rastreio em caixa e estornos de cashback corrigidos via CAF-000076 e CAF-000083.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + admin + banco | 🟡 Média | M | Concluída |

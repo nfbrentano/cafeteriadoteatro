@@ -127,7 +127,8 @@ describe('CAF-000061 — Cupons de Desconto no Autoatendimento e PDV', () => {
     });
 
     it('incrementa os usos registrados e receita atribuída na campanha', async () => {
-      await registerCouponUsage(mockSupabase, 101, 36.0);
+      mockSupabase._tables.pedidos = [{ id: 501, total: 36.0, status: 'finalizado' }];
+      await registerCouponUsage(mockSupabase, 101, 501);
       const camp = mockSupabase._tables.campanhas.find(c => c.id === 101);
       expect(camp.usos_registrados).toBe(3);
       expect(camp.receita_atribuida).toBe(116.0);

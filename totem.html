@@ -107,6 +107,38 @@
     </nav>
 
     <section class="totem-products-area">
+      <!-- BANNER DIA DE ESPETÁCULO NO TOTEM (CAF-000084 / RF03) -->
+      <div id="totem-banner-espetaculo" class="totem-banner-espetaculo hidden" style="margin: 0 16px 16px 16px; background: linear-gradient(135deg, #4c1d95, #7c3aed); color: #fff; padding: 14px 18px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 6px 16px rgba(124,58,237,0.25);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 28px;">🎭</span>
+          <div>
+            <div style="font-weight: 800; font-size: 1.1rem;" id="totem-banner-espetaculo-titulo">Hoje no Teatro Univates!</div>
+            <div style="font-size: 0.95rem; opacity: 0.9;" id="totem-banner-espetaculo-desc">Peça agora e retire sem fila no intervalo.</div>
+          </div>
+        </div>
+        <button type="button" id="btn-totem-reservar-intervalo" class="totem-btn" style="min-height: 44px; background: #fff; color: #6b21a8; font-weight: 800; padding: 10px 18px; border-radius: 12px; border: none; cursor: pointer; font-size: 0.95rem;">
+          ⚡ Reservar p/ o Intervalo
+        </button>
+      </div>
+
+      <!-- BARRA DE BUSCA NO TOTEM (CAF-000084 / RF02) -->
+      <div class="totem-search-wrap" style="margin: 0 16px 16px 16px; position: relative; display: flex; align-items: center;">
+        <span style="position: absolute; left: 16px; font-size: 1.2rem; pointer-events: none; opacity: 0.6;">🔍</span>
+        <input 
+          type="search" 
+          id="totem-input-busca" 
+          placeholder="Buscar no cardápio (ex: capu, pao queijo)..." 
+          style="width: 100%; min-height: 48px; padding: 12px 48px 12px 48px; border-radius: 14px; border: 2px solid var(--totem-border, #e5e7eb); background: #fff; font-size: 16px; outline: none; box-sizing: border-box;"
+          aria-label="Buscar produtos no totem"
+        />
+        <button 
+          type="button" 
+          id="btn-totem-limpar-busca" 
+          style="position: absolute; right: 8px; min-width: 44px; min-height: 44px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; display: none; align-items: center; justify-content: center; color: #666;"
+          aria-label="Limpar busca"
+        >✕</button>
+      </div>
+
       <div class="totem-products-grid" id="totem-products-grid">
         <!-- Cards de produtos gerados via JS -->
       </div>
@@ -211,6 +243,7 @@
             placeholder="Ex: Ana"
             style="width:100%; height:68px; border-radius:16px; border:3px solid var(--totem-border); padding:0 18px; font-size:1.35rem; font-weight:700;"
           />
+          <div id="totem-cashback-prompt" style="display:none; margin-top:8px; font-size:1rem; color:#15803d; background:#f0fdf4; border:2px solid #bbf7d0; padding:10px 14px; border-radius:12px; font-weight:700;"></div>
         </div>
 
         <div style="margin-bottom:20px;">
@@ -314,6 +347,7 @@
   <script type="module" src="js/utils/theater-mode.js"></script>
   <script type="module" src="js/utils/cashback.js"></script>
   <script type="module" src="js/utils/menu-analytics.js"></script>
+  <script type="module" src="js/utils/smart-search.js"></script>
   <script src="js/totem.js"></script>
 </body>
 </html>

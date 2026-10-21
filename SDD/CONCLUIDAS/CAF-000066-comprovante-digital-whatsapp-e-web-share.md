@@ -38,10 +38,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o operador abre o Fechamento de Conta de uma mesa com itens lançados em `pedidos.html`, quando tocar em "📲 Comprovante WhatsApp", então deve abrir o WhatsApp com o texto formatado contendo todos os itens, quantidades, preços, total final e o link para `avaliar.html`.
-- [ ] **CA02:** Dado que o operador informou divisão da conta para `3 pessoas` e um desconto de `R$ 5,00` no modal de fechamento, quando gerar o comprovante digital, então o texto deve incluir o subtotal, o desconto de `R$ 5,00`, o total líquido e o valor por pessoa (`÷ 3`).
-- [ ] **CA03:** Dado que a conta possui um cliente vinculado com telefone cadastrado (ex.: `51999998888`), quando o operador clicar em "📲 WhatsApp", então o link `wa.me/5551999998888?text=...` deve direcionar diretamente para a conversa daquele cliente.
-- [ ] **CA04:** Dado que o operador clica em "📤 Compartilhar / Copiar", quando o navegador suportar `navigator.share`, então o sheet nativo do sistema operacional deve abrir; em desktops sem `navigator.share`, o texto deve ser copiado para a área de transferência exibindo um toast `"Comprovante copiado!"`.
+- [x] **CA01:**** Dado que o operador abre o Fechamento de Conta de uma mesa com itens lançados em `pedidos.html`, quando tocar em "📲 Comprovante WhatsApp", então deve abrir o WhatsApp com o texto formatado contendo todos os itens, quantidades, preços, total final e o link para `avaliar.html`.
+- [x] **CA02:**** Dado que o operador informou divisão da conta para `3 pessoas` e um desconto de `R$ 5,00` no modal de fechamento, quando gerar o comprovante digital, então o texto deve incluir o subtotal, o desconto de `R$ 5,00`, o total líquido e o valor por pessoa (`÷ 3`).
+- [x] **CA03:**** Dado que a conta possui um cliente vinculado com telefone cadastrado (ex.: `51999998888`), quando o operador clicar em "📲 WhatsApp", então o link `wa.me/5551999998888?text=...` deve direcionar diretamente para a conversa daquele cliente.
+- [x] **CA04:**** Dado que o operador clica em "📤 Compartilhar / Copiar", quando o navegador suportar `navigator.share`, então o sheet nativo do sistema operacional deve abrir; em desktops sem `navigator.share`, o texto deve ser copiado para a área de transferência exibindo um toast `"Comprovante copiado!"`.
 
 ## O que a atividade não inclui
 

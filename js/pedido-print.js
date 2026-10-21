@@ -117,7 +117,7 @@
           
           <div class="divider"></div>
           
-          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${pedido.mesa_codigo}</span> ${pedido.para_viagem ? ' <strong>(🥡 VIAGEM)</strong>' : ''}</div>
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${(pedido.pedido_origem_id || pedido.is_adicional) ? `➕ ADICIONAL — Mesa ${pedido.mesa_codigo} (ref. #${pedido.pedido_origem_id || 'origem'})` : pedido.mesa_codigo}</span> ${pedido.para_viagem ? ' <strong>(🥡 VIAGEM)</strong>' : ''}</div>
           ${pedido.cliente_nome ? `<div><span class="bold">CLIENTE:</span> ${window.escapeHtml(pedido.cliente_nome)}</div>` : ''}
           <div><span class="bold">PEDIDO:</span> #${pedido.numero_pedido || pedido.id}</div>
           <div><span class="bold">${isComplementar ? 'HORA ACRÉSCIMO:' : 'HORA PEDIDO:'}</span> ${isComplementar ? printDate : orderDate}</div>

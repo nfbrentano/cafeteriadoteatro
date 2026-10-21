@@ -2,11 +2,13 @@ import { vi } from 'vitest';
 
 /**
  * Creates an in-memory Supabase mock client.
- * Supports chaining: .from(table).select().insert().update().delete().eq().single().order()
- * and .rpc(fn, args)
+ * Supports chaining: .from(table).select().insert().upsert().update().delete().eq().neq().or().in().is().gte().lte().range().limit().single().maybeSingle().order()
+ * and .rpc(fn, args) with configurable handlers and strict schema validation mode.
  */
-export function createSupabaseMock(initialData = {}) {
+export function createSupabaseMock(initialData = {}, options = {}) {
   const tables = { ...initialData };
+  const rpcHandlers = { ...(options.rpcHandlers || {}) };
+  const channels = [];
 
   function getTable(name) {
     if (!tables[name]) tables[name] = [];
@@ -14,6 +16,15 @@ export function createSupabaseMock(initialData = {}) {
   }
 
   function createQueryBuilder(tableName) {
+    if (options.strict && options.schemaSnapshot) {
+      const allowedTables = options.schemaSnapshot.tables || {};
+      if (!allowedTables[tableName]) {
+        return {
+          then: (resolve) => resolve({ data: null, error: { code: '42P01', message: `relation "public.${tableName}" does not exist` } })
+        };
+      }
+    }
+
     let currentData = [...getTable(tableName)];
     let isSingle = false;
     let pendingUpdate = null;
@@ -33,6 +44,27 @@ export function createSupabaseMock(initialData = {}) {
         currentData = inserted;
         return builder;
       }),
+      upsert: vi.fn((rows) => {
+        const toUpsert = Array.isArray(rows) ? rows : [rows];
+        const table = getTable(tableName);
+        const inserted = toUpsert.map((r, i) => {
+          const idx = table.findIndex(t => t.id && t.id === r.id);
+          const fullRow = {
+            id: r.id || `mock-id-${Date.now()}-${i}`,
+            updated_at: new Date().toISOString(),
+            ...r
+          };
+          if (idx >= 0) {
+            table[idx] = { ...table[idx], ...fullRow };
+            return table[idx];
+          } else {
+            table.push(fullRow);
+            return fullRow;
+          }
+        });
+        currentData = inserted;
+        return builder;
+      }),
       update: vi.fn((values) => {
         pendingUpdate = values;
         return builder;
@@ -49,6 +81,13 @@ export function createSupabaseMock(initialData = {}) {
       }),
       neq: vi.fn((col, val) => {
         currentData = currentData.filter(item => item[col] !== val);
+        return builder;
+      }),
+      or: vi.fn((filterStr) => {
+        return builder;
+      }),
+      is: vi.fn((col, val) => {
+        currentData = currentData.filter(item => item[col] === val);
         return builder;
       }),
       ilike: vi.fn((col, val) => {
@@ -92,6 +131,10 @@ export function createSupabaseMock(initialData = {}) {
         currentData = currentData.slice(0, n);
         return builder;
       }),
+      range: vi.fn((from, to) => {
+        currentData = currentData.slice(from, to + 1);
+        return builder;
+      }),
       single: vi.fn(() => {
         isSingle = true;
         return builder;
@@ -114,25 +157,72 @@ export function createSupabaseMock(initialData = {}) {
 
   const client = {
     _tables: tables,
+    _rpcHandlers: rpcHandlers,
     from: vi.fn((tableName) => createQueryBuilder(tableName)),
     rpc: vi.fn((fnName, args) => {
+      if (options.strict && options.schemaSnapshot) {
+        const rpcDef = options.schemaSnapshot.rpcs?.[fnName];
+        if (!rpcDef) {
+          return Promise.resolve({
+            data: null,
+            error: { code: 'PGRST202', message: `Could not find the function public.${fnName} in the schema cache` }
+          });
+        }
+        if (args && typeof args === 'object') {
+          const allowedArgs = new Set(rpcDef.parameters || []);
+          for (const key of Object.keys(args)) {
+            if (!allowedArgs.has(key)) {
+              return Promise.resolve({
+                data: null,
+                error: { code: 'PGRST202', message: `Function public.${fnName} has no parameter ${key}` }
+              });
+            }
+          }
+        }
+      }
+
+      if (rpcHandlers[fnName]) {
+        return Promise.resolve(rpcHandlers[fnName](args, tables));
+      }
+
       if (fnName === 'registrar_uso_cupom') {
         const camp = (tables.campanhas || []).find(c => c.id === args?.p_campanha_id);
+        const pedido = (tables.pedidos || []).find(p => p.id === args?.p_pedido_id);
+        const valor = pedido ? Number(pedido.total || 0) : Number(args?.p_valor_pedido || 0);
         if (camp) {
           camp.usos_registrados = (camp.usos_registrados || 0) + 1;
-          camp.receita_atribuida = (Number(camp.receita_atribuida) || 0) + Number(args?.p_valor_pedido || 0);
+          camp.receita_atribuida = (Number(camp.receita_atribuida) || 0) + valor;
         }
         return Promise.resolve({ data: true, error: null });
       }
+
       return Promise.resolve({ data: null, error: null });
     }),
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn((cb) => {
-        if (cb) cb('SUBSCRIBED');
-        return { unsubscribe: vi.fn() };
-      })
-    })),
+    channel: vi.fn((name = 'realtime') => {
+      const listeners = [];
+      const chan = {
+        name,
+        on: vi.fn((event, filter, callback) => {
+          const cb = typeof filter === 'function' ? filter : callback;
+          listeners.push({ event, cb });
+          return chan;
+        }),
+        subscribe: vi.fn((cb) => {
+          if (cb) cb('SUBSCRIBED');
+          return chan;
+        }),
+        unsubscribe: vi.fn(),
+        _trigger: (event, payload) => {
+          listeners.forEach(l => {
+            if (l.event === '*' || l.event === event) {
+              l.cb(payload);
+            }
+          });
+        }
+      };
+      channels.push(chan);
+      return chan;
+    }),
     removeChannel: vi.fn()
   };
 

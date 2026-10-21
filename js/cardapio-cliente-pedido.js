@@ -1046,24 +1046,30 @@
     atualizarTotaisCarrinhoCliente();
 
     if (window.cafeteriaCashback) {
-      const sb = window.cafeteriaSupabase || window.supabaseClient;
-      window.cafeteriaCashback.isCashbackActive(sb).then(ativo => {
-        const box = document.getElementById('box-cashback-fidelidade');
-        if (box) {
-          if (ativo) {
-            window.cafeteriaCashback.getCashbackPrompt(sb).then(prompt => {
+      (async () => {
+        try {
+          const sb = window.cafeteriaSupabase || window.supabaseClient;
+          const config = await (window.cafeteriaCashback.loadCashbackConfig
+            ? window.cafeteriaCashback.loadCashbackConfig(sb)
+            : Promise.resolve(null));
+          const box = document.getElementById('box-cashback-fidelidade');
+          if (box) {
+            if (window.cafeteriaCashback.isCashbackActive(config)) {
+              const prompt = window.cafeteriaCashback.getCashbackPrompt(config);
               if (prompt) {
                 box.textContent = prompt;
                 box.style.display = 'block';
               } else {
                 box.style.display = 'none';
               }
-            });
-          } else {
-            box.style.display = 'none';
+            } else {
+              box.style.display = 'none';
+            }
           }
+        } catch (err) {
+          console.warn('[Cardápio] Erro ao carregar cashback:', err);
         }
-      }).catch(() => {});
+      })();
     }
 
     lista.innerHTML = carrinho.map((it, idx) => {
@@ -1196,13 +1202,16 @@
             });
           }
 
-          if (cupomAplicado && cupomAplicado.campanha_id && window.couponValidator) {
-            const finalVal = Math.max(0, subtotalOnline - (cupomAplicado.desconto_calculado || 0));
-            window.couponValidator.registerCouponUsage(
-              window.cafeteriaSupabase || window.supabaseClient,
-              cupomAplicado.campanha_id,
-              finalVal
-            );
+          if (cupomAplicado && cupomAplicado.campanha_id && window.couponValidator && res.pedido_id) {
+            try {
+              await window.couponValidator.registerCouponUsage(
+                window.cafeteriaSupabase || window.supabaseClient,
+                cupomAplicado.campanha_id,
+                res.pedido_id
+              );
+            } catch (couponErr) {
+              console.warn('[CardapioCliente] Falha ao registrar cupom:', couponErr);
+            }
           }
           cupomAplicado = null;
           reservandoParaIntervalo = false;
@@ -1253,13 +1262,16 @@
           });
         }
 
-        if (cupomAplicado && cupomAplicado.campanha_id && window.couponValidator) {
-          const finalVal = Math.max(0, subtotalMesa - (cupomAplicado.desconto_calculado || 0));
-          window.couponValidator.registerCouponUsage(
-            window.cafeteriaSupabase || window.supabaseClient,
-            cupomAplicado.campanha_id,
-            finalVal
-          );
+        if (cupomAplicado && cupomAplicado.campanha_id && window.couponValidator && res.pedido_id) {
+          try {
+            await window.couponValidator.registerCouponUsage(
+              window.cafeteriaSupabase || window.supabaseClient,
+              cupomAplicado.campanha_id,
+              res.pedido_id
+            );
+          } catch (couponErr) {
+            console.warn('[CardapioCliente] Falha ao registrar cupom mesa:', couponErr);
+          }
         }
         cupomAplicado = null;
         reservandoParaIntervalo = false;

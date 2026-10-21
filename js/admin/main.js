@@ -115,8 +115,69 @@
       }
     },
 
+    // --- Permissões de Acesso por Página (CAF-000036 / CAF-000081) ---
+    PAGE_PERMISSIONS: {
+      dashboard: 'admin.relatorios',
+      relatorios: 'admin.relatorios',
+      pedidos: 'pdv.vender',
+      mesas: 'pdv.vender',
+      produtos: 'admin.cardapio',
+      categorias: 'admin.cardapio',
+      adicionais: 'admin.cardapio',
+      hero: 'admin.cardapio',
+      horarios: 'admin.cardapio',
+      promocoes: 'admin.cardapio',
+      conteudo: 'admin.cardapio',
+      'menu-pdf': 'admin.cardapio',
+      estoque: 'admin.estoque',
+      clientes: 'admin.clientes',
+      avaliacoes: 'admin.clientes',
+      usuarios: 'admin.usuarios',
+      configuracoes: 'admin.configuracoes',
+      caixa: 'caixa.abrir_fechar',
+      financeiro: 'admin.financeiro'
+    },
+
+    podeAcessarPagina(pageId) {
+      if (!this.session.isLoggedIn) return false;
+      const user = this.session.user;
+      if (user?.role === 'admin' || user?.is_admin || this.session.isAdmin) return true;
+      const permNecessaria = this.PAGE_PERMISSIONS[pageId];
+      if (!permNecessaria) return true;
+      if (!this.permissoes) return true;
+      return this.permissoes.includes(permNecessaria);
+    },
+
+    async carregarPermissoes() {
+      try {
+        if (!window.cafeteriaDB?.cargos) return;
+        const perms = await window.cafeteriaDB.cargos.getMinhasPermissoes();
+        this.permissoes = Array.isArray(perms) ? perms : [];
+        this.aplicarPermissoesSidebar();
+      } catch (err) {
+        console.warn('Erro ao carregar permissões do admin:', err);
+      }
+    },
+
+    aplicarPermissoesSidebar() {
+      document.querySelectorAll('.sidebar__link[data-page]').forEach(link => {
+        const pageId = link.dataset.page;
+        const pode = this.podeAcessarPagina(pageId);
+        link.style.display = pode ? '' : 'none';
+      });
+    },
+
     // --- Navegação ---
     navigateTo(pageId) {
+      if (!this.podeAcessarPagina(pageId)) {
+        this.toast('Acesso restrito', 'Você não possui permissão para acessar esta seção.', 'warn');
+        const permitida = Object.keys(this.PAGE_PERMISSIONS).find(p => this.podeAcessarPagina(p)) || 'dashboard';
+        if (permitida !== pageId) {
+          return this.navigateTo(permitida);
+        }
+        return;
+      }
+
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.sidebar__link').forEach(l => l.classList.remove('active'));
       const page = document.getElementById('page-' + pageId);

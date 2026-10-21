@@ -44,10 +44,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o usuário abre `index.html`, quando a página carregar inicialmente, então o `iframe` do Google Maps não deve ser baixado automaticamente; ao clicar em "Ver mapa interativo", o `iframe` deve ser carregado, e ao clicar em "Como chegar", deve abrir o link direto do Google Maps.
-- [ ] **CA02:** Dado que o usuário está em `index.html` no celular, quando deslizar o dedo horizontalmente sobre o carrossel do Hero, então o carrossel deve avançar ou retroceder para o slide correspondente.
-- [ ] **CA03:** Dado que o usuário está em `cardapio.html` no celular, quando selecionar ou rolar até uma categoria que está nas extremidades da barra horizontal, então o botão da categoria ativa (com altura mínima de `44px`) deve rolar automaticamente para ficar visível na barra.
-- [ ] **CA04:** Dado que o usuário instala ou abre `index.html`, `cardapio.html` ou `admin.html` no celular, quando tocar nos botões interativos, então não deve haver flash azul padrão do navegador e deve haver feedback tátil visual (`:active`), com `viewport-fit=cover` configurado.
+- [x] **CA01:**** Dado que o usuário abre `index.html`, quando a página carregar inicialmente, então o `iframe` do Google Maps não deve ser baixado automaticamente; ao clicar em "Ver mapa interativo", o `iframe` deve ser carregado, e ao clicar em "Como chegar", deve abrir o link direto do Google Maps.
+- [x] **CA02:**** Dado que o usuário está em `index.html` no celular, quando deslizar o dedo horizontalmente sobre o carrossel do Hero, então o carrossel deve avançar ou retroceder para o slide correspondente.
+- [x] **CA03:**** Dado que o usuário está em `cardapio.html` no celular, quando selecionar ou rolar até uma categoria que está nas extremidades da barra horizontal, então o botão da categoria ativa (com altura mínima de `44px`) deve rolar automaticamente para ficar visível na barra.
+- [x] **CA04:**** Dado que o usuário instala ou abre `index.html`, `cardapio.html` ou `admin.html` no celular, quando tocar nos botões interativos, então não deve haver flash azul padrão do navegador e deve haver feedback tátil visual (`:active`), com `viewport-fit=cover` configurado.
 
 ## O que a atividade não inclui
 

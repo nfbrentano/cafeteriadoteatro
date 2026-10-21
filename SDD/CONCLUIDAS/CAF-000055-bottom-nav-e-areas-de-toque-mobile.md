@@ -1,5 +1,8 @@
 # CAF-000055 — [PDV] [Mobile] Barra de navegação inferior (bottom nav) e alvos de toque no celular
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (HTML + CSS + JS) | 🟡 Média (P1) | M | Concluída |

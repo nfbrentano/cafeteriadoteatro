@@ -1,5 +1,8 @@
 # CAF-000019 — [Banco] [Admin] Log de auditoria dos pedidos
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Banco + admin | 🟢 Baixa | M | Concluído |

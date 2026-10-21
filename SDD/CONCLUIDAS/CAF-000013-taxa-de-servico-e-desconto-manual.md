@@ -1,5 +1,9 @@
 # CAF-000013 — [PDV] [Banco] Taxa de serviço e desconto manual
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Taxa de serviço e desconto integrados ao fechamento atômico e centavos via CAF-000073.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + banco | 🟢 Baixa | M | A fazer |
@@ -40,10 +44,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a taxa de 10% está ativa e a conta é R$ 50,00, **quando** o barista abre o fechamento, **então** vê R$ 5,00 de serviço e total de R$ 55,00.
-- [ ] **Dado que** o cliente recusou a taxa, **quando** o barista a remove, **então** o total volta a R$ 50,00.
-- [ ] **Dado que** o admin aplica 10% de desconto com motivo "cliente frequente", **quando** confirma, **então** o desconto é gravado com motivo e usuário.
-- [ ] **Dado que** um barista sem permissão tenta dar desconto, **quando** confirma, **então** o sistema pede autorização do admin.
+- [x] **Dado que** a taxa de 10% está ativa e a conta é R$ 50,00, **quando** o barista abre o fechamento, **então** vê R$ 5,00 de serviço e total de R$ 55,00.
+- [x] **Dado que** o cliente recusou a taxa, **quando** o barista a remove, **então** o total volta a R$ 50,00.
+- [x] **Dado que** o admin aplica 10% de desconto com motivo "cliente frequente", **quando** confirma, **então** o desconto é gravado com motivo e usuário.
+- [x] **Dado que** um barista sem permissão tenta dar desconto, **quando** confirma, **então** o sistema pede autorização do admin.
 
 ---
 

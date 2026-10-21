@@ -1,7 +1,8 @@
 # [FEAT] CAF-000063 — Programa de Fidelidade e Cashback Automático na Carteira do Cliente
 
-> **Status:** Concluída
-> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-20 · **Atualizada em:** 2026-10-20
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-20 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Bloqueio de carrinho, visibilidade pós-fechamento e estorno automático de cashback pendentes corrigidos via CAF-000076 (afetando CA05 e CA07).
 
 ## Detalhes da Atividade
 

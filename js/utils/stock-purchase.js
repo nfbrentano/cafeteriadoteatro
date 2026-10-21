@@ -150,6 +150,19 @@ export function buildStockPayableExpensePayload({
   };
 }
 
+export function calcularPedidoCompra(itens = []) {
+  let total = 0;
+  for (const item of itens) {
+    const qtd = Number(item.quantidade) || 0;
+    const custo = Number(item.custo_unitario) || 0;
+    total += qtd * custo;
+  }
+  return {
+    total: Math.round(total * 100) / 100,
+    itens
+  };
+}
+
 if (typeof window !== 'undefined') {
   window.cafeteriaStockPurchase = {
     calculateSuggestedPurchaseQuantity,
@@ -157,6 +170,7 @@ if (typeof window !== 'undefined') {
     buildShoppingListBySupplier,
     formatSupplierWhatsAppOrder,
     getWhatsAppShareUrl,
-    buildStockPayableExpensePayload
+    buildStockPayableExpensePayload,
+    calcularPedidoCompra
   };
 }

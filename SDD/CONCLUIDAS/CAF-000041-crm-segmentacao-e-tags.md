@@ -1,5 +1,9 @@
 # CAF-000041 — [Admin] [Marketing] CRM: segmentação automática de clientes, tags e listas para campanha
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Proteção RLS de clientes e auditoria via CAF-000081 e CAF-000082.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin + banco | 🟢 Baixa | M | Concluída |

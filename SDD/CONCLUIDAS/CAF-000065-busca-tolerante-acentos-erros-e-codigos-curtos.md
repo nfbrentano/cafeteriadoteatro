@@ -40,11 +40,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o usuário digita `"capucino"`, `"cappucino"` ou `"expreso"` na busca do PDV (`pedidos.html`), Cardápio (`cardapio.html`) ou Totem (`totem.html`), quando a lista filtrar, então os produtos `"Cappuccino"` / `"Espresso"` devem ser exibidos normalmente.
-- [ ] **CA02:** Dado que o usuário digita `"pao queijo"` (sem a preposição `"de"`) ou `"suco laranja"`, quando a lista filtrar, então `"Pão de Queijo"` e `"Suco de Laranja"` devem aparecer nos resultados.
-- [ ] **CA03:** Dado que o barista digita a sigla `"pdq"` na busca do PDV, quando a lista filtrar, então `"Pão de Queijo"` deve ser retornado.
-- [ ] **CA04:** Dado que o usuário digita uma palavra de 5 ou mais letras com 1 erro de digitação (ex.: `"croisant"` ou `"browni"`), quando a lista filtrar, então o produto correspondente deve ser encontrado.
-- [ ] **CA05:** Dado que o usuário digita um termo completamente inexistente (ex.: `"hamburguer sushi"`), quando a lista filtrar, então nenhum falso-positivo deve ser retornado e o estado vazio padrão deve ser exibido.
+- [x] **CA01:**** Dado que o usuário digita `"capucino"`, `"cappucino"` ou `"expreso"` na busca do PDV (`pedidos.html`), Cardápio (`cardapio.html`) ou Totem (`totem.html`), quando a lista filtrar, então os produtos `"Cappuccino"` / `"Espresso"` devem ser exibidos normalmente.
+- [x] **CA02:**** Dado que o usuário digita `"pao queijo"` (sem a preposição `"de"`) ou `"suco laranja"`, quando a lista filtrar, então `"Pão de Queijo"` e `"Suco de Laranja"` devem aparecer nos resultados.
+- [x] **CA03:**** Dado que o barista digita a sigla `"pdq"` na busca do PDV, quando a lista filtrar, então `"Pão de Queijo"` deve ser retornado.
+- [x] **CA04:**** Dado que o usuário digita uma palavra de 5 ou mais letras com 1 erro de digitação (ex.: `"croisant"` ou `"browni"`), quando a lista filtrar, então o produto correspondente deve ser encontrado.
+- [x] **CA05:**** Dado que o usuário digita um termo completamente inexistente (ex.: `"hamburguer sushi"`), quando a lista filtrar, então nenhum falso-positivo deve ser retornado e o estado vazio padrão deve ser exibido.
 
 ## O que a atividade não inclui
 

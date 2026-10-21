@@ -1,5 +1,8 @@
 # CAF-000023 — [Bug] [Cozinha] Comanda automática sem meio a meio, voz sem nome do cliente e botão "Chamar" quebrando com apóstrofo
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Cozinha (KDS) + PDV + impressão | 🔴 Alta | P | ✅ Concluído |

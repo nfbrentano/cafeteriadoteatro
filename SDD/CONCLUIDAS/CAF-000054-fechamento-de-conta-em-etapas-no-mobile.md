@@ -1,5 +1,8 @@
 # CAF-000054 — [PDV] [Mobile] Fechamento de conta em etapas adaptado para telas mobile
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (JS + HTML + CSS) | 🔴 Alta (P0) | G | Concluída |

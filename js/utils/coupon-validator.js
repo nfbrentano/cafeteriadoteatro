@@ -121,35 +121,23 @@ export async function validateCouponWithSupabase(supabaseClient, couponCode, sub
   }
 }
 
-export async function registerCouponUsage(supabaseClient, campanhaId, valorPedido) {
+export async function registerCouponUsage(supabaseClient, campanhaId, pedidoId) {
   if (!supabaseClient || !campanhaId) return;
 
   try {
+    const pId = Number(pedidoId);
     const { error } = await supabaseClient.rpc('registrar_uso_cupom', {
-      p_campanha_id: campanhaId,
-      p_valor_pedido: Number(valorPedido) || 0
+      p_campanha_id: Number(campanhaId),
+      p_pedido_id: isNaN(pId) ? null : pId
     });
 
     if (error) {
-      // Fallback update
-      const { data: c } = await supabaseClient
-        .from('campanhas')
-        .select('usos_registrados, receita_atribuida')
-        .eq('id', campanhaId)
-        .single();
-
-      if (c) {
-        await supabaseClient
-          .from('campanhas')
-          .update({
-            usos_registrados: (c.usos_registrados || 0) + 1,
-            receita_atribuida: (Number(c.receita_atribuida) || 0) + Math.max(0, Number(valorPedido) || 0)
-          })
-          .eq('id', campanhaId);
-      }
+      console.warn('[CouponValidator] Erro ao registrar uso do cupom via RPC:', error);
+      throw error;
     }
   } catch (e) {
     console.warn('[CouponValidator] Erro ao registrar uso do cupom:', e);
+    throw e;
   }
 }
 

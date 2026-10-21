@@ -16,24 +16,23 @@ export function formatCurrency(val) {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export function formatDigitalReceipt({
-  cafeteriaNome = 'Cafeteria do Teatro',
-  local = 'Teatro Univates · Lajeado, RS',
-  mesaCodigo = null,
-  numeroPedido = null,
-  clienteNome = null,
-  clienteTelefone = null,
-  itens = [],
-  subtotal = 0,
-  desconto = 0,
-  taxaServico = 0,
-  total = 0,
-  divisaoPessoas = 1,
-  formasPagamento = [],
-  chavePix = null,
-  pedidoId = null,
-  dataHora = null
-} = {}) {
+export function formatDigitalReceipt(options = {}) {
+  const cafeteriaNome = options.cafeteriaNome || options.cafeteria_nome || 'Cafeteria do Teatro';
+  const local = options.local !== undefined ? options.local : 'Teatro Univates · Lajeado, RS';
+  const mesaCodigo = options.mesaCodigo || options.mesa_codigo || null;
+  const numeroPedido = options.numeroPedido || options.numero_pedido || null;
+  const clienteNome = options.clienteNome || options.cliente_nome || null;
+  const clienteTelefone = options.clienteTelefone || options.cliente_telefone || null;
+  const itens = options.itens || [];
+  const subtotal = options.subtotal || 0;
+  const desconto = options.desconto || 0;
+  const taxaServico = options.taxaServico || options.taxa_servico || 0;
+  const total = options.total || 0;
+  const divisaoPessoas = options.divisaoPessoas || options.divisao_pessoas || 1;
+  const formasPagamento = options.formasPagamento || options.formas_pagamento || [];
+  const chavePix = options.chavePix || options.chave_pix || null;
+  const pedidoId = options.pedidoId || options.pedido_id || options.id || null;
+  const dataHora = options.dataHora || options.data_hora || null;
   const now = dataHora ? new Date(dataHora) : new Date();
   const dataFormatada = now.toLocaleString('pt-BR', {
     day: '2-digit', month: '2-digit', year: 'numeric',
@@ -45,7 +44,9 @@ export function formatDigitalReceipt({
   if (local) lines.push(`📍 ${local}`);
   lines.push('────────────────────────────');
 
-  const ref = mesaCodigo ? `Mesa ${mesaCodigo}` : (numeroPedido ? `Pedido #${numeroPedido}` : 'Consumo');
+  const ref = mesaCodigo && numeroPedido
+    ? `Mesa ${mesaCodigo} (Pedido #${numeroPedido})`
+    : (mesaCodigo ? `Mesa ${mesaCodigo}` : (numeroPedido ? `Pedido #${numeroPedido}` : 'Consumo'));
   lines.push(`*Identificação:* ${ref}`);
   if (clienteNome) lines.push(`*Cliente:* ${clienteNome}`);
   lines.push(`*Data/Hora:* ${dataFormatada}`);
@@ -103,6 +104,8 @@ export function formatDigitalReceipt({
   return lines.join('\n');
 }
 
+export const formatarComprovanteTexto = formatDigitalReceipt;
+
 /**
  * Opens WhatsApp with the formatted receipt.
  */
@@ -144,12 +147,49 @@ export async function shareOrCopyReceipt(receiptText, { title = 'Comprovante Caf
   return { shared: false, copied: false };
 }
 
+/**
+ * Formata comprovante de depósito ou recebimento de conta do cliente (CAF-000083)
+ */
+export function formatComprovanteContaCliente({
+  cafeteriaNome = 'Cafeteria do Teatro',
+  clienteNome,
+  clienteTelefone,
+  tipo = 'deposito',
+  formaPagamento = 'pix',
+  saldoAnterior = 0,
+  valor = 0,
+  saldoNovo = 0,
+  dataHora = null
+} = {}) {
+  const dataFormatada = dataHora
+    ? (typeof window !== 'undefined' && window.datasSP?.formatarDataHoraSP ? window.datasSP.formatarDataHoraSP(dataHora) : new Date(dataHora).toLocaleString('pt-BR'))
+    : (typeof window !== 'undefined' && window.datasSP?.formatarDataHoraSP ? window.datasSP.formatarDataHoraSP(new Date()) : new Date().toLocaleString('pt-BR'));
+
+  const tipoTitulo = tipo === 'pagamento_fatura' ? 'PAGAMENTO DE CONTA' : 'CRÉDITO EM CONTA';
+  const lines = [];
+  lines.push(`☕ *${cafeteriaNome.toUpperCase()}*`);
+  lines.push(`📋 *COMPROVANTE DE ${tipoTitulo}*`);
+  lines.push('────────────────────────────');
+  if (clienteNome) lines.push(`*Cliente:* ${clienteNome}`);
+  lines.push(`*Data/Hora:* ${dataFormatada}`);
+  lines.push(`*Forma:* ${String(formaPagamento).toUpperCase()}`);
+  lines.push('────────────────────────────');
+  lines.push(`*Saldo Anterior:* ${formatCurrency(saldoAnterior)}`);
+  lines.push(`*Valor Lançado:* ${formatCurrency(valor)}`);
+  lines.push(`*Novo Saldo:* ${formatCurrency(saldoNovo)}`);
+  lines.push('────────────────────────────');
+  lines.push('Agradecemos a sua preferência!');
+
+  return lines.join('\n');
+}
+
 // Global browser attachment
 if (typeof window !== 'undefined') {
   window.ReceiptFormatter = {
     normalizePhone,
     formatCurrency,
     formatDigitalReceipt,
+    formatComprovanteContaCliente,
     openWhatsAppReceipt,
     shareOrCopyReceipt
   };

@@ -1,5 +1,9 @@
 # CAF-000002 — [PDV] [Banco] Fechamento de conta da mesa
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Fechamento atômico, cancelamento de itens e precisão de centavos corrigidos via CAF-000073.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + banco | 🔴 Alta | M | A fazer |
@@ -45,11 +49,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a mesa 4 tem dois pedidos a pagar somando R$ 58,80, **quando** o barista fecha a conta com PIX, **então** os dois pedidos ficam `pago` e é gravado um pagamento de R$ 58,80.
-- [ ] **Dado que** o total é R$ 50,00, **quando** o barista registra R$ 30,00 em dinheiro e R$ 20,00 no débito, **então** o fechamento é aceito com dois pagamentos.
-- [ ] **Dado que** o cliente paga R$ 50,00 em dinheiro numa conta de R$ 42,50, **quando** o barista informa o valor recebido, **então** o sistema mostra troco de R$ 7,50.
-- [ ] **Dado que** a soma dos pagamentos é menor que o total, **quando** o barista tenta confirmar, **então** o botão fica bloqueado e mostra quanto falta.
-- [ ] **Dado que** a conta foi fechada, **quando** o barista volta para a aba Mesas, **então** a mesa aparece livre.
+- [x] **Dado que** a mesa 4 tem dois pedidos a pagar somando R$ 58,80, **quando** o barista fecha a conta com PIX, **então** os dois pedidos ficam `pago` e é gravado um pagamento de R$ 58,80.
+- [x] **Dado que** o total é R$ 50,00, **quando** o barista registra R$ 30,00 em dinheiro e R$ 20,00 no débito, **então** o fechamento é aceito com dois pagamentos.
+- [x] **Dado que** o cliente paga R$ 50,00 em dinheiro numa conta de R$ 42,50, **quando** o barista informa o valor recebido, **então** o sistema mostra troco de R$ 7,50.
+- [x] **Dado que** a soma dos pagamentos é menor que o total, **quando** o barista tenta confirmar, **então** o botão fica bloqueado e mostra quanto falta.
+- [x] **Dado que** a conta foi fechada, **quando** o barista volta para a aba Mesas, **então** a mesa aparece livre.
 
 ---
 

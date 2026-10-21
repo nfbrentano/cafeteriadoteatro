@@ -1,5 +1,8 @@
 # CAF-000006 — [PDV] [Admin] [Cardápio] Produto esgotado
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + admin + cardápio | 🟡 Média | P | A fazer |
@@ -41,10 +44,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a torta de limão acabou, **quando** o barista a marca como esgotada no PDV, **então** ela não pode mais ser adicionada ao carrinho em nenhum PDV aberto.
-- [ ] **Dado que** o produto está esgotado, **quando** um cliente abre o cardápio público, **então** vê "Indisponível hoje".
-- [ ] **Dado que** o produto está esgotado, **quando** alguém tenta criar pedido com ele pela API, **então** o banco recusa.
-- [ ] **Dado que** o produto voltou, **quando** o barista o marca como disponível, **então** ele volta a funcionar normalmente.
+- [x] **Dado que** a torta de limão acabou, **quando** o barista a marca como esgotada no PDV, **então** ela não pode mais ser adicionada ao carrinho em nenhum PDV aberto.
+- [x] **Dado que** o produto está esgotado, **quando** um cliente abre o cardápio público, **então** vê "Indisponível hoje".
+- [x] **Dado que** o produto está esgotado, **quando** alguém tenta criar pedido com ele pela API, **então** o banco recusa.
+- [x] **Dado que** o produto voltou, **quando** o barista o marca como disponível, **então** ele volta a funcionar normalmente.
 
 ---
 

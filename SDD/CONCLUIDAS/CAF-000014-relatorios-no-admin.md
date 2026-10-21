@@ -1,5 +1,8 @@
 # CAF-000014 — [Admin] Relatórios de vendas, cortesias e preparo
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin | 🟡 Média | G | A fazer |
@@ -47,11 +50,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** foram concedidas 12 cortesias na semana, 1 delas cancelada, **quando** o admin filtra "7 dias", **então** o relatório mostra 11 cortesias, separadas por prato liberador.
-- [ ] **Dado que** o período é o mês atual, **quando** o admin abre "Mais vendidos", **então** vê a lista ordenada por quantidade com o faturamento de cada produto.
-- [ ] **Dado que** os pedidos têm `iniciado_em` e `concluido_em`, **quando** o admin abre "Tempo de preparo", **então** vê o tempo médio de fila e de preparo.
-- [ ] **Dado que** houve promoções no período, **quando** o admin abre "Promoções", **então** vê o total de desconto por promoção.
-- [ ] **Dado que** um pedido foi cancelado, **quando** qualquer relatório é gerado, **então** ele não entra nos totais.
+- [x] **Dado que** foram concedidas 12 cortesias na semana, 1 delas cancelada, **quando** o admin filtra "7 dias", **então** o relatório mostra 11 cortesias, separadas por prato liberador.
+- [x] **Dado que** o período é o mês atual, **quando** o admin abre "Mais vendidos", **então** vê a lista ordenada por quantidade com o faturamento de cada produto.
+- [x] **Dado que** os pedidos têm `iniciado_em` e `concluido_em`, **quando** o admin abre "Tempo de preparo", **então** vê o tempo médio de fila e de preparo.
+- [x] **Dado que** houve promoções no período, **quando** o admin abre "Promoções", **então** vê o total de desconto por promoção.
+- [x] **Dado que** um pedido foi cancelado, **quando** qualquer relatório é gerado, **então** ele não entra nos totais.
 
 ---
 

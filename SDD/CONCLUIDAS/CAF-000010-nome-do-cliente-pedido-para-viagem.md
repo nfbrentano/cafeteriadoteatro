@@ -1,5 +1,8 @@
 # CAF-000010 — [PDV] [Cozinha] [Impressão] Nome do cliente e pedido para viagem
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV + cozinha + impressão | 🟡 Média | P | A fazer |
@@ -42,10 +45,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** o barista informou "Ana" e marcou "Para viagem", **quando** envia o pedido, **então** a cozinha vê "🥡 VIAGEM · Ana" e a comanda sai com essas informações.
-- [ ] **Dado que** o pedido tem nome, **quando** fica pronto e é chamado por voz, **então** a voz diz "Pedido da Ana, pronto".
-- [ ] **Dado que** o pedido não tem nome, **quando** é chamado, **então** a voz usa número e mesa, como hoje.
-- [ ] **Dado que** o nome tem `<b>teste</b>`, **quando** aparece na cozinha, **então** é exibido como texto literal.
+- [x] **Dado que** o barista informou "Ana" e marcou "Para viagem", **quando** envia o pedido, **então** a cozinha vê "🥡 VIAGEM · Ana" e a comanda sai com essas informações.
+- [x] **Dado que** o pedido tem nome, **quando** fica pronto e é chamado por voz, **então** a voz diz "Pedido da Ana, pronto".
+- [x] **Dado que** o pedido não tem nome, **quando** é chamado, **então** a voz usa número e mesa, como hoje.
+- [x] **Dado que** o nome tem `<b>teste</b>`, **quando** aparece na cozinha, **então** é exibido como texto literal.
 
 ---
 

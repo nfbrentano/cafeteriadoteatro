@@ -1,5 +1,9 @@
 # CAF-000012 — [PDV] Dividir conta
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Divisão de conta e fechamento atômico corrigidos via CAF-000073.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV | 🟢 Baixa | M | A fazer |
@@ -37,10 +41,10 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **Dado que** a conta é R$ 100,00, **quando** o barista divide igualmente por 3, **então** as partes são R$ 33,34, R$ 33,33 e R$ 33,33.
-- [ ] **Dado que** Ana consumiu um café e Beto um baguete, **quando** o barista divide por item, **então** cada um paga só o que consumiu.
-- [ ] **Dado que** duas partes já pagaram, **quando** o barista olha a tela, **então** vê quanto falta e quem falta pagar.
-- [ ] **Dado que** todas as partes pagaram, **quando** a última é registrada, **então** a conta fecha e a mesa fica livre.
+- [x] **Dado que** a conta é R$ 100,00, **quando** o barista divide igualmente por 3, **então** as partes são R$ 33,34, R$ 33,33 e R$ 33,33.
+- [x] **Dado que** Ana consumiu um café e Beto um baguete, **quando** o barista divide por item, **então** cada um paga só o que consumiu.
+- [x] **Dado que** duas partes já pagaram, **quando** o barista olha a tela, **então** vê quanto falta e quem falta pagar.
+- [x] **Dado que** todas as partes pagaram, **quando** a última é registrada, **então** a conta fecha e a mesa fica livre.
 
 ---
 

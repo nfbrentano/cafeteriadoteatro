@@ -1,5 +1,9 @@
 # CAF-000031 — [Admin] [Estoque] Controle de estoque de produtos e insumos com baixa automática na venda
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Movimentação atômica e custos médios corrigidos via CAF-000074.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin + PDV + banco | 🔴 Alta | G | 🟢 Concluída |

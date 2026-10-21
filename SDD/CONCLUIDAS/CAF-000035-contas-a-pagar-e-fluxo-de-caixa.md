@@ -1,5 +1,9 @@
 # CAF-000035 — [Admin] [Financeiro] Contas a pagar, despesas e fluxo de caixa
 
+> **Status:** Concluída com ressalvas
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+> **Ressalvas:** Contrato front-banco de despesas corrigido via CAF-000078.
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | Admin + banco | 🟡 Média | M | Concluída |

@@ -1,5 +1,8 @@
 # CAF-000052 — [PDV] [Mobile] Seleção e visualização de mesas em grade no celular
 
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-09-23 · **Atualizada em:** 2026-10-21
+
 | Área | Prioridade | Esforço | Status |
 |---|---|---|---|
 | PDV (JS + HTML + CSS) | 🔴 Alta (P0) | M | Concluída |
