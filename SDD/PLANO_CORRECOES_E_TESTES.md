@@ -3,6 +3,13 @@
 > Origem: auditoria das SDDs CAF-000001 a CAF-000071 contra o código e o banco de produção (2026-10-20).
 > **Status das SDDs:** "Rascunho" = depende do resultado de `supabase/diagnostico_schema_producao.sql`; "Em revisão" = pronta para revisão do PO.
 
+## Atualização 2026-10-22: prioridade máxima
+
+A auditoria de 2026-10-22 encontrou duas pendências que passam na frente de tudo:
+
+- [CAF-000098](CAF-000098-aplicar-migrations-em-producao-e-snapshot-real.md): rodar as migrations 072–083 em produção. O front publicado já depende delas, nenhuma foi aplicada, e elas têm bloqueios que precisam ser corrigidos antes.
+- [CAF-000099](CAF-000099-suite-de-testes-efetiva-codigo-real-contrato-e-pgtap.md): tornar a suíte efetiva. Hoje a cobertura é de 9% e as páginas estão em 0%; o pgTAP não executa SQL e o contrato só confere nomes de RPC.
+
 ## Pré-requisito
 
 Rodar `supabase/diagnostico_schema_producao.sql` no SQL Editor de produção (só faz SELECT no catálogo) e anexar o CSV à CAF-000072. Ele confirma as assinaturas das RPCs (`fechar_conta_mesa`, `adicionar_itens_pedido`, `cancelar_item`, `processar_cashback_pedido`, `registrar_uso_cupom`), que não puderam ser verificadas pela API pública.
