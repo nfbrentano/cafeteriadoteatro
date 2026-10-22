@@ -66,7 +66,8 @@ describe('CAF-000090 — Canais do Cliente (Cardápio, QR, Online, Totem, Avalia
       horario_intervalo: '21:00'
     };
 
-    expect(isTheaterModeActive(configEspetaculo)).toBe(true);
+    const refDate = new Date('2026-10-21T19:30:00');
+    expect(isTheaterModeActive(configEspetaculo, refDate)).toBe(true);
   });
 
   it('CA06: busca tolerante normaliza termos com acentos e variações', () => {
