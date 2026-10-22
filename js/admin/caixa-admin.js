@@ -4,6 +4,124 @@
  * Suporta conferência cega, contagem por cédulas/moedas, cálculo estrito no banco e histórico auditável.
  */
 
+export const CEDULAS_MOEDAS = [
+  { valor: 200, label: 'R$ 200' },
+  { valor: 100, label: 'R$ 100' },
+  { valor: 50, label: 'R$ 50' },
+  { valor: 20, label: 'R$ 20' },
+  { valor: 10, label: 'R$ 10' },
+  { valor: 5, label: 'R$ 5' },
+  { valor: 2, label: 'R$ 2' },
+  { valor: 1, label: 'R$ 1,00' },
+  { valor: 0.5, label: 'R$ 0,50' },
+  { valor: 0.25, label: 'R$ 0,25' },
+  { valor: 0.1, label: 'R$ 0,10' },
+  { valor: 0.05, label: 'R$ 0,05' }
+];
+
+export function normalizarTotaisResponse(data, caixaFallback) {
+  const fundo = Number(data?.fundo_troco ?? caixaFallback?.fundo_troco ?? 0);
+  const suprimentos = Number(
+    data?.suprimentos ?? caixaFallback?.total_suprimentos ?? caixaFallback?.total_entradas ?? 0
+  );
+  const sangrias = Number(
+    data?.sangrias ?? caixaFallback?.total_sangrias ?? caixaFallback?.total_saidas ?? 0
+  );
+  const modoCego = Boolean(data?.modo_cego);
+  const conferenciaCega =
+    data?.conferencia_cega !== undefined
+      ? Boolean(data.conferencia_cega)
+      : Boolean(caixaFallback?.conferencia_cega ?? true);
+  const limiteObs = Number(
+    data?.limite_diferenca_obs ?? caixaFallback?.limite_diferenca_obs ?? 5.0
+  );
+
+  const mapaVendas = {
+    dinheiro: 0,
+    pix: 0,
+    cartao_credito: 0,
+    cartao_debito: 0,
+    outros: 0,
+    conta_cliente: 0
+  };
+  const mapaTaxas = {
+    dinheiro: 0,
+    pix: 0,
+    cartao_credito: 0,
+    cartao_debito: 0,
+    outros: 0,
+    conta_cliente: 0
+  };
+  const mapaLiquido = {
+    dinheiro: 0,
+    pix: 0,
+    cartao_credito: 0,
+    cartao_debito: 0,
+    outros: 0,
+    conta_cliente: 0
+  };
+
+  if (Array.isArray(data)) {
+    data.forEach((row) => {
+      const raw = row.forma || row.metodo || 'outros';
+      const key =
+        raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
+      if (mapaVendas[key] !== undefined) {
+        const bruto = Number(row.total_vendas ?? row.total ?? 0);
+        const taxa = Number(row.total_taxas ?? row.total_taxa ?? 0);
+        const liq = row.total_liquido !== undefined ? Number(row.total_liquido) : bruto - taxa;
+        mapaVendas[key] += bruto;
+        mapaTaxas[key] += taxa;
+        mapaLiquido[key] += liq;
+      }
+    });
+  } else if (data && typeof data === 'object') {
+    if (Array.isArray(data.itens)) {
+      data.itens.forEach((row) => {
+        const raw = row.forma || row.metodo || 'outros';
+        const key =
+          raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
+        if (mapaVendas[key] !== undefined) {
+          const bruto = Number(row.total_vendas ?? row.total ?? 0);
+          const taxa = Number(row.total_taxas ?? row.total_taxa ?? 0);
+          const liq = row.total_liquido !== undefined ? Number(row.total_liquido) : bruto - taxa;
+          mapaVendas[key] = bruto;
+          mapaTaxas[key] = taxa;
+          mapaLiquido[key] = liq;
+        }
+      });
+    } else if (data.pagamentos && typeof data.pagamentos === 'object') {
+      Object.entries(data.pagamentos).forEach(([raw, val]) => {
+        const key =
+          raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
+        if (mapaVendas[key] !== undefined) {
+          const bruto = Number(val || 0);
+          mapaVendas[key] += bruto;
+          mapaLiquido[key] += bruto;
+        }
+      });
+    }
+  }
+
+  const dinheiroEsperado =
+    data?.dinheiro_esperado !== undefined && data?.dinheiro_esperado !== null
+      ? Number(data.dinheiro_esperado)
+      : Math.round((fundo + suprimentos - sangrias + mapaVendas.dinheiro) * 100) / 100;
+
+  return {
+    modoCego,
+    conferenciaCega,
+    limiteObs,
+    fundo,
+    suprimentos,
+    sangrias,
+    dinheiroEsperado,
+    mapaVendas,
+    mapaTaxas,
+    mapaLiquido
+  };
+}
+
 window.initAdminCaixa = async function () {
   const admin = window.cafeteriaAdmin;
   const supabase = window.cafeteriaSupabase;
@@ -28,21 +146,6 @@ window.initAdminCaixa = async function () {
     outros: 'Outros',
     conta_cliente: 'Conta do Cliente (Fiado / A Receber)'
   };
-
-  const CEDULAS_MOEDAS = [
-    { valor: 200, label: 'R$ 200' },
-    { valor: 100, label: 'R$ 100' },
-    { valor: 50, label: 'R$ 50' },
-    { valor: 20, label: 'R$ 20' },
-    { valor: 10, label: 'R$ 10' },
-    { valor: 5, label: 'R$ 5' },
-    { valor: 2, label: 'R$ 2' },
-    { valor: 1, label: 'R$ 1,00' },
-    { valor: 0.5, label: 'R$ 0,50' },
-    { valor: 0.25, label: 'R$ 0,25' },
-    { valor: 0.1, label: 'R$ 0,10' },
-    { valor: 0.05, label: 'R$ 0,05' }
-  ];
 
   const fmt = (val) =>
     Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -142,109 +245,6 @@ window.initAdminCaixa = async function () {
       inputDinheiro.value = soma.toFixed(2);
       inputDinheiro.dispatchEvent(new Event('input'));
     }
-  }
-
-  function normalizarTotaisResponse(data, caixaFallback) {
-    const fundo = Number(data?.fundo_troco ?? caixaFallback?.fundo_troco ?? 0);
-    const suprimentos = Number(
-      data?.suprimentos ?? caixaFallback?.total_suprimentos ?? caixaFallback?.total_entradas ?? 0
-    );
-    const sangrias = Number(
-      data?.sangrias ?? caixaFallback?.total_sangrias ?? caixaFallback?.total_saidas ?? 0
-    );
-    const modoCego = Boolean(data?.modo_cego);
-    const conferenciaCega =
-      data?.conferencia_cega !== undefined
-        ? Boolean(data.conferencia_cega)
-        : Boolean(caixaFallback?.conferencia_cega ?? true);
-    const limiteObs = Number(
-      data?.limite_diferenca_obs ?? caixaFallback?.limite_diferenca_obs ?? 5.0
-    );
-
-    const mapaVendas = {
-      dinheiro: 0,
-      pix: 0,
-      cartao_credito: 0,
-      cartao_debito: 0,
-      outros: 0,
-      conta_cliente: 0
-    };
-    const mapaTaxas = {
-      dinheiro: 0,
-      pix: 0,
-      cartao_credito: 0,
-      cartao_debito: 0,
-      outros: 0,
-      conta_cliente: 0
-    };
-    const mapaLiquido = {
-      dinheiro: 0,
-      pix: 0,
-      cartao_credito: 0,
-      cartao_debito: 0,
-      outros: 0,
-      conta_cliente: 0
-    };
-
-    if (Array.isArray(data)) {
-      data.forEach((row) => {
-        const raw = row.forma || row.metodo || 'outros';
-        const key =
-          raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
-        if (mapaVendas[key] !== undefined) {
-          const bruto = Number(row.total_vendas ?? row.total ?? 0);
-          const taxa = Number(row.total_taxas ?? row.total_taxa ?? 0);
-          const liq = row.total_liquido !== undefined ? Number(row.total_liquido) : bruto - taxa;
-          mapaVendas[key] += bruto;
-          mapaTaxas[key] += taxa;
-          mapaLiquido[key] += liq;
-        }
-      });
-    } else if (data && typeof data === 'object') {
-      if (Array.isArray(data.itens)) {
-        data.itens.forEach((row) => {
-          const raw = row.forma || row.metodo || 'outros';
-          const key =
-            raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
-          if (mapaVendas[key] !== undefined) {
-            const bruto = Number(row.total_vendas ?? row.total ?? 0);
-            const taxa = Number(row.total_taxas ?? row.total_taxa ?? 0);
-            const liq = row.total_liquido !== undefined ? Number(row.total_liquido) : bruto - taxa;
-            mapaVendas[key] = bruto;
-            mapaTaxas[key] = taxa;
-            mapaLiquido[key] = liq;
-          }
-        });
-      } else if (data.pagamentos && typeof data.pagamentos === 'object') {
-        Object.entries(data.pagamentos).forEach(([raw, val]) => {
-          const key =
-            raw === 'credito' ? 'cartao_credito' : raw === 'debito' ? 'cartao_debito' : raw;
-          if (mapaVendas[key] !== undefined) {
-            const bruto = Number(val || 0);
-            mapaVendas[key] += bruto;
-            mapaLiquido[key] += bruto;
-          }
-        });
-      }
-    }
-
-    const dinheiroEsperado =
-      data?.dinheiro_esperado !== undefined && data?.dinheiro_esperado !== null
-        ? Number(data.dinheiro_esperado)
-        : Math.round((fundo + suprimentos - sangrias + mapaVendas.dinheiro) * 100) / 100;
-
-    return {
-      modoCego,
-      conferenciaCega,
-      limiteObs,
-      fundo,
-      suprimentos,
-      sangrias,
-      dinheiroEsperado,
-      mapaVendas,
-      mapaTaxas,
-      mapaLiquido
-    };
   }
 
   async function loadCaixaState() {
@@ -961,3 +961,17 @@ window.initAdminCaixa = async function () {
     win.document.close();
   }
 };
+
+window.initAdminCaixa.CEDULAS_MOEDAS = CEDULAS_MOEDAS;
+window.initAdminCaixa.normalizarTotaisResponse = normalizarTotaisResponse;
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.initAdminCaixa = window.initAdminCaixa;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    initAdminCaixa: window.initAdminCaixa,
+    CEDULAS_MOEDAS,
+    normalizarTotaisResponse
+  };
+}

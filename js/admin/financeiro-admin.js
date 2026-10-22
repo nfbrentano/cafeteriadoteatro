@@ -1090,4 +1090,10 @@
     showToast(`Arquivo ${nomeArquivo} baixado com sucesso!`, 'success');
   }
 
+  if (typeof globalThis !== 'undefined') {
+    globalThis.initAdminFinanceiro = window.initAdminFinanceiro;
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { initAdminFinanceiro: window.initAdminFinanceiro };
+  }
 })();

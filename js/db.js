@@ -37,6 +37,8 @@
     },
 
     cache: {
+      KEYS: CACHE_KEYS,
+      ALLOWED_KEYS: ALLOWED_CACHE_KEYS,
       get: (key) => {
         try {
           if (!ALLOWED_CACHE_KEYS.has(key)) return null;
@@ -1848,6 +1850,14 @@
     }, 1000);
   }
 
-  window.cafeteriaDB = db;
+  if (typeof window !== 'undefined') {
+    window.cafeteriaDB = db;
+  }
+  if (typeof globalThis !== 'undefined') {
+    globalThis.cafeteriaDB = db;
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = db;
+  }
   console.log('CafeteriaDB inicializado com sucesso. Módulos:', Object.keys(db));
 })();

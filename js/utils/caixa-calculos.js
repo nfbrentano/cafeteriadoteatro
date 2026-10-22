@@ -125,3 +125,21 @@ export function calcularDiferencaCaixaCego(saldoInicial, vendasDinheiro, totalSu
     status
   };
 }
+
+/**
+ * Valida os dados de uma movimentação manual de caixa (sangria ou suprimento).
+ * @param {'sangria'|'suprimento'} tipo
+ * @param {number} valor
+ * @param {string} motivo
+ * @returns {{ valido: boolean, erro: string|null }}
+ */
+export function validarMovimentacaoCaixa(tipo, valor, motivo) {
+  const v = Number(valor) || 0;
+  if (v <= 0) {
+    return { valido: false, erro: 'O valor da movimentação deve ser maior que zero.' };
+  }
+  if (tipo === 'sangria' && (!motivo || !String(motivo).trim())) {
+    return { valido: false, erro: 'A justificativa para sangria é obrigatória.' };
+  }
+  return { valido: true, erro: null };
+}

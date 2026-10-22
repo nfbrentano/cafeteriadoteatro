@@ -101,6 +101,11 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000090** | Cobertura de Testes dos Canais do Cliente (Cardápio, QR na Mesa, Pedido Online, Totem e Avaliação) | Em revisão | — | — | — |
 | **CAF-000091** | Cobertura de Testes de Mobile, Site Institucional e UX do PDV | Em revisão | — | — | — |
 | **CAF-000092** | Testes SQL Automatizados das RPCs, Triggers e Policies (pgTAP em Banco Isolado) | Em revisão | — | — | — |
+| **CAF-000093** | Cobertura de Testes: Camada de Dados, Cache Local e Fila Offline (`db.js` e `pedidos.js`) | Concluída | — | `caf-000093-camada-dados-cache-offline.test.js` | — |
+| **CAF-000094** | Cobertura de Testes: Fechamento de Caixa e Financeiro (`caixa-admin.js` e `financeiro-admin.js`) | Concluída | — | `caf-000094-caixa-financeiro.test.js` | — |
+| **CAF-000095** | Cobertura de Testes: PDV do Balcão e Totem de Autoatendimento (`pedidos.js` e `totem.js`) | Concluída | — | `caf-000095-pdv-balcao-totem.test.js` | — |
+| **CAF-000096** | Cobertura de Testes: KDS da Cozinha, Bar e Impressão Térmica (`cozinha.js` e `pedido-print.js`) | Concluída | — | `caf-000096-kds-impressao.test.js` | — |
+| **CAF-000097** | Cobertura de Testes: Gestão de Clientes, Fiado e Produtos (`clientes-admin.js` e `products.js`) | Concluída | — | `caf-000097-clientes-produtos.test.js` | — |
 
 ---
 
