@@ -113,6 +113,14 @@ export function createSupabaseMock(initialData = {}, options = {}) {
         });
         return builder;
       }),
+      gt: vi.fn((col, val) => {
+        currentData = currentData.filter(item => item[col] > val);
+        return builder;
+      }),
+      lt: vi.fn((col, val) => {
+        currentData = currentData.filter(item => item[col] < val);
+        return builder;
+      }),
       gte: vi.fn((col, val) => {
         currentData = currentData.filter(item => item[col] >= val);
         return builder;

@@ -5,16 +5,17 @@
 (function () {
   'use strict';
 
+  function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
   if (!window.escapeHtml) {
-    window.escapeHtml = function(unsafe) {
-      if (unsafe === null || unsafe === undefined) return '';
-      return String(unsafe)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    };
+    window.escapeHtml = escapeHtml;
   }
 
   // Refs de Telas e Navegação
@@ -233,6 +234,7 @@
 
   // Estado
   let currentUser = null;
+  let pedidoEmEdicaoId = null;
   let allProducts = [];
   let allAdicionais = [];
   let allVinculosProduto = [];
@@ -1528,13 +1530,16 @@
       );
       const totalQtdCarrinho = cart
         .filter(item => item.produto.id === p.id)
-        .reduce((sum, item) => sum + item.quantidade, 0);
+        .reduce((sum, item) => sum + (parseInt(item.quantidade, 10) || 1), 0);
+
+      const itemQtyVal = cartItemIndex !== -1 ? (parseInt(cart[cartItemIndex].quantidade, 10) || 1) : 1;
+      const totalQtyVal = parseInt(totalQtdCarrinho, 10) || 0;
 
       card.className = 'product-card' + 
         (p.disponivel === false ? ' produto-esgotado' : '') + 
-        (totalQtdCarrinho > 0 ? ' is-in-cart' : '');
+        (totalQtyVal > 0 ? ' is-in-cart' : '');
 
-      const descHtml = p.descricao ? `<p class="product-card__desc">${window.escapeHtml(p.descricao)}</p>` : '';
+      const descHtml = p.descricao ? `<p class="product-card__desc">${escapeHtml(p.descricao)}</p>` : '';
       const isPromo = activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id);
       const promoBadgeHtml = isPromo ? `<span style="background:#e74c3c; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">PROMO</span>` : '';
       const stampHtml = p.disponivel === false ? `<div class="esgotado-stamp">ESGOTADO</div>` : '';
@@ -1545,12 +1550,12 @@
           actionBadgeHtml = `
             <div class="card-qty-controls">
               <button type="button" class="card-qty-btn minus" title="Diminuir quantidade">−</button>
-              <span class="card-qty-val">${cart[cartItemIndex].quantidade}</span>
+              <span class="card-qty-val">${itemQtyVal}</span>
               <button type="button" class="card-qty-btn plus" title="Aumentar quantidade">+</button>
             </div>
           `;
-        } else if (!isSimples && totalQtdCarrinho > 0) {
-          actionBadgeHtml = `<span class="card-cart-pill">${totalQtdCarrinho} no carrinho</span>`;
+        } else if (!isSimples && totalQtyVal > 0) {
+          actionBadgeHtml = `<span class="card-cart-pill">${totalQtyVal} no carrinho</span>`;
         } else {
           actionBadgeHtml = `<span class="btn-add-badge">+ Adicionar</span>`;
         }
@@ -1558,7 +1563,7 @@
       
       card.innerHTML = `
         <div class="product-card__header">
-          <h4>${window.escapeHtml(p.nome)}${promoBadgeHtml}</h4>
+          <h4>${escapeHtml(p.nome)}${promoBadgeHtml}</h4>
           ${descHtml}
         </div>
         <div class="product-card__bottom">
@@ -1994,7 +1999,7 @@
         ];
       }
       
-      activeMontagemItem.observacoes = modalMontagemObs.value.trim();
+      activeMontagemItem.observacoes = escapeHtml((modalMontagemObs.value || '').trim());
       
       addToCartFromMontagem(activeMontagemItem);
       closeMontagemModal();
@@ -2096,7 +2101,7 @@
 
   modalObsSave.addEventListener('click', () => {
     if (activeObsCartIndex !== null && cart[activeObsCartIndex]) {
-      cart[activeObsCartIndex].observacoes = modalObsInput.value.trim();
+      cart[activeObsCartIndex].observacoes = escapeHtml((modalObsInput.value || '').trim());
       renderCart();
     }
     closeItemObsModal();
@@ -2240,7 +2245,7 @@
       if (item.adicionaisSelecionados && item.adicionaisSelecionados.length > 0) {
         item.adicionaisSelecionados.forEach(ad => {
           adicTotal += ad.preco;
-          adicHtml += `<div style="font-size:12px; color:#666;">+ ${window.escapeHtml(ad.nome)} (R$ ${ad.preco.toFixed(2).replace('.', ',')})</div>`;
+          adicHtml += `<div style="font-size:12px; color:#666;">+ ${escapeHtml(ad.nome)} (R$ ${ad.preco.toFixed(2).replace('.', ',')})</div>`;
         });
       }
 
@@ -2254,21 +2259,17 @@
         
         const nomeDoce = allProducts.find(p => p.id === item.sabores[0].produto_id)?.nome || '';
         const nomeSalgado = allProducts.find(p => p.id === item.sabores[1].produto_id)?.nome || '';
-        saboresHtml = `<div style="font-size:12px; color:#aaa;">½ ${window.escapeHtml(nomeDoce)} / ½ ${window.escapeHtml(nomeSalgado)}</div>`;
+        saboresHtml = `<div style="font-size:12px; color:#aaa;">½ ${escapeHtml(nomeDoce)} / ½ ${escapeHtml(nomeSalgado)}</div>`;
       }
 
       const precoUnitario = precoBase + adicTotal;
       const subtotal = precoUnitario * item.quantidade;
       total += subtotal;
 
-      const obsHtml = item.observacoes 
-        ? `<div class="cart-item-obs">↳ Obs: ${window.escapeHtml(item.observacoes)}</div>` 
-        : '';
-        
       let promoHtml = '';
       if (promoDiscounts[index]) {
         total -= promoDiscounts[index];
-        promoHtml = `<div style="font-size:12px; color:#e74c3c; margin-top: 4px;">↳ ${window.escapeHtml(promoLabels[index])} (- R$ ${promoDiscounts[index].toFixed(2).replace('.', ',')})</div>`;
+        promoHtml = `<div style="font-size:12px; color:#e74c3c; margin-top: 4px;">↳ ${escapeHtml(promoLabels[index])} (- R$ ${promoDiscounts[index].toFixed(2).replace('.', ',')})</div>`;
       }
 
       const div = document.createElement('div');
@@ -2276,11 +2277,11 @@
       div.innerHTML = `
         <div class="cart-item-row">
           <div class="cart-item-info">
-            <div class="cart-item-name">${window.escapeHtml(item.produto.nome)}</div>
+            <div class="cart-item-name">${escapeHtml(item.produto.nome)}</div>
             ${saboresHtml}
             <div class="cart-item-price">R$ ${precoUnitario.toFixed(2).replace('.', ',')}</div>
             ${adicHtml}
-            ${obsHtml}
+            <div class="cart-item-obs-box"></div>
             ${promoHtml}
           </div>
           <div class="cart-item-actions">
@@ -2288,12 +2289,20 @@
               ${item.observacoes ? 'Editar obs' : '+ Obs'}
             </button>
             <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, -1)">-</button>
-            <span class="cart-qty">${item.quantidade}</span>
+            <span class="cart-qty">${Number(item.quantidade)}</span>
             <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, 1)">+</button>
             <button class="cart-btn remove" onclick="window.baristaUpdateQty(${index}, -999)">🗑</button>
           </div>
         </div>
       `;
+
+      if (item.observacoes) {
+        const obsEl = document.createElement('div');
+        obsEl.className = 'cart-item-obs';
+        obsEl.textContent = `↳ Obs: ${item.observacoes}`;
+        div.querySelector('.cart-item-obs-box')?.appendChild(obsEl);
+      }
+
       cartItemsContainer.appendChild(div);
     });
 
@@ -3088,14 +3097,14 @@
 
     listaPedidosClienteAguardando.innerHTML = pedidosClienteAguardando.map(pedido => {
       const itensHtml = (pedido.pedido_itens || []).map(item => {
-        const adics = (item.pedido_item_adicionais || []).map(a => `+ ${a.nome_adicional} (R$ ${Number(a.preco_unitario || 0).toFixed(2)})`).join(', ');
+        const adics = (item.pedido_item_adicionais || []).map(a => `+ ${escapeHtml(a.nome_adicional)} (R$ ${Number(a.preco_unitario || 0).toFixed(2)})`).join(', ');
         return `
           <div style="padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 0.9rem;">
             <div style="display: flex; justify-content: space-between;">
-              <span><strong>${item.quantidade}x</strong> ${item.nome_produto || 'Item'}</span>
+              <span><strong>${Number(item.quantidade) || 1}x</strong> ${escapeHtml(item.nome_produto || 'Item')}</span>
               <span>R$ ${(item.subtotal || item.preco_unitario * item.quantidade || 0).toFixed(2)}</span>
             </div>
-            ${item.observacoes ? `<div style="font-size: 0.8rem; color: #b45309; font-style: italic; margin-left: 12px;">Obs: ${item.observacoes}</div>` : ''}
+            ${item.observacoes ? `<div style="font-size: 0.8rem; color: #b45309; font-style: italic; margin-left: 12px;">Obs: ${escapeHtml(item.observacoes)}</div>` : ''}
             ${adics ? `<div style="font-size: 0.8rem; color: #475569; margin-left: 12px;">${adics}</div>` : ''}
           </div>
         `;
@@ -3110,15 +3119,17 @@
         retiradaBadge = `<span style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:700; margin-left:6px;">🕒 Retirada: ${retStr}</span>`;
       }
 
+      const obsTexto = pedido.observacoes_gerais || pedido.observacoes;
+
       return `
         <div class="card-pedido-triagem" style="border: 1px solid ${isOnline ? '#86efac' : '#c7d2fe'}; border-left: 5px solid ${isOnline ? '#059669' : '#4f46e5'}; border-radius: 8px; padding: 14px; background: ${isOnline ? '#f0fdf4' : '#faf5ff'};">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap:wrap; gap:6px;">
             <div>
               <span style="background: ${isOnline ? '#059669' : '#4f46e5'}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">
-                ${isOnline ? '🌐 Online / Encomenda' : `Mesa ${pedido.mesa_codigo}`}
+                ${isOnline ? '🌐 Online / Encomenda' : `Mesa ${escapeHtml(pedido.mesa_codigo)}`}
               </span>
               <span style="font-weight: 600; margin-left: 8px; color: #1e293b;">
-                ${pedido.cliente_nome || 'Cliente'} ${pedido.cliente_telefone ? `<small style="color:#475569;">(${pedido.cliente_telefone})</small>` : ''}
+                ${escapeHtml(pedido.cliente_nome || 'Cliente')} ${pedido.cliente_telefone ? `<small style="color:#475569;">(${escapeHtml(pedido.cliente_telefone)})</small>` : ''}
               </span>
               <span style="font-size: 0.8rem; color: #64748b; margin-left: 6px;">
                 às ${hora}
@@ -3130,9 +3141,9 @@
             </strong>
           </div>
 
-          ${(pedido.observacoes_gerais || pedido.observacoes) ? `
+          ${obsTexto ? `
             <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; color: #92400e; margin-bottom: 8px;">
-              <strong>Observação:</strong> ${pedido.observacoes_gerais || pedido.observacoes}
+              <strong>Observação:</strong> ${escapeHtml(obsTexto)}
             </div>
           ` : ''}
 
