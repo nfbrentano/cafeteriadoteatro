@@ -240,7 +240,12 @@
     const isAtivo = cfgAutoPrint?.checked;
     const isEtqAtivo = cfgAutoEtiqueta?.checked;
     const est = cfgPrintEstacao?.value || 'todas';
-    const dev = cfgDeviceName?.value.trim() || 'Dispositivo sem nome';
+    const rawDev = cfgDeviceName?.value.trim() || 'Dispositivo sem nome';
+    const safeEscape = window.escapeHtml || function(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    };
+    const dev = safeEscape(rawDev);
 
     if (!isAtivo && !isEtqAtivo) {
       cfgStatusSummary.className = 'config-info-box inativo';
@@ -248,8 +253,10 @@
     } else {
       const mapaEst = { 'todas': 'Cozinha & Bar', 'cozinha': 'apenas Cozinha', 'bar': 'apenas Bar' };
       const descricoes = [];
-      if (isAtivo) descricoes.push(`comandas de <strong>${mapaEst[est] || est}</strong>`);
-      if (isEtqAtivo) descricoes.push(`etiquetas <strong>${cfgEtiquetaTamanho?.value || '50x30'} mm</strong> (${cfgEtiquetaGatilho?.value === 'chegar' ? 'ao chegar' : 'ao iniciar preparo'})`);
+      const estLabel = mapaEst[est] || safeEscape(est);
+      const tamLabel = safeEscape(cfgEtiquetaTamanho?.value || '50x30');
+      if (isAtivo) descricoes.push(`comandas de <strong>${estLabel}</strong>`);
+      if (isEtqAtivo) descricoes.push(`etiquetas <strong>${tamLabel} mm</strong> (${cfgEtiquetaGatilho?.value === 'chegar' ? 'ao chegar' : 'ao iniciar preparo'})`);
       cfgStatusSummary.className = 'config-info-box';
       cfgStatusSummary.innerHTML = `<strong>✓ Impressora Ativa:</strong> Este dispositivo (<em>${dev}</em>) imprimirá automaticamente ${descricoes.join(' e ')} com trava anti-duplicação.`;
     }

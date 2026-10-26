@@ -10,6 +10,16 @@
   let cachedConfigPix = null;
   let lastFetchTs = 0;
 
+  function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function normalizarTextoEmv(texto, maxLen) {
     if (!texto) return '';
     return String(texto)
@@ -332,12 +342,16 @@
       `;
     } else {
       const svg = gerarQrSvg(res.payload, 6, 2);
+      const safeRecebedor = (window.escapeHtml || escapeHtml)(res.recebedor || '');
+      const safeSubtitulo = (window.escapeHtml || escapeHtml)(subtitulo || '');
+      const safeValor = (window.escapeHtml || escapeHtml)(fmtValor || '');
+
       overlay.innerHTML = `
         <div style="background:#fff; color:#0f172a; border-radius:20px; padding:24px 20px; max-width:400px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
           <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#059669; margin-bottom:4px;">Pagamento Instantâneo PIX</div>
-          <div style="font-size:18px; font-weight:800; color:#1e293b;">${res.recebedor}</div>
-          ${subtitulo ? `<div style="font-size:13px; color:#64748b; margin-top:2px;">${subtitulo}</div>` : ''}
-          <div style="font-size:32px; font-weight:900; color:#047857; margin:12px 0;">${fmtValor}</div>
+          <div style="font-size:18px; font-weight:800; color:#1e293b;">${safeRecebedor}</div>
+          ${safeSubtitulo ? `<div style="font-size:13px; color:#64748b; margin-top:2px;">${safeSubtitulo}</div>` : ''}
+          <div style="font-size:32px; font-weight:900; color:#047857; margin:12px 0;">${safeValor}</div>
           <div style="width:240px; height:240px; margin:0 auto 14px auto; display:flex; align-items:center; justify-content:center; border:2px solid #e2e8f0; border-radius:12px; padding:8px; background:#fff;">
             ${svg}
           </div>

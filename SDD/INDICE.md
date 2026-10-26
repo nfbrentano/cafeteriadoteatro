@@ -108,6 +108,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000097** | Cobertura de Testes: Gestão de Clientes, Fiado e Produtos (`clientes-admin.js` e `products.js`) | Concluída | — | `caf-000097-clientes-produtos.test.js` | — |
 | **CAF-000098** | Rodar as migrations 072–083 em produção (correções prévias, ensaio, roteiro e verificação) | Concluída | `migration_caf_000072_baseline_producao.sql` a `migration_caf_000083_pendencias_operacao.sql` | `caf-000098-migracoes-producao.test.js` | — |
 | **CAF-000099** | Tornar a suíte de testes efetiva: executar o código real das páginas, contrato com colunas e parâmetros, pgTAP rodando de verdade | Concluída | — | `caf-000099-execucao-real-harness.test.js`, `schema-contract.test.js` | — |
+| **CAF-000100** | Resolução de Vulnerabilidades de Segurança CodeQL e Dependabot (DOM XSS, Sanitização e happy-dom) | Concluída | — | `caf-000100-seguranca-codeql.test.js` | — |
 
 ---
 

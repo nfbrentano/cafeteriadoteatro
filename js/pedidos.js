@@ -7,8 +7,8 @@
 
   if (!window.escapeHtml) {
     window.escapeHtml = function(unsafe) {
-      if (!unsafe) return '';
-      return unsafe.toString()
+      if (unsafe === null || unsafe === undefined) return '';
+      return String(unsafe)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -1534,7 +1534,7 @@
         (p.disponivel === false ? ' produto-esgotado' : '') + 
         (totalQtdCarrinho > 0 ? ' is-in-cart' : '');
 
-      const descHtml = p.descricao ? `<p class="product-card__desc">${p.descricao}</p>` : '';
+      const descHtml = p.descricao ? `<p class="product-card__desc">${window.escapeHtml(p.descricao)}</p>` : '';
       const isPromo = activePromos.some(promo => promo.produto_id === p.id || promo.categoria_id === p.categoria_id);
       const promoBadgeHtml = isPromo ? `<span style="background:#e74c3c; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">PROMO</span>` : '';
       const stampHtml = p.disponivel === false ? `<div class="esgotado-stamp">ESGOTADO</div>` : '';
@@ -1558,7 +1558,7 @@
       
       card.innerHTML = `
         <div class="product-card__header">
-          <h4>${p.nome}${promoBadgeHtml}</h4>
+          <h4>${window.escapeHtml(p.nome)}${promoBadgeHtml}</h4>
           ${descHtml}
         </div>
         <div class="product-card__bottom">
@@ -2268,7 +2268,7 @@
       let promoHtml = '';
       if (promoDiscounts[index]) {
         total -= promoDiscounts[index];
-        promoHtml = `<div style="font-size:12px; color:#e74c3c; margin-top: 4px;">↳ ${promoLabels[index]} (- R$ ${promoDiscounts[index].toFixed(2).replace('.', ',')})</div>`;
+        promoHtml = `<div style="font-size:12px; color:#e74c3c; margin-top: 4px;">↳ ${window.escapeHtml(promoLabels[index])} (- R$ ${promoDiscounts[index].toFixed(2).replace('.', ',')})</div>`;
       }
 
       const div = document.createElement('div');

@@ -6,6 +6,19 @@
 (function () {
   'use strict';
 
+  function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+  if (!window.escapeHtml) {
+    window.escapeHtml = escapeHtml;
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const mesaCodigoParam = urlParams.get('mesa');
   const qrTokenParam = urlParams.get('t');
@@ -358,8 +371,9 @@
     document.getElementById('modal-cust-close')?.addEventListener('click', fecharModalCustomizar);
 
     // 4. Modal Carrinho
-    const savedNome = localStorage.getItem('cafeteria_cliente_nome') || '';
-    const savedTel = localStorage.getItem('cafeteria_cliente_telefone') || '';
+    const savedNome = escapeHtml(localStorage.getItem('cafeteria_cliente_nome') || '');
+    const savedTel = escapeHtml(localStorage.getItem('cafeteria_cliente_telefone') || '');
+    const mesaCodigoSafe = currentMesa && currentMesa.codigo ? escapeHtml(currentMesa.codigo) : '';
 
     const modalCarrinho = document.createElement('div');
     modalCarrinho.className = 'modal-cliente-overlay hidden';
@@ -367,7 +381,7 @@
     modalCarrinho.innerHTML = `
       <div class="modal-cliente-card">
         <div class="modal-cliente-header">
-          <h3>${isModoMesa ? `Seu Pedido — Mesa ${currentMesa.codigo}` : '🛍️ Pedido para Retirada no Balcão'}</h3>
+          <h3>${isModoMesa ? `Seu Pedido — Mesa ${mesaCodigoSafe}` : '🛍️ Pedido para Retirada no Balcão'}</h3>
           <button type="button" class="modal-cliente-close" id="modal-carrinho-close">✕</button>
         </div>
         <div class="modal-cliente-body">
@@ -1081,9 +1095,9 @@
       return `
         <div class="carrinho-item-row">
           <div class="carrinho-item-info">
-            <h4>${it.quantidade}x ${it.nome}</h4>
-            ${nomesAdic ? `<p class="carrinho-item-detalhes">+ ${nomesAdic}</p>` : ''}
-            ${it.observacoes ? `<p class="carrinho-item-detalhes" style="font-style:italic;">Obs: ${it.observacoes}</p>` : ''}
+            <h4>${it.quantidade}x ${escapeHtml(it.nome)}</h4>
+            ${nomesAdic ? `<p class="carrinho-item-detalhes">+ ${escapeHtml(nomesAdic)}</p>` : ''}
+            ${it.observacoes ? `<p class="carrinho-item-detalhes" style="font-style:italic;">Obs: ${escapeHtml(it.observacoes)}</p>` : ''}
           </div>
           <div class="carrinho-item-acoes">
             <strong style="font-size:14px; color:#1c1008;">R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')}</strong>
@@ -1353,7 +1367,7 @@
     if (info.itens && itensLista) {
       itensLista.innerHTML = info.itens.map(i => `
         <div style="display:flex; justify-content:space-between; margin-bottom:4px; ${i.cancelado ? 'text-decoration:line-through; color:#94a3b8;' : ''}">
-          <span>${i.quantidade}x ${i.nome}</span>
+          <span>${i.quantidade}x ${escapeHtml(i.nome)}</span>
           <span>R$ ${(i.quantidade * i.preco_unitario).toFixed(2).replace('.', ',')}</span>
         </div>
       `).join('');

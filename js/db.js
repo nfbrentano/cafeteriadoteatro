@@ -7,8 +7,8 @@
   'use strict';
 
   window.escapeHtml = function(unsafe) {
-    if (!unsafe) return '';
-    return unsafe.toString()
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")

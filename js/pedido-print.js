@@ -5,6 +5,19 @@
 (function () {
   'use strict';
 
+  function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+  if (!window.escapeHtml) {
+    window.escapeHtml = escapeHtml;
+  }
+
   function getOrCreatePrintFrame() {
     let iframe = document.getElementById('print-frame');
     if (!iframe) {
@@ -117,7 +130,7 @@
           
           <div class="divider"></div>
           
-          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${(pedido.pedido_origem_id || pedido.is_adicional) ? `➕ ADICIONAL — Mesa ${pedido.mesa_codigo} (ref. #${pedido.pedido_origem_id || 'origem'})` : pedido.mesa_codigo}</span> ${pedido.para_viagem ? ' <strong>(🥡 VIAGEM)</strong>' : ''}</div>
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 15px; font-weight: bold;">${(pedido.pedido_origem_id || pedido.is_adicional) ? `➕ ADICIONAL — Mesa ${window.escapeHtml(pedido.mesa_codigo)} (ref. #${window.escapeHtml(pedido.pedido_origem_id || 'origem')})` : window.escapeHtml(pedido.mesa_codigo)}</span> ${pedido.para_viagem ? ' <strong>(🥡 VIAGEM)</strong>' : ''}</div>
           ${pedido.cliente_nome ? `<div><span class="bold">CLIENTE:</span> ${window.escapeHtml(pedido.cliente_nome)}</div>` : ''}
           <div><span class="bold">PEDIDO:</span> #${pedido.numero_pedido || pedido.id}</div>
           <div><span class="bold">${isComplementar ? 'HORA ACRÉSCIMO:' : 'HORA PEDIDO:'}</span> ${isComplementar ? printDate : orderDate}</div>
@@ -219,7 +232,7 @@
 
       html += `
           <div class="divider"></div>
-          <div class="center" style="font-size: 11px;">Operador(a): ${pedido.criado_por_nome || 'Equipe Cafeteria'}</div>
+          <div class="center" style="font-size: 11px;">Operador(a): ${window.escapeHtml(pedido.criado_por_nome || 'Equipe Cafeteria')}</div>
         </body>
         </html>
       `;
@@ -250,7 +263,7 @@
           
           <div class="divider"></div>
           
-          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${mesaCodigo}</span></div>
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${window.escapeHtml(mesaCodigo)}</span></div>
           <div><span class="bold">EMISSÃO:</span> ${date}</div>
           <div><span class="bold">PEDIDOS INCLUSOS:</span> ${(pedidosMesa || []).map(p => '#' + (p.numero_pedido || p.id)).join(', ')}</div>
           
@@ -390,7 +403,7 @@
             
             <div class="divider"></div>
             
-            <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${mesaCodigo}</span></div>
+            <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${window.escapeHtml(mesaCodigo)}</span></div>
             <div><span class="bold">DATA:</span> ${date}</div>
             <div><span class="bold">PARTE:</span> <span style="font-size: 15px; font-weight: bold;">${window.escapeHtml(pt.nome)}</span></div>
             
@@ -481,7 +494,7 @@
           
           <div class="divider"></div>
           
-          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${mesaCodigo}</span></div>
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${window.escapeHtml(mesaCodigo)}</span></div>
           <div><span class="bold">DATA:</span> ${date}</div>
           <div><span class="bold">STATUS:</span> <span style="font-size: 15px; font-weight: bold; color: #000;">PAGO ✅</span></div>
           

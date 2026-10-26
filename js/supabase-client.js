@@ -19,8 +19,8 @@ window.cafeteriaSupabase = _supabaseInstance;
 // Escape de HTML disponível em todas as páginas (pedidos/cozinha não carregam db.js)
 if (!window.escapeHtml) {
   window.escapeHtml = function(unsafe) {
-    if (!unsafe) return '';
-    return unsafe.toString()
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
