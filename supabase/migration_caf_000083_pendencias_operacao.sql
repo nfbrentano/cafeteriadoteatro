@@ -1,3 +1,5 @@
+BEGIN;
+
 -- ==============================================================================
 -- CAF-000083 — Pendências funcionais de operação e caixa
 -- ==============================================================================
@@ -285,3 +287,10 @@ $$;
 
 -- 4. Tempo-alvo: Trocar DEFAULT 15 por NULL em categorias.tempo_alvo_min (RF09 / CA12)
 ALTER TABLE public.categorias ALTER COLUMN tempo_alvo_min SET DEFAULT NULL;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('083', 'migration_caf_000083_pendencias_operacao.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

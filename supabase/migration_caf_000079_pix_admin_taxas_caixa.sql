@@ -1,3 +1,5 @@
+BEGIN;
+
 -- ============================================================================
 -- MIGRATION CAF-000079: Pix no Admin e Taxas no Fechamento de Caixa
 -- ============================================================================
@@ -161,3 +163,10 @@ BEGIN
   );
 END;
 $$;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('079', 'migration_caf_000079_pix_admin_taxas_caixa.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

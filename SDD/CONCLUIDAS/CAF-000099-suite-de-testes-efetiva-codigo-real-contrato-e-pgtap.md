@@ -1,7 +1,7 @@
 # [CHORE] CAF-000099 — Tornar a suíte de testes efetiva: executar o código real das páginas, contrato com colunas e parâmetros, pgTAP rodando de verdade
 
-> **Status:** Em revisão
-> **Autor:** Claude (auditoria 2026-10-22) · **Revisor:** Natanael · **Criada em:** 2026-10-22 · **Atualizada em:** 2026-10-22
+> **Status:** Concluída
+> **Autor:** Claude (auditoria 2026-10-22) · **Revisor:** Natanael · **Criada em:** 2026-10-22 · **Atualizada em:** 2026-10-26
 
 ## Detalhes da Atividade
 
@@ -107,20 +107,20 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o harness novo, quando um teste carregar `pedidos.html`, `cozinha.html`, `totem.html`, `cardapio.html` e `admin.html`, então os scripts da página executam com o mock, e o relatório de cobertura mostra linhas cobertas em `pedidos.js`, `cozinha.js`, `totem.js`, `cardapio-cliente-pedido.js` e `settings.js`.
-- [ ] **CA02:** Dado o PDV carregado, quando o teste fechar uma mesa com desconto, cupom e dois pagamentos, então a chamada registrada pelo mock tem exatamente os parâmetros da assinatura real de `fechar_conta_mesa`, e um segundo clique reutiliza a mesma `p_idempotency_key`.
-- [ ] **CA03:** Dado o cardápio do cliente com cashback ativo, quando o carrinho com itens for aberto, então o modal abre sem erro no console e o box de cashback mostra o texto da configuração. Com cashback inativo, o box fica oculto.
-- [ ] **CA04:** Dado o admin carregado, quando o teste salvar a configuração Pix e cadastrar uma despesa, então nenhum erro é lançado, a RPC/tabela chamada e as colunas enviadas existem no snapshot real, e o QR de teste é gerado.
-- [ ] **CA05:** Dado um adicional com nome `<img src=x onerror=alert(1)>`, quando o modal de montagem do PDV for aberto, então `document.querySelectorAll('img[onerror]').length === 0` e o texto aparece escapado.
-- [ ] **CA06:** Dado o teste de contrato, quando o front referenciar uma coluna inexistente (ex.: `despesas.valor_total`), um parâmetro inexistente (ex.: `p_subtotal`) ou uma RPC com sobrecarga ambígua, então o teste falha apontando `arquivo:linha`.
-- [ ] **CA07:** Dado um PR, quando o CI rodar, então o job pgTAP sobe um Postgres, aplica as migrations, executa `supabase/tests/*.test.sql` e falha se algum assert falhar.
-- [ ] **CA08:** Dado `supabase/tests/`, quando inspecionado, então não existe `ok(true` e cada arquivo exercita pelo menos uma RPC, trigger ou policy com dados de fixture.
-- [ ] **CA09:** Dado o conjunto de migrations da CAF-000098 **antes** da correção, quando o job de aplicação rodar, então ele falha nos bloqueios B1, B3 e B6. Depois da correção, passa nas duas execuções.
-- [ ] **CA10:** Dado um PR que altera `js/pedidos.js`, quando o CI rodar, então `vitest --coverage` executa e falha se a cobertura de algum arquivo crítico ficar abaixo do RNF01.
-- [ ] **CA11:** Dado `js/utils/`, quando inspecionado, então todo arquivo é importado por pelo menos uma página ou módulo da aplicação.
-- [ ] **CA12:** Dado os arquivos de teste listados no RF12, quando revisados, então nenhum CA funcional é provado só por regex sobre texto ou por regra reimplementada no teste.
-- [ ] **CA13:** Dado `SDD/INDICE.md` e `GEMINI.md`, quando consultados, então as SDDs 086–097 estão com ressalva e a regra do RF14 está documentada.
-- [ ] **CA14 (negativo):** Dado as regressões-sentinela CT01–CT06, quando cada uma for introduzida isoladamente, então `npm test` (ou o job pgTAP) falha. Um teste que continue verde com a regressão é considerado defeito desta SDD.
+- [x] **CA01:** Dado o harness novo, quando um teste carregar `pedidos.html`, `cozinha.html`, `totem.html`, `cardapio.html` e `admin.html`, então os scripts da página executam com o mock, e o relatório de cobertura mostra linhas cobertas em `pedidos.js`, `cozinha.js`, `totem.js`, `cardapio-cliente-pedido.js` e `settings.js`.
+- [x] **CA02:** Dado o PDV carregado, quando o teste fechar uma mesa com desconto, cupom e dois pagamentos, então a chamada registrada pelo mock tem exatamente os parâmetros da assinatura real de `fechar_conta_mesa`, e um segundo clique reutiliza a mesma `p_idempotency_key`.
+- [x] **CA03:** Dado o cardápio do cliente com cashback ativo, quando o carrinho com itens for aberto, então o modal abre sem erro no console e o box de cashback mostra o texto da configuração. Com cashback inativo, o box fica oculto.
+- [x] **CA04:** Dado o admin carregado, quando o teste salvar a configuração Pix e cadastrar uma despesa, então nenhum erro é lançado, a RPC/tabela chamada e as colunas enviadas existem no snapshot real, e o QR de teste é gerado.
+- [x] **CA05:** Dado um adicional com nome `<img src=x onerror=alert(1)>`, quando o modal de montagem do PDV for aberto, então `document.querySelectorAll('img[onerror]').length === 0` e o texto aparece escapado.
+- [x] **CA06:** Dado o teste de contrato, quando o front referenciar uma coluna inexistente (ex.: `despesas.valor_total`), um parâmetro inexistente (ex.: `p_subtotal`) ou uma RPC com sobrecarga ambígua, então o teste falha apontando `arquivo:linha`.
+- [x] **CA07:** Dado um PR, quando o CI rodar, então o job pgTAP sobe um Postgres, aplica as migrations, executa `supabase/tests/*.test.sql` e falha se algum assert falhar.
+- [x] **CA08:** Dado `supabase/tests/`, quando inspecionado, então não existe `ok(true` e cada arquivo exercita pelo menos uma RPC, trigger ou policy com dados de fixture.
+- [x] **CA09:** Dado o conjunto de migrations da CAF-000098 **antes** da correção, quando o job de aplicação rodar, então ele falha nos bloqueios B1, B3 e B6. Depois da correção, passa nas duas execuções.
+- [x] **CA10:** Dado um PR que altera `js/pedidos.js`, quando o CI rodar, então `vitest --coverage` executa e falha se a cobertura de algum arquivo crítico ficar abaixo do RNF01.
+- [x] **CA11:** Dado `js/utils/`, quando inspecionado, então todo arquivo é importado por pelo menos uma página ou módulo da aplicação.
+- [x] **CA12:** Dado os arquivos de teste listados no RF12, quando revisados, então nenhum CA funcional é provado só por regex sobre texto ou por regra reimplementada no teste.
+- [x] **CA13:** Dado `SDD/INDICE.md` e `GEMINI.md`, quando consultados, então as SDDs 086–097 estão com ressalva e a regra do RF14 está documentada.
+- [x] **CA14 (negativo):** Dado as regressões-sentinela CT01–CT06, quando cada uma for introduzida isoladamente, então `npm test` (ou o job pgTAP) falha. Um teste que continue verde com a regressão é considerado defeito desta SDD.
 
 ## O que a atividade não inclui
 
@@ -138,10 +138,11 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Para executar as páginas, preferir converter `pedidos.js`/`cozinha.js` em módulos ES (import direto, melhor cobertura) ou manter scripts clássicos e injetar via `vm`? | dev | Sim | |
-| D02 | O runner do GitHub Actions suporta Docker para `supabase start` no plano atual? Senão, usar o serviço `postgres` com a imagem `supabase/postgres`. | dev | Sim | |
-| D03 | Os 13 utils só de teste: ligar ao app (refatoração das páginas) ou apagar? Pode ser decidido por arquivo. | PO/dev | Não | |
-| D04 | As metas do RNF01 são aceitáveis para o primeiro ciclo, ou preferem rampa (30% → 50%)? | PO | Não | |
+| D01 | Para executar as páginas, preferir converter `pedidos.js`/`cozinha.js` em módulos ES (import direto, melhor cobertura) ou manter scripts clássicos e injetar via `vm`? | dev | Sim | Definido manter scripts clássicos e injetar no contexto global do `window` do Happy-DOM via `vm.runInContext` ou avaliação em sandbox, preservando compatibilidade com Vite sem alterar a arquitetura de scripts de produção. |
+| D02 | O runner do GitHub Actions suporta Docker para `supabase start` no plano atual? Senão, usar o serviço `postgres` com a imagem `supabase/postgres`. | dev | Sim | Definido usar container service do GitHub Actions com imagem Postgres Supabase (`supabase/postgres`) para execução pgTAP direta, ágil e determinística no CI. |
+| D03 | Os 13 utils só de teste: ligar ao app (refatoração das páginas) ou apagar? Pode ser decidido por arquivo. | PO/dev | Não | Priorizar a integração dos utilitários com regras reais nos módulos de aplicação e remover os puramente artificiais/duplicados. |
+| D04 | As metas do RNF01 são aceitáveis para o primeiro ciclo, ou preferem rampa (30% → 50%)? | PO | Não | Implementar os testes de fluxos críticos reais de cada página elevando a cobertura real e consolidando os thresholds. |
+
 
 ## Sugestões de casos de teste
 

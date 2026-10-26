@@ -1,3 +1,5 @@
+BEGIN;
+
 -- =========================================================
 -- MIGRATION: CAF-000078 - FINANCEIRO: CONTRATO DE DESPESAS
 -- =========================================================
@@ -17,3 +19,10 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 3. Atualizar permissões da RPC baixar_despesa
 GRANT EXECUTE ON FUNCTION public.baixar_despesa(BIGINT, DATE, NUMERIC, TEXT) TO authenticated;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('078', 'migration_caf_000078_financeiro_despesas.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

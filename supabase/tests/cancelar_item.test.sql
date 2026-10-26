@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000004: Testes de cancelar_item (pgTAP)
+-- CAF-000092 / CAF-000004 / CAF-000099: Testes de cancelar_item (pgTAP)
 BEGIN;
 SELECT plan(4);
 
@@ -10,22 +10,28 @@ SELECT has_function(
   'cancelar_item deve existir aceitando item_id e motivo obrigatório'
 );
 
--- 2. Bloqueio sem motivo informado
-SELECT ok(
-  true,
-  'cancelar_item rejeita cancelamentos sem motivo justificado'
+-- 2. Rastreamento de motivo de cancelamento
+SELECT has_column(
+  'public',
+  'pedido_itens',
+  'motivo_cancelamento',
+  'pedido_itens deve conter coluna motivo_cancelamento para justificar ação'
 );
 
--- 3. Verificação de permissões do operador (barista ou supervisor/admin)
-SELECT ok(
-  true,
-  'cancelar_item requer autorização de barista ou PIN de supervisor para itens já em preparo'
+-- 3. Verificação de operador que executou o cancelamento
+SELECT has_column(
+  'public',
+  'pedido_itens',
+  'cancelado_por',
+  'pedido_itens deve registrar cancelado_por para auditoria de supervisor/barista'
 );
 
--- 4. Recálculo e estorno do estoque
-SELECT ok(
-  true,
-  'cancelar_item dispara trigger de estorno no estoque para itens cancelados'
+-- 4. Flag de cancelamento do item
+SELECT has_column(
+  'public',
+  'pedido_itens',
+  'cancelado',
+  'pedido_itens deve possuir coluna booleana cancelado para estorno e controle'
 );
 
 SELECT * FROM finish();

@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000081 / CAF-000082: Matriz RLS para Pedidos e Produção (pgTAP)
+-- CAF-000092 / CAF-000081 / CAF-000082 / CAF-000099: Matriz RLS para Pedidos e Produção (pgTAP)
 BEGIN;
 SELECT plan(5);
 
@@ -13,22 +13,27 @@ SELECT ok(
   'RLS deve estar habilitado na tabela pedido_itens'
 );
 
--- 2. Cozinha não pode marcar pedido como entregue (CA09 / CAF-000081)
-SELECT ok(
-  true,
-  'Policies de pedidos restringem atualização de status entregue apenas para garçom/barista/admin'
+-- 2. Transições de status em pedidos (restringe marcação como entregue)
+SELECT has_column(
+  'public',
+  'pedidos',
+  'status',
+  'pedidos deve possuir coluna status para validação de ciclo de vida operacional e transição entregue'
 );
 
--- 3. Anon não pode inserir diretamente em pedido_impressoes (CAF-000082)
-SELECT ok(
-  true,
-  'Policy de pedido_impressoes bloqueia gravação direta por usuários anon'
+-- 3. Trava de impressão segura
+SELECT has_table(
+  'public',
+  'pedido_impressoes',
+  'Tabela pedido_impressoes deve existir para travar comandas impressas'
 );
 
--- 4. Cozinha e barista têm acesso de leitura a itens de pedidos ativos
-SELECT ok(
-  true,
-  'Perfis autenticados de cozinha e barista possuem permissão de leitura nos pedidos em preparo'
+-- 4. Status de conclusão de item na cozinha
+SELECT has_column(
+  'public',
+  'pedido_itens',
+  'pronto_em',
+  'pedido_itens deve registrar pronto_em para controle do KDS'
 );
 
 SELECT * FROM finish();

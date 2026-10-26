@@ -1,3 +1,5 @@
+BEGIN;
+
 -- ==============================================================================
 -- CAF-000077 — Cupons: uso único por pedido, RPC protegida e rastreio no PDV
 -- ==============================================================================
@@ -95,7 +97,12 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, BIGINT) FROM anon, public;
 GRANT EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, BIGINT) TO authenticated;
 
--- 4. Atualiza fechar_conta_mesa para passar p_pedido_id à registrar_uso_cupom
+-- 4. Atualiza fechar_conta_mesa para passar p_pedido_id à registrar_uso_cupom e unificar assinatura
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB);
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT);
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, UUID, TEXT, BIGINT);
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, TEXT, TEXT, BIGINT);
+
 CREATE OR REPLACE FUNCTION public.fechar_conta_mesa(
   p_mesa_codigo TEXT,
   p_pagamentos JSONB,
@@ -112,7 +119,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_fechamento_id BIGINT;
+  v_fechamento_id UUID;
   v_pedido RECORD;
   v_subtotal NUMERIC(10,2) := 0;
   v_total_a_pagar NUMERIC(10,2) := 0;
@@ -120,31 +127,50 @@ DECLARE
   v_troco NUMERIC(10,2) := 0;
   v_pagamento RECORD;
   v_existing_fechamento RECORD;
-  v_fechamento_existente_id BIGINT;
   v_primeiro_pedido_id BIGINT := NULL;
+  v_user_role TEXT;
+  v_pode_dar_desconto BOOLEAN;
+  v_uid UUID := auth.uid();
 BEGIN
   -- 1. Idempotência por idempotency_key
   IF p_idempotency_key IS NOT NULL AND TRIM(p_idempotency_key) <> '' THEN
-    SELECT id, troco, total INTO v_existing_fechamento
-    FROM public.fechamentos_caixa
-    WHERE idempotency_key = p_idempotency_key;
+    SELECT id, troco, total_conta INTO v_existing_fechamento
+    FROM public.fechamentos
+    WHERE idempotency_key = TRIM(p_idempotency_key);
 
     IF FOUND THEN
       RETURN jsonb_build_object(
         'fechamento_id', v_existing_fechamento.id,
         'troco', v_existing_fechamento.troco,
-        'total', v_existing_fechamento.total,
+        'total', v_existing_fechamento.total_conta,
         'idempotent', true
       );
     END IF;
   END IF;
 
-  -- 2. Calcula subtotal apenas dos pedidos ativos (não cancelados) da mesa
+  -- Validação de Role e Permissões
+  SELECT role, pode_dar_desconto INTO v_user_role, v_pode_dar_desconto
+  FROM public.perfis WHERE id = v_uid;
+
+  IF v_user_role IS NOT NULL AND v_user_role NOT IN ('barista', 'admin') THEN
+    RAISE EXCEPTION 'Acesso negado: apenas baristas e administradores podem fechar contas de mesa.';
+  END IF;
+
+  IF p_desconto_manual > 0 AND NOT (v_user_role = 'admin' OR v_pode_dar_desconto = true) THEN
+    RAISE EXCEPTION 'Usuário sem permissão para aplicar desconto manual.';
+  END IF;
+
+  IF p_desconto_manual > 0 AND (p_desconto_motivo IS NULL OR length(trim(p_desconto_motivo)) = 0) THEN
+    RAISE EXCEPTION 'Motivo do desconto é obrigatório.';
+  END IF;
+
+  -- 2. Calcula subtotal apenas dos pedidos ativos (não cancelados e não pagos) da mesa
   FOR v_pedido IN
     SELECT id, total
     FROM public.pedidos
     WHERE mesa_codigo = p_mesa_codigo
-      AND status NOT IN ('finalizado', 'entregue', 'cancelado')
+      AND status <> 'cancelado'
+      AND (status_pagamento IS NULL OR status_pagamento != 'pago')
     FOR UPDATE
   LOOP
     v_subtotal := v_subtotal + COALESCE(v_pedido.total, 0);
@@ -154,7 +180,11 @@ BEGIN
   END LOOP;
 
   IF v_subtotal = 0 THEN
-    RAISE EXCEPTION 'Nenhum pedido ativo encontrado para a mesa %', p_mesa_codigo;
+    RAISE EXCEPTION 'Mesa sem pedidos em aberto.';
+  END IF;
+
+  IF p_desconto_manual > v_subtotal THEN
+    RAISE EXCEPTION 'O desconto (R$ %) não pode ser maior que o subtotal da mesa (R$ %).', p_desconto_manual, v_subtotal;
   END IF;
 
   -- 3. Calcula total com taxa de serviço e desconto manual
@@ -171,32 +201,42 @@ BEGIN
     v_total_pago := v_total_pago + COALESCE(v_pagamento.valor, 0);
   END LOOP;
 
-  IF ROUND(v_total_pago, 2) < ROUND(v_total_a_pagar, 2) THEN
+  IF ROUND(v_total_pago, 2) < (ROUND(v_total_a_pagar, 2) - 0.01) THEN
     RAISE EXCEPTION 'Total pago (R$ %) é inferior ao total a pagar (R$ %)', v_total_pago, v_total_a_pagar;
   END IF;
 
   v_troco := ROUND(GREATEST(v_total_pago - v_total_a_pagar, 0), 2);
 
-  -- 5. Cria registro de fechamento
-  INSERT INTO public.fechamentos_caixa (
-    mesa_codigo, subtotal, taxa_servico, desconto, desconto_motivo,
-    total, total_pago, troco, pagamentos, fechado_por,
+  -- 5. Cria registro de fechamento em public.fechamentos
+  INSERT INTO public.fechamentos (
+    mesa_codigo, total_conta, troco, criado_por,
+    taxa_servico, desconto_manual, desconto_motivo, desconto_por,
     idempotency_key, cupom_codigo, campanha_id
   ) VALUES (
-    p_mesa_codigo, v_subtotal, COALESCE(p_taxa_servico, 0), COALESCE(p_desconto_manual, 0), p_desconto_motivo,
-    v_total_a_pagar, v_total_pago, v_troco, p_pagamentos, auth.uid(),
+    p_mesa_codigo, v_total_a_pagar, v_troco, v_uid,
+    COALESCE(p_taxa_servico, 0), COALESCE(p_desconto_manual, 0), p_desconto_motivo, CASE WHEN p_desconto_manual > 0 THEN v_uid ELSE NULL END,
     p_idempotency_key, p_cupom_codigo, p_campanha_id
   ) RETURNING id INTO v_fechamento_id;
 
-  -- 6. Atualiza pedidos da mesa para 'finalizado' e vincula cupom/campanha
+  -- 6. Inserir formas de pagamento
+  FOR v_pagamento IN
+    SELECT (elem->>'valor')::NUMERIC(10,2) AS valor, (elem->>'forma') AS forma
+    FROM jsonb_array_elements(p_pagamentos) AS elem
+  LOOP
+    INSERT INTO public.fechamento_pagamentos (fechamento_id, forma, valor)
+    VALUES (v_fechamento_id, v_pagamento.forma, v_pagamento.valor);
+  END LOOP;
+
+  -- 7. Atualiza pedidos da mesa para 'pago' e vincula cupom/campanha
   FOR v_pedido IN
     SELECT id FROM public.pedidos
     WHERE mesa_codigo = p_mesa_codigo
-      AND status NOT IN ('finalizado', 'entregue', 'cancelado')
+      AND status <> 'cancelado'
+      AND (status_pagamento IS NULL OR status_pagamento != 'pago')
   LOOP
     UPDATE public.pedidos
     SET 
-      status = 'finalizado',
+      status_pagamento = 'pago',
       cupom_codigo = COALESCE(p_cupom_codigo, cupom_codigo),
       campanha_id = COALESCE(p_campanha_id, campanha_id),
       updated_at = now()
@@ -206,7 +246,7 @@ BEGIN
     VALUES (v_fechamento_id, v_pedido.id);
   END LOOP;
 
-  -- 7. Registrar uso de cupom dentro da mesma transação com o pedido principal da mesa
+  -- 8. Registrar uso de cupom dentro da mesma transação com o pedido principal da mesa
   IF p_campanha_id IS NOT NULL AND v_primeiro_pedido_id IS NOT NULL THEN
     PERFORM public.registrar_uso_cupom(p_campanha_id, v_primeiro_pedido_id);
   END IF;
@@ -219,6 +259,9 @@ BEGIN
   );
 END;
 $$;
+
+REVOKE EXECUTE ON FUNCTION public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, TEXT, TEXT, BIGINT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, TEXT, TEXT, BIGINT) TO authenticated;
 
 -- 5. Trigger para estornar uso de cupom se o pedido for cancelado
 CREATE OR REPLACE FUNCTION public.fn_estorno_cupom_pedido_cancelado()
@@ -267,3 +310,10 @@ UPDATE public.campanhas c
 SET
   usos_registrados = (SELECT COUNT(*) FROM public.campanha_usos u WHERE u.campanha_id = c.id),
   receita_atribuida = (SELECT COALESCE(SUM(u.valor_receita), 0) FROM public.campanha_usos u WHERE u.campanha_id = c.id);
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('077', 'migration_caf_000077_cupons_uso_unico.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

@@ -1,3 +1,5 @@
+BEGIN;
+
 -- ==============================================================================
 -- CAF-000080 — Fuso horário consistente (America/Sao_Paulo) e corte do dia operacional
 -- ==============================================================================
@@ -24,7 +26,8 @@ $$;
 GRANT EXECUTE ON FUNCTION public.fn_inicio_dia_sp(DATE) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.fn_fim_dia_sp(DATE) TO anon, authenticated;
 
--- 2. Recriação da view v_painel_retirada com corte robusto do dia em São Paulo (evita corte errado após 21h)
+-- 2. Recriação da view v_painel_retirada com corte robusto do dia em São Paulo (B6)
+DROP VIEW IF EXISTS public.v_painel_retirada;
 CREATE OR REPLACE VIEW public.v_painel_retirada WITH (security_invoker = false) AS
 SELECT 
   numero_pedido,
@@ -97,3 +100,10 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.fn_simular_correcao_fuso_historico() FROM anon, public;
 GRANT EXECUTE ON FUNCTION public.fn_simular_correcao_fuso_historico() TO authenticated;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('080', 'migration_caf_000080_fuso_horario.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

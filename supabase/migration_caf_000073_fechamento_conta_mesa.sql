@@ -1,31 +1,51 @@
+BEGIN;
+
 -- ==============================================================================
 -- MIGRATION: CAF-000073 - CORREÇÃO DO FECHAMENTO DE CONTA DA MESA
 -- ==============================================================================
 
--- 1. Garantir colunas de idempotência e cupom em fechamentos
+-- 1. Garantir colunas de idempotência e cupom em fechamentos (tipo TEXT para suportar UUID e timestamps)
 ALTER TABLE public.fechamentos
-  ADD COLUMN IF NOT EXISTS idempotency_key UUID UNIQUE,
+  ADD COLUMN IF NOT EXISTS idempotency_key TEXT,
   ADD COLUMN IF NOT EXISTS cupom_codigo TEXT,
   ADD COLUMN IF NOT EXISTS campanha_id BIGINT REFERENCES public.campanhas(id) ON DELETE SET NULL;
 
-CREATE INDEX IF NOT EXISTS idx_fechamentos_idempotency_key
+DO $$
+BEGIN
+  -- Se foi criada anteriormente como UUID, converter com segurança para TEXT
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'fechamentos' AND column_name = 'idempotency_key' AND data_type = 'uuid'
+  ) THEN
+    ALTER TABLE public.fechamentos ALTER COLUMN idempotency_key TYPE TEXT USING idempotency_key::text;
+  END IF;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_fechamentos_idempotency_key_uniq
   ON public.fechamentos(idempotency_key)
   WHERE idempotency_key IS NOT NULL;
 
--- 2. Atualizar RPC fechar_conta_mesa com assinatura segura e unificada
+-- 2. Remover sobrecargas antigas para evitar ambiguidade PGRST203 (B2)
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB);
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT);
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, UUID, TEXT, BIGINT);
+DROP FUNCTION IF EXISTS public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, TEXT, TEXT, BIGINT);
+
+-- 3. Atualizar RPC fechar_conta_mesa com assinatura segura e unificada
 CREATE OR REPLACE FUNCTION public.fechar_conta_mesa(
   p_mesa_codigo TEXT,
   p_pagamentos JSONB,
   p_taxa_servico NUMERIC DEFAULT 0,
   p_desconto_manual NUMERIC DEFAULT 0,
   p_desconto_motivo TEXT DEFAULT NULL,
-  p_idempotency_key UUID DEFAULT NULL,
+  p_idempotency_key TEXT DEFAULT NULL,
   p_cupom_codigo TEXT DEFAULT NULL,
   p_campanha_id BIGINT DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_user_role TEXT;
@@ -41,10 +61,10 @@ DECLARE
   v_uid UUID := auth.uid();
 BEGIN
   -- Idempotência: se já processado com a mesma chave, retorna o fechamento existente
-  IF p_idempotency_key IS NOT NULL THEN
+  IF p_idempotency_key IS NOT NULL AND TRIM(p_idempotency_key) <> '' THEN
     SELECT id, troco, total_conta INTO v_fechamento_id, v_troco, v_total_a_pagar
     FROM public.fechamentos
-    WHERE idempotency_key = p_idempotency_key;
+    WHERE idempotency_key = TRIM(p_idempotency_key);
 
     IF FOUND THEN
       RETURN jsonb_build_object(
@@ -116,10 +136,10 @@ BEGIN
     p_idempotency_key, p_cupom_codigo, p_campanha_id
   ) RETURNING id INTO v_fechamento_id;
 
-  -- 5. Inserir formas de pagamento detalhadas
+  -- 5. Inserir formas de pagamento detalhadas (coluna forma no schema real)
   FOR v_pagamento IN SELECT * FROM jsonb_array_elements(p_pagamentos)
   LOOP
-    INSERT INTO public.fechamento_pagamentos (fechamento_id, forma_pagamento, valor)
+    INSERT INTO public.fechamento_pagamentos (fechamento_id, forma, valor)
     VALUES (v_fechamento_id, v_pagamento->>'forma', (v_pagamento->>'valor')::NUMERIC(10,2));
   END LOOP;
 
@@ -142,11 +162,6 @@ BEGIN
     VALUES (v_fechamento_id, v_pedido.id);
   END LOOP;
 
-  -- 7. Registrar uso de cupom dentro da mesma transação, se houver
-  IF p_campanha_id IS NOT NULL THEN
-    PERFORM public.registrar_uso_cupom(p_campanha_id, v_total_a_pagar);
-  END IF;
-
   RETURN jsonb_build_object(
     'fechamento_id', v_fechamento_id,
     'troco', v_troco,
@@ -156,4 +171,12 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, UUID, TEXT, BIGINT) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, TEXT, TEXT, BIGINT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.fechar_conta_mesa(TEXT, JSONB, NUMERIC, NUMERIC, TEXT, TEXT, TEXT, BIGINT) TO authenticated;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('073', 'migration_caf_000073_fechamento_conta_mesa.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

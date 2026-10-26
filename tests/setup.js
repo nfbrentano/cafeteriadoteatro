@@ -69,16 +69,59 @@ if (typeof window !== 'undefined') {
     };
   }
 
-  // escapeHtml global (presente em js/supabase-client.js)
-  if (!window.escapeHtml) {
-    window.escapeHtml = function(unsafe) {
-      if (!unsafe) return '';
-      return unsafe.toString()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  // Audio mock
+  if (!window.Audio) {
+    window.Audio = class {
+      play() { return Promise.resolve(); }
+      pause() {}
+      load() {}
+      addEventListener() {}
+      removeEventListener() {}
     };
   }
+
+  // matchMedia mock
+  if (!window.matchMedia) {
+    window.matchMedia = vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+  }
+
+  // Supabase mock padrão para carregar o cliente real
+  if (!window.supabase) {
+    window.supabase = {
+      createClient: vi.fn(() => ({
+        auth: {
+          getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+          signOut: vi.fn(() => Promise.resolve({ error: null })),
+          onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } }))
+        },
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          insert: vi.fn().mockReturnThis(),
+          update: vi.fn().mockReturnThis(),
+          delete: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+          then: (resolve) => resolve({ data: [], error: null })
+        })),
+        rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
+        channel: vi.fn(() => ({
+          on: vi.fn().mockReturnThis(),
+          subscribe: vi.fn(() => ({ unsubscribe: vi.fn() }))
+        }))
+      }))
+    };
+  }
+
+  // Importa e executa supabase-client.js real (fornece window.escapeHtml real - RF05)
+  await import('../js/supabase-client.js');
 }
+

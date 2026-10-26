@@ -48,16 +48,23 @@ export function createSupabaseMock(initialData = {}, options = {}) {
         const toUpsert = Array.isArray(rows) ? rows : [rows];
         const table = getTable(tableName);
         const inserted = toUpsert.map((r, i) => {
-          const idx = table.findIndex(t => t.id && t.id === r.id);
+          const idx = table.findIndex(t => 
+            (r.id && t.id === r.id) || 
+            (r.chave && t.chave === r.chave) || 
+            (r.forma && t.forma === r.forma)
+          );
           const fullRow = {
-            id: r.id || `mock-id-${Date.now()}-${i}`,
             updated_at: new Date().toISOString(),
             ...r
           };
+          if (r.id) fullRow.id = r.id;
           if (idx >= 0) {
             table[idx] = { ...table[idx], ...fullRow };
             return table[idx];
           } else {
+            if (!fullRow.id && !fullRow.chave && !fullRow.forma) {
+              fullRow.id = `mock-id-${Date.now()}-${i}`;
+            }
             table.push(fullRow);
             return fullRow;
           }
@@ -196,15 +203,22 @@ export function createSupabaseMock(initialData = {}, options = {}) {
         return Promise.resolve({ data: true, error: null });
       }
 
+      if (options.strictMock || options.throwOnUnconfigured) {
+        return Promise.reject(new Error(`[SupabaseMock] Chamada não configurada no teste: RPC "${fnName}" com args ${JSON.stringify(args)}`));
+      }
+
       return Promise.resolve({ data: null, error: null });
     }),
+
+
     channel: vi.fn((name = 'realtime') => {
       const listeners = [];
       const chan = {
         name,
+        listeners,
         on: vi.fn((event, filter, callback) => {
           const cb = typeof filter === 'function' ? filter : callback;
-          listeners.push({ event, cb });
+          listeners.push({ event, filter: typeof filter === 'object' ? filter : null, cb });
           return chan;
         }),
         subscribe: vi.fn((cb) => {
@@ -214,7 +228,7 @@ export function createSupabaseMock(initialData = {}, options = {}) {
         unsubscribe: vi.fn(),
         _trigger: (event, payload) => {
           listeners.forEach(l => {
-            if (l.event === '*' || l.event === event) {
+            if (l.event === '*' || l.event === event || event === 'postgres_changes') {
               l.cb(payload);
             }
           });
@@ -223,7 +237,9 @@ export function createSupabaseMock(initialData = {}, options = {}) {
       channels.push(chan);
       return chan;
     }),
-    removeChannel: vi.fn()
+    removeChannel: vi.fn(),
+    _channels: channels,
+    getChannel: (name) => channels.find(c => c.name === name) || channels[0]
   };
 
   return client;

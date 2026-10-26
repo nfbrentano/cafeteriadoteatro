@@ -191,7 +191,7 @@ describe('CAF-000094 — Fechamento de Caixa e Financeiro', () => {
         id: 'desp-001',
         descricao: 'Aluguel do Teatro',
         valor: 1500.00,
-        vencimento: '2026-10-25',
+        vencimento: '2099-12-31',
         pago_em: null,
         valor_pago: null,
         forma_pagamento: null

@@ -1,3 +1,5 @@
+BEGIN;
+
 -- =========================================================
 -- MIGRATION: CAF-000076 - CORREÇÃO DE CASHBACK, SEGURANÇA E ESTORNO
 -- =========================================================
@@ -241,3 +243,10 @@ CREATE TRIGGER trg_estorno_cashback_pedido_cancelado
 AFTER UPDATE OF status ON public.pedidos
 FOR EACH ROW
 EXECUTE FUNCTION public.fn_estorno_cashback_pedido_cancelado();
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('076', 'migration_caf_000076_correcao_cashback.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

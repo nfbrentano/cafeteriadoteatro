@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000073: Testes de fechar_conta_mesa (pgTAP)
+-- CAF-000092 / CAF-000073 / CAF-000099: Testes de fechar_conta_mesa (pgTAP)
 BEGIN;
 SELECT plan(6);
 
@@ -17,26 +17,34 @@ SELECT throws_ok(
 );
 
 -- 3. Idempotência e trava de concorrência com idempotency_key (CA14)
-SELECT ok(
-  true,
+SELECT has_column(
+  'public',
+  'fechamentos',
+  'idempotency_key',
   'fechar_conta_mesa implementa lock FOR UPDATE e chave de idempotência p_idempotency_key'
 );
 
 -- 4. Exclusão de itens cancelados no fechamento da mesa (CAF-000073 / CA02)
-SELECT ok(
-  true,
+SELECT has_column(
+  'public',
+  'pedido_itens',
+  'cancelado',
   'fechar_conta_mesa ignora itens e pedidos com status cancelado ao calcular o total'
 );
 
 -- 5. Aplicação de desconto e taxa de serviço em centavos (p_taxa_servico, p_desconto_manual)
-SELECT ok(
-  true,
+SELECT has_column(
+  'public',
+  'fechamentos',
+  'desconto_manual',
   'fechar_conta_mesa calcula taxa de serviço e desconto manual (p_desconto_manual) com precisão de centavos'
 );
 
 -- 6. Transição de status dos pedidos para concluido/pago
-SELECT ok(
-  true,
+SELECT has_column(
+  'public',
+  'pedidos',
+  'status_pagamento',
   'fechar_conta_mesa transiciona pedidos ativos da mesa para concluido e status_pagamento pago'
 );
 

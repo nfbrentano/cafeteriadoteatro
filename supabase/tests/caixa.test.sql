@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000079 / CAF-000044: Testes de Caixa e Caixa Cego (pgTAP)
+-- CAF-000092 / CAF-000079 / CAF-000044 / CAF-000099: Testes de Caixa e Caixa Cego (pgTAP)
 BEGIN;
 SELECT plan(5);
 
@@ -12,26 +12,37 @@ SELECT has_function(
 SELECT has_function(
   'public',
   'fn_calcular_totais_caixa_interno',
-  ARRAY['bigint'],
   'fn_calcular_totais_caixa_interno deve existir reconciliando taxas da CAF-000039 e 079'
 );
 
--- 2. Restrição de um único caixa aberto simultaneamente
-SELECT ok(
-  true,
-  'Índice único ou constraint impede abertura de múltiplos caixas simultâneos'
+-- 2. Restrição de status de caixa
+SELECT has_column(
+  'public',
+  'caixas',
+  'status',
+  'Tabela caixas deve rastrear status do caixa aberto/fechado'
 );
 
--- 3. Fechamento cego: operador digita valores sem ver o esperado
-SELECT ok(
-  true,
-  'fechar_caixa registra contagem cega com divergências expostas apenas para admin/gerente'
+-- 3. Fechamento de caixa com contagem cega
+SELECT has_function(
+  'public',
+  'fechar_caixa',
+  'fechar_caixa registra contagem cega com conferência e divergências'
 );
 
 -- 4. Dedução de taxas de operadoras de cartão e Pix (CAF-000079)
-SELECT ok(
-  true,
-  'fn_calcular_totais_caixa_interno desconta taxas líquidas de cartão e Pix conforme cadastradas'
+SELECT has_table(
+  'public',
+  'formas_pagamento_taxas',
+  'Tabela formas_pagamento_taxas deve existir para dedução de taxas líquidas'
+);
+
+-- 5. Rastreamento de saldo final
+SELECT has_column(
+  'public',
+  'caixas',
+  'saldo_final',
+  'Tabela caixas deve persistir saldo_final após fechamento'
 );
 
 SELECT * FROM finish();

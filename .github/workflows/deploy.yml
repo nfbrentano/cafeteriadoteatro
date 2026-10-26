@@ -5,11 +5,8 @@ on:
     branches:
       - main
   pull_request:
-    paths:
-      - 'supabase/**'
-      - 'tests/**'
-      - 'scripts/**'
-      - 'package.json'
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -23,8 +20,21 @@ concurrency:
 
 jobs:
   db-tests:
-    name: Database & pgTAP Tests
+    name: Database, pgTAP & Code Tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,11 +48,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run automated test suite (real code + contract tests)
+        run: npm test
+
       - name: Run SQL pgTAP contracts & security tests
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: npm run test:db
 
+      - name: Validate build
+        run: npm run build
+
   build-and-deploy:
-    name: Build & Deploy
+    name: Deploy to GitHub Pages
     needs: [db-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
@@ -62,10 +80,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run automated tests
-        run: npm test
-
-      - name: Build
+      - name: Build production bundle
         run: npm run build
 
       - name: Setup Pages

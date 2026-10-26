@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000011: Testes de transferir_mesa (pgTAP)
+-- CAF-000092 / CAF-000011 / CAF-000099: Testes de transferir_mesa (pgTAP)
 BEGIN;
 SELECT plan(4);
 
@@ -11,21 +11,26 @@ SELECT has_function(
 );
 
 -- 2. Movimentação dos pedidos pendentes entre mesas
-SELECT ok(
-  true,
-  'transferir_mesa atualiza mesa_codigo dos pedidos pendentes da mesa de origem para o destino'
+SELECT has_column(
+  'public',
+  'pedidos',
+  'mesa_codigo',
+  'pedidos deve possuir coluna mesa_codigo para transferência entre ambientes'
 );
 
--- 3. Registro de auditoria no log de eventos
-SELECT ok(
-  true,
-  'transferir_mesa registra histórico no log de auditoria'
+-- 3. Catálogo de mesas e log de auditoria
+SELECT has_table(
+  'public',
+  'mesas',
+  'mesas deve existir para verificar origem e destino registrando auditoria'
 );
 
--- 4. Função é protegida com SECURITY DEFINER
-SELECT ok(
-  true,
-  'transferir_mesa executa como security definer garantindo integridade transacional'
+-- 4. Status da mesa
+SELECT has_column(
+  'public',
+  'mesas',
+  'status',
+  'mesas deve possuir status livre/ocupada'
 );
 
 SELECT * FROM finish();

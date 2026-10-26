@@ -1,3 +1,5 @@
+BEGIN;
+
 -- ==============================================================================
 -- CAF-000082 — Segurança: RPCs, policies e views expostas a anônimos e a staff
 -- ==============================================================================
@@ -301,6 +303,10 @@ SELECT
   COALESCE(SUM( DISTINCT CASE
     WHEN p.id IS NOT NULL THEN COALESCE(p.total, 0)
     ELSE 0
+  END ), 0)::numeric(10,2) AS faturamento_gerado_7d,
+  COALESCE(SUM( DISTINCT CASE
+    WHEN p.id IS NOT NULL THEN COALESCE(p.total, 0)
+    ELSE 0
   END ), 0)::numeric(10,2) AS receita_gerada_7d
 FROM public.campanhas cp
 LEFT JOIN public.campanha_envios ce ON ce.campanha_id = cp.id
@@ -321,6 +327,7 @@ GRANT SELECT ON public.v_campanhas_conversao TO authenticated;
 -- ------------------------------------------------------------------------------
 -- RF06: v_painel_retirada (LGPD e Recorte Seguro do Dia)
 -- ------------------------------------------------------------------------------
+DROP VIEW IF EXISTS public.v_painel_retirada;
 CREATE OR REPLACE VIEW public.v_painel_retirada WITH (security_invoker = false) AS
 SELECT 
   numero_pedido,
@@ -472,34 +479,60 @@ GRANT EXECUTE ON FUNCTION public.registrar_evento_cardapio(TEXT, TEXT, TEXT, DAT
 REVOKE EXECUTE ON FUNCTION public.processar_cashback_pedido(BIGINT, UUID, NUMERIC) FROM anon, public;
 GRANT EXECUTE ON FUNCTION public.processar_cashback_pedido(BIGINT, UUID, NUMERIC) TO authenticated;
 
+-- Remove a assinatura obsoleta sem pedido_id para evitar duplicação/regressão da 077 (B5)
+DROP FUNCTION IF EXISTS public.registrar_uso_cupom(BIGINT, NUMERIC);
+
+-- Assegura a assinatura oficial vinculada ao pedido da CAF-000077
 CREATE OR REPLACE FUNCTION public.registrar_uso_cupom(
   p_campanha_id BIGINT,
-  p_valor_pedido NUMERIC DEFAULT 0
+  p_pedido_id BIGINT
 )
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_pedido RECORD;
 BEGIN
   IF auth.role() IS NULL OR auth.role() <> 'authenticated' THEN
-    RAISE EXCEPTION 'Não autorizado';
+    RAISE EXCEPTION 'Não autorizado para registrar uso de cupom.';
   END IF;
 
   IF p_campanha_id IS NULL THEN
     RAISE EXCEPTION 'Campanha ID é obrigatório para registrar uso de cupom.';
   END IF;
 
+  IF p_pedido_id IS NULL THEN
+    RAISE EXCEPTION 'Pedido ID é obrigatório para registrar uso de cupom.';
+  END IF;
+
+  SELECT id, status, total, campanha_id INTO v_pedido
+  FROM public.pedidos
+  WHERE id = p_pedido_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Pedido % não encontrado.', p_pedido_id;
+  END IF;
+
+  IF v_pedido.status = 'cancelado' THEN
+    RAISE EXCEPTION 'Não é permitido registrar uso de cupom para pedido cancelado.';
+  END IF;
+
+  INSERT INTO public.campanha_usos (campanha_id, pedido_id, valor_receita, created_at)
+  VALUES (p_campanha_id, p_pedido_id, COALESCE(v_pedido.total, 0), now())
+  ON CONFLICT (pedido_id) DO NOTHING;
+
   UPDATE public.campanhas
   SET
-    usos_registrados = COALESCE(usos_registrados, 0) + 1,
-    receita_atribuida = COALESCE(receita_atribuida, 0) + GREATEST(COALESCE(p_valor_pedido, 0), 0)
+    usos_registrados = (SELECT COUNT(*) FROM public.campanha_usos WHERE campanha_id = p_campanha_id),
+    receita_atribuida = (SELECT COALESCE(SUM(valor_receita), 0) FROM public.campanha_usos WHERE campanha_id = p_campanha_id)
   WHERE id = p_campanha_id;
 END;
 $$;
 
-REVOKE EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, NUMERIC) FROM anon, public;
-GRANT EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, NUMERIC) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, BIGINT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, BIGINT) TO authenticated;
 
 -- ------------------------------------------------------------------------------
 -- Allowlist Pública Documentada (RF11 / CA11):
@@ -514,3 +547,10 @@ GRANT EXECUTE ON FUNCTION public.registrar_uso_cupom(BIGINT, NUMERIC) TO authent
 -- Views:
 --   - public.v_painel_retirada (apenas numero_pedido, primeiro_nome, status, pronto_em)
 -- ------------------------------------------------------------------------------
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('082', 'migration_caf_000082_seguranca.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

@@ -4,7 +4,7 @@ import path from 'node:path';
 
 describe('CAF-000072: Baseline do schema de produção e reconciliação de migrations', () => {
   const rootDir = process.cwd();
-  const snapshotPath = path.join(rootDir, 'supabase/snapshots/producao-2026-10-21.csv');
+  const snapshotPath = path.join(rootDir, 'supabase/snapshots/producao-2026-10-22-antes.csv');
   const baselineSqlPath = path.join(rootDir, 'supabase/migration_caf_000072_baseline_producao.sql');
   const readmePath = path.join(rootDir, 'supabase/README.md');
   const fixturePath = path.join(rootDir, 'tests/fixtures/schema-snapshot.json');

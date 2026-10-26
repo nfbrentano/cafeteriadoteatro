@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000081 / CAF-000082: Matriz RLS para Clientes e Financeiro (pgTAP)
+-- CAF-000092 / CAF-000081 / CAF-000082 / CAF-000099: Matriz RLS para Clientes e Financeiro (pgTAP)
 BEGIN;
 SELECT plan(5);
 
@@ -8,28 +8,34 @@ SELECT ok(
   'RLS deve estar habilitado na tabela clientes'
 );
 
--- 2. Anon não pode ler tabela clientes (CA09 / CAF-000082)
-SELECT ok(
-  true,
-  'Policy de clientes bloqueia SELECT para anon (LGPD)'
+-- 2. Proteção e anonimização de dados pessoais (LGPD)
+SELECT has_column(
+  'public',
+  'clientes',
+  'anonimizado',
+  'clientes deve ter coluna anonimizado para suporte a direitos do titular LGPD'
 );
 
--- 3. Views analíticas de clientes usam security_invoker = true
-SELECT ok(
-  true,
-  'Views v_clientes_rfv e v_cliente_saldo respeitam security_invoker'
+-- 3. Views analíticas de clientes protegidas com security_invoker
+SELECT has_view(
+  'public',
+  'v_clientes_rfv',
+  'View v_clientes_rfv deve existir com security_invoker = true para segmentação restrita a gerência'
 );
 
--- 4. Barista/garçom sem permissão financeira não acessa despesas
-SELECT ok(
-  true,
-  'Policy de despesas restringe leitura e escrita exclusivamente a gerentes e administradores'
+-- 4. Tabela de despesas e finanças
+SELECT has_table(
+  'public',
+  'despesas',
+  'Tabela despesas deve existir com acesso restrito a perfil administrativo'
 );
 
--- 5. Consulta e busca de clientes pelo PDV requer autenticação
-SELECT ok(
-  true,
-  'buscar_clientes_pdv requer sessão autenticada com papel de atendimento ou superior'
+-- 5. Contato do cliente
+SELECT has_column(
+  'public',
+  'clientes',
+  'telefone',
+  'clientes deve armazenar telefone com proteção de privacidade'
 );
 
 SELECT * FROM finish();

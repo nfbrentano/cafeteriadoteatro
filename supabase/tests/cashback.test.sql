@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000076: Testes de Cashback e Idempotência (pgTAP)
+-- CAF-000092 / CAF-000076 / CAF-000099: Testes de Cashback e Idempotência (pgTAP)
 BEGIN;
 SELECT plan(4);
 
@@ -10,10 +10,12 @@ SELECT has_function(
   'processar_cashback_pedido deve existir com validação estrita de pedido_id e cliente_id'
 );
 
--- 2. Idempotência: processar cashback 2x para o mesmo pedido credita apenas 1x (CA07)
-SELECT ok(
-  true,
-  'processar_cashback_pedido possui controle de unicidade por pedido_id evitando créditos duplicados'
+-- 2. Associação de cliente ao pedido para controle de créditos
+SELECT has_column(
+  'public',
+  'pedidos',
+  'cliente_id',
+  'pedidos deve associar cliente_id para controle de cashback'
 );
 
 -- 3. Proteção contra chamadas com p_pedido_id NULL ou valor inválido
@@ -22,10 +24,12 @@ SELECT throws_ok(
   'processar_cashback_pedido deve falhar se parâmetros obrigatórios forem nulos'
 );
 
--- 4. Estorno automático de cashback ao cancelar pedido
-SELECT ok(
-  true,
-  'Trigger fn_estorno_cashback_pedido_cancelado estorna créditos de pedidos cancelados'
+-- 4. Saldo do cliente para crédito de cashback
+SELECT has_column(
+  'public',
+  'clientes',
+  'saldo_conta',
+  'clientes deve ter saldo_conta para crédito e estorno de cashback'
 );
 
 SELECT * FROM finish();

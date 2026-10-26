@@ -645,7 +645,7 @@ window.initAdminCaixa = async function () {
     try {
       const { data, error } = await supabase.rpc('fechar_caixa', {
         p_caixa_id: currentCaixa.id,
-        p_contagem: contagem,
+        p_valores_informados: contagem,
         p_observacoes: observacoes || null
       });
 

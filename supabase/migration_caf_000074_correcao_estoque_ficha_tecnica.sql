@@ -1,3 +1,5 @@
+BEGIN;
+
 -- =========================================================
 -- MIGRATION: CAF-000074 - CORREÇÃO DE ESTOQUE E FICHA TÉCNICA (CMV)
 -- =========================================================
@@ -104,6 +106,13 @@ ALTER TABLE public.produtos
 CREATE INDEX IF NOT EXISTS idx_produtos_fornecedor_padrao ON public.produtos(fornecedor_padrao_id) WHERE fornecedor_padrao_id IS NOT NULL;
 
 -- 4. Chave de margem mínima configurável para fichas técnicas (RF06 / CA07)
-INSERT INTO public.configuracoes_sistema (chave, valor, descricao)
-VALUES ('ficha_margem_minima_percentual', '50.00'::jsonb, 'Margem mínima de lucro esperada para fichas técnicas (%)')
+INSERT INTO public.configuracoes_sistema (chave, valor)
+VALUES ('ficha_margem_minima_percentual', '50.00'::jsonb)
 ON CONFLICT (chave) DO NOTHING;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('074', 'migration_caf_000074_correcao_estoque_ficha_tecnica.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000082: Testes de Pedidos via QR Code, Totem e Online (pgTAP)
+-- CAF-000092 / CAF-000082 / CAF-000099: Testes de Pedidos via QR Code, Totem e Online (pgTAP)
 BEGIN;
 SELECT plan(4);
 
@@ -17,16 +17,19 @@ SELECT has_function(
   'criar_pedido_online deve existir'
 );
 
--- 2. Validação de horário de funcionamento no servidor (CAF-000082)
-SELECT ok(
-  true,
-  'Pedidos online e QR code respeitam business_hours no servidor rejeitando fora do horário'
+-- 2. Horários de funcionamento para pedidos remotos
+SELECT has_table(
+  'public',
+  'business_hours',
+  'tabela business_hours deve existir para checagem de horário de operação no servidor'
 );
 
--- 3. Rejeição de tokens inválidos ou mesas inativas
-SELECT ok(
-  true,
-  'criar_pedido_cliente rejeita qr_token expirado ou inexistente'
+-- 3. Mesas ativas para atendimento cliente
+SELECT has_column(
+  'public',
+  'mesas',
+  'ativo',
+  'mesas deve possuir coluna ativo para rejeitar pedidos em mesas desabilitadas'
 );
 
 SELECT * FROM finish();

@@ -535,20 +535,20 @@
             const { data: taxasRows, error } = await window.cafeteriaSupabase
               .from('formas_pagamento_taxas')
               .select('*')
-              .order('codigo', { ascending: true });
+              .order('forma', { ascending: true });
             if (error) throw error;
 
             const lista = taxasRows && taxasRows.length > 0 ? taxasRows : [
-              { codigo: 'dinheiro', nome: 'Dinheiro', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true },
-              { codigo: 'pix', nome: 'Pix', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true },
-              { codigo: 'cartao_debito', nome: 'Cartão de Débito', taxa_percentual: 1.39, taxa_fixa: 0, prazo_recebimento_dias: 1, ativo: true },
-              { codigo: 'cartao_credito', nome: 'Cartão de Crédito', taxa_percentual: 3.19, taxa_fixa: 0, prazo_recebimento_dias: 30, ativo: true },
-              { codigo: 'outros', nome: 'Outros / Vale', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true }
+              { forma: 'dinheiro', nome: 'Dinheiro', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true },
+              { forma: 'pix', nome: 'Pix', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true },
+              { forma: 'cartao_debito', nome: 'Cartão de Débito', taxa_percentual: 1.39, taxa_fixa: 0, prazo_recebimento_dias: 1, ativo: true },
+              { forma: 'cartao_credito', nome: 'Cartão de Crédito', taxa_percentual: 3.19, taxa_fixa: 0, prazo_recebimento_dias: 30, ativo: true },
+              { forma: 'outros', nome: 'Outros / Vale', taxa_percentual: 0, taxa_fixa: 0, prazo_recebimento_dias: 0, ativo: true }
             ];
 
             tbodyTaxas.innerHTML = lista.map((t) => `
-              <tr data-codigo="${t.codigo}">
-                <td style="font-weight:600;">${t.nome || t.codigo}</td>
+              <tr data-forma="${t.forma || t.codigo}" data-codigo="${t.forma || t.codigo}">
+                <td style="font-weight:600;">${t.nome || t.forma || t.codigo}</td>
                 <td>
                   <input type="number" class="field__input taxa-perc-input" step="0.01" min="0" max="100" value="${Number(t.taxa_percentual || 0).toFixed(2)}" style="max-width:110px;" />
                 </td>
@@ -659,7 +659,7 @@
         btnSalvarTaxas.disabled = true;
         try {
           for (const tr of rows) {
-            const codigo = tr.getAttribute('data-codigo');
+            const forma = tr.getAttribute('data-forma') || tr.getAttribute('data-codigo');
             const taxaPerc = Math.max(0, parseFloat(tr.querySelector('.taxa-perc-input')?.value) || 0);
             const taxaFixa = Math.max(0, parseFloat(tr.querySelector('.taxa-fixa-input')?.value) || 0);
             const prazo = Math.max(0, parseInt(tr.querySelector('.taxa-prazo-input')?.value, 10) || 0);
@@ -674,7 +674,7 @@
                 ativo,
                 updated_at: new Date().toISOString()
               })
-              .eq('codigo', codigo);
+              .eq('forma', forma);
             if (error) throw error;
           }
           admin.toast('Sucesso', 'Taxas de pagamento atualizadas! Valem apenas para novas vendas.', 'success');

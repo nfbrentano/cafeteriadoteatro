@@ -1,4 +1,4 @@
--- CAF-000092 / CAF-000075: Testes de criar_pedido e adicionais permitidos (pgTAP)
+-- CAF-000092 / CAF-000075 / CAF-000099: Testes de criar_pedido e adicionais permitidos (pgTAP)
 BEGIN;
 SELECT plan(5);
 
@@ -10,29 +10,35 @@ SELECT has_function(
   'criar_pedido deve existir aceitando payload JSONB estruturado'
 );
 
--- 2. Verifica existência da tabela de adicionais permitidos
+-- 2. Verifica existência da relação de adicionais permitidos
 SELECT has_table(
   'public',
   'produto_adicionais_permitidos',
-  'Tabela produto_adicionais_permitidos deve existir como fonte única de adicionais'
+  'produto_adicionais_permitidos deve existir como fonte de validação de adicionais'
 );
 
--- 3. Rejeição de produto indisponível / esgotado (CA03)
-SELECT ok(
-  true,
-  'criar_pedido rejeita itens com disponivel = false no servidor'
+-- 3. Validação de disponibilidade de produtos
+SELECT has_column(
+  'public',
+  'produtos',
+  'disponivel',
+  'produtos deve ter coluna disponivel para controle de estoque/esgotamento'
 );
 
--- 4. Rejeição de adicionais não vinculados ao produto (CAF-000075)
-SELECT ok(
-  true,
-  'criar_pedido valida adicionais contra produto_adicionais_permitidos e rejeita não autorizados'
+-- 4. Observações sanitizadas
+SELECT has_column(
+  'public',
+  'pedidos',
+  'observacoes',
+  'pedidos deve ter coluna observacoes'
 );
 
--- 5. Sanitização anti-XSS em observações
-SELECT ok(
-  true,
-  'criar_pedido sanitiza observacoes prevenindo injeção de tags HTML e scripts'
+-- 5. Total do pedido
+SELECT has_column(
+  'public',
+  'pedidos',
+  'total',
+  'pedidos deve ter coluna total calculada'
 );
 
 SELECT * FROM finish();

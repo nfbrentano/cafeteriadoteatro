@@ -1,3 +1,5 @@
+BEGIN;
+
 -- ============================================================================
 -- MIGRATION CAF-000081: Segurança: PIN com Bloqueio, Permissões Efetivas e RLS
 -- ============================================================================
@@ -8,6 +10,9 @@
 -- 4. transferir_mesa como SECURITY DEFINER com checagem de permissão.
 -- 5. Revogação de acesso de anon às RPCs operacionais internas.
 -- ============================================================================
+
+-- Remover sobrecarga anterior de 4 parâmetros para evitar ambiguidade PGRST203 (B4)
+DROP FUNCTION IF EXISTS public.validar_pin_autorizacao(TEXT, TEXT, TEXT, JSONB);
 
 -- 1. Validação de PIN com controle de força bruta e autorizador específico
 CREATE OR REPLACE FUNCTION public.validar_pin_autorizacao(
@@ -188,7 +193,7 @@ CREATE OR REPLACE FUNCTION public.cancelar_item(
 )
 RETURNS JSONB AS $$
 DECLARE
-    v_pedido_id UUID;
+    v_pedido_id BIGINT;
     v_pedido_pago BOOLEAN;
     v_item_cancelado BOOLEAN;
 BEGIN
@@ -233,10 +238,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4. Transferência de mesa protegida
+-- 4. Transferência de mesa protegida (B3)
+DROP FUNCTION IF EXISTS public.transferir_mesa(TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION public.transferir_mesa(
-    p_mesa_origem TEXT,
-    p_mesa_destino TEXT
+    p_origem TEXT,
+    p_destino TEXT
 )
 RETURNS JSONB AS $$
 DECLARE
@@ -246,27 +253,28 @@ BEGIN
         RAISE EXCEPTION 'Acesso negado: usuário não possui permissão para transferir mesas.';
     END IF;
 
-    IF p_mesa_origem IS NULL OR p_mesa_destino IS NULL OR TRIM(p_mesa_origem) = '' OR TRIM(p_mesa_destino) = '' THEN
+    IF p_origem IS NULL OR p_destino IS NULL OR TRIM(p_origem) = '' OR TRIM(p_destino) = '' THEN
         RAISE EXCEPTION 'Mesa de origem e mesa de destino são obrigatórias.';
     END IF;
 
-    IF TRIM(p_mesa_origem) = TRIM(p_mesa_destino) THEN
+    IF TRIM(p_origem) = TRIM(p_destino) THEN
         RAISE EXCEPTION 'Mesa de origem e destino devem ser diferentes.';
     END IF;
 
     UPDATE public.pedidos
-    SET mesa = TRIM(p_mesa_destino)
-    WHERE mesa = TRIM(p_mesa_origem)
+    SET mesa_codigo = TRIM(p_destino),
+        updated_at = NOW()
+    WHERE mesa_codigo = TRIM(p_origem)
       AND status != 'cancelado'
       AND status != 'entregue'
-      AND status_pagamento != 'pago';
+      AND (status_pagamento IS NULL OR status_pagamento != 'pago');
 
     GET DIAGNOSTICS v_count = ROW_COUNT;
 
     RETURN jsonb_build_object(
         'sucesso', true,
-        'origem', p_mesa_origem,
-        'destino', p_mesa_destino,
+        'origem', p_origem,
+        'destino', p_destino,
         'pedidos_transferidos', v_count
     );
 END;
@@ -277,3 +285,18 @@ REVOKE EXECUTE ON FUNCTION public.validar_pin_autorizacao FROM anon;
 REVOKE EXECUTE ON FUNCTION public.set_usuario_pin FROM anon;
 REVOKE EXECUTE ON FUNCTION public.cancelar_item FROM anon;
 REVOKE EXECUTE ON FUNCTION public.transferir_mesa FROM anon;
+REVOKE EXECUTE ON FUNCTION public.validar_pin_autorizacao FROM public;
+REVOKE EXECUTE ON FUNCTION public.set_usuario_pin FROM public;
+REVOKE EXECUTE ON FUNCTION public.cancelar_item FROM public;
+REVOKE EXECUTE ON FUNCTION public.transferir_mesa FROM public;
+GRANT EXECUTE ON FUNCTION public.validar_pin_autorizacao(TEXT, TEXT, TEXT, JSONB, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.set_usuario_pin TO authenticated;
+GRANT EXECUTE ON FUNCTION public.cancelar_item(BIGINT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.transferir_mesa(TEXT, TEXT) TO authenticated;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('081', 'migration_caf_000081_seguranca_pin_rls.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

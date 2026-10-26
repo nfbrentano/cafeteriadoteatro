@@ -1,6 +1,4 @@
--- ==============================================================================
--- MIGRATION: CAF-000075 - FONTE ÚNICA DE ADICIONAIS E VALIDAÇÃO NO SERVIDOR
--- ==============================================================================
+BEGIN;
 
 -- 1. Assegurar tabela adicional_vinculos e view v_adicionais_produto
 CREATE TABLE IF NOT EXISTS public.adicional_vinculos (
@@ -17,6 +15,9 @@ CREATE OR REPLACE VIEW public.v_adicionais_produto AS
 SELECT DISTINCT
   p.id AS produto_id,
   a.id AS adicional_id,
+  a.nome,
+  a.preco,
+  a.ordem,
   a.nome AS adicional_nome,
   a.preco AS adicional_preco,
   a.ativo AS adicional_ativo
@@ -27,7 +28,23 @@ JOIN public.adicional_vinculos v
   AND v.adicional_id = a.id
 WHERE p.ativo = true AND p.permite_adicionais = true;
 
--- 2. View de compatibilidade para produto_adicionais_permitidos
+-- 2. View de compatibilidade para produto_adicionais_permitidos (B1)
+-- Se produto_adicionais_permitidos for uma tabela física, migra dados e renomeia antes de criar a view
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'produto_adicionais_permitidos' AND c.relkind = 'r'
+  ) THEN
+    INSERT INTO public.adicional_vinculos (adicional_id, produto_id)
+    SELECT adicional_id::text, produto_id::text
+    FROM public.produto_adicionais_permitidos
+    ON CONFLICT DO NOTHING;
+
+    ALTER TABLE public.produto_adicionais_permitidos RENAME TO produto_adicionais_permitidos_legado;
+  END IF;
+END $$;
+
 CREATE OR REPLACE VIEW public.produto_adicionais_permitidos AS
 SELECT produto_id, adicional_id FROM public.v_adicionais_produto;
 
@@ -85,3 +102,10 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.fn_validar_adicionais_item(TEXT, JSONB) TO anon, authenticated;
+
+-- Registro de aplicação (RF04)
+INSERT INTO public.app_migrations (versao, arquivo)
+VALUES ('075', 'migration_caf_000075_validacao_adicionais_xss.sql')
+ON CONFLICT (versao) DO NOTHING;
+
+COMMIT;

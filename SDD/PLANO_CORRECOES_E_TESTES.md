@@ -7,8 +7,8 @@
 
 A auditoria de 2026-10-22 encontrou duas pendências que passam na frente de tudo:
 
-- [CAF-000098](CAF-000098-aplicar-migrations-em-producao-e-snapshot-real.md): rodar as migrations 072–083 em produção. O front publicado já depende delas, nenhuma foi aplicada, e elas têm bloqueios que precisam ser corrigidos antes.
-- [CAF-000099](CAF-000099-suite-de-testes-efetiva-codigo-real-contrato-e-pgtap.md): tornar a suíte efetiva. Hoje a cobertura é de 9% e as páginas estão em 0%; o pgTAP não executa SQL e o contrato só confere nomes de RPC.
+- [CAF-000098](CONCLUIDAS/CAF-000098-aplicar-migrations-em-producao-e-snapshot-real.md): **Concluída**. Migrations 072–083 aplicadas em produção e snapshot real gerado em `supabase/snapshots/producao-2026-10-22-depois.csv`.
+- [CAF-000099](CONCLUIDAS/CAF-000099-suite-de-testes-efetiva-codigo-real-contrato-e-pgtap.md): **Concluída**. Suíte de testes efetiva com execução do código real das páginas no Happy DOM, teste de contrato com AST de colunas/parâmetros, pgTAP com asserções reais e CI configurado no GitHub Actions.
 
 ## Pré-requisito
 

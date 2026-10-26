@@ -80,32 +80,34 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000069** | Menu Analytics: Funil de Conversão do Cardápio Digital e Desempenho de Produtos | Concluída | `migration_caf_000069_menu_analytics.sql` | `caf-000069-menu-analytics.test.js` | — |
 | **CAF-000070** | Performance e UX Mobile da Home e Cardápio Público (Maps Facade, Auto-scroll de Categorias e Swipe no Hero) | Concluída | — | `caf-000070-performance-ux.test.js` | — |
 | **CAF-000071** | Implementação de Ferramenta de Testes Automatizados e Regra Obrigatória de Testes Funcionais por Feature | Concluída | — | — | — |
-| **CAF-000072** | Baseline do schema de produção e reconciliação com as migrations | Rascunho | `migration_caf_000072_baseline_producao.sql` | `caf-000072-baseline-producao.test.js` | — |
-| **CAF-000073** | Correção do fechamento de conta da mesa (RPC, cancelados, idempotência e divisão) | Rascunho | `migration_caf_000073_fechamento_conta_mesa.sql` | `caf-000073-fechamento-mesa.test.js` | — |
-| **CAF-000074** | Correção de estoque, ficha técnica (CMV) e lista de compras | Rascunho | `migration_caf_000074_correcao_estoque_ficha_tecnica.sql` | `caf-000074-estoque-cmv.test.js` | — |
-| **CAF-000075** | Fonte única de vínculo de adicionais, revalidação no servidor e XSS no PDV | Rascunho | `migration_caf_000075_validacao_adicionais_xss.sql` | `caf-000075-adicionais-xss.test.js` | — |
-| **CAF-000076** | Correção do cashback: carrinho quebrado, crédito no PDV, estorno e RPC segura | Em revisão | `migration_caf_000076_correcao_cashback.sql` | `caf-000076-cashback-fix.test.js` | — |
-| **CAF-000077** | Cupons: uso único por pedido, RPC protegida e rastreio do cupom no fechamento do PDV | Rascunho | `migration_caf_000077_cupons_uso_unico.sql` | `caf-000077-cupons-uso-por-pedido.test.js` | — |
-| **CAF-000078** | Financeiro: alinhar cadastro, baixa e listagem de despesas ao schema real | Em revisão | `migration_caf_000078_financeiro_despesas.sql` | `caf-000078-financeiro-despesas.test.js` | — |
-| **CAF-000079** | Pix no admin (salvar/testar) e taxas por forma de pagamento no fechamento de caixa | Rascunho | `migration_caf_000079_pix_admin_taxas_caixa.sql` | `caf-000079-pix-admin-e-taxas-caixa.test.js` | — |
-| **CAF-000080** | Fuso horário consistente (America/Sao_Paulo) e corte do dia operacional | Rascunho | `migration_caf_000080_fuso_horario.sql` | `caf-000080-fuso-horario.test.js` | — |
-| **CAF-000081** | Segurança: PIN com bloqueio, permissões por cargo efetivas no banco e RLS das operações do PDV/KDS | Rascunho | `migration_caf_000081_seguranca_pin_rls.sql` | `caf-000081-seguranca-pin-permissoes.test.js` | — |
-| **CAF-000082** | Segurança: RPCs, policies e views expostas a anônimos e a qualquer autenticado | Rascunho | `migration_caf_000082_seguranca.sql` | `caf-000082-seguranca.test.js` | — |
-| **CAF-000083** | Pendências funcionais de operação e caixa (conta do cliente, reabertura de caixa, intervalo, etiquetas, totem e tempo-alvo) | Rascunho | `migration_caf_000083_pendencias_operacao.sql` | `caf-000083-pendencias-operacao.test.js` | — |
+| **CAF-000072** | Baseline do schema de produção e reconciliação com as migrations | Concluída | `migration_caf_000072_baseline_producao.sql` | `caf-000072-baseline-producao.test.js` | — |
+| **CAF-000073** | Correção do fechamento de conta da mesa (RPC, cancelados, idempotência e divisão) | Concluída | `migration_caf_000073_fechamento_conta_mesa.sql` | `caf-000073-fechamento-mesa.test.js` | — |
+| **CAF-000074** | Correção de estoque, ficha técnica (CMV) e lista de compras | Concluída | `migration_caf_000074_correcao_estoque_ficha_tecnica.sql` | `caf-000074-estoque-cmv.test.js` | — |
+| **CAF-000075** | Fonte única de vínculo de adicionais, revalidação no servidor e XSS no PDV | Concluída | `migration_caf_000075_validacao_adicionais_xss.sql` | `caf-000075-adicionais-xss.test.js` | — |
+| **CAF-000076** | Correção do cashback: carrinho quebrado, crédito no PDV, estorno e RPC segura | Concluída | `migration_caf_000076_correcao_cashback.sql` | `caf-000076-cashback-fix.test.js` | — |
+| **CAF-000077** | Cupons: uso único por pedido, RPC protegida e rastreio do cupom no fechamento do PDV | Concluída | `migration_caf_000077_cupons_uso_unico.sql` | `caf-000077-cupons-uso-por-pedido.test.js` | — |
+| **CAF-000078** | Financeiro: alinhar cadastro, baixa e listagem de despesas ao schema real | Concluída | `migration_caf_000078_financeiro_despesas.sql` | `caf-000078-financeiro-despesas.test.js` | — |
+| **CAF-000079** | Pix no admin (salvar/testar) e taxas por forma de pagamento no fechamento de caixa | Concluída | `migration_caf_000079_pix_admin_taxas_caixa.sql` | `caf-000079-pix-admin-e-taxas-caixa.test.js` | — |
+| **CAF-000080** | Fuso horário consistente (America/Sao_Paulo) e corte do dia operacional | Concluída | `migration_caf_000080_fuso_horario.sql` | `caf-000080-fuso-horario.test.js` | — |
+| **CAF-000081** | Segurança: PIN com bloqueio, permissões por cargo efetivas no banco e RLS das operações do PDV/KDS | Concluída | `migration_caf_000081_seguranca_pin_rls.sql` | `caf-000081-seguranca-pin-permissoes.test.js` | — |
+| **CAF-000082** | Segurança: RPCs, policies e views expostas a anônimos e a qualquer autenticado | Concluída | `migration_caf_000082_seguranca.sql` | `caf-000082-seguranca.test.js` | — |
+| **CAF-000083** | Pendências funcionais de operação e caixa (conta do cliente, reabertura de caixa, intervalo, etiquetas, totem e tempo-alvo) | Concluída | `migration_caf_000083_pendencias_operacao.sql` | `caf-000083-pendencias-operacao.test.js` | — |
 | **CAF-000084** | Pendências de UX, KDS e cardápio (diálogos nativos, busca, banner do espetáculo, destaque de adicionais, desfazer e mapa) | Em revisão | — | `caf-000084-pendencias-ux.test.js` | — |
 | **CAF-000085** | Saneamento da documentação das SDDs (status, critérios de aceitação, IDs e rastreabilidade) | Em revisão | — | — | — |
-| **CAF-000086** | Infraestrutura de Testes, Cobertura e Teste de Contrato Front ↔ Schema | Em revisão | — | — | — |
-| **CAF-000087** | Cobertura de Testes: PDV, Mesas e Fechamento de Conta (SDDs 001–005, 010–013, 016, 018, 019) | Em revisão | — | — | — |
-| **CAF-000088** | Cobertura de Testes: KDS, Estações e Produção (SDDs 006–009, 022–030, 043) | Em revisão | — | — | — |
-| **CAF-000089** | Cobertura de Testes: Gestão e Admin (Relatórios, Caixa, Estoque, Ficha Técnica, Clientes, Financeiro, Permissões, Pix, CRM, Exportação e Compras) | Em revisão | — | — | — |
-| **CAF-000090** | Cobertura de Testes dos Canais do Cliente (Cardápio, QR na Mesa, Pedido Online, Totem e Avaliação) | Em revisão | — | — | — |
-| **CAF-000091** | Cobertura de Testes de Mobile, Site Institucional e UX do PDV | Em revisão | — | — | — |
-| **CAF-000092** | Testes SQL Automatizados das RPCs, Triggers e Policies (pgTAP em Banco Isolado) | Em revisão | — | — | — |
+| **CAF-000086** | Infraestrutura de Testes, Cobertura e Teste de Contrato Front ↔ Schema | Concluída | — | `schema-contract.test.js` | — |
+| **CAF-000087** | Cobertura de Testes: PDV, Mesas e Fechamento de Conta (SDDs 001–005, 010–013, 016, 018, 019) | Concluída | — | — | — |
+| **CAF-000088** | Cobertura de Testes: KDS, Estações e Produção (SDDs 006–009, 022–030, 043) | Concluída | — | — | — |
+| **CAF-000089** | Cobertura de Testes: Gestão e Admin (Relatórios, Caixa, Estoque, Ficha Técnica, Clientes, Financeiro, Permissões, Pix, CRM, Exportação e Compras) | Concluída | — | — | — |
+| **CAF-000090** | Cobertura de Testes dos Canais do Cliente (Cardápio, QR na Mesa, Pedido Online, Totem e Avaliação) | Concluída | — | — | — |
+| **CAF-000091** | Cobertura de Testes de Mobile, Site Institucional e UX do PDV | Concluída | — | — | — |
+| **CAF-000092** | Testes SQL Automatizados das RPCs, Triggers e Policies (pgTAP em Banco Isolado) | Concluída | — | `caf-000092-sql-rpcs-triggers.test.js` | — |
 | **CAF-000093** | Cobertura de Testes: Camada de Dados, Cache Local e Fila Offline (`db.js` e `pedidos.js`) | Concluída | — | `caf-000093-camada-dados-cache-offline.test.js` | — |
 | **CAF-000094** | Cobertura de Testes: Fechamento de Caixa e Financeiro (`caixa-admin.js` e `financeiro-admin.js`) | Concluída | — | `caf-000094-caixa-financeiro.test.js` | — |
 | **CAF-000095** | Cobertura de Testes: PDV do Balcão e Totem de Autoatendimento (`pedidos.js` e `totem.js`) | Concluída | — | `caf-000095-pdv-balcao-totem.test.js` | — |
 | **CAF-000096** | Cobertura de Testes: KDS da Cozinha, Bar e Impressão Térmica (`cozinha.js` e `pedido-print.js`) | Concluída | — | `caf-000096-kds-impressao.test.js` | — |
 | **CAF-000097** | Cobertura de Testes: Gestão de Clientes, Fiado e Produtos (`clientes-admin.js` e `products.js`) | Concluída | — | `caf-000097-clientes-produtos.test.js` | — |
+| **CAF-000098** | Rodar as migrations 072–083 em produção (correções prévias, ensaio, roteiro e verificação) | Concluída | `migration_caf_000072_baseline_producao.sql` a `migration_caf_000083_pendencias_operacao.sql` | `caf-000098-migracoes-producao.test.js` | — |
+| **CAF-000099** | Tornar a suíte de testes efetiva: executar o código real das páginas, contrato com colunas e parâmetros, pgTAP rodando de verdade | Concluída | — | `caf-000099-execucao-real-harness.test.js`, `schema-contract.test.js` | — |
 
 ---
 

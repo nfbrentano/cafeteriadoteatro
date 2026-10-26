@@ -1,25 +1,11 @@
 {
-  "origem": "migrations_locais",
-  "gerado_em": "2026-10-21T12:35:09.810Z",
+  "origem": "producao_real",
+  "gerado_em": "2026-10-26T13:35:05.842Z",
   "rpcs": {
-    "consolidar_contador_dia_anterior": {
-      "parameters": []
-    },
-    "fechar_conta_mesa": {
+    "adicionar_itens_pedido": {
       "parameters": [
-        "p_mesa_codigo",
-        "p_pagamentos",
-        "p_taxa_servico",
-        "p_desconto_manual",
-        "p_desconto_motivo",
-        "p_idempotency_key",
-        "p_cupom_codigo",
-        "p_campanha_id"
-      ]
-    },
-    "recalcular_total_pedido": {
-      "parameters": [
-        "p_pedido_id"
+        "p_pedido_id",
+        "p_itens"
       ]
     },
     "cancelar_item": {
@@ -33,10 +19,108 @@
         "p_payload"
       ]
     },
-    "adicionar_itens_pedido": {
+    "criar_pedido_cliente": {
+      "parameters": [
+        "p_qr_token",
+        "p_payload",
+        "p_idempotency_key"
+      ]
+    },
+    "criar_pedido_online": {
+      "parameters": [
+        "p_payload",
+        "p_idempotency_key"
+      ]
+    },
+    "criar_pedido_totem": {
+      "parameters": [
+        "p_token",
+        "p_payload",
+        "p_idempotency_key"
+      ]
+    },
+    "fechar_conta_mesa": {
+      "parameters": [
+        "p_mesa_codigo",
+        "p_pagamentos",
+        "p_taxa_servico",
+        "p_desconto_manual",
+        "p_desconto_motivo",
+        "p_idempotency_key",
+        "p_cupom_codigo",
+        "p_campanha_id"
+      ]
+    },
+    "fn_calcular_custo_adicional": {
+      "parameters": [
+        "p_adicional_id"
+      ]
+    },
+    "fn_calcular_custo_produto": {
+      "parameters": [
+        "p_produto_id"
+      ]
+    },
+    "fn_calcular_totais_caixa_interno": {
+      "parameters": [
+        "p_caixa_id"
+      ]
+    },
+    "get_user_role": {
+      "parameters": []
+    },
+    "lancar_movimento_conta": {
+      "parameters": [
+        "p_cliente_id",
+        "p_tipo",
+        "p_valor",
+        "p_pedido_id",
+        "p_fechamento_id",
+        "p_forma_pagamento",
+        "p_motivo",
+        "p_bypass_limite"
+      ]
+    },
+    "processar_cashback_pedido": {
       "parameters": [
         "p_pedido_id",
-        "p_itens"
+        "p_cliente_id",
+        "p_valor_elegivel"
+      ]
+    },
+    "registrar_uso_cupom": {
+      "parameters": [
+        "p_campanha_id",
+        "p_pedido_id"
+      ]
+    },
+    "tem_permissao": {
+      "parameters": [
+        "p_permissao",
+        "p_user_id"
+      ]
+    },
+    "transferir_mesa": {
+      "parameters": [
+        "p_origem",
+        "p_destino"
+      ]
+    },
+    "validar_pin_autorizacao": {
+      "parameters": [
+        "p_pin",
+        "p_permissao_necessaria",
+        "p_motivo",
+        "p_contexto",
+        "p_autorizador_id"
+      ]
+    },
+    "consolidar_contador_dia_anterior": {
+      "parameters": []
+    },
+    "recalcular_total_pedido": {
+      "parameters": [
+        "p_pedido_id"
       ]
     },
     "toggle_produto_disponivel": {
@@ -57,12 +141,6 @@
     "fn_audit_pedido_itens": {
       "parameters": []
     },
-    "transferir_mesa": {
-      "parameters": [
-        "p_origem",
-        "p_destino"
-      ]
-    },
     "handle_new_user": {
       "parameters": []
     },
@@ -71,7 +149,8 @@
         "email",
         "password",
         "nome",
-        "role_param"
+        "role_param",
+        "pode_dar_desconto_param"
       ]
     },
     "get_admin_reports": {
@@ -92,14 +171,8 @@
     "fechar_caixa": {
       "parameters": [
         "p_caixa_id",
-        "p_contagem",
+        "p_valores_informados",
         "p_observacoes"
-      ]
-    },
-    "reabrir_caixa": {
-      "parameters": [
-        "p_caixa_id",
-        "p_motivo"
       ]
     },
     "fn_checar_conclusao_pedido": {
@@ -128,6 +201,14 @@
         "p_item_ids"
       ]
     },
+    "travar_impressao_pedido": {
+      "parameters": [
+        "p_pedido_id",
+        "p_estacao",
+        "p_tipo",
+        "p_dispositivo"
+      ]
+    },
     "alterar_prioridade_pedido": {
       "parameters": [
         "p_pedido_id",
@@ -152,16 +233,6 @@
     },
     "fn_estorno_estoque_pedido_cancelado": {
       "parameters": []
-    },
-    "fn_calcular_custo_produto": {
-      "parameters": [
-        "p_produto_id"
-      ]
-    },
-    "fn_calcular_custo_adicional": {
-      "parameters": [
-        "p_adicional_id"
-      ]
     },
     "fn_gravar_custo_pedido_item": {
       "parameters": []
@@ -192,18 +263,6 @@
     "anonimizar_cliente": {
       "parameters": [
         "p_cliente_id"
-      ]
-    },
-    "lancar_movimento_conta": {
-      "parameters": [
-        "p_cliente_id",
-        "p_tipo",
-        "p_valor",
-        "p_pedido_id",
-        "p_fechamento_id",
-        "p_forma_pagamento",
-        "p_motivo",
-        "p_bypass_limite"
       ]
     },
     "obter_extrato_cliente": {
@@ -240,22 +299,8 @@
         "p_pin"
       ]
     },
-    "tem_permissao": {
-      "parameters": [
-        "p_permissao",
-        "p_user_id"
-      ]
-    },
     "get_minhas_permissoes": {
       "parameters": []
-    },
-    "validar_pin_autorizacao": {
-      "parameters": [
-        "p_pin",
-        "p_permissao_necessaria",
-        "p_motivo",
-        "p_contexto"
-      ]
     },
     "set_usuario_pin": {
       "parameters": [
@@ -274,13 +319,6 @@
     },
     "fn_gerar_qr_token_mesa": {
       "parameters": []
-    },
-    "criar_pedido_cliente": {
-      "parameters": [
-        "p_qr_token",
-        "p_payload",
-        "p_idempotency_key"
-      ]
     },
     "consultar_status_pedido_cliente": {
       "parameters": [
@@ -319,12 +357,6 @@
         "p_data"
       ]
     },
-    "criar_pedido_online": {
-      "parameters": [
-        "p_payload",
-        "p_idempotency_key"
-      ]
-    },
     "marcar_pedido_nao_retirado": {
       "parameters": [
         "p_pedido_id",
@@ -339,11 +371,6 @@
     },
     "fn_calcular_taxa_pedido_balcao": {
       "parameters": []
-    },
-    "fn_calcular_totais_caixa_interno": {
-      "parameters": [
-        "p_caixa_id"
-      ]
     },
     "lancar_taxas_pagamento_despesa": {
       "parameters": [
@@ -364,13 +391,6 @@
         "p_token"
       ]
     },
-    "criar_pedido_totem": {
-      "parameters": [
-        "p_token",
-        "p_payload",
-        "p_idempotency_key"
-      ]
-    },
     "receber_pedido_totem": {
       "parameters": [
         "p_pedido_id",
@@ -386,14 +406,6 @@
       "parameters": [
         "p_token",
         "p_payload"
-      ]
-    },
-    "travar_impressao_pedido": {
-      "parameters": [
-        "p_pedido_id",
-        "p_estacao",
-        "p_tipo",
-        "p_dispositivo"
       ]
     },
     "fn_normalize_caixa_movimento": {
@@ -413,19 +425,6 @@
         "p_subtotal"
       ]
     },
-    "registrar_uso_cupom": {
-      "parameters": [
-        "p_campanha_id",
-        "p_pedido_id"
-      ]
-    },
-    "processar_cashback_pedido": {
-      "parameters": [
-        "p_pedido_id",
-        "p_cliente_id",
-        "p_valor_elegivel"
-      ]
-    },
     "registrar_evento_cardapio": {
       "parameters": [
         "p_canal",
@@ -442,6 +441,34 @@
     },
     "fn_estorno_cashback_pedido_cancelado": {
       "parameters": []
+    },
+    "fn_estorno_cupom_pedido_cancelado": {
+      "parameters": []
+    },
+    "fn_inicio_dia_sp": {
+      "parameters": [
+        "p_data"
+      ]
+    },
+    "fn_fim_dia_sp": {
+      "parameters": [
+        "p_data"
+      ]
+    },
+    "fn_simular_correcao_fuso_historico": {
+      "parameters": []
+    },
+    "fn_validar_transicao_pedido_entregue": {
+      "parameters": []
+    },
+    "loja_esta_aberta": {
+      "parameters": []
+    },
+    "reabrir_caixa": {
+      "parameters": [
+        "p_caixa_id",
+        "p_motivo"
+      ]
     },
     "validar_cortesia": {
       "parameters": []
@@ -461,191 +488,799 @@
       "parameters": [
         "p_pedido_id"
       ]
-    },
-    "get_user_role": {
-      "parameters": []
     }
   },
   "tables": {
-    "acessos": {
-      "columns": []
-    },
-    "contador": {
-      "columns": []
-    },
-    "business_hours": {
-      "columns": []
-    },
-    "fechamentos": {
-      "columns": []
-    },
-    "fechamento_pagamentos": {
-      "columns": []
-    },
-    "fechamento_pedidos": {
-      "columns": []
-    },
-    "pedido_eventos": {
-      "columns": []
-    },
-    "v_adicionais_produto": {
-      "columns": []
-    },
-    "caixas": {
-      "columns": []
-    },
-    "caixa_movimentos": {
-      "columns": []
-    },
-    "caixa_conferencia": {
-      "columns": []
-    },
-    "estoque_itens": {
-      "columns": []
-    },
-    "estoque_movimentos": {
-      "columns": []
-    },
-    "fichas_tecnicas": {
-      "columns": []
+    "campanhas": {
+      "columns": [
+        "id",
+        "nome",
+        "segmento_filtro",
+        "tag_id_filtro",
+        "produto_id_filtro",
+        "cupom_codigo",
+        "mensagem_template",
+        "created_at",
+        "tipo_desconto",
+        "valor_desconto",
+        "valor_minimo_pedido",
+        "ativa",
+        "usos_registrados",
+        "receita_atribuida",
+        "descricao"
+      ]
     },
     "clientes": {
-      "columns": []
-    },
-    "cliente_conta_movimentos": {
-      "columns": []
-    },
-    "v_cliente_saldo": {
-      "columns": []
-    },
-    "fornecedores": {
-      "columns": []
-    },
-    "despesa_categorias": {
-      "columns": []
+      "columns": [
+        "id",
+        "nome",
+        "telefone",
+        "email",
+        "data_nascimento",
+        "observacoes",
+        "aceita_contato",
+        "anonimizado",
+        "ativo",
+        "created_at",
+        "updated_at",
+        "conta_habilitada",
+        "limite_credito",
+        "dia_vencimento",
+        "saldo_conta"
+      ]
     },
     "despesas": {
-      "columns": []
+      "columns": [
+        "id",
+        "descricao",
+        "fornecedor_id",
+        "categoria_id",
+        "valor",
+        "vencimento",
+        "pago_em",
+        "valor_pago",
+        "forma_pagamento",
+        "origem",
+        "recorrencia",
+        "proxima_recorrencia_criada",
+        "caixa_movimento_id",
+        "estoque_movimento_id",
+        "observacoes",
+        "anexo_url",
+        "criado_por",
+        "criado_por_nome",
+        "created_at",
+        "updated_at",
+        "documento"
+      ]
     },
-    "cargos": {
-      "columns": []
+    "estoque_itens": {
+      "columns": [
+        "id",
+        "nome",
+        "unidade",
+        "quantidade",
+        "estoque_minimo",
+        "custo_medio",
+        "codigo_barras",
+        "controla_validade",
+        "ativo",
+        "created_at",
+        "updated_at",
+        "custo_unitario_medio",
+        "fornecedor_padrao_id"
+      ]
     },
-    "cargo_permissoes": {
-      "columns": []
+    "estoque_movimentos": {
+      "columns": [
+        "id",
+        "item_id",
+        "tipo",
+        "quantidade",
+        "custo_unitario",
+        "validade",
+        "pedido_item_id",
+        "motivo",
+        "criado_por",
+        "created_at",
+        "fornecedor_id",
+        "despesa_id"
+      ]
     },
-    "autorizacoes_pin_log": {
-      "columns": []
+    "fechamentos": {
+      "columns": [
+        "id",
+        "mesa_codigo",
+        "total_conta",
+        "troco",
+        "criado_por",
+        "created_at",
+        "taxa_servico",
+        "desconto_manual",
+        "desconto_motivo",
+        "desconto_por",
+        "fechado_em",
+        "idempotency_key",
+        "cupom_codigo",
+        "campanha_id"
+      ]
     },
-    "mesa_chamados": {
-      "columns": []
-    },
-    "configuracoes_sistema": {
-      "columns": []
-    },
-    "v_painel_retirada": {
-      "columns": []
-    },
-    "configuracoes_auditoria_log": {
-      "columns": []
-    },
-    "formas_pagamento_taxas": {
-      "columns": []
-    },
-    "totens": {
-      "columns": []
-    },
-    "totem_sugestoes": {
-      "columns": []
-    },
-    "cliente_tags": {
-      "columns": []
-    },
-    "cliente_tag_vinculos": {
-      "columns": []
-    },
-    "campanhas": {
-      "columns": []
-    },
-    "campanha_envios": {
-      "columns": []
-    },
-    "v_clientes_rfv": {
-      "columns": []
-    },
-    "v_campanhas_conversao": {
-      "columns": []
-    },
-    "avaliacoes": {
-      "columns": []
-    },
-    "avaliacao_itens": {
-      "columns": []
-    },
-    "cardapio_eventos_diarios": {
-      "columns": []
-    },
-    "adicional_vinculos": {
-      "columns": []
-    },
-    "produto_adicionais_permitidos": {
-      "columns": []
-    },
-    "adicionais": {
-      "columns": []
-    },
-    "pedido_item_adicionais": {
-      "columns": []
-    },
-    "cortesia_regras": {
-      "columns": []
-    },
-    "pedido_item_sabores": {
-      "columns": []
-    },
-    "promocoes": {
-      "columns": []
-    },
-    "promocao_itens": {
-      "columns": []
-    },
-    "v_cortesias_disponiveis": {
-      "columns": []
-    },
-    "perfis": {
-      "columns": []
-    },
-    "mesas": {
-      "columns": []
-    },
-    "pedidos": {
-      "columns": []
+    "fichas_tecnicas": {
+      "columns": [
+        "id",
+        "produto_id",
+        "adicional_id",
+        "estoque_item_id",
+        "quantidade",
+        "created_at"
+      ]
     },
     "pedido_itens": {
-      "columns": []
+      "columns": [
+        "id",
+        "pedido_id",
+        "produto_id",
+        "nome_produto",
+        "quantidade",
+        "preco_unitario",
+        "observacoes",
+        "preco_base",
+        "cortesia_de_item_id",
+        "cancelado",
+        "cancelado_em",
+        "promocao_id",
+        "desconto",
+        "subtotal",
+        "cancelado_por",
+        "motivo_cancelamento",
+        "pronto_em",
+        "estacao",
+        "iniciado_em",
+        "pronto_por",
+        "lancado_depois",
+        "impresso_em",
+        "custo_unitario"
+      ]
+    },
+    "pedidos": {
+      "columns": [
+        "id",
+        "numero_pedido",
+        "mesa_codigo",
+        "status",
+        "observacoes",
+        "total",
+        "criado_por",
+        "concluido_por",
+        "concluido_em",
+        "created_at",
+        "updated_at",
+        "criado_por_nome",
+        "forma_pagamento",
+        "status_pagamento",
+        "entregue_em",
+        "entregue_por",
+        "cliente_nome",
+        "para_viagem",
+        "iniciado_em",
+        "client_id",
+        "cancelado_por",
+        "cancelado_por_nome",
+        "cancelado_em",
+        "motivo_cancelamento",
+        "cliente_id",
+        "origem",
+        "pedido_token",
+        "taxa_pagamento_percentual",
+        "taxa_pagamento_fixa",
+        "taxa_pagamento_valor",
+        "valor_liquido",
+        "retirada_em",
+        "cliente_telefone",
+        "nao_retirado",
+        "pronto_em",
+        "cupom_codigo",
+        "campanha_id",
+        "desconto_cupom",
+        "is_intervalo",
+        "espetaculo_nome",
+        "pedido_origem_id",
+        "prioridade",
+        "prioridade_motivo"
+      ]
+    },
+    "perfis": {
+      "columns": [
+        "id",
+        "nome",
+        "role",
+        "ativo",
+        "created_at",
+        "pode_dar_desconto",
+        "cargo_id",
+        "pin_hash",
+        "pin_tentativas_erradas",
+        "pin_bloqueado_ate"
+      ]
+    },
+    "produto_adicionais_permitidos": {
+      "columns": [
+        "produto_id",
+        "adicional_id",
+        "criado_em"
+      ]
+    },
+    "v_adicionais_produto": {
+      "columns": [
+        "produto_id",
+        "adicional_id",
+        "nome",
+        "preco",
+        "ordem",
+        "adicional_nome",
+        "adicional_preco"
+      ]
+    },
+    "v_campanhas_conversao": {
+      "columns": [
+        "id",
+        "campanha_id",
+        "nome",
+        "segmento_filtro",
+        "tag_id_filtro",
+        "produto_id_filtro",
+        "cupom_codigo",
+        "mensagem_template",
+        "created_at",
+        "usos_registrados",
+        "faturamento_gerado_7d",
+        "receita_gerada_7d",
+        "receita_atribuida",
+        "taxa_conversao_percentual",
+        "total_enviados",
+        "clientes_converteram_7d"
+      ]
+    },
+    "v_cliente_saldo": {
+      "columns": [
+        "id",
+        "nome",
+        "saldo_conta",
+        "limite_credito",
+        "saldo_disponivel"
+      ]
+    },
+    "v_clientes_rfv": {
+      "columns": [
+        "cliente_id",
+        "nome",
+        "recencia_dias",
+        "frequencia_pedidos",
+        "valor_total_gasto",
+        "ticket_medio",
+        "segmento_rfv"
+      ]
+    },
+    "v_cortesias_disponiveis": {
+      "columns": [
+        "id",
+        "nome",
+        "descricao",
+        "pontos_necessarios",
+        "produto_cortesia_id"
+      ]
+    },
+    "v_painel_retirada": {
+      "columns": [
+        "id",
+        "numero_pedido",
+        "cliente_nome",
+        "primeiro_nome",
+        "status",
+        "mesa_codigo",
+        "para_viagem",
+        "created_at",
+        "pronto_em",
+        "retirada_em"
+      ]
+    },
+    "acessos": {
+      "columns": [
+        "id",
+        "pagina",
+        "data_visita",
+        "created_at",
+        "ip",
+        "user_agent"
+      ]
+    },
+    "contador": {
+      "columns": [
+        "id",
+        "numero",
+        "data_referencia",
+        "quantidade_acessos",
+        "created_at",
+        "valor",
+        "updated_at"
+      ]
+    },
+    "business_hours": {
+      "columns": [
+        "aviso_especial",
+        "id",
+        "seg_qui_abre",
+        "seg_qui_fecha",
+        "sex_abre",
+        "sex_fecha",
+        "sab_dom_ativo",
+        "sab_dom_abre",
+        "sab_dom_fecha",
+        "updated_at",
+        "dia_semana",
+        "abertura",
+        "fechamento",
+        "ativo"
+      ]
+    },
+    "fechamento_pagamentos": {
+      "columns": [
+        "id",
+        "fechamento_id",
+        "forma",
+        "valor",
+        "taxa_percentual",
+        "taxa_fixa",
+        "taxa_valor",
+        "valor_liquido"
+      ]
+    },
+    "fechamento_pedidos": {
+      "columns": [
+        "fechamento_id",
+        "pedido_id"
+      ]
     },
     "produtos": {
-      "columns": []
+      "columns": [
+        "disponivel",
+        "permite_adicionais",
+        "tempo_alvo_min",
+        "estoque_item_id",
+        "esgotado_automatico",
+        "preco_custo_manual",
+        "antecedencia_min_horas",
+        "apenas_encomenda",
+        "fornecedor_padrao_id",
+        "tipo_montagem",
+        "id",
+        "nome",
+        "descricao",
+        "preco",
+        "categoria_id",
+        "ativo",
+        "ordem",
+        "created_at"
+      ]
     },
     "categorias": {
-      "columns": []
+      "columns": [
+        "estacao",
+        "tempo_alvo_min",
+        "imprimir_etiqueta",
+        "id",
+        "nome",
+        "descricao",
+        "ordem",
+        "ativo",
+        "created_at"
+      ]
     },
-    "products": {
-      "columns": []
+    "pedido_eventos": {
+      "columns": [
+        "id",
+        "pedido_id",
+        "item_id",
+        "acao",
+        "de",
+        "para",
+        "motivo",
+        "usuario_id",
+        "usuario_nome",
+        "created_at"
+      ]
     },
-    "site-assets": {
-      "columns": []
+    "caixas": {
+      "columns": [
+        "id",
+        "aberto_em",
+        "aberto_por",
+        "fundo_troco",
+        "fechado_em",
+        "fechado_por",
+        "observacoes",
+        "motivo_reabertura",
+        "reaberto_em",
+        "reaberto_por",
+        "saldo_inicial",
+        "saldo_final",
+        "status",
+        "created_at"
+      ]
     },
-    "hero_home": {
-      "columns": []
+    "caixa_movimentos": {
+      "columns": [
+        "id",
+        "caixa_id",
+        "tipo",
+        "valor",
+        "motivo",
+        "criado_em",
+        "criado_por",
+        "registrado_por",
+        "forma_pagamento",
+        "created_at"
+      ]
     },
-    "promotions": {
-      "columns": []
-    },
-    "site_settings": {
-      "columns": []
+    "caixa_conferencia": {
+      "columns": [
+        "id",
+        "caixa_id",
+        "forma_pagamento",
+        "valor_informado",
+        "valor_sistema",
+        "diferenca"
+      ]
     },
     "pedido_impressoes": {
-      "columns": []
+      "columns": [
+        "id",
+        "pedido_id",
+        "estacao",
+        "tipo",
+        "impresso_em",
+        "dispositivo",
+        "created_at"
+      ]
+    },
+    "adicionais": {
+      "columns": [
+        "estoque_item_id",
+        "id",
+        "nome",
+        "preco",
+        "ativo",
+        "ordem",
+        "created_at"
+      ]
+    },
+    "pedido_item_adicionais": {
+      "columns": [
+        "custo",
+        "id",
+        "pedido_item_id",
+        "adicional_id",
+        "nome",
+        "preco"
+      ]
+    },
+    "cliente_conta_movimentos": {
+      "columns": [
+        "id",
+        "cliente_id",
+        "tipo",
+        "valor",
+        "pedido_id",
+        "fechamento_id",
+        "forma_pagamento",
+        "motivo",
+        "criado_por",
+        "criado_por_nome",
+        "created_at"
+      ]
+    },
+    "fornecedores": {
+      "columns": [
+        "id",
+        "nome",
+        "documento",
+        "telefone",
+        "email",
+        "observacoes",
+        "ativo",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "despesa_categorias": {
+      "columns": [
+        "id",
+        "nome",
+        "tipo",
+        "created_at"
+      ]
+    },
+    "cargos": {
+      "columns": [
+        "id",
+        "nome",
+        "descricao",
+        "sistema",
+        "created_at"
+      ]
+    },
+    "cargo_permissoes": {
+      "columns": [
+        "cargo_id",
+        "permissao",
+        "created_at"
+      ]
+    },
+    "autorizacoes_pin_log": {
+      "columns": [
+        "id",
+        "solicitante_id",
+        "solicitante_nome",
+        "autorizador_id",
+        "autorizador_nome",
+        "permissao",
+        "motivo",
+        "contexto",
+        "created_at"
+      ]
+    },
+    "mesa_chamados": {
+      "columns": [
+        "id",
+        "mesa_codigo",
+        "tipo",
+        "status",
+        "created_at",
+        "atendido_em",
+        "atendido_por"
+      ]
+    },
+    "configuracoes_sistema": {
+      "columns": [
+        "chave",
+        "valor",
+        "updated_at",
+        "descricao",
+        "key",
+        "value"
+      ]
+    },
+    "mesas": {
+      "columns": [
+        "qr_token",
+        "id",
+        "codigo",
+        "descricao",
+        "ativo",
+        "created_at",
+        "status",
+        "capacidade"
+      ]
+    },
+    "configuracoes_auditoria_log": {
+      "columns": [
+        "id",
+        "chave",
+        "valor_anterior",
+        "valor_novo",
+        "alterado_por",
+        "alterado_por_nome",
+        "created_at"
+      ]
+    },
+    "formas_pagamento_taxas": {
+      "columns": [
+        "forma",
+        "taxa_percentual",
+        "taxa_fixa",
+        "prazo_recebimento_dias",
+        "vigente_desde",
+        "updated_at",
+        "id",
+        "forma_pagamento",
+        "ativo"
+      ]
+    },
+    "totens": {
+      "columns": [
+        "id",
+        "nome",
+        "codigo_pareamento",
+        "token_hash",
+        "modo_operacao",
+        "ativo",
+        "pareado_em",
+        "ultimo_acesso",
+        "created_at",
+        "updated_at",
+        "token"
+      ]
+    },
+    "totem_sugestoes": {
+      "columns": [
+        "id",
+        "gatilho_categoria_id",
+        "gatilho_produto_id",
+        "produto_sugerido_id",
+        "frase_destaque",
+        "ordem",
+        "ativo",
+        "created_at",
+        "produto_id"
+      ]
+    },
+    "cliente_tags": {
+      "columns": [
+        "id",
+        "nome",
+        "cor",
+        "created_at"
+      ]
+    },
+    "cliente_tag_vinculos": {
+      "columns": [
+        "cliente_id",
+        "tag_id",
+        "created_at"
+      ]
+    },
+    "campanha_envios": {
+      "columns": [
+        "id",
+        "campanha_id",
+        "cliente_id",
+        "telefone_enviado",
+        "mensagem_enviada",
+        "enviado_em"
+      ]
+    },
+    "avaliacoes": {
+      "columns": [
+        "id",
+        "pedido_id",
+        "nota_produto",
+        "nota_atendimento",
+        "comentario",
+        "contato_telefone",
+        "aceita_contato",
+        "origem",
+        "created_at"
+      ]
+    },
+    "avaliacao_itens": {
+      "columns": [
+        "id",
+        "avaliacao_id",
+        "produto_id",
+        "nome_produto",
+        "nota",
+        "created_at"
+      ]
+    },
+    "cardapio_eventos_diarios": {
+      "columns": [
+        "id",
+        "data",
+        "canal",
+        "tipo_evento",
+        "produto_id",
+        "total_eventos",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "app_migrations": {
+      "columns": [
+        "versao",
+        "arquivo",
+        "aplicada_em",
+        "aplicada_por"
+      ]
+    },
+    "adicional_vinculos": {
+      "columns": [
+        "id",
+        "adicional_id",
+        "produto_id",
+        "categoria_id",
+        "created_at"
+      ]
+    },
+    "campanha_usos": {
+      "columns": [
+        "id",
+        "campanha_id",
+        "pedido_id",
+        "valor_receita",
+        "created_at"
+      ]
+    },
+    "cortesia_regras": {
+      "columns": [
+        "id",
+        "produto_cortesia_id",
+        "categoria_liberadora_id",
+        "produto_liberador_id",
+        "qtd_por_unidade",
+        "ativo"
+      ]
+    },
+    "pedido_item_sabores": {
+      "columns": [
+        "id",
+        "pedido_item_id",
+        "lado",
+        "produto_id",
+        "nome",
+        "preco"
+      ]
+    },
+    "promocoes": {
+      "columns": [
+        "id",
+        "nome",
+        "descricao",
+        "tipo",
+        "percentual",
+        "qtd_compra",
+        "qtd_leva",
+        "dias_semana",
+        "vigencia_inicio",
+        "vigencia_fim",
+        "imagem_url",
+        "ativo",
+        "ordem",
+        "created_at"
+      ]
+    },
+    "promocao_itens": {
+      "columns": [
+        "id",
+        "promocao_id",
+        "produto_id",
+        "categoria_id"
+      ]
+    },
+    "site_settings": {
+      "columns": [
+        "key",
+        "value",
+        "updated_at",
+        "chave",
+        "valor",
+        "id"
+      ]
+    },
+    "hero_home": {
+      "columns": [
+        "id",
+        "titulo",
+        "subtitulo",
+        "badge",
+        "imagem_url",
+        "ativo",
+        "updated_at",
+        "created_at"
+      ]
+    },
+    "promotions": {
+      "columns": [
+        "id",
+        "titulo",
+        "descricao",
+        "desconto",
+        "imagem_url",
+        "ativo",
+        "ordem",
+        "validade",
+        "updated_at",
+        "created_at"
+      ]
     }
   }
 }
