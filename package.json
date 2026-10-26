@@ -18,7 +18,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "acorn": "^8.19.0",
     "acorn-walk": "^8.3.5",
-    "happy-dom": "^21.0.3",
+    "happy-dom": "^21.0.4",
     "sharp": "^0.35.5",
     "vite": "^8.3.4",
     "vite-plugin-static-copy": "^4.1.1",
