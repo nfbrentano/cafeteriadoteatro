@@ -275,8 +275,12 @@
     const { data } = await window.cafeteriaSupabase.auth.getSession();
     if (data && data.session) {
       await loadProfile(data.session.user);
+    } else {
+      if (loginScreen) loginScreen.classList.remove('hidden');
+      if (app) app.classList.add('hidden');
     }
   }
+  window.baristaCheckSession = checkSession;
 
   // -----------------------------------------------------
   // TOAST COMPONENT & BOTTOM SHEET (CAF-000056)
@@ -591,6 +595,10 @@
       }
     });
   }
+
+  window.baristaSalvarPedidoOffline = dbSalvarPedidoOffline;
+  window.baristaObterFilaOffline = dbObterFilaOffline;
+  window.baristaRemoverPedidoOffline = dbRemoverPedidoOffline;
 
   function atualizarModoConexaoCarrinho() {
     if (cartTotalLabel) {
@@ -2172,6 +2180,7 @@
       if (mobileCartBar) mobileCartBar.classList.add('hidden');
       closeCartDrawer();
       checkFormValidity();
+      syncProductCardsWithCart();
       return;
     }
     document.body.classList.add('has-cart-bar');
@@ -2402,6 +2411,11 @@
 
   window.baristaUpdateQty = updateQuantity;
   window.baristaOpenObs = openItemObsModal;
+  window.baristaLimparCarrinho = function() {
+    cart = [];
+    limparRascunhoCarrinho();
+    renderCart();
+  };
 
   function checkFormValidity() {
     const hasMesa = mesaSelect.value !== '';
@@ -2486,6 +2500,9 @@
     btnDesvincularCliente.addEventListener('click', desvincularCliente);
   }
 
+  window.baristaSelecionarCliente = selecionarCliente;
+  window.baristaDesvincularCliente = desvincularCliente;
+
   function renderSugestoesClientes(lista, termo) {
     if (!sugestoesClientes) return;
     sugestoesClientes.innerHTML = '';
@@ -2542,29 +2559,57 @@
 
   function abrirModalCadastroCliente(nomePreenchido = '') {
     if (!modalCadastroCliente) return;
+    if (sugestoesClientes) {
+      sugestoesClientes.style.display = 'none';
+      sugestoesClientes.innerHTML = '';
+    }
     if (cadClienteNome) cadClienteNome.value = nomePreenchido;
     if (cadClienteTel) cadClienteTel.value = '';
     if (cadClienteConsentimento) cadClienteConsentimento.checked = true;
+    modalCadastroCliente.classList.remove('hidden');
     modalCadastroCliente.style.display = 'flex';
-    if (nomePreenchido && cadClienteTel) {
-      cadClienteTel.focus();
-    } else if (cadClienteNome) {
-      cadClienteNome.focus();
-    }
+    setTimeout(() => {
+      if (nomePreenchido && cadClienteTel) {
+        cadClienteTel.focus();
+      } else if (cadClienteNome) {
+        cadClienteNome.focus();
+      }
+    }, 50);
   }
 
   function fecharModalCadastroCliente() {
-    if (modalCadastroCliente) modalCadastroCliente.style.display = 'none';
+    if (!modalCadastroCliente) return;
+    modalCadastroCliente.classList.add('hidden');
+    modalCadastroCliente.style.display = 'none';
   }
 
+  window.baristaAbrirCadastroCliente = function(nomePreenchido = '') {
+    const termo = nomePreenchido || (pedidoClienteNome ? pedidoClienteNome.value.trim() : '');
+    abrirModalCadastroCliente(termo);
+  };
+
   if (btnAbrirCadastroCliente) {
-    btnAbrirCadastroCliente.addEventListener('click', () => {
+    btnAbrirCadastroCliente.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const termoAtual = pedidoClienteNome ? pedidoClienteNome.value.trim() : '';
       abrirModalCadastroCliente(termoAtual);
     });
   }
   if (btnFecharModalCliente) btnFecharModalCliente.addEventListener('click', fecharModalCadastroCliente);
   if (btnCancelarCadastroCliente) btnCancelarCadastroCliente.addEventListener('click', fecharModalCadastroCliente);
+  if (modalCadastroCliente) {
+    modalCadastroCliente.addEventListener('click', (e) => {
+      if (e.target === modalCadastroCliente) {
+        fecharModalCadastroCliente();
+      }
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalCadastroCliente && !modalCadastroCliente.classList.contains('hidden') && modalCadastroCliente.style.display !== 'none') {
+      fecharModalCadastroCliente();
+    }
+  });
 
   if (cadClienteTel) {
     cadClienteTel.addEventListener('input', (e) => {
@@ -2695,7 +2740,7 @@
   // 5. ENVIAR PEDIDO (OPTIMISTIC UI, IDEMPOTÊNCIA & FILA OFFLINE) - CAF-000059 / CAF-000060
   // -----------------------------------------------------
   btnEnviarPedido.addEventListener('click', () => {
-    if (btnEnviarPedido.disabled) return;
+    if (btnEnviarPedido.dataset.sending === 'true') return;
     
     const mesaCodigo = mesaSelect.value;
     const obsGeral = pedidoObs.value.trim();
@@ -2923,7 +2968,7 @@
         // Sucesso de envio
         if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
         showToast(`✓ Pedido da ${mesaIdentificador} enviado à cozinha com sucesso!`, 'success');
-        await Promise.all([loadActivePedidos(), loadMesasOverview()]);
+        await Promise.all([loadActivePedidos(), loadMesas()]);
       } catch (err) {
         console.error('[PDV Enviar Otimista] Exceção:', err);
         await dbSalvarPedidoOffline(offlineOrderData);
@@ -3399,7 +3444,7 @@
           ptrIndicator.style.height = '40px';
           ptrIndicator.innerHTML = '<span>↻ Atualizando...</span>';
         }
-        await Promise.all([loadActivePedidos(), loadMesasOverview()]);
+        await Promise.all([loadActivePedidos(), loadMesas()]);
       }
       if (ptrIndicator) {
         ptrIndicator.style.transition = 'height 0.2s, opacity 0.2s';
@@ -4102,7 +4147,7 @@
     modalTransferirMesa.classList.remove('hidden');
 
     try {
-      const { data: mesas, error } = await supabase
+      const { data: mesas, error } = await window.cafeteriaSupabase
         .from('mesas')
         .select('codigo')
         .eq('ativo', true)
@@ -4154,7 +4199,7 @@
       btnTransferirConfirm.disabled = true;
       btnTransferirConfirm.textContent = 'Processando...';
 
-      const { error } = await supabase.rpc('transferir_mesa', {
+      const { error } = await window.cafeteriaSupabase.rpc('transferir_mesa', {
         p_origem: pOrigem,
         p_destino: pDestino
       });
@@ -4164,7 +4209,8 @@
       window.showToast('Operação realizada com sucesso!', { tipo: 'success' });
       fecharModalTransferencia();
       fecharModalMesa();
-      loadPedidos(); // Recarrega os pedidos e mesas
+      loadActivePedidos();
+      loadMesas();
     } catch (err) {
       console.error('Erro ao transferir:', err);
       showToast('Erro ao transferir pedidos: ' + err.message, { tipo: 'error' });
@@ -4255,6 +4301,8 @@
     setFecharContaStep(1);
   }
 
+  window.baristaAbrirModalFecharConta = abrirModalFecharConta;
+
   function recalcularTotaisFechamento() {
     let desconto = 0;
     if (fecharContaDescontoValor.value) {
@@ -4344,10 +4392,12 @@
         if (currentFechamento) {
           currentFechamento._cupomCampanhaId = res.campanha_id;
           currentFechamento._cupomCodigo = res.cupom_codigo;
+          currentFechamento.cupomCodigo = res.cupom_codigo;
         }
 
         if (fecharContaCupomMsg) {
-          fecharContaCupomMsg.textContent = `✅ ${res.message} (- R$ ${res.desconto_calculado.toFixed(2).replace('.', ',')})`;
+          const descCalc = Number(res.desconto_calculado ?? res.valor_desconto ?? 0);
+          fecharContaCupomMsg.textContent = `✅ ${res.message || 'Cupom aplicado!'} (- R$ ${descCalc.toFixed(2).replace('.', ',')})`;
           fecharContaCupomMsg.style.color = '#15803d';
           fecharContaCupomMsg.style.display = 'block';
         }
@@ -4970,7 +5020,7 @@
         p_desconto_manual: Number(currentFechamento.descontoAplicado || 0),
         p_desconto_motivo: currentFechamento.descontoMotivo || null,
         p_idempotency_key: idempotencyKey,
-        p_cupom_codigo: currentFechamento.cupomCodigo || null,
+        p_cupom_codigo: currentFechamento.cupomCodigo || currentFechamento._cupomCodigo || null,
         p_campanha_id: currentFechamento._cupomCampanhaId || null
       });
 
@@ -5110,6 +5160,8 @@
     const modalBody = document.querySelector('.fechar-conta-body');
     if (modalBody) modalBody.scrollTop = 0;
   }
+
+  window.baristaSetFecharContaStep = setFecharContaStep;
 
   function updateFecharContaFooterSummary() {
     if (!fecharContaFooterLabel || !fecharContaFooterVal) return;

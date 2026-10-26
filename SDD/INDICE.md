@@ -110,6 +110,8 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000099** | Tornar a suíte de testes efetiva: executar o código real das páginas, contrato com colunas e parâmetros, pgTAP rodando de verdade | Concluída | — | `caf-000099-execucao-real-harness.test.js`, `schema-contract.test.js` | — |
 | **CAF-000100** | Resolução de Vulnerabilidades de Segurança CodeQL e Dependabot (DOM XSS, Sanitização e happy-dom) | Concluída | — | `caf-000100-seguranca-codeql.test.js` | — |
 | **CAF-000101** | Resolução dos Alertas CodeQL #14 e #19 de DOM XSS em observações do PDV (`pedidos.js`) | Concluída | — | `caf-000101-xss-pedidos-obs.test.js` | — |
+| **CAF-000102** | Suíte de Testes Funcionais Combinatórios da Tela de Pedidos (PDV — `pedidos.html`) | Concluída | — | `caf-000102-*.test.js` | — |
+| **CAF-000103** | [UI] Disposição dos botões mobile first nas telas de Pedidos (PDV), Cozinha (KDS) e Totem | Aprovada | — | — | — |
 
 ---
 
