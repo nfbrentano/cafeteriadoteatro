@@ -45,43 +45,60 @@
       <div class="topbar__logo">🍳 Cozinha & Bar</div>
       
       <div class="topbar__center">
-        <select id="filtro-estacao" class="filter-select" aria-label="Filtrar por Estação" style="margin-right: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; padding: 4px 8px; border-radius: 4px;">
-          <option value="todas">Todas as Estações</option>
-          <option value="cozinha">Cozinha</option>
-          <option value="bar">Bar</option>
-        </select>
-
-        <div class="kds-view-switcher" id="kds-view-switcher">
-          <button id="btn-view-board" class="btn-view-tab active" type="button" title="Visão de Pedidos (Colunas)">
-            📋 Pedidos
-          </button>
-          <button id="btn-view-producao" class="btn-view-tab" type="button" title="Visão Consolidada de Produção">
-            📊 Produção <span class="tab-badge" id="topbar-badge-producao">0</span>
-          </button>
-          <button id="btn-filtro-intervalo" class="btn-view-tab" type="button" title="Filtrar Pedidos do Intervalo do Espetáculo" style="border:1px solid rgba(168,85,247,0.5); color:#d8b4fe;">
-            🎭 Intervalo <span class="tab-badge" id="topbar-badge-intervalo">0</span>
-          </button>
-        </div>
-
         <div id="cozinha-status-indicator" class="status-indicator">
           <span id="cozinha-pulse-dot" class="pulse-dot"></span>
           <span id="cozinha-status-text">Conectado (Tempo Real)</span>
         </div>
       </div>
 
-        <button id="btn-ajuda-atalhos" class="btn-ghost btn-icon" title="Atalhos do Teclado e Bump Bar (tecla ?)" aria-label="Atalhos">
-          ⌨️ <span class="btn-label">Atalhos ( ? )</span>
-        </button>
-        <button id="btn-config-tela" class="btn-ghost btn-icon" title="Configurar Impressão Desta Tela" aria-label="Esta Tela">
-          ⚙️ <span class="btn-label">Esta Tela: <strong id="topbar-printer-status">Não imprime</strong></span>
-        </button>
-        <button id="btn-toggle-som" class="btn-ghost btn-icon" title="Testar ou Silenciar Alarme" aria-label="Som Ativo">🔔 <span class="btn-label">Som Ativo</span></button>
-        <button id="btn-teste-voz" class="btn-ghost btn-icon" title="Testar Chamada de Voz" aria-label="Testar Voz">📢 <span class="btn-label">Testar Voz</span></button>
-        <button id="btn-teste-impressao" class="btn-ghost btn-icon" title="Testar Impressão" aria-label="Testar Impressão">🖨 <span class="btn-label">Testar Impressão</span></button>
-        <span id="user-name">Carregando...</span>
-        <button id="btn-logout" class="btn-logout">Sair</button>
+      <!-- CAF-000103 (RF09, CA11): Botão Ferramentas no mobile abre bottom sheet; ferramentas inline em >= 1280px -->
+      <button type="button" id="btn-kds-ferramentas" class="btn--icon btn-kds-tools-trigger" aria-label="Ferramentas e Configurações" aria-expanded="false" title="Ferramentas">
+        ⚙️
+      </button>
+
+      <div id="sheet-kds-ferramentas" class="kds-sheet-backdrop hidden" aria-hidden="true">
+        <div class="kds-sheet-modal" role="dialog" aria-modal="true" aria-labelledby="sheet-kds-title">
+          <div class="kds-sheet-header">
+            <h3 id="sheet-kds-title">⚙️ Ferramentas & Configurações</h3>
+            <button type="button" class="btn--icon kds-sheet-close" id="btn-close-sheet-kds" aria-label="Fechar ferramentas">✕</button>
+          </div>
+          <div class="kds-sheet-actions" id="topbar-actions">
+            <button id="btn-ajuda-atalhos" class="btn-ghost btn-icon" title="Atalhos do Teclado e Bump Bar (tecla ?)" aria-label="Atalhos">
+              ⌨️ <span class="btn-label">Atalhos ( ? )</span>
+            </button>
+            <button id="btn-config-tela" class="btn-ghost btn-icon" title="Configurar Impressão Desta Tela" aria-label="Esta Tela">
+              ⚙️ <span class="btn-label">Esta Tela: <strong id="topbar-printer-status">Não imprime</strong></span>
+            </button>
+            <button id="btn-toggle-som" class="btn-ghost btn-icon" title="Testar ou Silenciar Alarme" aria-label="Som Ativo">🔔 <span class="btn-label">Som Ativo</span></button>
+            <button id="btn-teste-voz" class="btn-ghost btn-icon" title="Testar Chamada de Voz" aria-label="Testar Voz">📢 <span class="btn-label">Testar Voz</span></button>
+            <button id="btn-teste-impressao" class="btn-ghost btn-icon" title="Testar Impressão" aria-label="Testar Impressão">🖨 <span class="btn-label">Testar Impressão</span></button>
+            <span id="user-name">Carregando...</span>
+            <button id="btn-logout" class="btn-logout">Sair</button>
+          </div>
+        </div>
       </div>
     </header>
+
+    <!-- SUB-BARRA DE ESTAÇÃO E VISÕES (CAF-000103 / RF09) -->
+    <div class="kds-subtopbar" id="kds-subtopbar">
+      <select id="filtro-estacao" class="filter-select kds-station-select" aria-label="Filtrar por Estação">
+        <option value="todas">Todas as Estações</option>
+        <option value="cozinha">Cozinha</option>
+        <option value="bar">Bar</option>
+      </select>
+
+      <div class="kds-view-switcher" id="kds-view-switcher">
+        <button id="btn-view-board" class="btn-view-tab active" type="button" title="Visão de Pedidos (Colunas)">
+          📋 Pedidos
+        </button>
+        <button id="btn-view-producao" class="btn-view-tab" type="button" title="Visão Consolidada de Produção">
+          📊 Produção <span class="tab-badge" id="topbar-badge-producao">0</span>
+        </button>
+        <button id="btn-filtro-intervalo" class="btn-view-tab btn-view-tab--intervalo" type="button" title="Filtrar Pedidos do Intervalo do Espetáculo">
+          🎭 Intervalo <span class="tab-badge" id="topbar-badge-intervalo">0</span>
+        </button>
+      </div>
+    </div>
 
     <!-- FAIXA VERMELHA DE ALERTA DE CONEXÃO (CAF-000018) -->
     <div id="cozinha-offline-banner" class="cozinha-offline-banner hidden" role="alert">
@@ -246,7 +263,7 @@
           <button type="button" id="btn-cfg-testar-impressao" class="btn-ghost">🖨 Testar Comanda</button>
           <button type="button" id="btn-cfg-testar-etiqueta" class="btn-ghost">🏷️ Testar Etiqueta</button>
         </div>
-        <button type="button" id="btn-cfg-salvar" class="btn-primary" style="padding: 10px 20px; font-weight: bold;">Salvar Configuração</button>
+        <button type="button" id="btn-cfg-salvar" class="btn--primary">Salvar Configuração</button>
       </div>
     </div>
   </div>
@@ -321,7 +338,7 @@
         </table>
       </div>
       <div class="modal-footer" style="display:flex; justify-content:flex-end;">
-        <button type="button" id="btn-ok-atalhos" class="btn-primary" style="padding: 10px 24px; font-weight: bold;">Entendido</button>
+        <button type="button" id="btn-ok-atalhos" class="btn--primary">Entendido</button>
       </div>
     </div>
   </div>

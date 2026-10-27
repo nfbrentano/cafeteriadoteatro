@@ -98,6 +98,38 @@ html, body.totem-body {
   gap: 12px;
 }
 
+/* CAF-000103 (RF12, CA15): Recomeçar no canto superior direito */
+.totem-header__actions #btn-totem-limpar {
+  margin-left: 16px;
+  min-height: 56px;
+  min-width: 140px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 2px solid rgba(220, 38, 38, 0.5);
+  background: rgba(220, 38, 38, 0.12);
+  color: #FCA5A5;
+  font-weight: 800;
+  font-size: calc(0.95rem * var(--totem-font-scale));
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.totem-header__actions #btn-totem-limpar:hover {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: #EF4444;
+  color: #FFF;
+}
+
+/* Escondido por CSS enquanto disabled (sacola vazia) */
+.totem-header__actions #btn-totem-limpar:disabled,
+.totem-header__actions #btn-totem-limpar[disabled] {
+  display: none !important;
+}
+
 .totem-btn-a11y {
   min-height: 56px;
   padding: 0 18px;
@@ -551,4 +583,279 @@ html, body.totem-body {
   border-color: var(--totem-primary);
   background: var(--totem-accent-light);
   color: var(--totem-primary);
+}
+
+/* ── CLASSES AUXILIARES DE BOTÕES (CAF-000103 / CA01) ── */
+.btn--flex {
+  flex: 1;
+}
+
+.btn--full {
+  width: 100%;
+}
+
+.totem-btn--intervalo {
+  min-height: 44px;
+  background: #fff;
+  color: #6b21a8;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.totem-btn-limpar-busca {
+  position: absolute;
+  right: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.totem-btn-cupom {
+  height: 56px;
+  padding: 0 20px;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.totem-adic-toggle {
+  min-height: 68px;
+  padding: 10px 14px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.totem-qty-btn {
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  font-size: 1.5rem;
+}
+
+.btn-add-sugestao-rapida {
+  min-height: 64px;
+  padding: 0 20px;
+}
+
+.btn-rm-checkout-item {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid #FECACA;
+  background: #FEF2F2;
+  color: #DC2626;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── RECOMEÇAR CENTRALIZADO COM ANIMAÇÃO (RF17, CA21) ── */
+.totem-idle-screen.has-single-action {
+  justify-content: center;
+  align-items: center;
+}
+
+.totem-idle-screen.has-single-action .totem-idle-cta {
+  margin: auto;
+  position: relative;
+  z-index: 5;
+  min-height: var(--btn-h-xl, 64px);
+  background: var(--totem-accent);
+  color: #FFFFFF;
+}
+
+#totem-success-screen.has-single-action .totem-success-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#totem-success-screen.has-single-action #btn-totem-novo-pedido {
+  min-height: var(--btn-h-xl, 64px);
+  padding: 0 32px;
+  font-size: calc(1.15rem * var(--totem-font-scale));
+  margin: 0 auto;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* ── ANIMAÇÕES DE FUNDO DO TOTEM (RF18, RF19, CA21, CA22, CA24, CA26) ── */
+.totem-bg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.totem-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 12, 6, 0.65);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.totem-bg-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Catálogo: Cortina */
+.totem-anim--cortina {
+  background: radial-gradient(circle at 50% 30%, #5c1d1d 0%, #2b0b0b 70%, #150404 100%);
+  position: relative;
+}
+
+.totem-anim--cortina::before,
+.totem-anim--cortina::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: repeating-linear-gradient(90deg, rgba(160, 30, 30, 0.7) 0px, rgba(80, 10, 10, 0.8) 40px, rgba(160, 30, 30, 0.7) 80px);
+  z-index: 1;
+  animation: totemCurtainSway 6s ease-in-out infinite alternate;
+}
+
+.totem-anim--cortina::before { left: 0; transform-origin: top left; }
+.totem-anim--cortina::after { right: 0; transform-origin: top right; }
+
+@keyframes totemCurtainSway {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(0.97); }
+}
+
+/* Catálogo: Vapor de café */
+.totem-anim--vapor {
+  background: linear-gradient(165deg, #2b1810 0%, #180c07 100%);
+  position: relative;
+}
+
+.totem-anim--vapor::before {
+  content: "♨ ♨ ♨";
+  position: absolute;
+  bottom: 20%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 5rem;
+  color: rgba(245, 236, 215, 0.12);
+  letter-spacing: 40px;
+  animation: totemSteam 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes totemSteam {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.15; }
+  50% { transform: translateY(-25px) scale(1.08); opacity: 0.35; }
+}
+
+/* Catálogo: Grãos caindo */
+.totem-anim--graos {
+  background: linear-gradient(165deg, #201108 0%, #3d1f0d 60%, #150904 100%);
+  position: relative;
+}
+
+.totem-anim--graos::before {
+  content: "•  •   •    •  •";
+  position: absolute;
+  top: -10%;
+  left: 10%;
+  right: 10%;
+  text-align: center;
+  font-size: 2.5rem;
+  color: rgba(200, 125, 50, 0.25);
+  animation: totemFallingBeans 5s linear infinite;
+  z-index: 1;
+}
+
+@keyframes totemFallingBeans {
+  0% { transform: translateY(-10%) rotate(0deg); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+
+/* Respeito a prefers-reduced-motion (RNF05, RNF09) */
+@media (prefers-reduced-motion: reduce) {
+  .totem-anim--cortina::before,
+  .totem-anim--cortina::after,
+  .totem-anim--vapor::before,
+  .totem-anim--graos::before,
+  .totem-idle-cta {
+    animation: none !important;
+  }
+  video.totem-bg-media {
+    display: none !important;
+  }
+}
+
+/* ── BREAKPOINTS MOBILE FIRST E ORIENTAÇÃO (RF03, RF14, CA04, CA16, CA23) ── */
+@media (min-width: 600px) {
+  .totem-header {
+    padding: 16px 28px;
+  }
+
+  .totem-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+  }
+}
+
+@media (min-width: 900px) {
+  .totem-bottom-bar {
+    padding: 16px 36px;
+  }
+
+  .totem-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+/* Adaptação por Rotação / Orientação (CA16, CA23) */
+@media (orientation: landscape) {
+  .totem-choice-grid,
+  #totem-pagamento-choices {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .totem-modal {
+    max-height: 94dvh;
+  }
+
+  .totem-layout {
+    height: calc(100dvh - 74px - 96px);
+  }
+
+  .totem-header {
+    min-height: 74px;
+    padding: 10px 24px;
+  }
+
+  .totem-bottom-bar {
+    height: 96px;
+    padding: 10px 24px;
+  }
 }

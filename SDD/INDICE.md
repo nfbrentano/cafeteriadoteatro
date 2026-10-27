@@ -111,7 +111,8 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000100** | Resolução de Vulnerabilidades de Segurança CodeQL e Dependabot (DOM XSS, Sanitização e happy-dom) | Concluída | — | `caf-000100-seguranca-codeql.test.js` | — |
 | **CAF-000101** | Resolução dos Alertas CodeQL #14 e #19 de DOM XSS em observações do PDV (`pedidos.js`) | Concluída | — | `caf-000101-xss-pedidos-obs.test.js` | — |
 | **CAF-000102** | Suíte de Testes Funcionais Combinatórios da Tela de Pedidos (PDV — `pedidos.html`) | Concluída | — | `caf-000102-*.test.js` | — |
-| **CAF-000103** | [UI] Disposição dos botões mobile first nas telas de Pedidos (PDV), Cozinha (KDS) e Totem | Aprovada | — | — | — |
+| **CAF-000103** | [UI] Disposição dos botões mobile first nas telas de Pedidos (PDV), Cozinha (KDS) e Totem | Concluída | `migration_caf_000103_totem_animacao_fundo.sql` | `caf-000103-layout-botoes-mobile-first.test.js` | — |
+| **CAF-000104** | [FIX] [Banco] Correção das Colunas prioridade e prioridade_motivo na Tabela pedidos e RPCs Associadas | Concluída | `migration_caf_000104_correcao_prioridade_pedidos.sql` | `caf-000104-prioridade-pedidos.test.js` | — |
 
 ---
 

@@ -2294,7 +2294,7 @@
             ${promoHtml}
           </div>
           <div class="cart-item-actions">
-            <button class="cart-btn obs-btn" title="Adicionar/Editar Observação" onclick="window.baristaOpenObs(${index})" style="font-size:12px; width:auto; padding:0 8px;">
+            <button class="cart-btn obs-btn" title="Adicionar/Editar Observação" onclick="window.baristaOpenObs(${index})">
               ${item.observacoes ? 'Editar obs' : '+ Obs'}
             </button>
             <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, -1)">-</button>
@@ -3197,10 +3197,10 @@
           </div>
 
           <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
-            <button type="button" class="btn-recusar-pedido-cliente" data-id="${pedido.id}" style="background: #fff; border: 1px solid #fca5a5; color: #dc2626; padding: 7px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+            <button type="button" class="btn-recusar-pedido-cliente btn--danger" data-id="${pedido.id}">
               ✕ Recusar
             </button>
-            <button type="button" class="btn-aprovar-pedido-cliente" data-id="${pedido.id}" style="background: ${isOnline ? '#059669' : '#4f46e5'}; border: none; color: white; padding: 7px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+            <button type="button" class="btn-aprovar-pedido-cliente btn--primary ${isOnline ? 'btn--verde' : ''}" data-id="${pedido.id}">
               ✓ Aprovar ${isOnline ? '& Confirmar no WhatsApp' : '& Enviar à Cozinha'}
             </button>
           </div>
@@ -3380,15 +3380,17 @@
   // Filtro de Escopo (Meus Pedidos vs Todos) - CAF-000059
   if (filtroEscopoChips && filtroEscopoChips.length > 0) {
     filtroEscopoChips.forEach(chip => {
-      if (chip.dataset.scope === currentFilterScope) {
-        chip.classList.add('active');
-      } else {
-        chip.classList.remove('active');
-      }
+      const isSelected = chip.dataset.scope === currentFilterScope;
+      chip.classList.toggle('active', isSelected);
+      chip.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
 
       chip.addEventListener('click', () => {
-        filtroEscopoChips.forEach(c => c.classList.remove('active'));
+        filtroEscopoChips.forEach(c => {
+          c.classList.remove('active');
+          c.setAttribute('aria-pressed', 'false');
+        });
         chip.classList.add('active');
+        chip.setAttribute('aria-pressed', 'true');
         currentFilterScope = chip.dataset.scope;
         localStorage.setItem('cafeteria_pedidos_filtro_escopo', currentFilterScope);
         if (navigator.vibrate) navigator.vibrate(15);
@@ -3399,9 +3401,15 @@
 
   // Filtros de Pedidos Ativos (Status)
   filtroChips.forEach(chip => {
+    const isSelected = chip.classList.contains('active') || chip.dataset.filter === currentFilterStatus;
+    chip.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
     chip.addEventListener('click', () => {
-      filtroChips.forEach(c => c.classList.remove('active'));
+      filtroChips.forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('aria-pressed', 'false');
+      });
       chip.classList.add('active');
+      chip.setAttribute('aria-pressed', 'true');
       currentFilterStatus = chip.dataset.filter;
       renderPedidosCards();
     });
@@ -3534,12 +3542,12 @@
 
       const isOnlineOuRetirada = pedido.origem === 'online' || pedido.origem === 'online_retirada' || pedido.mesa_codigo === 'RETIRADA';
       const btnWhatsappPronto = (pedido.cliente_telefone)
-        ? `<button type="button" class="btn-ghost-small" style="background:#dcfce7; color:#166534; border:1px solid #86efac; padding:5px 8px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer;" onclick="window.baristaAvisarWhatsAppPronto(${pedido.id})" title="Avisar cliente pelo WhatsApp">
+        ? `<button type="button" class="btn-ghost-small btn-whatsapp-pronto" onclick="window.baristaAvisarWhatsAppPronto(${pedido.id})" title="Avisar cliente pelo WhatsApp">
             📲 WhatsApp
            </button>`
         : '';
       const btnNaoRetirado = isOnlineOuRetirada
-        ? `<button type="button" class="btn-ghost-small" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:5px 8px; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer;" onclick="window.baristaMarcarNaoRetirado(${pedido.id})" title="Marcar pedido como não retirado pelo cliente">
+        ? `<button type="button" class="btn-ghost-small btn-nao-retirado" onclick="window.baristaMarcarNaoRetirado(${pedido.id})" title="Marcar pedido como não retirado pelo cliente">
             🚫 Não retirado
            </button>`
         : '';
@@ -3548,7 +3556,7 @@
       if (pedido.status === 'aguardando_pagamento') {
         btnAcaoHtml = `
           <div class="pedido-card-barista__actions" style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn-entregar" style="background:#0f766e;" onclick="window.baristaReceberPedidoTotem(${pedido.id})">
+            <button type="button" class="btn-entregar btn-receber-totem" onclick="window.baristaReceberPedidoTotem(${pedido.id})">
               💰 Receber & Enviar à Cozinha
             </button>
           </div>
@@ -3852,7 +3860,7 @@
           disponiveis.forEach(d => {
             const prod = allProducts.find(pr => pr.id === d.produto_cortesia_id);
             if (prod) {
-              cortesiaHtml += `<button class="btn-ghost-small" style="font-size:11px; padding:2px 6px; margin-left:8px;" onclick="window.baristaLancarCortesia(${p.id}, ${it.id}, decodeURIComponent('${encodeURIComponent(prod.id)}'))" title="Lançar ${window.escapeHtml(prod.nome)} como cortesia">🎁 ${window.escapeHtml(prod.nome)} (${d.saldo_disponivel})</button>`;
+              cortesiaHtml += `<button class="btn-ghost-small btn-cortesia-item" onclick="window.baristaLancarCortesia(${p.id}, ${it.id}, decodeURIComponent('${encodeURIComponent(prod.id)}'))" title="Lançar ${window.escapeHtml(prod.nome)} como cortesia">🎁 ${window.escapeHtml(prod.nome)} (${d.saldo_disponivel})</button>`;
             }
           });
         }
@@ -3861,7 +3869,7 @@
         let cancelLabel = it.cancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
         let btnCancelarItemHtml = '';
         if (!it.cancelado && p.status !== 'concluido' && p.status !== 'cancelado') {
-          btnCancelarItemHtml = `<button class="btn-ghost-small" style="color: #e74c3c; padding: 2px 6px; font-size: 11px; margin-left:8px;" onclick="window.baristaCancelarItem(${it.id}, ${p.id}, decodeURIComponent('${encodeURIComponent(currentSelectedMesaParaConta.mesaCodigo)}'))">✕ Cancelar</button>`;
+          btnCancelarItemHtml = `<button class="btn-ghost-small btn-cancelar-item" onclick="window.baristaCancelarItem(${it.id}, ${p.id}, decodeURIComponent('${encodeURIComponent(currentSelectedMesaParaConta.mesaCodigo)}'))">✕ Cancelar</button>`;
         }
         
         let obsLabel = it.observacoes ? `<em style="color:#D97706">(${window.escapeHtml(it.observacoes)})</em>` : '';
@@ -3882,8 +3890,63 @@
     modalMesa.classList.remove('hidden');
   }
 
+  const btnMesaMaisAcoes = document.getElementById('btn-mesa-mais-acoes');
+  const sheetMesaAcoes = document.getElementById('modal-mesa-sheet-acoes');
+  const btnMesaSheetClose = document.getElementById('btn-mesa-sheet-close');
+  const backdropMesaSheet = document.getElementById('modal-mesa-sheet-backdrop');
+
+  function fecharSheetMesaAcoes() {
+    if (sheetMesaAcoes) {
+      sheetMesaAcoes.classList.add('hidden');
+    }
+    if (btnMesaMaisAcoes) {
+      btnMesaMaisAcoes.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function abrirSheetMesaAcoes() {
+    if (sheetMesaAcoes) {
+      sheetMesaAcoes.classList.remove('hidden');
+      if (btnMesaMaisAcoes) btnMesaMaisAcoes.setAttribute('aria-expanded', 'true');
+      const firstBtn = sheetMesaAcoes.querySelector('button');
+      if (firstBtn) firstBtn.focus();
+    }
+  }
+
+  if (btnMesaMaisAcoes) {
+    btnMesaMaisAcoes.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sheetMesaAcoes && sheetMesaAcoes.classList.contains('hidden')) {
+        abrirSheetMesaAcoes();
+      } else {
+        fecharSheetMesaAcoes();
+      }
+    });
+  }
+  if (btnMesaSheetClose) {
+    btnMesaSheetClose.addEventListener('click', fecharSheetMesaAcoes);
+  }
+  if (backdropMesaSheet) {
+    backdropMesaSheet.addEventListener('click', fecharSheetMesaAcoes);
+  }
+  if (sheetMesaAcoes) {
+    sheetMesaAcoes.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (btn && btn.id !== 'btn-mesa-sheet-close') {
+        fecharSheetMesaAcoes();
+      }
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sheetMesaAcoes && !sheetMesaAcoes.classList.contains('hidden')) {
+      fecharSheetMesaAcoes();
+      if (btnMesaMaisAcoes) btnMesaMaisAcoes.focus();
+    }
+  });
+
   function fecharModalMesa() {
     modalMesa.classList.add('hidden');
+    fecharSheetMesaAcoes();
     currentSelectedMesaParaConta = null;
   }
 
@@ -4581,9 +4644,9 @@
           let faltante = 100 - atribuido;
           botoesAtrib = `
             <div style="margin-top: 4px;">
-              ${faltante === 100 ? `<button class="btn-ghost-small" style="font-size:11px;" onclick="window.atribuirItem(${p.id}, 100)">Atribuir 100%</button>` : ''}
-              <button class="btn-ghost-small" style="font-size:11px;" onclick="window.atribuirItem(${p.id}, 50)">+50%</button>
-              <button class="btn-ghost-small" style="font-size:11px;" onclick="window.atribuirItem(${p.id}, ${faltante})">Restante (${faltante}%)</button>
+              ${faltante === 100 ? `<button class="btn-ghost-small btn-atribuir-parte" onclick="window.atribuirItem(${p.id}, 100)">Atribuir 100%</button>` : ''}
+              <button class="btn-ghost-small btn-atribuir-parte" onclick="window.atribuirItem(${p.id}, 50)">+50%</button>
+              <button class="btn-ghost-small btn-atribuir-parte" onclick="window.atribuirItem(${p.id}, ${faltante})">Restante (${faltante}%)</button>
             </div>
           `;
         }
@@ -4725,14 +4788,14 @@
       const isPix = pag.forma === 'pix';
       const txidPag = `CAF${String(currentFechamento?.mesaCodigo || '').replace(/[^A-Za-z0-9]/g, '')}P${pt.id}`;
       const botoesPixHtml = isPix
-        ? `<button type="button" class="btn-ghost-small" style="color:#047857; padding:2px 6px; font-weight:700;" onclick="window.mostrarQrPixPagamento(${pag.valor}, '${txidPag}', decodeURIComponent('${encodeURIComponent(pt.nome)}'))">📱 QR Pix</button>`
+        ? `<button type="button" class="btn-ghost-small btn--pix-copy" onclick="window.mostrarQrPixPagamento(${pag.valor}, '${txidPag}', decodeURIComponent('${encodeURIComponent(pt.nome)}'))">📱 QR Pix</button>`
         : '';
       htmlLista += `
         <div style="display:flex; justify-content: space-between; align-items:center; background:#f9f9f9; border:1px solid #ddd; padding:6px; border-radius:4px; margin-bottom:4px; font-size:13px; gap:6px;">
           <span>${formasNomes[pag.forma] || pag.forma}: <strong>R$ ${pag.valor.toFixed(2).replace('.', ',')}</strong></span>
           <div style="display:flex; align-items:center; gap:4px;">
             ${botoesPixHtml}
-            <button type="button" class="btn-ghost-small" style="color:red; padding:2px 6px;" onclick="window.removerPagamentoFechamento(${pag.id})">X</button>
+            <button type="button" class="btn-ghost-small btn--remover-item" onclick="window.removerPagamentoFechamento(${pag.id})">X</button>
           </div>
         </div>
       `;
@@ -5148,7 +5211,21 @@
       tab.classList.toggle('completed', s < currentFecharContaStep);
     });
 
-    // 4. Botões de avanço no rodapé
+    // 4. Botões de avanço e cancelamento no rodapé (máximo 2 botões por etapa - CA08)
+    const btnVoltarFooter = document.getElementById('btn-fechar-conta-voltar-footer');
+    const btnCancelarFooter = document.getElementById('modal-fechar-conta-cancelar');
+    const btnWhatsappFooter = document.getElementById('btn-fechar-conta-whatsapp');
+    const btnShareFooter = document.getElementById('btn-fechar-conta-share');
+
+    if (btnWhatsappFooter) btnWhatsappFooter.classList.add('hidden');
+    if (btnShareFooter) btnShareFooter.classList.add('hidden');
+
+    if (btnCancelarFooter) {
+      btnCancelarFooter.classList.toggle('hidden', currentFecharContaStep !== 1);
+    }
+    if (btnVoltarFooter) {
+      btnVoltarFooter.classList.toggle('hidden', currentFecharContaStep === 1);
+    }
     if (btnFecharContaNext1) btnFecharContaNext1.classList.toggle('hidden', currentFecharContaStep !== 1);
     if (btnFecharContaNext2) btnFecharContaNext2.classList.toggle('hidden', currentFecharContaStep !== 2);
     if (fecharContaConfirmar) fecharContaConfirmar.classList.toggle('hidden', currentFecharContaStep !== 3);
@@ -5203,6 +5280,12 @@
   }
   if (btnFecharContaVoltar) {
     btnFecharContaVoltar.addEventListener('click', () => {
+      setFecharContaStep(currentFecharContaStep - 1);
+    });
+  }
+  const btnFecharContaVoltarFooter = document.getElementById('btn-fechar-conta-voltar-footer');
+  if (btnFecharContaVoltarFooter) {
+    btnFecharContaVoltarFooter.addEventListener('click', () => {
       setFecharContaStep(currentFecharContaStep - 1);
     });
   }
@@ -5434,7 +5517,9 @@
       currentFilterStatus = 'todos';
       if (filtroChips) {
         filtroChips.forEach(chip => {
-          chip.classList.toggle('active', chip.dataset.filter === 'todos');
+          const isActive = chip.dataset.filter === 'todos';
+          chip.classList.toggle('active', isActive);
+          chip.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
       }
       renderPedidosCards();
@@ -5448,7 +5533,11 @@
         currentFilterScope = 'todos';
         localStorage.setItem('cafeteria_pedidos_filtro_escopo', 'todos');
         if (filtroEscopoChips) {
-          filtroEscopoChips.forEach(c => c.classList.toggle('active', c.dataset.scope === 'todos'));
+          filtroEscopoChips.forEach(c => {
+            const isActive = c.dataset.scope === 'todos';
+            c.classList.toggle('active', isActive);
+            c.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+          });
         }
         renderPedidosCards();
       }

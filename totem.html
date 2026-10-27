@@ -45,21 +45,24 @@
         style="width:100%; height:72px; text-align:center; font-size:2rem; font-weight:800; letter-spacing:6px; border:3px solid var(--totem-border); border-radius:16px; margin-bottom:16px;"
       />
       <div id="totem-pairing-error" class="hidden" style="color:var(--totem-danger); font-weight:700; margin-bottom:14px;"></div>
-      <button type="button" id="btn-totem-pair-submit" class="totem-btn totem-btn--primary" style="width:100%;">
+      <button type="button" id="btn-totem-pair-submit" class="totem-btn totem-btn--primary btn--full">
         🔗 Parear Dispositivo
       </button>
     </div>
   </div>
 
   <!-- ── TELA DE DESCANSO (IDLE SCREEN - 60s) ── -->
-  <div id="totem-idle-screen" class="totem-idle-screen hidden">
-    <div>
+  <div id="totem-idle-screen" class="totem-idle-screen hidden has-single-action">
+    <div id="totem-idle-bg-layer" class="totem-bg-layer">
+      <div class="totem-bg-overlay"></div>
+    </div>
+    <div style="position:relative; z-index:5;">
       <img src="assets/images/logo.webp" alt="Cafeteria do Teatro" style="width:88px; height:88px; border-radius:22px; margin-bottom:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" />
       <h1 style="font-family:'Playfair Display',serif; font-size:2.4rem; margin:0 0 6px;">Cafeteria do Teatro</h1>
       <p style="font-size:1.15rem; opacity:0.85; margin:0;">Autoatendimento Rápido · Sem Fila</p>
     </div>
 
-    <div style="display:flex; flex-direction:column; gap:20px; margin:20px 0;">
+    <div style="position:relative; z-index:5; display:flex; flex-direction:column; gap:20px; margin:20px 0;">
       <div class="totem-idle-teatro-box" id="totem-idle-teatro-box">
         <div id="totem-idle-teatro-titulo" style="font-size:1.45rem; font-weight:800; color:#FDE68A; margin-bottom:6px;">
           🎭 Hoje no Teatro Univates
@@ -74,7 +77,7 @@
       </div>
     </div>
 
-    <div>
+    <div style="position:relative; z-index:5;">
       <div class="totem-idle-cta">
         👆 TOQUE NA TELA PARA FAZER SEU PEDIDO
       </div>
@@ -97,6 +100,10 @@
       <button type="button" class="totem-btn-a11y" id="btn-totem-fullscreen" title="Tela Cheia">
         ⛶
       </button>
+      <!-- CAF-000103 (RF12): Recomeçar no canto superior direito -->
+      <button type="button" class="totem-btn totem-btn--danger btn--danger" id="btn-totem-limpar" disabled title="Limpar sacola e recomeçar pedido">
+        ↺ Recomeçar
+      </button>
     </div>
   </header>
 
@@ -116,7 +123,7 @@
             <div style="font-size: 0.95rem; opacity: 0.9;" id="totem-banner-espetaculo-desc">Peça agora e retire sem fila no intervalo.</div>
           </div>
         </div>
-        <button type="button" id="btn-totem-reservar-intervalo" class="totem-btn" style="min-height: 44px; background: #fff; color: #6b21a8; font-weight: 800; padding: 10px 18px; border-radius: 12px; border: none; cursor: pointer; font-size: 0.95rem;">
+        <button type="button" id="btn-totem-reservar-intervalo" class="totem-btn totem-btn--intervalo">
           ⚡ Reservar p/ o Intervalo
         </button>
       </div>
@@ -134,7 +141,7 @@
         <button 
           type="button" 
           id="btn-totem-limpar-busca" 
-          style="position: absolute; right: 8px; min-width: 44px; min-height: 44px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; display: none; align-items: center; justify-content: center; color: #666;"
+          class="totem-btn-limpar-busca"
           aria-label="Limpar busca"
         >✕</button>
       </div>
@@ -159,10 +166,8 @@
     </div>
 
     <div class="totem-bottom-actions">
-      <button type="button" class="totem-btn totem-btn--ghost" id="btn-totem-limpar" disabled>
-        🗑️ Recomeçar
-      </button>
-      <button type="button" class="totem-btn totem-btn--primary" id="btn-totem-avancar" disabled>
+      <!-- CAF-000103 (RF12): Barra inferior fica só com resumo e Finalizar Pedido -->
+      <button type="button" class="totem-btn totem-btn--primary btn--xl" id="btn-totem-avancar" disabled>
         Finalizar Pedido →
       </button>
     </div>
@@ -180,7 +185,7 @@
       </div>
       <div class="totem-modal__footer">
         <button type="button" class="totem-btn totem-btn--ghost" id="btn-cancel-item-modal">Voltar</button>
-        <button type="button" class="totem-btn totem-btn--primary" id="btn-confirm-item-modal" style="flex:1;">
+        <button type="button" class="totem-btn totem-btn--primary btn--flex" id="btn-confirm-item-modal">
           + Adicionar ao Pedido
         </button>
       </div>
@@ -203,7 +208,7 @@
         </div>
       </div>
       <div class="totem-modal__footer">
-        <button type="button" class="totem-btn totem-btn--primary" id="btn-pular-sugestoes" style="width:100%;">
+        <button type="button" class="totem-btn totem-btn--primary btn--full" id="btn-pular-sugestoes">
           Continuar para Finalizar →
         </button>
       </div>
@@ -249,13 +254,13 @@
         <div style="margin-bottom:20px;">
           <label style="display:block; font-weight:800; margin-bottom:10px; font-size:1.1rem;">3. Como prefere pagar no caixa?</label>
           <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="totem-pagamento-choices">
-            <button type="button" class="totem-choice-btn is-selected" data-forma="pix" style="min-height:74px;">
+            <button type="button" class="totem-choice-btn is-selected" data-forma="pix">
               <span>💠 PIX</span>
             </button>
-            <button type="button" class="totem-choice-btn" data-forma="cartao_debito" style="min-height:74px;">
+            <button type="button" class="totem-choice-btn" data-forma="cartao_debito">
               <span>💳 Cartão</span>
             </button>
-            <button type="button" class="totem-choice-btn" data-forma="dinheiro" style="min-height:74px;">
+            <button type="button" class="totem-choice-btn" data-forma="dinheiro">
               <span>💵 Dinheiro</span>
             </button>
           </div>
@@ -272,7 +277,7 @@
               placeholder="Ex: VOLTEI10"
               style="flex:1; height:56px; border-radius:12px; border:2px solid var(--totem-border); padding:0 14px; font-size:1.15rem; font-weight:700; text-transform:uppercase;"
             />
-            <button type="button" id="btn-totem-aplicar-cupom" class="totem-btn totem-btn--ghost" style="height:56px; padding:0 20px; font-weight:800; font-size:1.1rem;">
+            <button type="button" id="btn-totem-aplicar-cupom" class="totem-btn totem-btn--ghost totem-btn-cupom">
               Aplicar
             </button>
           </div>
@@ -290,7 +295,7 @@
       </div>
       <div class="totem-modal__footer">
         <button type="button" class="totem-btn totem-btn--ghost" id="btn-back-checkout-modal">← Adicionar mais</button>
-        <button type="button" class="totem-btn totem-btn--primary" id="btn-totem-enviar-pedido" style="flex:1;">
+        <button type="button" class="totem-btn totem-btn--primary btn--flex" id="btn-totem-enviar-pedido">
           ✅ Confirmar e Gerar Senha
         </button>
       </div>
@@ -299,7 +304,10 @@
 
   <!-- ── MODAL 4: TELA FINAL DE SENHA (VOLTA SOZINHA EM 15s) ── -->
   <div id="totem-success-screen" class="totem-modal-backdrop hidden" style="z-index:300;">
-    <div class="totem-modal" style="max-width:620px; text-align:center; padding:32px 26px;">
+    <div id="totem-success-bg-layer" class="totem-bg-layer">
+      <div class="totem-bg-overlay"></div>
+    </div>
+    <div class="totem-modal" style="position:relative; z-index:5; max-width:620px; text-align:center; padding:32px 26px;">
       <div style="font-size:1.1rem; font-weight:800; color:var(--totem-success); text-transform:uppercase; letter-spacing:1px;">
         🎉 Pedido Registrado com Sucesso!
       </div>
@@ -325,11 +333,11 @@
         📺 Após pagar no caixa, acompanhe sua senha na <strong>TV de Retirada</strong>!
       </div>
 
-      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <div class="totem-success-actions" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
         <button type="button" class="totem-btn totem-btn--ghost" id="btn-totem-print-senha">
           🖨️ Imprimir Senha
         </button>
-        <button type="button" class="totem-btn totem-btn--primary" id="btn-totem-novo-pedido" style="flex:1;">
+        <button type="button" class="totem-btn totem-btn--primary btn--flex" id="btn-totem-novo-pedido">
           Novo Pedido (<span id="totem-success-countdown">15</span>s)
         </button>
       </div>

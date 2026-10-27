@@ -7,6 +7,31 @@
 
   const admin = window.cafeteriaAdmin;
 
+  // CAF-000103: Validação de arquivo de animação do Totem (RF19, CA24)
+  function validarArquivoAnimacaoTotem(file) {
+    if (!file) return { valido: false, erro: 'Nenhum arquivo fornecido.' };
+    const nameLower = (file.name || '').toLowerCase();
+    const isMp4 = nameLower.endsWith('.mp4') && file.type === 'video/mp4';
+    const isGif = nameLower.endsWith('.gif') && file.type === 'image/gif';
+
+    if (!isMp4 && !isGif) {
+      return { valido: false, erro: 'Formato recusado. Apenas arquivos .mp4 ou .gif legítimos são permitidos.' };
+    }
+
+    const MAX_MP4_BYTES = 15 * 1024 * 1024; // 15 MB
+    const MAX_GIF_BYTES = 8 * 1024 * 1024;  // 8 MB
+
+    if (isMp4 && file.size > MAX_MP4_BYTES) {
+      return { valido: false, erro: 'Arquivo MP4 excede o limite máximo permitido de 15 MB.' };
+    }
+    if (isGif && file.size > MAX_GIF_BYTES) {
+      return { valido: false, erro: 'Arquivo GIF excede o limite máximo permitido de 8 MB.' };
+    }
+
+    return { valido: true, tipo: isMp4 ? 'video/mp4' : 'image/gif' };
+  }
+  window.validarArquivoAnimacaoTotem = validarArquivoAnimacaoTotem;
+
   // --- Módulo: Hero ---
   window.renderHero = function() {
     const data = admin.appData.hero;
@@ -890,6 +915,11 @@
       const inputTotemExpiracao = document.getElementById('config-totem-expiracao');
       const inputTotemAvisoTitulo = document.getElementById('config-totem-aviso-titulo');
       const inputTotemAvisoSub = document.getElementById('config-totem-aviso-sub');
+      const selTotemAnimacaoCatalogo = document.getElementById('config-totem-animacao-catalogo');
+      const inputTotemMidiaFile = document.getElementById('input-totem-midia-file');
+      const btnPublicarTotemMidia = document.getElementById('btn-publicar-totem-midia');
+      const btnRemoverTotemMidia = document.getElementById('btn-remover-totem-midia');
+      const totemMidiaStatus = document.getElementById('totem-midia-status');
       const btnSalvarConfigTotem = document.getElementById('btn-salvar-config-totem');
       const selTotemSugCategoria = document.getElementById('totem-sug-categoria');
       const selTotemSugProduto = document.getElementById('totem-sug-produto');
@@ -897,13 +927,15 @@
       const btnAddTotemSugestao = document.getElementById('btn-add-totem-sugestao');
       const tbodyTotemSugestoes = document.getElementById('totem-sugestoes-tbody');
 
+      let totemAnimacaoConfigAtual = { tipo: 'catalogo', id: 'nenhuma' };
+
       async function carregarConfigTotem() {
         if (!window.cafeteriaSupabase) return;
         try {
           const { data } = await window.cafeteriaSupabase
             .from('configuracoes_sistema')
             .select('chave, valor')
-            .in('chave', ['totem_expiracao_pagamento_min', 'totem_aviso_teatro_titulo', 'totem_aviso_teatro_subtitulo']);
+            .in('chave', ['totem_expiracao_pagamento_min', 'totem_aviso_teatro_titulo', 'totem_aviso_teatro_subtitulo', 'totem_animacao_fundo']);
           (data || []).forEach((r) => {
             if (r.chave === 'totem_expiracao_pagamento_min' && inputTotemExpiracao) {
               inputTotemExpiracao.value = parseInt(r.valor, 10) || 15;
@@ -913,6 +945,22 @@
             }
             if (r.chave === 'totem_aviso_teatro_subtitulo' && inputTotemAvisoSub) {
               inputTotemAvisoSub.value = String(r.valor ?? '').replace(/^"|"$/g, '') || '';
+            }
+            if (r.chave === 'totem_animacao_fundo') {
+              try {
+                totemAnimacaoConfigAtual = typeof r.valor === 'string' ? JSON.parse(r.valor) : (r.valor || { tipo: 'catalogo', id: 'nenhuma' });
+              } catch (_) {
+                totemAnimacaoConfigAtual = { tipo: 'catalogo', id: 'nenhuma' };
+              }
+              if (totemAnimacaoConfigAtual.tipo === 'midia' && totemAnimacaoConfigAtual.url) {
+                if (selTotemAnimacaoCatalogo) selTotemAnimacaoCatalogo.value = 'nenhuma';
+                if (btnRemoverTotemMidia) btnRemoverTotemMidia.style.display = 'inline-flex';
+                if (totemMidiaStatus) totemMidiaStatus.textContent = 'Mídia ativa: ' + totemAnimacaoConfigAtual.url.split('/').pop();
+              } else {
+                if (selTotemAnimacaoCatalogo) selTotemAnimacaoCatalogo.value = totemAnimacaoConfigAtual.id || 'nenhuma';
+                if (btnRemoverTotemMidia) btnRemoverTotemMidia.style.display = 'none';
+                if (totemMidiaStatus) totemMidiaStatus.textContent = 'Usando animação do catálogo.';
+              }
             }
           });
         } catch (e) {
@@ -925,19 +973,121 @@
         if (!window.cafeteriaSupabase) return;
         btnSalvarConfigTotem.disabled = true;
         try {
+          const animId = selTotemAnimacaoCatalogo?.value || 'nenhuma';
+          if (totemAnimacaoConfigAtual.tipo !== 'midia' || animId !== 'nenhuma') {
+            totemAnimacaoConfigAtual = { tipo: 'catalogo', id: animId };
+          }
           const payload = [
             { chave: 'totem_expiracao_pagamento_min', valor: Math.max(5, parseInt(inputTotemExpiracao?.value, 10) || 15), updated_at: new Date().toISOString() },
             { chave: 'totem_aviso_teatro_titulo', valor: (inputTotemAvisoTitulo?.value || '🎭 Hoje no Teatro Univates').trim(), updated_at: new Date().toISOString() },
-            { chave: 'totem_aviso_teatro_subtitulo', valor: (inputTotemAvisoSub?.value || '').trim(), updated_at: new Date().toISOString() }
+            { chave: 'totem_aviso_teatro_subtitulo', valor: (inputTotemAvisoSub?.value || '').trim(), updated_at: new Date().toISOString() },
+            { chave: 'totem_animacao_fundo', valor: totemAnimacaoConfigAtual, updated_at: new Date().toISOString() }
           ];
           const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
           if (error) throw error;
           admin.toast('Sucesso', 'Opções do Totem salvas!', 'success');
+          carregarConfigTotem();
         } catch (err) {
           console.error('Erro ao salvar opções do totem:', err);
           admin.toast('Erro', 'Não foi possível salvar opções do Totem.', 'error');
         } finally {
           btnSalvarConfigTotem.disabled = false;
+        }
+      });
+
+      function validarArquivoAnimacaoTotem(file) {
+        if (!file) return { valido: false, erro: 'Nenhum arquivo fornecido.' };
+        const nameLower = (file.name || '').toLowerCase();
+        const isMp4 = nameLower.endsWith('.mp4') && file.type === 'video/mp4';
+        const isGif = nameLower.endsWith('.gif') && file.type === 'image/gif';
+
+        if (!isMp4 && !isGif) {
+          return { valido: false, erro: 'Formato recusado. Apenas arquivos .mp4 ou .gif legítimos são permitidos.' };
+        }
+
+        const MAX_MP4_BYTES = 15 * 1024 * 1024; // 15 MB
+        const MAX_GIF_BYTES = 8 * 1024 * 1024;  // 8 MB
+
+        if (isMp4 && file.size > MAX_MP4_BYTES) {
+          return { valido: false, erro: 'Arquivo MP4 excede o limite máximo permitido de 15 MB.' };
+        }
+        if (isGif && file.size > MAX_GIF_BYTES) {
+          return { valido: false, erro: 'Arquivo GIF excede o limite máximo permitido de 8 MB.' };
+        }
+
+        return { valido: true, tipo: isMp4 ? 'video/mp4' : 'image/gif' };
+      }
+      window.validarArquivoAnimacaoTotem = validarArquivoAnimacaoTotem;
+
+      // Publicar animação própria (GIF ou MP4) - CAF-000103 (RF19, CA24, CA25)
+      btnPublicarTotemMidia?.addEventListener('click', async () => {
+        const file = inputTotemMidiaFile?.files?.[0];
+        if (!file) {
+          admin.toast('Atenção', 'Selecione um arquivo MP4 ou GIF antes de publicar.', 'warning');
+          return;
+        }
+
+        const validacao = validarArquivoAnimacaoTotem(file);
+        if (!validacao.valido) {
+          admin.toast('Erro', validacao.erro, 'error');
+          return;
+        }
+
+        const isMp4 = validacao.tipo === 'video/mp4';
+
+        btnPublicarTotemMidia.disabled = true;
+        try {
+          const ext = isMp4 ? 'mp4' : 'gif';
+          const path = `totem/fundo-${Date.now()}.${ext}`;
+          let publicUrl = null;
+
+          if (window.cafeteriaDB?.assets?.upload) {
+            publicUrl = await window.cafeteriaDB.assets.upload(file, path);
+          } else if (window.cafeteriaSupabase?.storage) {
+            const { data, error } = await window.cafeteriaSupabase.storage
+              .from('site-assets')
+              .upload(path, file, { cacheControl: '3600', upsert: true });
+            if (error) throw error;
+            const { data: pubData } = window.cafeteriaSupabase.storage.from('site-assets').getPublicUrl(data.path);
+            publicUrl = pubData?.publicUrl;
+          }
+
+          if (!publicUrl) throw new Error('Não foi possível obter a URL pública do arquivo enviado.');
+
+          totemAnimacaoConfigAtual = {
+            tipo: 'midia',
+            url: publicUrl,
+            mime: isMp4 ? 'video/mp4' : 'image/gif'
+          };
+
+          const { error: saveErr } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert([{ chave: 'totem_animacao_fundo', valor: totemAnimacaoConfigAtual, updated_at: new Date().toISOString() }]);
+          if (saveErr) throw saveErr;
+
+          admin.toast('Sucesso', 'Animação própria do Totem publicada!', 'success');
+          if (inputTotemMidiaFile) inputTotemMidiaFile.value = '';
+          carregarConfigTotem();
+        } catch (err) {
+          console.error('Erro ao publicar animação do totem:', err);
+          admin.toast('Erro', 'Falha ao enviar arquivo de animação: ' + (err.message || err), 'error');
+        } finally {
+          btnPublicarTotemMidia.disabled = false;
+        }
+      });
+
+      btnRemoverTotemMidia?.addEventListener('click', async () => {
+        if (!confirm('Deseja remover a mídia personalizada e voltar à animação do catálogo?')) return;
+        totemAnimacaoConfigAtual = { tipo: 'catalogo', id: 'nenhuma' };
+        try {
+          const { error } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert([{ chave: 'totem_animacao_fundo', valor: totemAnimacaoConfigAtual, updated_at: new Date().toISOString() }]);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Mídia personalizada removida!', 'success');
+          carregarConfigTotem();
+        } catch (e) {
+          admin.toast('Erro', 'Não foi possível remover mídia.', 'error');
         }
       });
 

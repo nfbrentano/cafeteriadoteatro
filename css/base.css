@@ -59,6 +59,17 @@
   --max-width: 1200px;
   --nav-height: 72px;
 
+  /* Botões e Interações (CAF-000103) */
+  --btn-h-sm: 36px;
+  --btn-h-md: 44px;
+  --btn-h-lg: 52px;
+  --btn-h-xl: 64px;
+  --btn-gap: 8px;
+  --vermelho-danger: #C0392B;
+  --vermelho-danger-hover: #A93226;
+  --vermelho-danger-bg: rgba(192, 57, 43, 0.08);
+  --vermelho-danger-border: rgba(192, 57, 43, 0.35);
+
   /* Bordas e raios */
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -267,15 +278,18 @@ p {
   }
 }
 
-/* ─── RESPONSIVIDADE BASE ────────────────────────────────── */
-@media (max-width: 768px) {
+/* ─── RESPONSIVIDADE BASE (MOBILE-FIRST) ─────────────────── */
+.container { padding: 0 var(--space-4); }
+.section   { padding: var(--space-12) 0; }
+
+@media (min-width: 481px) {
   .container { padding: 0 var(--space-5); }
   .section   { padding: var(--space-16) 0; }
 }
 
-@media (max-width: 480px) {
-  .container { padding: 0 var(--space-4); }
-  .section   { padding: var(--space-12) 0; }
+@media (min-width: 769px) {
+  .container { padding: 0 var(--space-6); }
+  .section   { padding: var(--space-20) 0; }
 }
 
 /* ─── UTILITÁRIOS DE ACESSIBILIDADE ─────────────────────── */

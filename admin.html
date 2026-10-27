@@ -1746,6 +1746,27 @@
                 <input class="field__input" type="text" id="config-totem-aviso-sub" value="Garanta seu café e lanche sem fila antes do espetáculo começar!" maxlength="140" />
               </div>
             </div>
+            <!-- CAF-000103: Animação de Fundo do Totem -->
+            <div class="form-grid" style="margin-bottom:10px;">
+              <div class="field">
+                <label class="field__label" for="config-totem-animacao-catalogo">Animação de Fundo (Catálogo)</label>
+                <select class="field__select" id="config-totem-animacao-catalogo">
+                  <option value="nenhuma">Nenhuma (Fundo Padrão)</option>
+                  <option value="cortina">Cortina do Teatro</option>
+                  <option value="vapor">Vapor de Café</option>
+                  <option value="graos">Grãos Caindo</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column: 1 / -1;">
+                <label class="field__label">Mídia Própria de Fundo (GIF ou MP4)</label>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                  <input type="file" id="input-totem-midia-file" accept="video/mp4,image/gif" style="font-size:13px;" />
+                  <button type="button" class="btn btn--secondary btn--sm" id="btn-publicar-totem-midia">📤 Publicar animação (GIF ou MP4)</button>
+                  <button type="button" class="btn btn--danger btn--sm" id="btn-remover-totem-midia" style="display:none;">Remover mídia</button>
+                </div>
+                <div id="totem-midia-status" style="margin-top:6px; font-size:12px; color:var(--admin-text-sub);"></div>
+              </div>
+            </div>
             <button type="button" class="btn btn--outline-dark btn--sm" id="btn-salvar-config-totem">💾 Salvar Opções do Totem</button>
           </div>
 

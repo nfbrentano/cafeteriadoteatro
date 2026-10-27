@@ -238,6 +238,7 @@ describe('CAF-000102: Matriz M1 e M1b — Envio de Pedidos no PDV (360 Combinaç
       page.toasts.length = 0;
 
       await page.submeterPedido();
+      await new Promise(r => setTimeout(r, 50));
 
       expect(page.obterChamadasRpc('criar_pedido').length).toBe(0);
       const offlineToast = page.toasts.find(t => t.message.includes('guardado na fila offline'));

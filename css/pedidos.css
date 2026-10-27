@@ -1616,9 +1616,8 @@ body {
 }
 
 /* -----------------------------------------------------
-   RESPONSIVIDADE MOBILE (PWA / TABLET / SMARTPHONE)
+   RESPONSIVIDADE MOBILE-FIRST (BASE MOBILE SMARTPHONE/TABLET)
 ------------------------------------------------------ */
-@media (max-width: 900px) {
   .topbar {
     padding: 8px 12px;
     gap: 8px;
@@ -2311,38 +2310,157 @@ body {
   .montagem-sabores-selects {
     flex-direction: column;
   }
-}
 
-@media (max-width: 480px) {
-  .topbar__logo {
-    font-size: 13px;
-  }
-
-  .nav-tab {
-    padding: 8px 6px;
-    font-size: 13px;
-    min-height: 44px;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 8px 10px 100px 10px;
-  }
-
-  .product-card {
-    padding: 8px 10px;
+/* -----------------------------------------------------
+   DESKTOP OVERRIDES (>= 900px)
+------------------------------------------------------ */
+@media (min-width: 900px) {
+  .topbar {
+    padding: 10px 24px;
+    gap: 20px;
+    height: auto;
     min-height: auto;
   }
 
+  .topbar__left {
+    gap: 28px;
+    flex: initial;
+    overflow: visible;
+  }
+
+  .topbar__logo {
+    font-size: 20px;
+  }
+
+  .topbar__nav,
+  .bottom-nav {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+    gap: 8px;
+    z-index: 10;
+    box-shadow: none;
+    border-top: none;
+  }
+
+  .nav-tab {
+    flex: initial;
+    min-height: 38px;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .topbar__user #user-name {
+    display: inline-block;
+  }
+
+  .main-layout {
+    flex-direction: row;
+    height: auto;
+    position: static;
+    overflow: hidden;
+  }
+
+  .menu-panel {
+    border-right: 1px solid var(--cinza-borda);
+    height: auto;
+  }
+
+  .panel-header {
+    flex-direction: row;
+    align-items: center;
+    padding: 16px 20px;
+  }
+
+  .mesa-selector {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .cart-panel {
+    position: static;
+    width: 380px;
+    max-width: 380px;
+    transform: none !important;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.06);
+    border-left: 1px solid var(--cinza-borda);
+    z-index: 5;
+  }
+
+  .cart-panel.open-mobile {
+    transform: none;
+  }
+
+  .cart-backdrop {
+    display: none !important;
+  }
+
+  .mobile-cart-bar {
+    display: none !important;
+  }
+
+  .btn-close-drawer {
+    display: none !important;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    padding: 20px;
+  }
+
   .mesas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* Responsividade Mobile-First (Base: telas estreitas 320px+) */
+.products-grid {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px 10px 100px 10px;
+}
+
+.product-card {
+  padding: 8px 10px;
+  min-height: auto;
+}
+
+.mesas-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.topbar__logo {
+  font-size: 13px;
+}
+
+.nav-tab {
+  padding: 8px 6px;
+  font-size: 13px;
+  min-height: 44px;
+}
+
+@media (min-width: 360px) {
+  .products-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 340px) {
-  .products-grid {
-    grid-template-columns: 1fr;
+@media (min-width: 481px) {
+  .topbar__logo {
+    font-size: 14.5px;
+  }
+
+  .nav-tab {
+    padding: 8px 12px;
+    font-size: 13.5px;
+    min-height: 48px;
   }
 }
 
@@ -2714,24 +2832,120 @@ body {
    ========================================================= */
 
 .modal-card--fechar-conta {
-  max-width: 860px;
-  width: 92%;
-  max-height: 90vh;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   display: flex;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .fechar-conta-header {
-  padding: 16px 20px;
+  padding: 12px 14px;
   background: #FFF;
   border-bottom: 1px solid var(--cinza-borda);
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0;
+}
+
+.fechar-conta-stepper {
+  padding: 6px 10px;
+}
+
+.fechar-conta-step-tab {
+  font-size: 12px;
+  gap: 5px;
+  padding: 4px 6px;
+}
+
+.fechar-conta-step-tab .step-num {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
+.step-divider {
+  width: 14px;
+}
+
+.fechar-conta-body {
+  padding: 12px 12px 16px 12px;
+}
+
+.fechar-conta-footer {
+  padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.fechar-conta-footer-actions {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.fechar-conta-imprimir-label {
+  display: none; /* No celular, foca na cobrança ágil */
+}
+
+.btn-fechar-step-next,
+#modal-fechar-conta-confirmar {
+  min-height: 48px;
+  font-size: 15px;
+  padding: 0 18px;
+  border-radius: 8px;
+}
+
+@media (min-width: 900px) {
+  .modal-card--fechar-conta {
+    width: 92% !important;
+    max-width: 860px !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+  }
+
+  .fechar-conta-header {
+    padding: 16px 20px;
+  }
+
+  .fechar-conta-stepper {
+    padding: 12px 20px;
+  }
+
+  .fechar-conta-step-tab {
+    font-size: 13px;
+    gap: 8px;
+    padding: 6px 12px;
+  }
+
+  .fechar-conta-step-tab .step-num {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .step-divider {
+    width: 24px;
+  }
+
+  .fechar-conta-body {
+    padding: 16px 20px 24px 20px;
+  }
+
+  .fechar-conta-footer {
+    padding: 16px 20px;
+    box-shadow: none;
+  }
+
+  .fechar-conta-imprimir-label {
+    display: flex;
+  }
 }
 
 .fechar-conta-header__left {
@@ -2995,67 +3209,7 @@ body {
   cursor: pointer;
 }
 
-/* Modo Mobile Fullscreen (< 900px) */
-@media (max-width: 900px) {
-  .modal-card--fechar-conta {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
-
-  .fechar-conta-header {
-    padding: 12px 14px;
-  }
-
-  .fechar-conta-stepper {
-    padding: 6px 10px;
-  }
-
-  .fechar-conta-step-tab {
-    font-size: 12px;
-    gap: 5px;
-    padding: 4px 6px;
-  }
-
-  .fechar-conta-step-tab .step-num {
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-  }
-
-  .step-divider {
-    width: 14px;
-  }
-
-  .fechar-conta-body {
-    padding: 12px 12px 16px 12px;
-  }
-
-  .fechar-conta-footer {
-    padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
-    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
-  }
-
-  .fechar-conta-footer-actions {
-    flex: 1;
-    justify-content: flex-end;
-  }
-
-  .fechar-conta-imprimir-label {
-    display: none; /* No celular, foca na cobrança ágil */
-  }
-
-  .btn-fechar-step-next,
-  #modal-fechar-conta-confirmar {
-    min-height: 48px;
-    font-size: 15px;
-    padding: 0 18px;
-    border-radius: 8px;
-  }
-}
+/* Modo Mobile Fullscreen (< 900px) refatorado para mobile-first */
 
 /* CAF-000059: Filtro de Escopo (Meus Pedidos vs Todos) & Troco Rápido */
 .header-title-and-scope {
@@ -3229,4 +3383,329 @@ body {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.06); opacity: 0.85; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   CAF-000103: BOTÕES MOBILE-FIRST E DESIGN TOKENS DO PDV
+   ========================================================= */
+
+/* Topbar Badges e Ações */
+.nav-tab--pedidos-qr {
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+.badge-pill--pedidos-qr {
+  background: #4f46e5;
+  color: white;
+}
+.nav-tab--chamados-mesa {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.badge-pill--chamados-mesa {
+  background: #dc2626;
+  color: white;
+}
+.btn--offline-queue {
+  background-color: var(--vermelho-danger, #ef4444);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn--banner-light {
+  background: white;
+  border: none;
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.btn--cancelar-adicao {
+  background-color: #856404;
+  color: white;
+  border: none;
+}
+.btn--novo-cliente {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  touch-action: manipulation;
+}
+.btn-desvincular-cliente {
+  background: none;
+  border: none;
+  color: var(--vermelho-danger, #ef4444);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 0 4px;
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn--pix-copy {
+  color: #047857;
+  padding: 4px 10px;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid #86efac;
+}
+.btn--pix-fullscreen {
+  font-size: 12px;
+  padding: 6px 12px;
+  background: #059669;
+  color: #fff;
+}
+.btn--remover-item {
+  color: var(--vermelho-danger, #ef4444);
+  padding: 4px 8px;
+  font-weight: 700;
+}
+.btn-whatsapp {
+  background: #25D366 !important;
+  color: white !important;
+  border-color: #25D366 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn--solicitar-desconto {
+  width: 100%;
+  border: 1px dashed #d97706;
+  color: #b45309;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+.btn--offline-close {
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.btn--sync-offline {
+  background: #2e7d32;
+  color: #fff;
+  font-weight: 600;
+}
+.btn--salvar-cliente {
+  background: #15803d;
+  border-color: #15803d;
+  color: #fff;
+  font-weight: 600;
+}
+.btn-close--white {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+/* CA05: Drawer do carrinho com footer sticky e botão full-width */
+.cart-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--branco, #ffffff);
+  border-top: 1px solid var(--cinza-borda, #e2e8f0);
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
+}
+.cart-footer #btn-enviar-pedido,
+#btn-enviar-pedido {
+  width: 100%;
+  min-height: 48px;
+  height: var(--btn-h-lg, 52px);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap, 8px);
+}
+
+/* CA06 & CA07: Modal da Mesa Footer e Bottom Sheet */
+.modal-mesa-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--btn-gap, 8px);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+  position: relative;
+}
+
+.modal-mesa-footer-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--btn-gap, 8px);
+  width: 100%;
+}
+.modal-mesa-footer-main button {
+  width: 100%;
+  min-height: var(--btn-h-md, 44px);
+}
+
+.btn-mesa-mais-acoes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-mesa-sheet-acoes {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.modal-mesa-sheet-acoes.hidden {
+  display: none !important;
+}
+
+.modal-mesa-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.modal-mesa-sheet-content {
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUpSheet 0.25s ease-out;
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-mesa-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cinza-borda, #e2e8f0);
+}
+.modal-mesa-sheet-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--marrom-escuro, #2B1B17);
+}
+
+.modal-mesa-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--btn-gap, 8px);
+}
+.modal-mesa-sheet-body button {
+  width: 100%;
+  min-height: var(--btn-h-md, 44px);
+  justify-content: flex-start;
+  padding: 10px 16px;
+}
+
+@media (min-width: 900px) {
+  .modal-mesa-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-mesa-footer-main {
+    flex-direction: row;
+    width: auto;
+    gap: 8px;
+  }
+  .modal-mesa-footer-main button {
+    width: auto;
+  }
+  .btn-mesa-mais-acoes {
+    display: none !important;
+  }
+  .modal-mesa-sheet-acoes,
+  .modal-mesa-sheet-acoes.hidden {
+    display: block !important;
+    position: static;
+    z-index: auto;
+  }
+  .modal-mesa-sheet-backdrop {
+    display: none !important;
+  }
+  .modal-mesa-sheet-header {
+    display: none !important;
+  }
+  .modal-mesa-sheet-content {
+    position: static;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    max-height: none;
+    overflow: visible;
+    animation: none;
+  }
+  .modal-mesa-sheet-body {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .modal-mesa-sheet-body button {
+    width: auto;
+    min-height: var(--btn-h-md, 44px);
+    justify-content: center;
+  }
+}
+
+/* CA10 & CA03: Chips de filtro em linha horizontal única com rolagem suave */
+.pedidos-filtro-escopo,
+.status-filters,
+#modal-montagem-fast-chips {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: var(--btn-gap, 8px);
+  padding: 4px 2px;
+  max-width: 100%;
+}
+.pedidos-filtro-escopo::-webkit-scrollbar,
+.status-filters::-webkit-scrollbar,
+#modal-montagem-fast-chips::-webkit-scrollbar {
+  display: none;
+}
+.filter-chip,
+.btn-escopo-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: var(--btn-h-md, 44px);
+  padding: 8px 14px;
 }

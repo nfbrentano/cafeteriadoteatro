@@ -64,6 +64,48 @@
   const cancelToastMsg = document.getElementById('cancel-toast-msg');
   const cancelToastClose = document.getElementById('cancel-toast-close');
 
+  // CAF-000103: Bottom sheet de ferramentas do KDS no mobile (RF09, CA11, CA19)
+  const btnKdsFerramentas = document.getElementById('btn-kds-ferramentas');
+  const sheetKdsFerramentas = document.getElementById('sheet-kds-ferramentas');
+  const btnCloseSheetKds = document.getElementById('btn-close-sheet-kds');
+
+  function abrirFerramentasKds() {
+    if (!sheetKdsFerramentas) return;
+    btnKdsFerramentas?.setAttribute('aria-expanded', 'true');
+    sheetKdsFerramentas.classList.remove('hidden');
+    sheetKdsFerramentas.setAttribute('aria-hidden', 'false');
+    const firstBtn = sheetKdsFerramentas.querySelector('button');
+    firstBtn?.focus();
+  }
+
+  function fecharFerramentasKds() {
+    if (!sheetKdsFerramentas) return;
+    btnKdsFerramentas?.setAttribute('aria-expanded', 'false');
+    sheetKdsFerramentas.classList.add('hidden');
+    sheetKdsFerramentas.setAttribute('aria-hidden', 'true');
+    btnKdsFerramentas?.focus();
+  }
+
+  btnKdsFerramentas?.addEventListener('click', () => {
+    if (sheetKdsFerramentas?.classList.contains('hidden')) {
+      abrirFerramentasKds();
+    } else {
+      fecharFerramentasKds();
+    }
+  });
+
+  btnCloseSheetKds?.addEventListener('click', fecharFerramentasKds);
+
+  sheetKdsFerramentas?.addEventListener('click', (e) => {
+    if (e.target === sheetKdsFerramentas) fecharFerramentasKds();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sheetKdsFerramentas && !sheetKdsFerramentas.classList.contains('hidden')) {
+      fecharFerramentasKds();
+    }
+  });
+
   // Estado
   let currentUser = null;
   let pedidos = []; // array de pedidos com itens
@@ -1352,7 +1394,7 @@
           }
 
           const btnEtiquetaItemHtml = !isCancelado
-            ? `<button type="button" class="btn-item-etiqueta" onclick="event.stopPropagation(); window.cozinhaImprimirEtiquetaItem(${pedido.id}, ${item.id})" title="Imprimir etiqueta deste item" style="margin-left:auto; background:transparent; border:1px solid rgba(0,0,0,0.18); border-radius:4px; padding:1px 5px; font-size:11px; cursor:pointer;">🏷</button>`
+            ? `<button type="button" class="btn-item-etiqueta" onclick="event.stopPropagation(); window.cozinhaImprimirEtiquetaItem(${pedido.id}, ${item.id})" title="Imprimir etiqueta deste item" aria-label="Imprimir etiqueta deste item">🏷</button>`
             : '';
 
           itensHtml += `
@@ -1381,7 +1423,7 @@
         ? `<span class="badge-prioridade-kds" onclick="window.cozinhaTogglePrioridade(${pedido.id})" title="Prioridade ativa! Motivo: ${window.escapeHtml(pedido.prioridade_motivo || 'Espetáculo')}. Clique para alterar.">⚡ PRIORIDADE${pedido.prioridade_motivo ? ': ' + window.escapeHtml(pedido.prioridade_motivo) : ''}</span>`
         : '';
       const btnPrioridadeHtml = `
-        <button class="btn-card--prioridade ${isPrioritario ? 'is-active' : ''}" onclick="window.cozinhaTogglePrioridade(${pedido.id})" title="${isPrioritario ? 'Remover prioridade' : 'Marcar como prioritário'}">
+        <button type="button" class="btn-card--prioridade btn--icon ${isPrioritario ? 'is-active' : ''}" onclick="window.cozinhaTogglePrioridade(${pedido.id})" title="${isPrioritario ? 'Remover prioridade' : 'Marcar como prioritário'}" aria-label="${isPrioritario ? 'Remover prioridade do pedido' : 'Marcar pedido como prioritário'}">
           ⚡ ${isPrioritario ? 'Prioritário' : 'Priorizar'}
         </button>
       `;
@@ -1411,17 +1453,14 @@
       let botoesHtml = '';
       if (tipo === 'pendente') {
         botoesHtml = `
-          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda">🖨 Comanda</button>
-            <button class="btn-card--print" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
+          <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda" aria-label="Imprimir Comanda">🖨 Comanda</button>
+            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem" aria-label="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
-            <button class="btn-card btn-card--preparo" onclick="window.iniciarPreparoEstacao(${pedido.id})">
+            <button type="button" class="btn-card btn-card--preparo btn--primary btn--full" onclick="window.iniciarPreparoEstacao(${pedido.id})" aria-label="Iniciar Preparo">
                Iniciar Preparo
-            </button>
-            <button class="btn-card btn-card--concluir" onclick="window.concluirPreparoEstacao(${pedido.id})">
-              Pronto!
             </button>
           </div>
         `;
@@ -1430,13 +1469,13 @@
           ? 'Pronto! (Concluir)' 
           : (isBar ? 'Pronto! (Bar)' : 'Pronto! (Cozinha)');
         botoesHtml = `
-          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda">🖨 Comanda</button>
-            <button class="btn-card--print" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
+          <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda" aria-label="Imprimir Comanda">🖨 Comanda</button>
+            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem" aria-label="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
-            <button class="btn-card btn-card--concluir" onclick="window.concluirPreparoEstacao(${pedido.id})">
+            <button type="button" class="btn-card btn-card--concluir btn--primary btn--full" onclick="window.concluirPreparoEstacao(${pedido.id})" aria-label="${btnLabel}">
               ${btnLabel}
             </button>
           </div>
@@ -1445,24 +1484,24 @@
         // Concluído (ou Concluído nesta estação)
         const podeChamar = (pedido.status === 'concluido' || pedido.status === 'entregue');
         const botaoChamar = podeChamar ? `
-          <button class="btn-card btn-card--chamar" data-pedido-id="${pedido.id}" title="Chamar pelo celular">
+          <button type="button" class="btn-card btn-card--chamar btn--primary btn--full" data-pedido-id="${pedido.id}" title="Chamar pelo celular" aria-label="Chamar Pedido">
             📢 Chamar
           </button>
         ` : `
-          <button class="btn-card btn-card--chamar" disabled style="opacity:0.5; cursor:not-allowed;" title="Aguardando conclusão de todas as estações">
+          <button type="button" class="btn-card btn-card--chamar btn-card--disabled btn--full" disabled title="Aguardando conclusão de todas as estações" aria-label="Aguardando conclusão de outras estações">
             ⏳ Aguardando
           </button>
         `;
 
         botoesHtml = `
-          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button class="btn-card--print" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir">🖨 Comanda</button>
-            <button class="btn-card--print" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Reimprimir Etiquetas">🏷 Etiquetas</button>
+          <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir Comanda" aria-label="Reimprimir Comanda">🖨 Comanda</button>
+            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Reimprimir Etiquetas" aria-label="Reimprimir Etiquetas">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
             ${botaoChamar}
-            <button class="btn-card btn-card--desfazer" onclick="window.desfazerPreparo(${pedido.id})">
+            <button type="button" class="btn-card btn-card--desfazer btn--ghost" onclick="window.desfazerPreparo(${pedido.id})" aria-label="Desfazer conclusão">
               ↩ Desfazer
             </button>
           </div>

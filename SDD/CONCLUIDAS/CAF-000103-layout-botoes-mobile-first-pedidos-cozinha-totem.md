@@ -1,6 +1,6 @@
 # [UI] Disposição dos Botões Mobile First nas Telas de Pedidos (PDV), Cozinha (KDS) e Totem
 
-> **Status:** Aprovada
+> **Status:** Concluída
 > **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-10-26 · **Atualizada em:** 2026-10-26
 
 ## Detalhes da Atividade
@@ -119,32 +119,32 @@ Os nomes antigos (`btn-primary`, `btn-ghost`, `btn-primary-small`, `btn-card`, `
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o HTML das três páginas e os templates de botão dos três scripts, quando procuro `<button` com atributo `style`, então não encontro nenhuma ocorrência.
-- [ ] **CA02:** Dado qualquer botão visível nas três telas em 360 px, quando meço sua área de toque, então ela é ≥ 44 × 44 px (≥ 56 × 56 px no totem) e a distância até o alvo vizinho é ≥ 8 px.
-- [ ] **CA03:** Dado o viewport em 320, 360, 390, 768, 1024 e 1280 px, quando abro cada uma das três telas e seus modais, então não há rolagem horizontal e nenhum botão fica cortado ou sobreposto.
-- [ ] **CA04:** Dado o CSS de botões e barras de ação das três telas, quando leio os `@media`, então todos usam `min-width` (exceto `prefers-*` e `hover`).
-- [ ] **CA05:** Dado o PDV em 360 px com itens no carrinho, quando abro o carrinho e rolo a lista, então "Enviar Pedido" permanece visível, fixo no rodapé, em largura total e acima da área segura do iPhone.
-- [ ] **CA06:** Dado o modal de uma mesa ocupada em 360 px, quando ele abre, então o rodapé mostra só "Adicionar Itens", "Fechar Conta" e "Mais ações".
-- [ ] **CA07:** Dado o modal da mesa, quando toco em "Mais ações" e escolho "Transferir Mesa", então o mesmo fluxo de transferência de hoje é aberto (mesmo `#btn-mesa-transferir`, mesmo modal, mesma RPC).
-- [ ] **CA08:** Dado o fechamento de conta em qualquer etapa antes da confirmação, quando olho o rodapé, então vejo no máximo 2 botões e nenhum botão de WhatsApp ou Compartilhar; depois de confirmar, esses botões aparecem na tela de sucesso.
-- [ ] **CA09:** Dado o PDV com pedidos de cliente pendentes e fila offline com 2 pedidos, quando olho a topbar em 360 px, então vejo os indicadores como badges com contador e consigo abrir a triagem e a fila com um toque cada.
-- [ ] **CA10:** Dado o painel de pedidos em 360 px, quando a lista de filtros não cabe na largura, então ela rola na horizontal sem quebrar linha e o filtro ativo fica marcado com `aria-pressed="true"`.
-- [ ] **CA11:** Dado o KDS em 360 px, quando a tela carrega, então a topbar tem só logo, indicador de conexão e "Ferramentas", e todas as ferramentas atuais (Atalhos, Esta Tela, Som, Testar Voz, Testar Impressão, Sair) estão no menu.
-- [ ] **CA12:** Dado um card em "Na Fila" ou "Em Preparo", quando olho o card, então a ação de estado ocupa a largura do rodapé do card e é o único botão primário dele.
-- [ ] **CA13:** Dado um card em "Em Preparo", quando toco no ícone de imprimir etiquetas, então a mesma função de hoje (`cozinhaImprimirEtiquetas`) é chamada, e o ícone tem `aria-label` descritivo.
-- [ ] **CA14:** Dado o KDS com teclado ou bump bar, quando uso os atalhos documentados no modal de atalhos, então todos funcionam como antes, com o menu de ferramentas aberto ou fechado.
-- [ ] **CA15:** Dado o totem com itens na sacola, quando olho a tela, então a barra inferior tem só o resumo da sacola e "Finalizar Pedido" (≥ 64 px de altura), e "Recomeçar" aparece no canto superior direito, com ícone e texto e estilo de perigo; com a sacola vazia, "Recomeçar" não aparece.
-- [ ] **CA16:** Dado o checkout do totem em tablet retrato e paisagem, quando abro a escolha de forma de pagamento, então as opções aparecem em grade (2 colunas no retrato, 3 no paisagem) e o botão de enviar fica fixo no rodapé.
-- [ ] **CA17 (negativo):** Dado o código depois da mudança, quando rodo `npm test`, então nenhum teste existente precisa mudar de expectativa funcional, nenhum `id` de botão some ou fica duplicado, e nenhuma chamada RPC ou payload é alterado.
-- [ ] **CA18:** Dado cada variante de botão em cada estado (normal, hover, foco, desabilitado), quando meço o contraste, então o texto atinge ≥ 4,5:1 e bordas/ícones ≥ 3:1.
-- [ ] **CA19:** Dado o menu "Mais ações" ou "Ferramentas" aberto, quando navego por teclado, então o foco fica preso no menu, `Esc` fecha o menu e o foco volta ao botão que o abriu.
-- [ ] **CA20:** Dado o KDS em um celular Android de 360 × 800 px, quando toco nas abas do rodapé, então troco entre Na Fila, Em Preparo, Prontos e Produção sem rolar a página, cada aba mostra seu contador e a barra não fica atrás da barra de navegação do Android.
-- [ ] **CA21:** Dado o totem numa tela em que "Recomeçar" é a única ação (tela de descanso, ou senha sem impressão), quando a tela aparece, então o botão está centralizado na horizontal e na vertical, com ≥ 64 px de altura, sobre a animação configurada e com contraste ≥ 4,5:1.
-- [ ] **CA22:** Dado que o admin escolhe outra animação em Configurações → Totem e salva, quando o totem revalida a sessão, então a nova animação passa a aparecer; com "Nenhuma" ou com `prefers-reduced-motion`, o fundo fica estático e nada se move.
-- [ ] **CA23:** Dado o totem com itens na sacola e o modal de checkout aberto, quando giro o tablet de retrato para paisagem e de volta, então a sacola, o modal e as escolhas feitas continuam iguais, o layout se ajusta à nova orientação e nenhum botão fica cortado.
-- [ ] **CA24:** Dado que o admin publica um MP4 de 10 MB em Configurações → Totem, quando o totem entra na tela de descanso, então o vídeo toca sem som, em loop, preenchendo a tela em retrato e em paisagem, e o botão continua legível sobre ele.
-- [ ] **CA25 (negativo):** Dado que o admin tenta publicar um arquivo `.mov`, um PNG renomeado para `.mp4` ou um MP4 acima do limite, quando clica em publicar, então o envio é recusado com mensagem clara e a configuração atual do totem não muda.
-- [ ] **CA26 (negativo):** Dado um valor de `totem_animacao_fundo` com URL fora do Storage do projeto ou com HTML/JS no lugar da URL, quando o totem carrega, então nada é executado nem carregado dessa URL e o fundo cai para "Nenhuma".
+- [x] **CA01:** Dado o HTML das três páginas e os templates de botão dos três scripts, quando procuro `<button` com atributo `style`, então não encontro nenhuma ocorrência.
+- [x] **CA02:** Dado qualquer botão visível nas três telas em 360 px, quando meço sua área de toque, então ela é ≥ 44 × 44 px (≥ 56 × 56 px no totem) e a distância até o alvo vizinho é ≥ 8 px.
+- [x] **CA03:** Dado o viewport em 320, 360, 390, 768, 1024 e 1280 px, quando abro cada uma das três telas e seus modais, então não há rolagem horizontal e nenhum botão fica cortado ou sobreposto.
+- [x] **CA04:** Dado o CSS de botões e barras de ação das três telas, quando leio os `@media`, então todos usam `min-width` (exceto `prefers-*` e `hover`).
+- [x] **CA05:** Dado o PDV em 360 px com itens no carrinho, quando abro o carrinho e rolo a lista, então "Enviar Pedido" permanece visível, fixo no rodapé, em largura total e acima da área segura do iPhone.
+- [x] **CA06:** Dado o modal de uma mesa ocupada em 360 px, quando ele abre, então o rodapé mostra só "Adicionar Itens", "Fechar Conta" e "Mais ações".
+- [x] **CA07:** Dado o modal da mesa, quando toco em "Mais ações" e escolho "Transferir Mesa", então o mesmo fluxo de transferência de hoje é aberto (mesmo `#btn-mesa-transferir`, mesmo modal, mesma RPC).
+- [x] **CA08:** Dado o fechamento de conta em qualquer etapa antes da confirmação, quando olho o rodapé, então vejo no máximo 2 botões e nenhum botão de WhatsApp ou Compartilhar; depois de confirmar, esses botões aparecem na tela de sucesso.
+- [x] **CA09:** Dado o PDV com pedidos de cliente pendentes e fila offline com 2 pedidos, quando olho a topbar em 360 px, então vejo os indicadores como badges com contador e consigo abrir a triagem e a fila com um toque cada.
+- [x] **CA10:** Dado o painel de pedidos em 360 px, quando a lista de filtros não cabe na largura, então ela rola na horizontal sem quebrar linha e o filtro ativo fica marcado com `aria-pressed="true"`.
+- [x] **CA11:** Dado o KDS em 360 px, quando a tela carrega, então a topbar tem só logo, indicador de conexão e "Ferramentas", e todas as ferramentas atuais (Atalhos, Esta Tela, Som, Testar Voz, Testar Impressão, Sair) estão no menu.
+- [x] **CA12:** Dado um card em "Na Fila" ou "Em Preparo", quando olho o card, então a ação de estado ocupa a largura do rodapé do card e é o único botão primário dele.
+- [x] **CA13:** Dado um card em "Em Preparo", quando toco no ícone de imprimir etiquetas, então a mesma função de hoje (`cozinhaImprimirEtiquetas`) é chamada, e o ícone tem `aria-label` descritivo.
+- [x] **CA14:** Dado o KDS com teclado ou bump bar, quando uso os atalhos documentados no modal de atalhos, então todos funcionam como antes, com o menu de ferramentas aberto ou fechado.
+- [x] **CA15:** Dado o totem com itens na sacola, quando olho a tela, então a barra inferior tem só o resumo da sacola e "Finalizar Pedido" (≥ 64 px de altura), e "Recomeçar" aparece no canto superior direito, com ícone e texto e estilo de perigo; com a sacola vazia, "Recomeçar" não aparece.
+- [x] **CA16:** Dado o checkout do totem em tablet retrato e paisagem, quando abro a escolha de forma de pagamento, então as opções aparecem em grade (2 colunas no retrato, 3 no paisagem) e o botão de enviar fica fixo no rodapé.
+- [x] **CA17 (negativo):** Dado o código depois da mudança, quando rodo `npm test`, então nenhum teste existente precisa mudar de expectativa funcional, nenhum `id` de botão some ou fica duplicado, e nenhuma chamada RPC ou payload é alterado.
+- [x] **CA18:** Dado cada variante de botão em cada estado (normal, hover, foco, desabilitado), quando meço o contraste, então o texto atinge ≥ 4,5:1 e bordas/ícones ≥ 3:1.
+- [x] **CA19:** Dado o menu "Mais ações" ou "Ferramentas" aberto, quando navego por teclado, então o foco fica preso no menu, `Esc` fecha o menu e o foco volta ao botão que o abriu.
+- [x] **CA20:** Dado o KDS em um celular Android de 360 × 800 px, quando toco nas abas do rodapé, então troco entre Na Fila, Em Preparo, Prontos e Produção sem rolar a página, cada aba mostra seu contador e a barra não fica atrás da barra de navegação do Android.
+- [x] **CA21:** Dado o totem numa tela em que "Recomeçar" é a única ação (tela de descanso, ou senha sem impressão), quando a tela aparece, então o botão está centralizado na horizontal e na vertical, com ≥ 64 px de altura, sobre a animação configurada e com contraste ≥ 4,5:1.
+- [x] **CA22:** Dado que o admin escolhe outra animação em Configurações → Totem e salva, quando o totem revalida a sessão, então a nova animação passa a aparecer; com "Nenhuma" ou com `prefers-reduced-motion`, o fundo fica estático e nada se move.
+- [x] **CA23:** Dado o totem com itens na sacola e o modal de checkout aberto, quando giro o tablet de retrato para paisagem e de volta, então a sacola, o modal e as escolhas feitas continuam iguais, o layout se ajusta à nova orientação e nenhum botão fica cortado.
+- [x] **CA24:** Dado que o admin publica um MP4 de 10 MB em Configurações → Totem, quando o totem entra na tela de descanso, então o vídeo toca sem som, em loop, preenchendo a tela em retrato e em paisagem, e o botão continua legível sobre ele.
+- [x] **CA25 (negativo):** Dado que o admin tenta publicar um arquivo `.mov`, um PNG renomeado para `.mp4` ou um MP4 acima do limite, quando clica em publicar, então o envio é recusado com mensagem clara e a configuração atual do totem não muda.
+- [x] **CA26 (negativo):** Dado um valor de `totem_animacao_fundo` com URL fora do Storage do projeto ou com HTML/JS no lugar da URL, quando o totem carrega, então nada é executado nem carregado dessa URL e o fundo cai para "Nenhuma".
 
 ## O que a atividade não inclui
 

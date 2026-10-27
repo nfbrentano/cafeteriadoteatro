@@ -435,6 +435,9 @@ describe('CAF-000102: Fluxos Pairwise — Catálogo, Carrinho, Fila Offline, Mes
     });
 
     it('Descarta suavemente rascunho expirado (mais de 12h) sem poluir o carrinho', async () => {
+      if (typeof window.baristaLimparCarrinho === 'function') {
+        window.baristaLimparCarrinho();
+      }
       const vinteHorasAtras = Date.now() - (20 * 60 * 60 * 1000);
       localStorage.setItem('cafeteria_pdv_carrinho_rascunho', JSON.stringify({
         cart: [

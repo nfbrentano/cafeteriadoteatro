@@ -12,7 +12,96 @@
   let totemInfo = {
     nome: 'Totem Balcão',
     avisoTitulo: '🎭 Hoje no Teatro Univates',
-    avisoSubtitulo: 'Garanta seu café e lanche sem fila antes do espetáculo começar!'
+    avisoSubtitulo: 'Garanta seu café e lanche sem fila antes do espetáculo começar!',
+    animacaoFundo: { tipo: 'catalogo', id: 'nenhuma' }
+  };
+
+  // CAF-000103: Animação e mídia de fundo configurável (RF18, RF19, CA21, CA22, CA24, CA26)
+  function sanitizarUrlMidia(url) {
+    if (!url) return null;
+    const urlStr = String(url).trim();
+    const hasScript = /<|javascript:|data:|vbscript:/i.test(urlStr);
+    if (hasScript) return null;
+    const isHttp = /^https?:\/\//i.test(urlStr);
+    const isRelative = !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(urlStr);
+    if (!isHttp && !isRelative) return null;
+    return urlStr;
+  }
+  window.sanitizarUrlMidia = sanitizarUrlMidia;
+
+  function aplicarAnimacaoFundo(containerEl) {
+    if (!containerEl) return;
+    containerEl.className = 'totem-bg-layer';
+    const oldMedia = containerEl.querySelector('.totem-bg-media');
+    if (oldMedia) oldMedia.remove();
+
+    const config = totemInfo.animacaoFundo || { tipo: 'catalogo', id: 'nenhuma' };
+    if (config.tipo === 'catalogo') {
+      const id = config.id || 'nenhuma';
+      if (id === 'cortina') containerEl.classList.add('totem-anim--cortina');
+      else if (id === 'vapor') containerEl.classList.add('totem-anim--vapor');
+      else if (id === 'graos') containerEl.classList.add('totem-anim--graos');
+    } else if (config.tipo === 'midia' && config.url) {
+      // Validação de segurança (CA26): URL do Storage do projeto ou relativa, sem HTML/JS
+      const urlStr = sanitizarUrlMidia(config.url);
+      if (!urlStr) return;
+
+      if (config.mime === 'video/mp4') {
+        const video = document.createElement('video');
+        video.className = 'totem-bg-media';
+        video.autoplay = true;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.onerror = () => { video.remove(); };
+        video.src = urlStr; // Atribuição por propriedade DOM, nunca innerHTML (CA26)
+        containerEl.appendChild(video);
+      } else if (config.mime === 'image/gif') {
+        const img = document.createElement('img');
+        img.className = 'totem-bg-media';
+        img.alt = 'Animação de fundo do Totem';
+        img.onerror = () => { img.remove(); };
+        img.src = urlStr; // Atribuição por propriedade DOM, nunca innerHTML (CA26)
+        containerEl.appendChild(img);
+      }
+    }
+  }
+
+  function limparAnimacaoFundo(containerEl) {
+    if (!containerEl) return;
+    containerEl.className = 'totem-bg-layer';
+    const oldMedia = containerEl.querySelector('.totem-bg-media');
+    if (oldMedia) {
+      if (oldMedia.pause) oldMedia.pause();
+      oldMedia.src = '';
+      oldMedia.remove();
+    }
+  }
+
+  window.aplicarAnimacaoFundo = function(containerElOrCatalogo, configOverride) {
+    let containerEl = containerElOrCatalogo;
+    let config = configOverride;
+    if (typeof containerElOrCatalogo === 'string') {
+      containerEl = document.getElementById('totem-bg-animation') || document.querySelector('.totem-bg-layer');
+      if (['nenhuma', 'cortina', 'vapor', 'graos'].includes(containerElOrCatalogo)) {
+        config = { tipo: 'catalogo', id: containerElOrCatalogo };
+      } else {
+        const isMp4 = containerElOrCatalogo.toLowerCase().endsWith('.mp4');
+        config = {
+          tipo: 'midia',
+          url: containerElOrCatalogo,
+          mime: isMp4 ? 'video/mp4' : 'image/gif'
+        };
+      }
+    }
+    if (config) totemInfo.animacaoFundo = config;
+    aplicarAnimacaoFundo(containerEl);
+  };
+
+  window.limparAnimacaoFundo = function(containerEl) {
+    const el = containerEl || document.getElementById('totem-bg-animation') || document.querySelector('.totem-bg-layer');
+    limparAnimacaoFundo(el);
   };
 
   let categorias = [];
@@ -171,10 +260,14 @@
     if (!successScreen.classList.contains('hidden')) return;
     idleScreen.classList.remove('hidden');
     renderizarCarrosselDescanso();
+    const idleBg = document.getElementById('totem-idle-bg-layer');
+    aplicarAnimacaoFundo(idleBg);
   }
 
   function sairTelaDescanso() {
     idleScreen.classList.add('hidden');
+    const idleBg = document.getElementById('totem-idle-bg-layer');
+    limparAnimacaoFundo(idleBg);
   }
 
   function renderizarCarrosselDescanso() {
@@ -241,6 +334,11 @@
       totemInfo.nome = data.nome || 'Totem Balcão';
       totemInfo.avisoTitulo = data.aviso_titulo || totemInfo.avisoTitulo;
       totemInfo.avisoSubtitulo = data.aviso_subtitulo || totemInfo.avisoSubtitulo;
+      if (data.animacao_fundo) {
+        totemInfo.animacaoFundo = typeof data.animacao_fundo === 'string'
+          ? JSON.parse(data.animacao_fundo)
+          : data.animacao_fundo;
+      }
       const lbl = document.getElementById('totem-device-label');
       if (lbl) lbl.textContent = `${totemInfo.nome} · Faça seu pedido aqui e pague no caixa`;
       pairingScreen.classList.add('hidden');
@@ -557,7 +655,7 @@
           <label style="font-weight:800; display:block; margin-bottom:10px; font-size:1.08rem;">Deseja acrescentar algum adicional?</label>
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px;">
             ${adicsPermitidos.map((a) => `
-              <button type="button" class="totem-choice-btn totem-adic-toggle" data-adic-id="${esc(a.id)}" style="min-height:68px; padding:10px 14px; flex-direction:row; justify-content:space-between;">
+              <button type="button" class="totem-choice-btn totem-adic-toggle" data-adic-id="${esc(a.id)}">
                 <span>${esc(a.nome)}</span>
                 <strong style="color:var(--totem-accent);">+ ${fmtMoeda(a.preco)}</strong>
               </button>
@@ -574,9 +672,9 @@
           <div style="font-size:0.92rem; color:var(--totem-text-sub);">${esc(prod.descricao || '')}</div>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-          <button type="button" id="totem-item-qty-minus" class="totem-btn totem-btn--ghost" style="min-width:64px; padding:0;">−</button>
+          <button type="button" id="totem-item-qty-minus" class="totem-btn totem-btn--ghost totem-qty-btn">−</button>
           <span id="totem-item-qty-val" style="font-size:1.6rem; font-weight:900; min-width:36px; text-align:center;">1</span>
-          <button type="button" id="totem-item-qty-plus" class="totem-btn totem-btn--ghost" style="min-width:64px; padding:0;">+</button>
+          <button type="button" id="totem-item-qty-plus" class="totem-btn totem-btn--ghost totem-qty-btn">+</button>
         </div>
       </div>
       ${saboresHtml}
@@ -773,7 +871,7 @@
               <div style="font-weight:800; color:var(--totem-primary); font-size:1.1rem;">+ ${fmtMoeda(p.preco)}</div>
             </div>
           </div>
-          <button type="button" class="totem-btn totem-btn--accent btn-add-sugestao-rapida" data-prod-id="${esc(p.id)}" style="min-height:64px; padding:0 20px;">
+          <button type="button" class="totem-btn totem-btn--accent btn-add-sugestao-rapida" data-prod-id="${esc(p.id)}">
             + Adicionar
           </button>
         </div>
@@ -874,7 +972,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <strong style="font-size:1.05rem;">${fmtMoeda(item.precoUnitario * item.quantidade)}</strong>
-            <button type="button" class="btn-rm-checkout-item" data-idx="${idx}" style="width:48px; height:48px; border-radius:12px; border:1px solid #FECACA; background:#FEF2F2; color:#DC2626; font-weight:800; cursor:pointer;">✕</button>
+            <button type="button" class="btn-rm-checkout-item" data-idx="${idx}">✕</button>
           </div>
         </div>
       `;
@@ -1131,6 +1229,16 @@
 
     successScreen.classList.remove('hidden');
 
+    const successBg = document.getElementById('totem-success-bg-layer');
+    const printBtn = document.getElementById('btn-totem-print-senha');
+    const semImpressao = !printBtn || printBtn.style.display === 'none' || printBtn.classList.contains('hidden') || printBtn.hidden;
+    if (semImpressao) {
+      successScreen.classList.add('has-single-action');
+      aplicarAnimacaoFundo(successBg);
+    } else {
+      successScreen.classList.remove('has-single-action');
+    }
+
     let segundos = 15;
     if (successCountdownLbl) successCountdownLbl.textContent = String(segundos);
     clearInterval(successCountdownInterval);
@@ -1139,6 +1247,7 @@
       if (successCountdownLbl) successCountdownLbl.textContent = String(Math.max(0, segundos));
       if (segundos <= 0) {
         clearInterval(successCountdownInterval);
+        limparAnimacaoFundo(successBg);
         successScreen.classList.add('hidden');
         mostrarTelaDescanso();
       }
@@ -1147,6 +1256,8 @@
 
   btnNovoPedido?.addEventListener('click', () => {
     clearInterval(successCountdownInterval);
+    const successBg = document.getElementById('totem-success-bg-layer');
+    limparAnimacaoFundo(successBg);
     successScreen.classList.add('hidden');
     registrarToqueAtividade();
   });
