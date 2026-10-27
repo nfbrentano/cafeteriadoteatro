@@ -1,6 +1,6 @@
 # [FIX] Resolução de Vulnerabilidade Crítica Supabase: Habilitar Row-Level Security (RLS) e Policies em Todas as Tabelas Públicas (rls_disabled_in_public)
 
-> **Status:** Em revisão
+> **Status:** Concluída
 > **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-27 · **Atualizada em:** 2026-10-27
 
 ## Detalhes da Atividade
@@ -61,12 +61,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o banco possui tabelas no schema public, quando a migration 106 for executada, então `cardapio_eventos_diarios`, `cortesia_regras`, `pedido_impressoes`, `pedido_item_sabores`, `promocoes` e `promocao_itens` terão `relrowsecurity = true` em `pg_class`.
-- [ ] **CA02:** Dado um usuário anônimo (anon key), quando tentar fazer `SELECT`, `INSERT`, `UPDATE` ou `DELETE` diretamente na tabela `cardapio_eventos_diarios`, então a operação é negada pelo RLS, enquanto a RPC `registrar_evento_cardapio` continua registrando métricas normalmente.
-- [ ] **CA03:** Dado um usuário não autenticado (anon key), quando consultar `cortesia_regras` e `promocoes`, então apenas registros onde `ativo = true` são visíveis, e qualquer tentativa de escrita (`INSERT`/`UPDATE`/`DELETE`) é negada por exigir role `admin`.
-- [ ] **CA04:** Dado um usuário anônimo, quando tentar ler ou inserir diretamente na tabela `pedido_impressoes`, então a operação é bloqueada pelo RLS, permitindo leitura somente para usuários autenticados com cargo de staff.
-- [ ] **CA05:** Dado um usuário anônimo ou cliente de autoatendimento, quando consultar itens e sabores de seu pedido, então consegue ler `pedido_item_sabores`, mas tentativas de manipulação direta fora das RPCs transacionais são bloqueadas.
-- [ ] **CA06:** Dado o catálogo do PostgreSQL, quando executada a consulta `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND rowsecurity = false;`, então o resultado deve ser exatamente zero tabelas.
+- [x] **CA01:** Dado que o banco possui tabelas no schema public, quando a migration 106 for executada, então `cardapio_eventos_diarios`, `cortesia_regras`, `pedido_impressoes`, `pedido_item_sabores`, `promocoes` e `promocao_itens` terão `relrowsecurity = true` em `pg_class`.
+- [x] **CA02:** Dado um usuário anônimo (anon key), quando tentar fazer `SELECT`, `INSERT`, `UPDATE` ou `DELETE` diretamente na tabela `cardapio_eventos_diarios`, então a operação é negada pelo RLS, enquanto a RPC `registrar_evento_cardapio` continua registrando métricas normalmente.
+- [x] **CA03:** Dado um usuário não autenticado (anon key), quando consultar `cortesia_regras` e `promocoes`, então apenas registros onde `ativo = true` são visíveis, e qualquer tentativa de escrita (`INSERT`/`UPDATE`/`DELETE`) é negada por exigir role `admin`.
+- [x] **CA04:** Dado um usuário anônimo, quando tentar ler ou inserir diretamente na tabela `pedido_impressoes`, então a operação é bloqueada pelo RLS, permitindo leitura somente para usuários autenticados com cargo de staff.
+- [x] **CA05:** Dado um usuário anônimo ou cliente de autoatendimento, quando consultar itens e sabores de seu pedido, então consegue ler `pedido_item_sabores`, mas tentativas de manipulação direta fora das RPCs transacionais são bloqueadas.
+- [x] **CA06:** Dado o catálogo do PostgreSQL, quando executada a consulta `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND rowsecurity = false;`, então o resultado deve ser exatamente zero tabelas.
 
 ## O que a atividade não inclui
 

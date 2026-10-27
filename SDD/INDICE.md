@@ -114,7 +114,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000103** | [UI] Disposição dos botões mobile first nas telas de Pedidos (PDV), Cozinha (KDS) e Totem | Concluída | `migration_caf_000103_totem_animacao_fundo.sql` | `caf-000103-layout-botoes-mobile-first.test.js` | — |
 | **CAF-000104** | [FIX] [Banco] Correção das Colunas prioridade e prioridade_motivo na Tabela pedidos e RPCs Associadas | Concluída | `migration_caf_000104_correcao_prioridade_pedidos.sql` | `caf-000104-prioridade-pedidos.test.js` | — |
 | **CAF-000105** | [TEST] Suíte de Testes Automatizados de Fluxo Completo de Pedidos com Variações Aleatórias | Concluída | — | `caf-000105-pedidos-fluxo-completo-aleatorio.test.js` | — |
-| **CAF-000106** | [FIX] Resolução de Vulnerabilidade Crítica Supabase: Habilitar Row-Level Security (RLS) e Policies em Todas as Tabelas Públicas (rls_disabled_in_public) | Planejada | `migration_caf_000106_habilitar_rls_todas_tabelas.sql` | `caf-000106-seguranca-rls-tabelas-publicas.test.js` | — |
+| **CAF-000106** | [FIX] Resolução de Vulnerabilidade Crítica Supabase: Habilitar Row-Level Security (RLS) e Policies em Todas as Tabelas Públicas (rls_disabled_in_public) | Concluída | `migration_caf_000106_habilitar_rls_todas_tabelas.sql` | `caf-000106-seguranca-rls-tabelas-publicas.test.js` | — |
 
 ---
 
