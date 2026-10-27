@@ -64,7 +64,7 @@ export function getDefaultMockData(overrides = {}) {
       { id: 'ad1', nome: 'Chantilly', preco: 3.5, ativo: true }
     ],
     v_adicionais_produto: [
-      { produto_id: 'p2', adicional_id: 'ad1', adicional_nome: 'Chantilly', preco: 3.5 }
+      { produto_id: 'p2', adicional_id: 'ad1', adicional_nome: 'Chantilly', nome: 'Chantilly', preco: 3.5, ordem: 1 }
     ],
     v_cortesias_disponiveis: [],
     clientes: [
@@ -246,9 +246,20 @@ export async function setupPedidosPage(options = {}) {
     getElement: (id) => document.getElementById(id),
 
     adicionarItemAoCarrinho: (produto, qtd = 1, adicionais = []) => {
+      // Garante que todos os produtos estejam visíveis no grid (muda para aba 'Todos' se necessário)
+      let cards = Array.from(document.querySelectorAll('.product-card'));
+      let targetCard = cards.find(c => c.textContent.includes(produto.nome));
+      if (!targetCard) {
+        const catTabs = Array.from(document.querySelectorAll('.cat-tab'));
+        const tabTodos = catTabs.find(t => t.textContent.includes('Todos'));
+        if (tabTodos) {
+          tabTodos.click();
+        }
+      }
+
       for (let i = 0; i < qtd; i++) {
-        const cards = Array.from(document.querySelectorAll('.product-card'));
-        const targetCard = cards.find(c => c.textContent.includes(produto.nome));
+        cards = Array.from(document.querySelectorAll('.product-card'));
+        targetCard = cards.find(c => c.textContent.includes(produto.nome));
         if (targetCard) {
           if (typeof targetCard.onclick === 'function') {
             targetCard.onclick(new Event('click'));
@@ -259,9 +270,9 @@ export async function setupPedidosPage(options = {}) {
           const modalMontagem = document.getElementById('modal-montagem');
           if (modalMontagem && !modalMontagem.classList.contains('hidden')) {
             if (adicionais.length > 0) {
-              const checkboxes = Array.from(modalMontagem.querySelectorAll('input[type="checkbox"]'));
+              const checkboxes = Array.from(modalMontagem.querySelectorAll('.chk-adicional, input[type="checkbox"]'));
               adicionais.forEach(ad => {
-                const cb = checkboxes.find(c => c.value === ad.id || c.parentElement?.textContent.includes(ad.nome));
+                const cb = checkboxes.find(c => c.value === ad.id || (c.dataset && c.dataset.nome === ad.nome) || c.parentElement?.textContent.includes(ad.nome));
                 if (cb && !cb.checked) cb.click();
               });
             }
@@ -275,12 +286,31 @@ export async function setupPedidosPage(options = {}) {
     },
 
     limparCarrinho: () => {
-      const items = Array.from(document.querySelectorAll('.cart-btn.remove'));
-      items.forEach(btn => btn.click());
+      if (typeof window.baristaLimparCarrinho === 'function') {
+        window.baristaLimparCarrinho();
+      } else {
+        const items = Array.from(document.querySelectorAll('.cart-btn.remove'));
+        items.forEach(btn => btn.click());
+      }
       const mesaSelect = document.getElementById('mesa-select');
       if (mesaSelect) {
         mesaSelect.value = '';
         mesaSelect.dispatchEvent(new Event('change'));
+      }
+      const chkViagem = document.getElementById('pedido-para-viagem');
+      if (chkViagem) {
+        chkViagem.checked = false;
+        chkViagem.dispatchEvent(new Event('change'));
+      }
+      const chkPrio = document.getElementById('pedido-prioritario');
+      if (chkPrio) {
+        chkPrio.checked = false;
+        chkPrio.dispatchEvent(new Event('change'));
+      }
+      const chkInterv = document.getElementById('check-pedido-intervalo');
+      if (chkInterv) {
+        chkInterv.checked = false;
+        chkInterv.dispatchEvent(new Event('change'));
       }
       const obs = document.getElementById('pedido-obs');
       if (obs) {
