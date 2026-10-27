@@ -158,3 +158,6 @@ A ordem sequencial auditada para instanciar um ambiente limpo ou aplicar em prod
    - `migration_caf_000081_seguranca_pin_rls.sql`
    - `migration_caf_000082_seguranca.sql`
    - `migration_caf_000083_pendencias_operacao.sql`
+   - `migration_caf_000103_totem_animacao_fundo.sql`
+   - `migration_caf_000104_correcao_prioridade_pedidos.sql`
+   - `migration_caf_000106_habilitar_rls_todas_tabelas.sql`
