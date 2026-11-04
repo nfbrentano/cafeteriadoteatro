@@ -165,6 +165,45 @@ export function distribuirTaxaEDesconto(subtotaisCents = [], taxaCents = 0, desc
   });
 }
 
+/**
+ * CAF-000108: Filtra pedidos elegíveis para transferência de mesa.
+ * Inclui pedidos em status 'entregue' desde que ainda não estejam pagos.
+ * Exclui pedidos cancelados e pedidos já pagos (históricos de clientes anteriores).
+ */
+export function filtrarPedidosTransferiveisMesa(pedidos = [], mesaOrigem = '') {
+  if (!Array.isArray(pedidos)) return [];
+  const origemTrim = String(mesaOrigem || '').trim();
+  return pedidos.filter(p => {
+    if (!p) return false;
+    if (origemTrim && String(p.mesa_codigo || '').trim() !== origemTrim) return false;
+    const status = String(p.status || '').toLowerCase();
+    const statusPagto = String(p.status_pagamento || '').toLowerCase();
+    if (status === 'cancelado') return false;
+    if (statusPagto === 'pago') return false;
+    return true;
+  });
+}
+
+/**
+ * CAF-000108: Verifica se um pedido de balcão/online pago pertence à janela temporal do caixa
+ * considerando o instante efetivo do pagamento (COALESCE(pago_em, updated_at, created_at)).
+ */
+export function pedidoPertenceAoTurnoCaixa(pedido, abertoEm, fechadoEm = null) {
+  if (!pedido) return false;
+  if (String(pedido.status || '').toLowerCase() === 'cancelado') return false;
+  if (String(pedido.status_pagamento || '').toLowerCase() !== 'pago') return false;
+
+  const tsRef = pedido.pago_em || pedido.updated_at || pedido.created_at;
+  if (!tsRef || !abertoEm) return false;
+
+  const tPagto = new Date(tsRef).getTime();
+  const tInicio = new Date(abertoEm).getTime();
+  const tFim = fechadoEm ? new Date(fechadoEm).getTime() : Date.now();
+
+  if (Number.isNaN(tPagto) || Number.isNaN(tInicio) || Number.isNaN(tFim)) return false;
+  return tPagto >= tInicio && tPagto <= tFim;
+}
+
 export default {
   parseCurrencyToCents,
   formatCentsToCurrency,
@@ -176,5 +215,7 @@ export default {
   dividirPorConsumoItens,
   distribuirTaxaEDesconto,
   calcularTrocoCents,
-  podeAplicarDesconto
+  podeAplicarDesconto,
+  filtrarPedidosTransferiveisMesa,
+  pedidoPertenceAoTurnoCaixa
 };
