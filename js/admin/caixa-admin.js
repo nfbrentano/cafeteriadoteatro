@@ -852,7 +852,12 @@ window.initAdminCaixa = async function () {
 
   window.reabrirCaixaAdmin = async function (caixaId) {
     if (!caixaId) return;
-    const motivo = prompt('Digite o motivo obrigatório para reabrir este caixa:');
+    const motivo = await admin.prompt({
+      title: 'Reabrir Caixa Fechado',
+      msg: 'Digite o motivo obrigatório para reabrir este caixa:',
+      options: ['Correção de lançamento', 'Conferência de diferença', 'Fechamento acidental'],
+      placeholder: 'Informe o motivo (mín. 5 caracteres)'
+    });
     if (!motivo || motivo.trim().length < 5) {
       admin.toast('Erro', 'O motivo deve conter no mínimo 5 caracteres.', 'warning');
       return;

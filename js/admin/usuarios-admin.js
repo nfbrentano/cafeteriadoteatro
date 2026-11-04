@@ -539,7 +539,11 @@
       return;
     }
 
-    const conf = confirm(`Deseja realmente excluir o cargo "${cargo.nome}"? Usuários vinculados a ele ficarão sem cargo definido.`);
+    const conf = await admin.confirm({
+      title: 'Excluir cargo?',
+      msg: `Deseja realmente excluir o cargo "${cargo.nome}"? Usuários vinculados a ele ficarão sem cargo definido.`,
+      okLabel: 'Excluir'
+    });
     if (!conf) return;
 
     try {
@@ -589,10 +593,12 @@
 
   // --- Alterar Cargo Rápido do Usuário ---
   async function alterarCargoUsuario(userId, cargoAtualId) {
-    const cargoNomePrompt = prompt(
-      'Selecione o novo cargo digitando o NOME exato:\n' +
-      cargosCache.map(c => `• ${c.nome}`).join('\n')
-    );
+    const cargoNomePrompt = await admin.prompt({
+      title: 'Alterar Cargo do Colaborador',
+      msg: 'Selecione ou digite o novo cargo:',
+      options: cargosCache.map(c => c.nome),
+      placeholder: 'Nome do cargo'
+    });
     if (!cargoNomePrompt) return;
 
     const cargoAlvo = cargosCache.find(c => c.nome.toLowerCase() === cargoNomePrompt.trim().toLowerCase());
@@ -618,7 +624,12 @@
   // --- Alternar Ativo/Inativo ---
   async function alternarStatusUsuario(userId, novoStatus) {
     const acao = novoStatus ? 'ativar' : 'desativar';
-    if (!confirm(`Deseja realmente ${acao} este colaborador?`)) return;
+    const ok = await admin.confirm({
+      title: `${novoStatus ? 'Ativar' : 'Desativar'} colaborador?`,
+      msg: `Deseja realmente ${acao} este colaborador?`,
+      okLabel: 'Confirmar'
+    });
+    if (!ok) return;
 
     try {
       const { error } = await window.cafeteriaSupabase

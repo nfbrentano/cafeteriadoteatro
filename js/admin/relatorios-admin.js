@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       console.error('Erro ao carregar relatórios:', err);
-      alert('Erro ao carregar dados do relatório.');
+      (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Erro', 'Erro ao carregar dados do relatório.', 'error');
     } finally {
       btnGerar.disabled = false;
       btnGerar.textContent = 'Gerar';
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnExportMargens) {
     btnExportMargens.addEventListener('click', () => {
       if (!ultimosDadosMargem || ultimosDadosMargem.length === 0) {
-        return alert('Nenhum dado para exportar no período atual.');
+        return (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Aviso', 'Nenhum dado para exportar no período atual.', 'warn');
       }
       const headers = ['Produto', 'Quantidade Vendida', 'Faturamento', 'Custo Total', 'Lucro Bruto', 'Margem Percentual'];
       const rows = ultimosDadosMargem.map(d => [
@@ -373,15 +373,11 @@ document.addEventListener('DOMContentLoaded', () => {
           `${data.descricao}: ${formatarDinheiro(data.valor)} lançado em Contas a Pagar!`,
           'success'
         );
-      } else {
-        alert(`${data.descricao}: ${formatarDinheiro(data.valor)} lançado com sucesso!`);
       }
     } catch (err) {
       console.error('Erro ao lançar taxas como despesa:', err);
       if (window.cafeteriaAdmin?.toast) {
         window.cafeteriaAdmin.toast('Aviso', err.message || 'Erro ao lançar despesa.', 'warn');
-      } else {
-        alert(err.message || 'Erro ao lançar despesa.');
       }
     } finally {
       if (btn) btn.disabled = false;
@@ -662,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnExportOp) {
     btnExportOp.addEventListener('click', () => {
       if (!ultimosDadosOperadores || ultimosDadosOperadores.length === 0) {
-        alert('Nenhum dado de operadores para exportar.');
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Aviso', 'Nenhum dado de operadores para exportar.', 'warn');
         return;
       }
       const headers = ['Operador', 'Cargo', 'Pedidos Concluídos', 'Pedidos Cancelados', 'Itens Cancelados', 'Faturamento Total', 'Ticket Médio', 'Descontos Concedidos'];

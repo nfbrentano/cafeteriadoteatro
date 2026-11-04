@@ -288,7 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function deletePromo(id) {
-    if (confirm('Tem certeza que deseja excluir esta promoção?')) {
+    const ok = await admin.confirm({ title: 'Excluir promoção?', msg: 'Tem certeza que deseja excluir esta promoção?', okLabel: 'Excluir' });
+    if (ok) {
       try {
         const { error } = await window.cafeteriaSupabase.from('promocoes').delete().eq('id', id);
         if (error) throw error;

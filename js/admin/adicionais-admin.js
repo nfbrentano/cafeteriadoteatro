@@ -166,7 +166,8 @@
   }
 
   window.deleteAdicional = async function(id) {
-    if (!confirm('Excluir este adicional?')) return;
+    const ok = await admin.confirm({ title: 'Excluir adicional?', msg: 'Deseja excluir este adicional?', okLabel: 'Excluir' });
+    if (!ok) return;
     
     try {
       await window.cafeteriaDB.adicionais.delete(id);

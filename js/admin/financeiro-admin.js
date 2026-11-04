@@ -680,7 +680,11 @@
     const despesa = despesasCache.find(d => d.id === id);
     if (!despesa) return;
 
-    const conf = confirm(`Deseja realmente excluir a despesa "${despesa.descricao}" no valor de ${formatarMoeda(despesa.valor)}?`);
+    const conf = await (window.cafeteriaAdmin?.confirm || window.admin?.confirm)({
+      title: 'Excluir despesa?',
+      msg: `Deseja realmente excluir a despesa "${despesa.descricao}" no valor de ${formatarMoeda(despesa.valor)}?`,
+      okLabel: 'Excluir'
+    });
     if (!conf) return;
 
     try {
@@ -809,7 +813,12 @@
         const id = btn.getAttribute('data-id');
         const forn = fornecedoresCache.find(f => f.id === id);
         if (!forn) return;
-        if (!confirm(`Deseja remover o fornecedor "${forn.nome}"?`)) return;
+        const ok = await (window.cafeteriaAdmin?.confirm || window.admin?.confirm)({
+          title: 'Remover fornecedor?',
+          msg: `Deseja remover o fornecedor "${forn.nome}"?`,
+          okLabel: 'Remover'
+        });
+        if (!ok) return;
 
         try {
           await window.cafeteriaDB.financeiro.fornecedores.delete(id);

@@ -395,7 +395,12 @@
     btnsCancelarItem.forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const itemId = e.target.getAttribute('data-item-id');
-        const motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
+        const motivo = await (window.cafeteriaAdmin?.prompt || window.admin?.prompt)({
+          title: 'Cancelar Item do Pedido',
+          msg: 'Motivo do cancelamento:',
+          options: ['Cliente desistiu', 'Lançado errado', 'Em falta'],
+          placeholder: 'Informe o motivo'
+        });
         if (!motivo) return;
 
         btn.disabled = true;
@@ -409,12 +414,12 @@
 
           if (error) throw error;
           
-          alert('Item cancelado com sucesso!');
+          (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Sucesso', 'Item cancelado com sucesso!', 'success');
           closeModal();
           loadPedidos();
         } catch (err) {
           console.error(err);
-          alert('Erro ao cancelar item: ' + err.message);
+          (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Erro', 'Erro ao cancelar item: ' + err.message, 'error');
           btn.disabled = false;
           btn.innerHTML = '✕ Cancelar Item';
         }
@@ -424,11 +429,16 @@
     const btnCancelar = modalBody.querySelector('#btn-cancelar-pedido');
     if (btnCancelar) {
       btnCancelar.addEventListener('click', async () => {
-        const motivo = prompt(`Informe o motivo do cancelamento do pedido #${pedido.numero_pedido || pedido.id} (obrigatório):`);
+        const motivo = await (window.cafeteriaAdmin?.prompt || window.admin?.prompt)({
+          title: `Cancelar Pedido #${pedido.numero_pedido || pedido.id}`,
+          msg: 'Informe o motivo do cancelamento do pedido (obrigatório):',
+          options: ['Cliente desistiu', 'Pedido duplicado', 'Erro de lançamento'],
+          placeholder: 'Motivo obrigatório'
+        });
         if (motivo === null) return;
         const motivoTrimmed = motivo.trim();
         if (!motivoTrimmed) {
-          alert('É obrigatório informar o motivo do cancelamento.');
+          (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Aviso', 'É obrigatório informar o motivo do cancelamento.', 'warn');
           return;
         }
 
@@ -451,7 +461,7 @@
           .eq('id', pedido.id);
           
         if (error) {
-          alert('Erro ao cancelar: ' + error.message);
+          (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Erro', 'Erro ao cancelar: ' + error.message, 'error');
           btnCancelar.disabled = false;
           btnCancelar.textContent = 'Cancelar Pedido';
         } else {

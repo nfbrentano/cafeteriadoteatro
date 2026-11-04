@@ -78,6 +78,77 @@
       });
     },
 
+    prompt({ title = 'Informar Valor', msg = '', placeholder = 'Digite aqui...', defaultValue = '', options = [], okLabel = 'Confirmar', cancelLabel = 'Cancelar' } = {}) {
+      return new Promise(resolve => {
+        let overlay = document.getElementById('admin-prompt-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'admin-prompt-overlay';
+          overlay.className = 'modal-overlay';
+          overlay.setAttribute('role', 'dialog');
+          overlay.setAttribute('aria-modal', 'true');
+          overlay.innerHTML = `
+            <div class="modal-card" style="max-width:460px;width:92%;padding:1.5rem;background:var(--bg-card,#fff);border-radius:14px;">
+              <h3 id="admin-prompt-title" style="margin:0 0 0.5rem;font-size:1.15rem;"></h3>
+              <p id="admin-prompt-msg" style="margin:0 0 0.85rem;color:var(--text-muted,#666);font-size:0.95rem;"></p>
+              <div id="admin-prompt-chips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;"></div>
+              <input type="text" id="admin-prompt-input" class="form-input" style="width:100%;min-height:48px;padding:0.65rem 0.85rem;margin-bottom:1rem;border-radius:8px;border:1px solid #ccc;font-size:1rem;" />
+              <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                <button type="button" id="admin-prompt-cancel" class="btn btn--outline" style="min-height:48px;"></button>
+                <button type="button" id="admin-prompt-ok" class="btn btn--primary" style="min-height:48px;"></button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+        }
+
+        const titleEl = overlay.querySelector('#admin-prompt-title');
+        const msgEl = overlay.querySelector('#admin-prompt-msg');
+        const chipsEl = overlay.querySelector('#admin-prompt-chips');
+        const inputEl = overlay.querySelector('#admin-prompt-input');
+        const btnCancel = overlay.querySelector('#admin-prompt-cancel');
+        const btnOk = overlay.querySelector('#admin-prompt-ok');
+
+        titleEl.textContent = title;
+        msgEl.textContent = msg;
+        inputEl.placeholder = placeholder;
+        inputEl.value = defaultValue || '';
+        btnCancel.textContent = cancelLabel;
+        btnOk.textContent = okLabel;
+
+        chipsEl.innerHTML = '';
+        (Array.isArray(options) ? options : []).forEach(op => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'prompt-chip';
+          chip.dataset.chipVal = op;
+          chip.textContent = op;
+          chip.style.cssText = 'min-height:40px;padding:0.35rem 0.75rem;border-radius:999px;border:1px solid #ccc;background:#f8fafc;cursor:pointer;font-size:0.85rem;font-weight:600;';
+          chip.onclick = () => {
+            inputEl.value = op;
+            inputEl.focus();
+          };
+          chipsEl.appendChild(chip);
+        });
+
+        const close = (val) => {
+          overlay.classList.remove('open');
+          overlay.style.display = 'none';
+          resolve(val);
+        };
+
+        btnCancel.onclick = () => close(null);
+        btnOk.onclick = () => close(inputEl.value);
+        overlay.onclick = (e) => {
+          if (e.target === overlay) close(null);
+        };
+
+        overlay.classList.add('open');
+        overlay.style.display = 'flex';
+        setTimeout(() => inputEl.focus(), 10);
+      });
+    },
+
     openModal(overlayId) {
       document.getElementById(overlayId).classList.add('open');
       document.body.style.overflow = 'hidden';

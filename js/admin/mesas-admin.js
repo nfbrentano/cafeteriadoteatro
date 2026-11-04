@@ -144,7 +144,11 @@
   if (btnRegenerarQrToken) {
     btnRegenerarQrToken.addEventListener('click', async () => {
       if (!currentQrMesa) return;
-      const conf = confirm(`Atenção: Ao regenerar o QR Code da mesa ${currentQrMesa.codigo}, qualquer código impresso anteriormente deixará de funcionar. Deseja continuar?`);
+      const conf = await (window.cafeteriaAdmin?.confirm || window.admin?.confirm)({
+        title: 'Regenerar QR Code?',
+        msg: `Atenção: Ao regenerar o QR Code da mesa ${currentQrMesa.codigo}, qualquer código impresso anteriormente deixará de funcionar. Deseja continuar?`,
+        okLabel: 'Regenerar'
+      });
       if (!conf) return;
 
       btnRegenerarQrToken.disabled = true;
@@ -159,7 +163,7 @@
           loadMesas();
         }
       } catch (err) {
-        alert('Erro ao regenerar QR Code: ' + (err.message || 'Falha de comunicação'));
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Erro', 'Erro ao regenerar QR Code: ' + (err.message || 'Falha de comunicação'), 'error');
       } finally {
         btnRegenerarQrToken.disabled = false;
         btnRegenerarQrToken.textContent = '🔄 Gerar Novo Token (invalida o QR code anterior)';
@@ -172,7 +176,7 @@
     btnImprimirTodosQr.addEventListener('click', () => {
       const ativas = allLoadedMesas.filter(m => m.ativo);
       if (ativas.length === 0) {
-        alert('Nenhuma mesa ativa cadastrada para impressão.');
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Aviso', 'Nenhuma mesa ativa cadastrada para impressão.', 'warn');
         return;
       }
 
@@ -287,9 +291,9 @@
 
     if (error) {
       if (error.code === '23505') {
-        alert('Já existe uma mesa com este código.');
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Aviso', 'Já existe uma mesa com este código.', 'warn');
       } else {
-        alert('Erro ao salvar mesa: ' + error.message);
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Erro', 'Erro ao salvar mesa: ' + error.message, 'error');
       }
       return;
     }
@@ -300,7 +304,12 @@
   });
 
   async function deleteMesa(mesa) {
-    if (!confirm(`Tem certeza que deseja EXCLUIR a mesa ${mesa.codigo}?\nIsso pode falhar se houver pedidos vinculados.`)) return;
+    const ok = await (window.cafeteriaAdmin?.confirm || window.admin?.confirm)({
+      title: 'Excluir mesa?',
+      msg: `Tem certeza que deseja EXCLUIR a mesa ${mesa.codigo}? Isso pode falhar se houver pedidos vinculados.`,
+      okLabel: 'Excluir'
+    });
+    if (!ok) return;
 
     const { error } = await window.cafeteriaSupabase
       .from('mesas')
@@ -309,9 +318,9 @@
 
     if (error) {
       if (error.code === '23503') {
-        alert('Não é possível excluir esta mesa pois existem pedidos vinculados a ela. Em vez disso, inative a mesa.');
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Aviso', 'Não é possível excluir esta mesa pois existem pedidos vinculados a ela. Em vez disso, inative a mesa.', 'warn');
       } else {
-        alert('Erro ao excluir: ' + error.message);
+        (window.cafeteriaAdmin?.toast || window.admin?.toast)?.('Erro', 'Erro ao excluir: ' + error.message, 'error');
       }
       return;
     }

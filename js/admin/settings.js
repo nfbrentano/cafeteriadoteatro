@@ -1077,7 +1077,12 @@
       });
 
       btnRemoverTotemMidia?.addEventListener('click', async () => {
-        if (!confirm('Deseja remover a mídia personalizada e voltar à animação do catálogo?')) return;
+        const ok = await admin.confirm({
+          title: 'Remover mídia?',
+          msg: 'Deseja remover a mídia personalizada e voltar à animação do catálogo?',
+          okLabel: 'Remover'
+        });
+        if (!ok) return;
         totemAnimacaoConfigAtual = { tipo: 'catalogo', id: 'nenhuma' };
         try {
           const { error } = await window.cafeteriaSupabase
@@ -1212,7 +1217,12 @@
           tbodyTotens.querySelectorAll('.btn-revogar-totem').forEach((btn) => {
             btn.addEventListener('click', async () => {
               const id = btn.getAttribute('data-id');
-              if (!confirm('Deseja revogar o acesso deste Totem? O tablet será desativado imediatamente.')) return;
+              const ok = await admin.confirm({
+                title: 'Revogar Totem?',
+                msg: 'Deseja revogar o acesso deste Totem? O tablet será desativado imediatamente.',
+                okLabel: 'Revogar'
+              });
+              if (!ok) return;
               const { error: revErr } = await window.cafeteriaSupabase
                 .from('totens')
                 .update({ ativo: false, updated_at: new Date().toISOString() })
@@ -1230,7 +1240,12 @@
       carregarTotens();
 
       btnGerarTotem?.addEventListener('click', async () => {
-        const nome = prompt('Informe o nome deste Totem / Tablet (ex: Totem Balcão 01):', 'Totem Balcão 01');
+        const nome = await admin.prompt({
+          title: 'Parear Novo Totem',
+          msg: 'Informe o nome deste Totem / Tablet (ex: Totem Balcão 01):',
+          defaultValue: 'Totem Balcão 01',
+          options: ['Totem Balcão 01', 'Totem Entrada 01', 'Totem Foyer Teatro']
+        });
         if (!nome) return;
         const codigo = String(Math.floor(100000 + Math.random() * 900000));
         try {

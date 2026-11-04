@@ -182,9 +182,29 @@ export async function setupPedidosPage(options = {}) {
   await harness.carregarScript('js/pedidos.js');
 
   // Mocks seguros de diálogos do navegador para Happy DOM
-  window.prompt = vi.fn((msg) => 'Teste');
+  const defaultPromptFn = Object.assign(vi.fn((msg) => 'Teste'), { _isDefaultPedidosPrompt: true });
+  window.prompt = defaultPromptFn;
   window.showConfirmBottomSheet = vi.fn().mockResolvedValue(true);
   window.showConfirm = vi.fn().mockResolvedValue(true);
+
+  const realShowPromptBottomSheet = window.showPromptBottomSheet;
+  const realShowSelecionarPagamentoTotemSheet = window.showSelecionarPagamentoTotemSheet;
+  if (typeof realShowPromptBottomSheet === 'function') {
+    window.showPromptBottomSheet = (opts = {}) => {
+      if (window.prompt && !window.prompt._isDefaultPedidosPrompt && typeof window.prompt === 'function') {
+        return Promise.resolve(window.prompt(opts.mensagem || opts.titulo || '', opts.valorPadrao || ''));
+      }
+      return realShowPromptBottomSheet(opts);
+    };
+  }
+  if (typeof realShowSelecionarPagamentoTotemSheet === 'function') {
+    window.showSelecionarPagamentoTotemSheet = (opts = {}) => {
+      if (window.prompt && !window.prompt._isDefaultPedidosPrompt && typeof window.prompt === 'function') {
+        return Promise.resolve(window.prompt(opts.numeroPedido || '', opts.formaSugerida || 'pix'));
+      }
+      return realShowSelecionarPagamentoTotemSheet(opts);
+    };
+  }
 
   // Capturador de toasts (envelopa o window.showToast definido por pedidos.js)
   const toasts = [];

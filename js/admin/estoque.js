@@ -684,7 +684,7 @@
           navigator.clipboard.writeText(text).then(() => {
             admin.toast('Copiado', 'Texto do pedido copiado para a área de transferência!', 'success');
           }).catch(() => {
-            prompt('Copie o texto do pedido:', text);
+            admin.prompt({ title: 'Copiar Texto do Pedido', msg: 'Copie o texto abaixo:', defaultValue: text });
           });
         }
       });

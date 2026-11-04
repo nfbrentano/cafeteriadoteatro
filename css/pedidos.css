@@ -3709,3 +3709,20 @@ body {
   min-height: var(--btn-h-md, 44px);
   padding: 8px 14px;
 }
+
+#modal-prompt-cancel,
+#modal-prompt-ok,
+#modal-receber-totem-cancel {
+  min-height: var(--btn-h-lg, 48px);
+  padding: 0 1.25rem;
+}
+
+.btn-pagto-totem {
+  min-height: var(--btn-h-xl, 56px);
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
