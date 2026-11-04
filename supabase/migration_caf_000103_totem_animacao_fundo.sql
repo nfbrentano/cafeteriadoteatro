@@ -72,3 +72,11 @@ BEGIN
 END;
 $$;
 
+GRANT EXECUTE ON FUNCTION public.validar_sessao_totem(TEXT) TO anon, authenticated;
+
+-- Registra execução na tabela app_migrations
+INSERT INTO public.app_migrations (versao, arquivo, aplicada_em, aplicada_por)
+VALUES ('103', 'migration_caf_000103_totem_animacao_fundo.sql', timezone('utc', now()), current_user)
+ON CONFLICT (versao) DO NOTHING;
+
+
