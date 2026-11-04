@@ -92,8 +92,8 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000081** | Segurança: PIN com bloqueio, permissões por cargo efetivas no banco e RLS das operações do PDV/KDS | Concluída | `migration_caf_000081_seguranca_pin_rls.sql` | `caf-000081-seguranca-pin-permissoes.test.js` | — |
 | **CAF-000082** | Segurança: RPCs, policies e views expostas a anônimos e a qualquer autenticado | Concluída | `migration_caf_000082_seguranca.sql` | `caf-000082-seguranca.test.js` | — |
 | **CAF-000083** | Pendências funcionais de operação e caixa (conta do cliente, reabertura de caixa, intervalo, etiquetas, totem e tempo-alvo) | Concluída | `migration_caf_000083_pendencias_operacao.sql` | `caf-000083-pendencias-operacao.test.js` | — |
-| **CAF-000084** | Pendências de UX, KDS e cardápio (diálogos nativos, busca, banner do espetáculo, destaque de adicionais, desfazer e mapa) | Em revisão | — | `caf-000084-pendencias-ux.test.js` | — |
-| **CAF-000085** | Saneamento da documentação das SDDs (status, critérios de aceitação, IDs e rastreabilidade) | Em revisão | — | — | — |
+| **CAF-000084** | Pendências de UX, KDS e cardápio (diálogos nativos, busca, banner do espetáculo, destaque de adicionais, desfazer e mapa) | Concluída | — | `caf-000084-pendencias-ux.test.js` | — |
+| **CAF-000085** | Saneamento da documentação das SDDs (status, critérios de aceitação, IDs e rastreabilidade) | Concluída | — | `caf-000085-sdd-docs.test.js` | — |
 | **CAF-000086** | Infraestrutura de Testes, Cobertura e Teste de Contrato Front ↔ Schema | Concluída | — | `schema-contract.test.js` | — |
 | **CAF-000087** | Cobertura de Testes: PDV, Mesas e Fechamento de Conta (SDDs 001–005, 010–013, 016, 018, 019) | Concluída | — | — | — |
 | **CAF-000088** | Cobertura de Testes: KDS, Estações e Produção (SDDs 006–009, 022–030, 043) | Concluída | — | — | — |
@@ -115,6 +115,14 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000104** | [FIX] [Banco] Correção das Colunas prioridade e prioridade_motivo na Tabela pedidos e RPCs Associadas | Concluída | `migration_caf_000104_correcao_prioridade_pedidos.sql` | `caf-000104-prioridade-pedidos.test.js` | — |
 | **CAF-000105** | [TEST] Suíte de Testes Automatizados de Fluxo Completo de Pedidos com Variações Aleatórias | Concluída | — | `caf-000105-pedidos-fluxo-completo-aleatorio.test.js` | — |
 | **CAF-000106** | [FIX] Resolução de Vulnerabilidade Crítica Supabase: Habilitar Row-Level Security (RLS) e Policies em Todas as Tabelas Públicas (rls_disabled_in_public) | Concluída | `migration_caf_000106_habilitar_rls_todas_tabelas.sql` | `caf-000106-seguranca-rls-tabelas-publicas.test.js` | — |
+| **CAF-000107** | [FIX] Hardening Completo do Supabase Security & Performance Advisors: Policies com Escopo Admin Real, Search Path Imutável em Funções e Security Invoker em Views | Concluída | `migration_caf_000107_hardening_supabase_advisors.sql` | `caf-000107-hardening-supabase-advisors.test.js` | — |
+| **CAF-000108** | [FIX] Correção de Integridade Operacional: Transferência de Pedidos Já Entregues na Mesa, Débito Atômico da Conta do Cliente no Fechamento e Corte de Pagamento no Caixa | Concluída | `migration_caf_000108_integridade_transferencia_fechamento_caixa.sql` | `caf-000108-integridade-operacional-mesa-caixa.test.js` | — |
+| **CAF-000109** | [FIX] Eliminação de Diálogos Nativos Bloqueantes (`alert`/`confirm`/`prompt`) e Modal de Recebimento de Pedidos do Totem no PDV | Concluída | — | `caf-000109-eliminacao-dialogos-nativos.test.js` | — |
+| **CAF-000110** | [FEAT] Combos e Kits Configuráveis no Cardápio Digital, Totem e PDV com Separação Automática por Estação no KDS | Concluída | `migration_caf_000110_combos_kits.sql` | `caf-000110-combos-kits.test.js` | — |
+| **CAF-000111** | [FEAT] Controle de Validade de Lotes (PEPS) e Sugestão Inteligente de Compras Baseada no Consumo dos Últimos 30 Dias | Rascunho | `migration_caf_000111_estoque_lotes_peps_compras.sql` | `caf-000111-estoque-lotes-peps-compras.test.js` | — |
+| **CAF-000112** | [FEAT] Fechamento Parcial de Conta da Mesa: Pagamento por Item Selecionado ou Abatimento Parcial no PDV | Rascunho | `migration_caf_000112_fechamento_parcial_mesa.sql` | `caf-000112-fechamento-parcial-mesa.test.js` | — |
+| **CAF-000113** | [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo | Rascunho | `migration_caf_000113_dre_gerencial_recebiveis_metas.sql` | `caf-000113-dre-gerencial-recebiveis-metas.test.js` | — |
+| **CAF-000114** | [CHORE] Atualização de Dependências de Desenvolvimento (vite, vitest, @vitest/coverage-v8 e fake-indexeddb) | Concluída | — | `caf-000114-atualizacao-dependencias.test.js` | — |
 
 ---
 
@@ -161,3 +169,6 @@ A ordem sequencial auditada para instanciar um ambiente limpo ou aplicar em prod
    - `migration_caf_000103_totem_animacao_fundo.sql`
    - `migration_caf_000104_correcao_prioridade_pedidos.sql`
    - `migration_caf_000106_habilitar_rls_todas_tabelas.sql`
+   - `migration_caf_000107_hardening_supabase_advisors.sql`
+   - `migration_caf_000108_integridade_transferencia_fechamento_caixa.sql`
+   - `migration_caf_000110_combos_kits.sql`
