@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-10-26T13:35:05.842Z",
+  "gerado_em": "2026-11-03T14:54:31.309Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -470,6 +470,18 @@
         "p_motivo"
       ]
     },
+    "fn_pedidos_set_pago_em": {
+      "parameters": []
+    },
+    "validar_e_calcular_combo": {
+      "parameters": [
+        "p_produto_combo_id",
+        "p_escolhas"
+      ]
+    },
+    "fn_baixa_estoque_combo_escolha": {
+      "parameters": []
+    },
     "validar_cortesia": {
       "parameters": []
     },
@@ -686,7 +698,8 @@
         "espetaculo_nome",
         "pedido_origem_id",
         "prioridade",
-        "prioridade_motivo"
+        "prioridade_motivo",
+        "pago_em"
       ]
     },
     "perfis": {
@@ -1197,6 +1210,43 @@
         "campanha_id",
         "pedido_id",
         "valor_receita",
+        "created_at"
+      ]
+    },
+    "combo_grupos": {
+      "columns": [
+        "id",
+        "produto_combo_id",
+        "nome",
+        "ordem",
+        "min_escolhas",
+        "max_escolhas",
+        "created_at"
+      ]
+    },
+    "combo_grupo_opcoes": {
+      "columns": [
+        "id",
+        "grupo_id",
+        "produto_item_id",
+        "preco_adicional",
+        "ativo",
+        "ordem",
+        "created_at"
+      ]
+    },
+    "pedido_item_combo_escolhas": {
+      "columns": [
+        "id",
+        "pedido_item_id",
+        "grupo_id",
+        "grupo_nome",
+        "produto_id",
+        "nome_produto",
+        "estacao",
+        "preco_adicional",
+        "quantidade",
+        "pronto_em",
         "created_at"
       ]
     },

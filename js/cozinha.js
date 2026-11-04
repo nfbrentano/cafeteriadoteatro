@@ -630,19 +630,19 @@
 
     if (error) {
       console.error('Erro ao buscar perfil:', error);
-      alert('Erro ao consultar perfil: ' + error.message);
+      showKdsToast('Erro ao consultar perfil: ' + error.message, 'error');
       await window.cafeteriaSupabase.auth.signOut();
       return;
     }
 
     if (!perfil) {
-      alert(`O usuário (${user.email || user.id}) está autenticado, mas não possui cadastro na tabela "perfis".\n\nAdicione o usuário na tabela "perfis" com o perfil "cozinha" ou "admin".`);
+      showKdsToast(`O usuário (${user.email || user.id}) está autenticado, mas não possui cadastro na tabela "perfis".`, 'error');
       await window.cafeteriaSupabase.auth.signOut();
       return;
     }
 
     if (perfil.role !== 'cozinha' && perfil.role !== 'admin') {
-      alert('Acesso negado. Apenas equipe da cozinha e administradores podem usar esta tela.');
+      showKdsToast('Acesso negado. Apenas equipe da cozinha e administradores podem usar esta tela.', 'error');
       await window.cafeteriaSupabase.auth.signOut();
       return;
     }
@@ -1943,11 +1943,85 @@
       .in('id', itemIds);
 
     if (error) {
-      alert('Erro ao marcar itens como prontos: ' + error.message);
+      showKdsToast('Erro ao marcar itens como prontos: ' + error.message, 'error');
       debouncedFetchPedidos();
       return;
     }
   };
+
+  function showKdsToast(mensagem, tipo = 'info') {
+    showNovoItemToast(mensagem);
+  }
+  window.showKdsToast = showKdsToast;
+
+  function showKdsPromptSheet(opts = {}) {
+    return new Promise((resolve) => {
+      let modal = document.getElementById('kds-modal-prompt');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'kds-modal-prompt';
+        modal.className = 'modal-overlay hidden';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;';
+        modal.innerHTML = `
+          <div class="modal-card" style="background:#1e293b;color:#f8fafc;border-radius:14px;max-width:440px;width:100%;padding:1.25rem;border:1px solid #334155;">
+            <h3 id="kds-prompt-title" style="margin:0 0 0.5rem;font-size:1.15rem;">Motivo da Prioridade</h3>
+            <p id="kds-prompt-msg" style="margin:0 0 0.85rem;font-size:0.9rem;color:#94a3b8;"></p>
+            <div id="kds-prompt-chips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;"></div>
+            <input type="text" id="kds-prompt-input" style="width:100%;min-height:48px;padding:0.65rem 0.85rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;margin-bottom:1rem;font-size:1rem;" />
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+              <button type="button" id="kds-prompt-cancel" class="btn-secondary">Cancelar</button>
+              <button type="button" id="kds-prompt-ok" class="btn-primary">Confirmar</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      const titleEl = modal.querySelector('#kds-prompt-title');
+      const msgEl = modal.querySelector('#kds-prompt-msg');
+      const chipsEl = modal.querySelector('#kds-prompt-chips');
+      const inputEl = modal.querySelector('#kds-prompt-input');
+      const btnCancel = modal.querySelector('#kds-prompt-cancel');
+      const btnOk = modal.querySelector('#kds-prompt-ok');
+
+      titleEl.textContent = opts.titulo || 'Motivo da Prioridade';
+      msgEl.textContent = opts.mensagem || '';
+      inputEl.value = opts.valorPadrao || '';
+
+      chipsEl.innerHTML = '';
+      (opts.opcoesRapidas || ['Espetáculo', 'Refazer', 'Reclamação']).forEach((op) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'prompt-chip';
+        chip.dataset.chipVal = op;
+        chip.textContent = op;
+        chip.style.cssText = 'min-height:48px;padding:0.4rem 0.85rem;border-radius:999px;border:1px solid #475569;background:#334155;color:#f8fafc;cursor:pointer;font-weight:600;';
+        chip.onclick = () => {
+          inputEl.value = op;
+          inputEl.focus();
+        };
+        chipsEl.appendChild(chip);
+      });
+
+      const close = (val) => {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        resolve(val);
+      };
+
+      btnCancel.onclick = () => close(null);
+      btnOk.onclick = () => close(inputEl.value.trim() || opts.valorPadrao || 'Espetáculo');
+      modal.onclick = (e) => {
+        if (e.target === modal) close(null);
+      };
+
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    });
+  }
+  window.showKdsPromptSheet = showKdsPromptSheet;
 
   // -----------------------------------------------------
   // 5. AÇÕES (Atualizar Status e Reimpressão)
@@ -1984,7 +2058,7 @@
       .eq('id', itemId);
       
     if (error) {
-      alert('Erro ao atualizar item: ' + error.message);
+      showKdsToast('Erro ao atualizar item: ' + error.message, 'error');
       if (item) {
         item.pronto_em = isProntoAtualmente ? nowIso : null;
         renderPedidos();
@@ -2025,7 +2099,7 @@
     });
 
     if (error) {
-      alert('Erro ao iniciar preparo: ' + error.message);
+      showKdsToast('Erro ao iniciar preparo: ' + error.message, 'error');
       await fetchPedidosIniciais();
       return;
     }
@@ -2069,7 +2143,7 @@
     });
 
     if (error) {
-      alert('Erro ao concluir estação: ' + error.message);
+      showKdsToast('Erro ao concluir estação: ' + error.message, 'error');
       await fetchPedidosIniciais();
       return;
     }
@@ -2103,7 +2177,7 @@
     });
 
     if (error) {
-      alert('Erro ao desfazer preparo: ' + error.message);
+      showKdsToast('Erro ao desfazer preparo: ' + error.message, 'error');
       await fetchPedidosIniciais();
       return;
     }
@@ -2131,7 +2205,7 @@
       .from('pedidos')
       .update(payload)
       .eq('id', pedidoId);
-    if (error) alert('Erro ao atualizar status: ' + error.message);
+    if (error) showKdsToast('Erro ao atualizar status: ' + error.message, 'error');
   };
 
   // -----------------------------------------------------
@@ -2144,7 +2218,12 @@
     const novaPrioridade = pedido.prioridade === 1 ? 0 : 1;
     let motivo = null;
     if (novaPrioridade === 1) {
-      motivo = prompt('Motivo da prioridade (ex: Espetáculo, Refazer, Reclamação):', pedido.prioridade_motivo || 'Espetáculo');
+      motivo = await showKdsPromptSheet({
+        titulo: 'Priorizar Pedido no KDS',
+        mensagem: 'Selecione ou informe o motivo da prioridade:',
+        opcoesRapidas: ['Espetáculo', 'Refazer', 'Reclamação', 'Cliente c/ pressa'],
+        valorPadrao: pedido.prioridade_motivo || 'Espetáculo'
+      });
       if (motivo === null) return; // cancelou
       motivo = motivo.trim() || 'Espetáculo';
     }
@@ -2178,7 +2257,7 @@
       showNovoItemToast(novaPrioridade === 1 ? `⚡ Pedido #${pedido.numero_pedido || pedido.id} priorizado!` : `Prioridade de #${pedido.numero_pedido || pedido.id} removida.`);
     } catch (err) {
       console.error('[KDS] Erro ao alternar prioridade:', err);
-      alert('Erro ao atualizar prioridade: ' + err.message);
+      showKdsToast('Erro ao atualizar prioridade: ' + err.message, 'error');
       await fetchPedidosIniciais();
     }
   };
@@ -2539,7 +2618,7 @@
 
     const itensFiltrados = getItensDaEstacaoAtual(pedido.pedido_itens || []);
     if (itensFiltrados.length === 0 && estacaoSelecionada !== 'todas') {
-      alert("Não há itens desta estação neste pedido para imprimir.");
+      showKdsToast("Não há itens desta estação neste pedido para imprimir.", 'warning');
       return;
     }
 
@@ -2564,7 +2643,7 @@
     const itensFiltrados = filtrarItensParaEtiqueta(itensEstacao, cfg);
 
     if (itensFiltrados.length === 0) {
-      alert('Não há itens elegíveis para etiqueta nesta estação (verifique o filtro de categorias na configuração desta tela).');
+      showKdsToast('Não há itens elegíveis para etiqueta nesta estação (verifique o filtro de categorias na configuração desta tela).', 'warning');
       return;
     }
 

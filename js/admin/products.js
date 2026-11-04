@@ -49,11 +49,127 @@
       tbodyFichaInsumos: document.getElementById('ficha-insumos-body'),
       fichaResumoCusto: document.getElementById('ficha-resumo-custo'),
       fichaResumoMargem: document.getElementById('ficha-resumo-margem'),
-      fichaAlertaMargem: document.getElementById('ficha-alerta-margem')
+      fichaAlertaMargem: document.getElementById('ficha-alerta-margem'),
+      // Combos (CAF-000110)
+      selectTipoMontagem: document.getElementById('produto-tipo-montagem'),
+      fieldComboGrupos: document.getElementById('field-produto-combo-grupos'),
+      containerComboGrupos: document.getElementById('combo-grupos-container'),
+      btnAddComboGrupo: document.getElementById('btn-add-combo-grupo')
     };
   }
 
   let activeFichaItens = [];
+  let activeComboGrupos = [];
+
+  // --- Gestão de Combos (CAF-000110) ---
+  function renderComboGrupos() {
+    const el = productsEls();
+    if (!el.containerComboGrupos) return;
+
+    if (!activeComboGrupos || activeComboGrupos.length === 0) {
+      el.containerComboGrupos.innerHTML = `
+        <div style="text-align: center; color: var(--admin-text-sub); padding: 16px; border: 1px dashed var(--admin-border2, #475569); border-radius: var(--radius-sm, 6px);">
+          Nenhum grupo de escolha configurado. Clique em "+ Adicionar Grupo" acima para definir as etapas do combo (ex: Bebida, Salgado, Sobremesa).
+        </div>
+      `;
+      return;
+    }
+
+    const currentProdId = document.getElementById('produto-id')?.value;
+    const todosProds = (admin.appData?.produtos || []).filter(p => p.id !== currentProdId);
+
+    el.containerComboGrupos.innerHTML = activeComboGrupos.map((g, gIdx) => {
+      const opcoes = Array.isArray(g.opcoes) ? g.opcoes : [];
+      return `
+        <div class="combo-grupo-card" style="background: var(--admin-surface, #1e293b); border: 1px solid var(--admin-border2, #334155); border-radius: var(--radius-sm, 6px); padding: 12px; margin-bottom: 8px;" data-grupo-idx="${gIdx}">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center; flex:1; min-width: 200px;">
+              <span style="font-weight:700; color:var(--admin-text, #fff); font-size:13px;">Etapa ${gIdx + 1}:</span>
+              <input type="text" class="field__input grupo-nome-input" value="${window.escapeHtml(g.nome || '')}" placeholder="Nome (ex: Bebida, Salgado)" style="min-height:36px; padding:4px 8px; font-size:13px; font-weight:600;" onchange="window.updateComboGrupoNome(${gIdx}, this.value)" />
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <label style="font-size:11px; color:var(--admin-text-sub);">Mín:</label>
+              <input type="number" class="field__input grupo-min-input" min="0" max="10" value="${g.min_escolhas ?? 1}" style="width:55px; min-height:36px; padding:4px;" onchange="window.updateComboGrupoMin(${gIdx}, this.value)" />
+              <label style="font-size:11px; color:var(--admin-text-sub);">Máx:</label>
+              <input type="number" class="field__input grupo-max-input" min="1" max="10" value="${g.max_escolhas ?? 1}" style="width:55px; min-height:36px; padding:4px;" onchange="window.updateComboGrupoMax(${gIdx}, this.value)" />
+              <button type="button" class="btn btn--icon btn--ghost" style="padding:4px 8px; color:#ef4444;" onclick="window.removerComboGrupo(${gIdx})" title="Excluir Etapa">🗑️</button>
+            </div>
+          </div>
+
+          <!-- Opções do grupo -->
+          <div style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 8px; margin-top: 6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+              <span style="font-size:11px; font-weight:700; color:var(--admin-text-sub); text-transform:uppercase;">Produtos da Etapa</span>
+              <button type="button" class="btn btn--secondary btn--sm" style="font-size:11px; padding:2px 8px; min-height:28px;" onclick="window.addOpcaoComboGrupo(${gIdx})">+ Adicionar Produto</button>
+            </div>
+            ${opcoes.length === 0 ? `<div style="font-size:11px; color:var(--admin-text-sub); text-align:center; padding:6px;">Nenhum produto vinculado.</div>` : ''}
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              ${opcoes.map((op, opIdx) => {
+                const selId = op.produto_item_id || op.produto_id || '';
+                return `
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:var(--admin-bg, #0f172a); padding:4px 8px; border-radius:4px; border:1px solid var(--admin-border2, #334155);" data-op-idx="${opIdx}">
+                    <select class="field__select opcao-prod-select" style="flex:2; min-width:160px; min-height:32px; font-size:12px; padding:2px 6px;" onchange="window.updateComboOpcaoProd(${gIdx}, ${opIdx}, this.value)">
+                      <option value="">Selecione um produto...</option>
+                      ${todosProds.map(p => `
+                        <option value="${p.id}" ${String(p.id) === String(selId) ? 'selected' : ''}>
+                          ${window.escapeHtml(p.nome)} (R$ ${Number(p.preco || 0).toFixed(2)})
+                        </option>
+                      `).join('')}
+                    </select>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                      <span style="font-size:11px; color:var(--admin-text-sub);">+ R$</span>
+                      <input type="number" step="0.50" min="0" class="field__input opcao-preco-input" value="${op.preco_adicional || 0}" placeholder="0,00" style="width:75px; min-height:32px; font-size:12px; padding:2px 6px;" onchange="window.updateComboOpcaoPreco(${gIdx}, ${opIdx}, this.value)" title="Acréscimo no preço do combo para esta opção" />
+                    </div>
+                    <button type="button" class="btn btn--icon btn--ghost" style="padding:2px 6px; font-size:11px; color:#ef4444;" onclick="window.removerComboOpcao(${gIdx}, ${opIdx})" title="Remover Opção">✕</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.updateComboGrupoNome = (gIdx, val) => {
+    if (activeComboGrupos[gIdx]) activeComboGrupos[gIdx].nome = val;
+  };
+  window.updateComboGrupoMin = (gIdx, val) => {
+    if (activeComboGrupos[gIdx]) activeComboGrupos[gIdx].min_escolhas = Math.max(0, parseInt(val, 10) || 0);
+  };
+  window.updateComboGrupoMax = (gIdx, val) => {
+    if (activeComboGrupos[gIdx]) activeComboGrupos[gIdx].max_escolhas = Math.max(1, parseInt(val, 10) || 1);
+  };
+  window.removerComboGrupo = (gIdx) => {
+    activeComboGrupos.splice(gIdx, 1);
+    renderComboGrupos();
+  };
+  window.addOpcaoComboGrupo = (gIdx) => {
+    if (!activeComboGrupos[gIdx]) return;
+    if (!Array.isArray(activeComboGrupos[gIdx].opcoes)) activeComboGrupos[gIdx].opcoes = [];
+    activeComboGrupos[gIdx].opcoes.push({
+      produto_item_id: '',
+      preco_adicional: 0,
+      ativo: true
+    });
+    renderComboGrupos();
+  };
+  window.updateComboOpcaoProd = (gIdx, opIdx, prodId) => {
+    if (activeComboGrupos[gIdx]?.opcoes?.[opIdx]) {
+      activeComboGrupos[gIdx].opcoes[opIdx].produto_item_id = prodId;
+    }
+  };
+  window.updateComboOpcaoPreco = (gIdx, opIdx, preco) => {
+    if (activeComboGrupos[gIdx]?.opcoes?.[opIdx]) {
+      activeComboGrupos[gIdx].opcoes[opIdx].preco_adicional = Math.max(0, parseFloat(preco) || 0);
+    }
+  };
+  window.removerComboOpcao = (gIdx, opIdx) => {
+    if (activeComboGrupos[gIdx]?.opcoes) {
+      activeComboGrupos[gIdx].opcoes.splice(opIdx, 1);
+      renderComboGrupos();
+    }
+  };
 
   // --- Renderização ---
   window.renderProdutos = function() {
@@ -448,6 +564,30 @@
 
     renderFichaTable();
 
+    // Combos (CAF-000110)
+    const tipoMontagem = (isEdit && p?.tipo_montagem) ? p.tipo_montagem : 'padrao';
+    if (el.selectTipoMontagem) {
+      el.selectTipoMontagem.value = tipoMontagem;
+      el.selectTipoMontagem.onchange = () => {
+        const isCombo = el.selectTipoMontagem.value === 'combo';
+        if (el.fieldComboGrupos) el.fieldComboGrupos.style.display = isCombo ? 'block' : 'none';
+      };
+    }
+    if (el.fieldComboGrupos) {
+      el.fieldComboGrupos.style.display = tipoMontagem === 'combo' ? 'block' : 'none';
+    }
+
+    activeComboGrupos = [];
+    if (isEdit && id && tipoMontagem === 'combo' && window.cafeteriaDB?.combos?.getByProduto) {
+      try {
+        activeComboGrupos = await window.cafeteriaDB.combos.getByProduto(id);
+      } catch (err) {
+        console.error('Erro ao carregar combos:', err);
+        activeComboGrupos = [];
+      }
+    }
+    renderComboGrupos();
+
     updateTempoAlvoPlaceholder();
     if (el.selectCategoria) {
       el.selectCategoria.onchange = () => {
@@ -488,6 +628,23 @@
     }
 
     const badges = Array.from(document.querySelectorAll('input[name="badges"]:checked')).map(cb => cb.value);
+    const tipo_montagem = el.selectTipoMontagem ? el.selectTipoMontagem.value : 'padrao';
+
+    if (tipo_montagem === 'combo') {
+      if (!activeComboGrupos || activeComboGrupos.length === 0) {
+        return admin.toast('Erro', 'Um produto do tipo Combo deve ter ao menos 1 etapa/grupo configurada.', 'error');
+      }
+      for (const g of activeComboGrupos) {
+        if (!g.nome || !g.nome.trim()) {
+          return admin.toast('Erro', 'Todas as etapas do combo devem ter um nome.', 'error');
+        }
+        const opsValidas = (g.opcoes || []).filter(o => o.produto_item_id || o.produto_id);
+        if (opsValidas.length === 0) {
+          return admin.toast('Erro', `Adicione ao menos 1 produto na etapa "${g.nome}".`, 'error');
+        }
+      }
+    }
+
     const dataUrl = el.dataInput.value;
     const isNewImage = dataUrl.startsWith('data:');
     const imageBlob = isNewImage ? admin.dataURLtoBlob(dataUrl) : null;
@@ -499,6 +656,7 @@
       await window.cafeteriaDB.products.upsert({
         id, nome, categoria_id, preco, descricao, ativo, badges, disponivel,
         permite_adicionais,
+        tipo_montagem,
         estoque_item_id,
         preco_custo_manual,
         tempo_alvo_min,
@@ -510,6 +668,11 @@
 
       // Salva Ficha Técnica (CAF-000032)
       await window.cafeteriaDB.fichasTecnicas.saveFichaProduto(id, activeFichaItens);
+
+      // Salva Grupos de Combo (CAF-000110)
+      if (tipo_montagem === 'combo' && window.cafeteriaDB?.combos?.saveGrupos) {
+        await window.cafeteriaDB.combos.saveGrupos(id, activeComboGrupos);
+      }
       
       // Salva Vínculos de Adicionais Diretos
       if (permite_adicionais && el.wrapAdicionais) {
@@ -659,6 +822,19 @@
     }
     if (els.inputCustoManual) {
       els.inputCustoManual.addEventListener('input', atualizarResumoFicha);
+    }
+
+    // Combos event bindings (CAF-000110)
+    if (els.btnAddComboGrupo) {
+      els.btnAddComboGrupo.addEventListener('click', () => {
+        activeComboGrupos.push({
+          nome: `Etapa ${activeComboGrupos.length + 1}`,
+          min_escolhas: 1,
+          max_escolhas: 1,
+          opcoes: []
+        });
+        renderComboGrupos();
+      });
     }
 
     // Upload zone

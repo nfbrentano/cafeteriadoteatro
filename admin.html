@@ -2644,6 +2644,16 @@
         </div>
 
         <div class="field">
+          <label class="field__label" for="produto-tipo-montagem">Tipo de Produto / Montagem</label>
+          <select class="field__select" id="produto-tipo-montagem">
+            <option value="padrao">Padrão (Produto Individual)</option>
+            <option value="meio_a_meio">Meio a Meio (Sabores Combinados)</option>
+            <option value="combo">Combo / Kit Promocional (Etapas Guiadas)</option>
+          </select>
+          <div class="hint">Combos permitem configurar grupos de opções com escolha guiada (ex: Bebida + Salgado + Sobremesa).</div>
+        </div>
+
+        <div class="field">
           <label class="field__label" for="produto-tempo-alvo">Tempo Alvo de Preparo (minutos) <span style="font-weight:normal;color:var(--admin-text-dim);">(Opcional)</span></label>
           <input class="field__input" type="number" id="produto-tempo-alvo" min="1" max="180" step="1" placeholder="Herda da categoria" />
           <p class="hint" style="margin-top:4px" id="hint-produto-tempo-alvo">Se vazio, herdará o tempo alvo padrão da categoria selecionada.</p>
@@ -2804,6 +2814,20 @@
                 <tr><td colspan="5" style="text-align: center; color: var(--admin-text-sub); padding: 12px;">Nenhum insumo na ficha técnica.</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- COMBOS E KITS PROMOCIONAIS (CAF-000110) -->
+        <div class="field" id="field-produto-combo-grupos" style="display: none; border: 1px solid var(--admin-border2, #475569); background: rgba(255,255,255,0.02); border-radius: var(--radius-md, 8px); padding: 14px; margin-top: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <label class="field__label" style="font-size: 14px; margin-bottom: 2px;">🎁 Configuração de Grupos do Combo</label>
+              <div class="hint" style="margin: 0;">Configure as etapas que o cliente ou barista deve escolher ao pedir este combo.</div>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-add-combo-grupo">+ Adicionar Grupo</button>
+          </div>
+          <div id="combo-grupos-container" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Renderizado dinamicamente pelo JS -->
           </div>
         </div>
 

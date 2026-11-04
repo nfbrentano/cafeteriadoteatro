@@ -1183,13 +1183,52 @@
         modalCheckout.classList.add('hidden');
         exibirTelaPareamento(true);
       } else {
-        alert('Não foi possível registrar o pedido: ' + msg);
+        exibirModalErroTotem('Não foi possível registrar o pedido: ' + msg);
       }
     } finally {
       btnEnviarPedido.disabled = false;
       btnEnviarPedido.innerHTML = originalTxt;
     }
   });
+
+  function exibirModalErroTotem(mensagem) {
+    let modal = document.getElementById('totem-modal-erro');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'totem-modal-erro';
+      modal.className = 'modal-overlay';
+      modal.setAttribute('role', 'alertdialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem;';
+      modal.innerHTML = `
+        <div class="modal-card" style="background:#fff;color:#2c1e16;border-radius:16px;max-width:480px;width:100%;padding:2rem;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+          <div style="font-size:3rem;margin-bottom:0.75rem;">⚠️</div>
+          <h3 style="margin:0 0 0.75rem;font-size:1.4rem;">Ops! Algo deu errado</h3>
+          <p id="totem-modal-erro-msg" style="margin:0 0 1.5rem;font-size:1.1rem;line-height:1.45;color:#555;"></p>
+          <button type="button" id="totem-modal-erro-ok" class="btn-primary">Tentar Novamente</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    const msgEl = modal.querySelector('#totem-modal-erro-msg');
+    const btnOk = modal.querySelector('#totem-modal-erro-ok');
+    if (btnOk) {
+      btnOk.style.minHeight = '56px';
+      btnOk.style.width = '100%';
+    }
+    if (msgEl) msgEl.textContent = mensagem;
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    const fechar = () => {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    };
+    if (btnOk) btnOk.onclick = fechar;
+    modal.onclick = (e) => {
+      if (e.target === modal) fechar();
+    };
+  }
+  window.totemExibirModalErro = exibirModalErroTotem;
 
   // ── 10. TELA FINAL DE SENHA (15s AUTO-RESET) ──
   async function exibirTelaSenhaFinal(pedido) {

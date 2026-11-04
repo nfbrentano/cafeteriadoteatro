@@ -456,6 +456,183 @@
     return window.showConfirmBottomSheet({ titulo: title, mensagem: msg });
   };
 
+  // CAF-000109: Bottom Sheet com chips rápidos e input para substituir prompt() nativo
+  window.showPromptBottomSheet = function(opts = {}) {
+    return new Promise((resolve) => {
+      let modal = document.getElementById('modal-prompt-sheet');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-prompt-sheet';
+        modal.className = 'modal-overlay hidden';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.innerHTML = `
+          <div class="modal-card" style="max-width:460px;width:92%;padding:1.25rem;">
+            <h3 id="modal-prompt-title" style="margin:0 0 0.5rem;font-size:1.15rem;">Informar Motivo</h3>
+            <p id="modal-prompt-msg" style="margin:0 0 0.85rem;color:var(--text-muted, #666);font-size:0.95rem;"></p>
+            <div id="modal-prompt-chips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;"></div>
+            <input type="text" id="modal-prompt-input" class="form-input" style="width:100%;min-height:48px;padding:0.65rem 0.85rem;margin-bottom:1rem;border-radius:8px;border:1px solid #ccc;font-size:1rem;" />
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+              <button type="button" id="modal-prompt-cancel" class="btn-secondary">Cancelar</button>
+              <button type="button" id="modal-prompt-ok" class="btn-primary">Confirmar</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      const titleEl = modal.querySelector('#modal-prompt-title');
+      const msgEl = modal.querySelector('#modal-prompt-msg');
+      const chipsEl = modal.querySelector('#modal-prompt-chips');
+      const inputEl = modal.querySelector('#modal-prompt-input');
+      const btnCancel = modal.querySelector('#modal-prompt-cancel');
+      const btnOk = modal.querySelector('#modal-prompt-ok');
+
+      const titulo = opts.titulo || 'Informar Motivo';
+      const mensagem = opts.mensagem || '';
+      const opcoesRapidas = Array.isArray(opts.opcoesRapidas) ? opts.opcoesRapidas : [];
+      const valorPadrao = opts.valorPadrao !== undefined && opts.valorPadrao !== null ? String(opts.valorPadrao) : '';
+      const placeholder = opts.placeholder || 'Digite ou selecione uma opção acima...';
+
+      titleEl.textContent = titulo;
+      msgEl.textContent = mensagem;
+      inputEl.value = valorPadrao;
+      inputEl.placeholder = placeholder;
+      btnOk.textContent = opts.textoConfirmar || 'Confirmar';
+      btnCancel.textContent = opts.textoCancelar || 'Cancelar';
+
+      chipsEl.innerHTML = '';
+      opcoesRapidas.forEach((op) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'prompt-chip';
+        chip.dataset.chipVal = op;
+        chip.textContent = op;
+        chip.style.cssText = 'min-height:48px;padding:0.45rem 0.85rem;border-radius:999px;border:1px solid var(--border-color, #d4c4b0);background:var(--surface-elevated, #f7f2eb);cursor:pointer;font-size:0.9rem;font-weight:600;';
+        chip.onclick = () => {
+          inputEl.value = op;
+          inputEl.focus();
+        };
+        chipsEl.appendChild(chip);
+      });
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        document.removeEventListener('keydown', onKey);
+        btnCancel.onclick = null;
+        btnOk.onclick = null;
+        modal.onclick = null;
+      };
+
+      const close = (val) => {
+        cleanup();
+        resolve(val);
+      };
+
+      const onKey = (e) => {
+        if (e.key === 'Escape') close(null);
+        if (e.key === 'Enter' && document.activeElement === inputEl) {
+          e.preventDefault();
+          btnOk.click();
+        }
+      };
+
+      btnCancel.onclick = () => close(null);
+      btnOk.onclick = () => {
+        const val = inputEl.value.trim();
+        if (opts.obrigatorio !== false && !val) {
+          inputEl.focus();
+          return;
+        }
+        close(val);
+      };
+      modal.onclick = (e) => {
+        if (e.target === modal) close(null);
+      };
+
+      document.addEventListener('keydown', onKey);
+      modal.classList.remove('hidden');
+      setTimeout(() => inputEl.focus(), 10);
+    });
+  };
+
+  // CAF-000109: Modal / Bottom Sheet com 4 botões de pagamento para recebimento de pedido do Totem
+  window.showSelecionarPagamentoTotemSheet = function(opts = {}) {
+    return new Promise((resolve) => {
+      let modal = document.getElementById('modal-receber-totem');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-receber-totem';
+        modal.className = 'modal-overlay hidden';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.innerHTML = `
+          <div class="modal-card" style="max-width:460px;width:92%;padding:1.25rem;">
+            <h3 id="modal-receber-totem-title" style="margin:0 0 0.4rem;font-size:1.2rem;">Receber Pedido do Totem</h3>
+            <p id="modal-receber-totem-msg" style="margin:0 0 1rem;color:var(--text-muted, #666);font-size:0.95rem;"></p>
+            <div id="modal-receber-totem-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+              <button type="button" class="btn-pagto-totem" data-forma="pix">⚡ Pix</button>
+              <button type="button" class="btn-pagto-totem" data-forma="cartao_debito">💳 Cartão Débito</button>
+              <button type="button" class="btn-pagto-totem" data-forma="cartao_credito">💳 Cartão Crédito</button>
+              <button type="button" class="btn-pagto-totem" data-forma="dinheiro">💵 Dinheiro</button>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button type="button" id="modal-receber-totem-cancel" class="btn-secondary">Cancelar</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      const titleEl = modal.querySelector('#modal-receber-totem-title');
+      const msgEl = modal.querySelector('#modal-receber-totem-msg');
+      const btnCancel = modal.querySelector('#modal-receber-totem-cancel');
+      const btnsForma = Array.from(modal.querySelectorAll('.btn-pagto-totem'));
+
+      const numPed = opts.numeroPedido || '';
+      const clienteNome = opts.clienteNome || 'Totem';
+      const valorNum = Number(opts.valor || 0);
+      const sugerida = String(opts.formaSugerida || 'pix').trim().toLowerCase();
+
+      titleEl.textContent = `Receber Pedido #${numPed} (${clienteNome})`;
+      msgEl.textContent = `Total: R$ ${valorNum.toFixed(2).replace('.', ',')} — Selecione a forma de pagamento recebida no balcão:`;
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        document.removeEventListener('keydown', onKey);
+        btnCancel.onclick = null;
+        modal.onclick = null;
+        btnsForma.forEach(b => { b.onclick = null; });
+      };
+
+      const close = (formaEscolhida) => {
+        cleanup();
+        resolve(formaEscolhida);
+      };
+
+      const onKey = (e) => {
+        if (e.key === 'Escape') close(null);
+      };
+
+      btnsForma.forEach((btn) => {
+        const f = btn.dataset.forma;
+        const isDestaque = f === sugerida;
+        btn.classList.toggle('sugerida', isDestaque);
+        btn.style.borderColor = isDestaque ? 'var(--primary, #8b4513)' : '#ccc';
+        btn.style.background = isDestaque ? 'rgba(139, 69, 19, 0.12)' : '#fff';
+        btn.onclick = () => close(f);
+      });
+
+      btnCancel.onclick = () => close(null);
+      modal.onclick = (e) => {
+        if (e.target === modal) close(null);
+      };
+
+      document.addEventListener('keydown', onKey);
+      modal.classList.remove('hidden');
+    });
+  };
+
   // -----------------------------------------------------
   // INDEXEDDB — Fila Local de Pedidos Offline (CAF-000018)
   // -----------------------------------------------------
@@ -957,7 +1134,13 @@
     }
 
     if (!motivo) {
-      motivo = prompt('Motivo do cancelamento (Ex: Cliente desistiu, Lançado errado, Em falta):');
+      motivo = await window.showPromptBottomSheet({
+        titulo: 'Cancelar Item do Pedido',
+        mensagem: 'Selecione ou informe o motivo do cancelamento:',
+        opcoesRapidas: ['Cliente desistiu', 'Lançado errado', 'Produto em falta', 'Troca de item'],
+        valorPadrao: '',
+        obrigatorio: true
+      });
       if (!motivo) return;
     }
 
@@ -3268,8 +3451,14 @@
   }
 
   async function recusarPedidoCliente(pedidoId) {
-    const motivo = prompt('Informe o motivo da recusa (será exibido ao cliente no cardápio):', 'Cozinha com alta demanda no momento');
-    if (motivo === null) return;
+    const motivo = await window.showPromptBottomSheet({
+      titulo: 'Recusar Pedido do Cardápio',
+      mensagem: 'Informe o motivo da recusa (será exibido ao cliente no cardápio):',
+      opcoesRapidas: ['Cozinha com alta demanda no momento', 'Item esgotado no estoque', 'Horário de encerramento atingido'],
+      valorPadrao: 'Cozinha com alta demanda no momento',
+      obrigatorio: true
+    });
+    if (motivo === null || !motivo) return;
     try {
       await window.cafeteriaDB.clientePedido.recusar(pedidoId, motivo);
       if (window.showToast) window.showToast('Pedido recusado.', 'info');
@@ -3279,6 +3468,7 @@
       if (window.showToast) window.showToast('Erro ao recusar pedido: ' + (err.message || err), { tipo: 'error' });
     }
   }
+  window.baristaRecusarPedidoCliente = recusarPedidoCliente;
 
   function renderChamadosMesa() {
     const qtd = chamadosMesaPendentes.length;
@@ -3639,8 +3829,14 @@
   window.baristaMarcarNaoRetirado = async function (pedidoId) {
     const pedido = activePedidos.find(p => p.id === pedidoId);
     if (!pedido) return;
-    const motivo = prompt('Confirmar que o cliente NÃO compareceu para retirar o pedido? Informe observação:', 'Não retirado pelo cliente no horário agendado');
-    if (motivo === null) return;
+    const motivo = await window.showPromptBottomSheet({
+      titulo: 'Cliente Não Compareceu',
+      mensagem: 'Confirmar que o cliente NÃO compareceu para retirar o pedido? Informe observação:',
+      opcoesRapidas: ['Não retirado pelo cliente no horário agendado', 'Cliente não atendeu contato', 'Desistência no intervalo'],
+      valorPadrao: 'Não retirado pelo cliente no horário agendado',
+      obrigatorio: true
+    });
+    if (motivo === null || !motivo) return;
     try {
       await window.cafeteriaDB.clientePedido.marcarNaoRetirado(pedidoId, motivo);
       showToast('Pedido marcado como não retirado e registrado no histórico do cliente.', 'info');
@@ -3656,14 +3852,24 @@
     if (!pedido) return;
     const numPed = pedido.numero_pedido || pedido.id;
     const valorNum = Number(pedido.total || 0);
-    const forma = prompt(
-      `Receber Pedido #${numPed} (${pedido.cliente_nome || 'Totem'}) — Total R$ ${valorNum.toFixed(2).replace('.', ',')}\nInforme a forma de pagamento (pix, dinheiro, cartao_debito, cartao_credito):`,
-      pedido.forma_pagamento || 'pix'
-    );
+    const forma = await window.showSelecionarPagamentoTotemSheet({
+      numeroPedido: numPed,
+      clienteNome: pedido.cliente_nome || 'Totem',
+      valor: valorNum,
+      formaSugerida: pedido.forma_pagamento || 'pix'
+    });
     if (!forma) return;
-    const formaNorm = ['pix', 'dinheiro', 'cartao_debito', 'cartao_credito', 'outros'].includes(forma.trim().toLowerCase())
-      ? forma.trim().toLowerCase()
-      : 'pix';
+    const formaInput = forma.trim().toLowerCase();
+    const mapaFormas = {
+      pix: 'pix',
+      dinheiro: 'dinheiro',
+      cartao_debito: 'cartao_debito',
+      debito: 'cartao_debito',
+      cartao_credito: 'cartao_credito',
+      credito: 'cartao_credito',
+      outros: 'outros'
+    };
+    const formaNorm = mapaFormas[formaInput] || 'pix';
 
     if (formaNorm === 'pix' && window.cafeteriaPix) {
       let exibirPix = true;
@@ -3721,7 +3927,13 @@
     const novaPrioridade = pedido.prioridade === 1 ? 0 : 1;
     let motivo = null;
     if (novaPrioridade === 1) {
-      motivo = prompt('Motivo da prioridade (ex: Espetáculo, Refazer, Reclamação):', pedido.prioridade_motivo || 'Espetáculo');
+      motivo = await window.showPromptBottomSheet({
+        titulo: 'Priorizar Pedido',
+        mensagem: 'Selecione ou informe o motivo da prioridade:',
+        opcoesRapidas: ['Espetáculo', 'Refazer', 'Reclamação', 'Cliente c/ pressa'],
+        valorPadrao: pedido.prioridade_motivo || 'Espetáculo',
+        obrigatorio: true
+      });
       if (motivo === null) return; // Cancelou
       motivo = motivo.trim() || 'Espetáculo';
     }
@@ -5047,7 +5259,14 @@
     fecharContaConfirmar.textContent = 'Fechando...';
 
     try {
-      if (pagtoContaCliente) {
+      if (!currentFechamento._idempotencyKey) {
+        currentFechamento._idempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random()}`;
+      }
+      const idempotencyKey = currentFechamento._idempotencyKey;
+
+      if (pagtoContaCliente && !currentFechamento._contaClienteDebitada) {
         const clienteId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || currentFechamento.clienteId;
         if (window.cafeteriaDB && window.cafeteriaDB.clientes && window.cafeteriaDB.clientes.lancarMovimento) {
           const resDebito = await window.cafeteriaDB.clientes.lancarMovimento(
@@ -5065,16 +5284,13 @@
             fecharContaConfirmar.textContent = 'Confirmar Fechamento';
             return;
           }
+          currentFechamento._contaClienteDebitada = true;
         }
       }
       const pagamentosPayload = todosPagamentos.map(p => ({
         forma: p.forma,
         valor: p.valor
       }));
-
-      const idempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random()}`;
 
       const { data, error } = await window.cafeteriaSupabase.rpc('fechar_conta_mesa', {
         p_mesa_codigo: currentFechamento.mesaCodigo,

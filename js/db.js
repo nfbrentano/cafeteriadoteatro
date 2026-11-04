@@ -1831,6 +1831,95 @@
       }
     },
 
+    // --- Módulo: Combos e Kits Configuráveis (CAF-000110) ---
+    combos: {
+      async getByProduto(produtoComboId) {
+        if (!window.cafeteriaSupabase || !produtoComboId) return [];
+        try {
+          const { data: grupos, error: errG } = await window.cafeteriaSupabase
+            .from('combo_grupos')
+            .select('*')
+            .eq('produto_combo_id', produtoComboId)
+            .order('ordem');
+          if (errG) throw errG;
+          if (!grupos || grupos.length === 0) return [];
+
+          const grupoIds = grupos.map(g => g.id);
+          const { data: opcoes, error: errO } = await window.cafeteriaSupabase
+            .from('combo_grupo_opcoes')
+            .select('*')
+            .in('grupo_id', grupoIds)
+            .order('ordem');
+          if (errO) throw errO;
+
+          return grupos.map(g => ({
+            ...g,
+            opcoes: (opcoes || []).filter(o => o.grupo_id === g.id)
+          }));
+        } catch (err) {
+          db.logger.error('combos.getByProduto', err);
+          return [];
+        }
+      },
+
+      async saveGrupos(produtoComboId, grupos = []) {
+        if (!window.cafeteriaSupabase || !produtoComboId) throw new Error('Parâmetros inválidos para salvar combo');
+        await window.cafeteriaSupabase
+          .from('combo_grupos')
+          .delete()
+          .eq('produto_combo_id', produtoComboId);
+
+        const salvos = [];
+        for (let i = 0; i < grupos.length; i++) {
+          const g = grupos[i];
+          const { data: gRow, error: errG } = await window.cafeteriaSupabase
+            .from('combo_grupos')
+            .insert([{
+              produto_combo_id: produtoComboId,
+              nome: g.nome,
+              ordem: g.ordem || (i + 1),
+              min_escolhas: Number(g.min_escolhas ?? 1),
+              max_escolhas: Number(g.max_escolhas ?? 1)
+            }])
+            .select()
+            .single();
+          if (errG) throw errG;
+
+          const opcoes = Array.isArray(g.opcoes) ? g.opcoes : [];
+          const opcoesSalvas = [];
+          for (let j = 0; j < opcoes.length; j++) {
+            const op = opcoes[j];
+            const { data: opRow, error: errO } = await window.cafeteriaSupabase
+              .from('combo_grupo_opcoes')
+              .insert([{
+                grupo_id: gRow.id,
+                produto_item_id: op.produto_item_id || op.produto_id,
+                preco_adicional: Number(op.preco_adicional || 0),
+                ativo: op.ativo !== false,
+                ordem: op.ordem || (j + 1)
+              }])
+              .select()
+              .single();
+            if (errO) throw errO;
+            opcoesSalvas.push(opRow);
+          }
+          salvos.push({ ...gRow, opcoes: opcoesSalvas });
+        }
+        return salvos;
+      },
+
+      async validarECalcular(produtoComboId, escolhas = []) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        const { data, error } = await window.cafeteriaSupabase
+          .rpc('validar_e_calcular_combo', {
+            p_produto_combo_id: produtoComboId,
+            p_escolhas: escolhas
+          });
+        if (error) throw error;
+        return data;
+      }
+    },
+
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
       const channelId = `db-changes-${Math.random().toString(36).slice(2, 9)}`;

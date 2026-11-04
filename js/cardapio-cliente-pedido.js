@@ -184,7 +184,7 @@
             if (carrinho.length > 0) {
               abrirModalCarrinho();
             } else {
-              alert(`⚡ Modo Intervalo Ativado! Adicione itens à sua sacola e eles já serão agendados para o intervalo das ${info.horario}.`);
+              cardapioShowToast(`⚡ Modo Intervalo Ativado! Adicione itens à sua sacola e eles já serão agendados para o intervalo das ${info.horario}.`, 'info');
               window.scrollTo({ top: 400, behavior: 'smooth' });
             }
           });
@@ -194,6 +194,82 @@
       console.warn('Erro ao verificar modo espetaculo:', e);
     }
   }
+
+  function cardapioShowToast(mensagem, tipo = 'info') {
+    let container = document.getElementById('cardapio-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'cardapio-toast-container';
+      container.style.cssText = 'position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column;gap:0.5rem;width:min(92vw,420px);pointer-events:none;';
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `cardapio-toast toast-${tipo}`;
+    toast.setAttribute('role', 'status');
+    const bgMap = {
+      error: '#991b1b',
+      warning: '#92400e',
+      success: '#065f46',
+      info: '#2c1e16'
+    };
+    toast.style.cssText = `background:${bgMap[tipo] || bgMap.info};color:#fff;padding:0.85rem 1.1rem;border-radius:12px;font-size:0.95rem;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.3);pointer-events:auto;text-align:center;`;
+    toast.textContent = mensagem;
+    container.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 4000);
+  }
+  window.cardapioShowToast = cardapioShowToast;
+
+  function cardapioConfirmSheet({ titulo = 'Confirmar', mensagem = '', textoConfirmar = 'Confirmar', textoCancelar = 'Cancelar' } = {}) {
+    return new Promise((resolve) => {
+      let modal = document.getElementById('cardapio-modal-confirm');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cardapio-modal-confirm';
+        modal.className = 'modal-overlay hidden';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:flex-end;justify-content:center;z-index:10001;padding:1rem;';
+        modal.innerHTML = `
+          <div class="modal-card" style="background:#fff;color:#2c1e16;border-radius:16px;max-width:440px;width:100%;padding:1.25rem;box-shadow:0 15px 35px rgba(0,0,0,0.3);">
+            <h3 id="cardapio-confirm-title" style="margin:0 0 0.5rem;font-size:1.15rem;"></h3>
+            <p id="cardapio-confirm-msg" style="margin:0 0 1.25rem;font-size:0.95rem;color:#555;"></p>
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+              <button type="button" id="cardapio-confirm-cancel" style="min-height:48px;padding:0 1.1rem;border-radius:10px;border:1px solid #ccc;background:#f8fafc;font-weight:600;cursor:pointer;"></button>
+              <button type="button" id="cardapio-confirm-ok" style="min-height:48px;padding:0 1.25rem;border-radius:10px;border:none;background:#8b4513;color:#fff;font-weight:700;cursor:pointer;"></button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      const titleEl = modal.querySelector('#cardapio-confirm-title');
+      const msgEl = modal.querySelector('#cardapio-confirm-msg');
+      const btnCancel = modal.querySelector('#cardapio-confirm-cancel');
+      const btnOk = modal.querySelector('#cardapio-confirm-ok');
+
+      titleEl.textContent = titulo;
+      msgEl.textContent = mensagem;
+      btnCancel.textContent = textoCancelar;
+      btnOk.textContent = textoConfirmar;
+
+      const close = (val) => {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        resolve(val);
+      };
+
+      btnCancel.onclick = () => close(false);
+      btnOk.onclick = () => close(true);
+      modal.onclick = (e) => {
+        if (e.target === modal) close(false);
+      };
+
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    });
+  }
+  window.cardapioConfirmSheet = cardapioConfirmSheet;
 
   function getCacheKeyCarrinho() {
     return isModoMesa && currentMesa ? `cafeteria_carrinho_${currentMesa.codigo}` : 'cafeteria_carrinho_online_retirada';
@@ -919,7 +995,7 @@
       const s1 = document.getElementById('cust-sabor-1')?.value;
       const s2 = document.getElementById('cust-sabor-2')?.value;
       if (!s1 || !s2) {
-        alert('Por favor, selecione os dois sabores para a montagem meio a meio.');
+        cardapioShowToast('Por favor, selecione os dois sabores para a montagem meio a meio.', 'warning');
         return;
       }
       sabores = [
@@ -1129,7 +1205,7 @@
 
   async function enviarPedidoFinal() {
     if (carrinho.length === 0) {
-      alert('Adicione pelo menos um item ao pedido antes de enviar.');
+      cardapioShowToast('Adicione pelo menos um item ao pedido antes de enviar.', 'warning');
       return;
     }
 
@@ -1138,7 +1214,7 @@
     const clienteNome = (nomeInput?.value || '').trim();
 
     if (!clienteNome) {
-      alert('Por favor, informe seu nome para identificação do pedido.');
+      cardapioShowToast('Por favor, informe seu nome para identificação do pedido.', 'warning');
       nomeInput?.focus();
       return;
     }
@@ -1161,7 +1237,7 @@
       const telVal = (telInput?.value || '').trim();
       const digits = telVal.replace(/\D/g, '');
       if (digits.length < 10 || digits.length > 13) {
-        alert('Por favor, informe um número de WhatsApp válido com DDD (ex: 51 99999-9999).');
+        cardapioShowToast('Por favor, informe um número de WhatsApp válido com DDD (ex: 51 99999-9999).', 'warning');
         telInput?.focus();
         return;
       }
@@ -1169,7 +1245,7 @@
 
       const lgpdCheck = document.getElementById('check-lgpd-online');
       if (lgpdCheck && !lgpdCheck.checked) {
-        alert('É necessário confirmar o consentimento LGPD para prosseguir com o pedido online.');
+        cardapioShowToast('É necessário confirmar o consentimento LGPD para prosseguir com o pedido online.', 'warning');
         return;
       }
 
@@ -1180,7 +1256,7 @@
         const dataVal = document.getElementById('input-retirada-data')?.value;
         const horaVal = document.getElementById('select-retirada-hora')?.value;
         if (!dataVal || !horaVal) {
-          alert('Selecione a data e uma janela de horário disponível para o agendamento.');
+          cardapioShowToast('Selecione a data e uma janela de horário disponível para o agendamento.', 'warning');
           return;
         }
         retiradaEmIso = new Date(`${dataVal}T${horaVal}:00`).toISOString();
@@ -1237,11 +1313,11 @@
           iniciarTrackingPedido(activePedidoToken);
           abrirModalTracking();
         } else {
-          alert('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'));
+          cardapioShowToast('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), 'error');
         }
       } catch (err) {
         console.error('Erro ao enviar pedido online:', err);
-        alert('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique os dados informados'));
+        cardapioShowToast('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique os dados informados'), 'error');
       } finally {
         btnEnviar.disabled = false;
         btnEnviar.textContent = '🛍️ Confirmar Pedido para Retirada';
@@ -1297,11 +1373,11 @@
         iniciarTrackingPedido(activePedidoToken);
         abrirModalTracking();
       } else {
-        alert('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'));
+        cardapioShowToast('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), 'error');
       }
     } catch (err) {
       console.error('Erro ao enviar pedido:', err);
-      alert('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique sua conexão'));
+      cardapioShowToast('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique sua conexão'), 'error');
     } finally {
       btnEnviar.disabled = false;
       btnEnviar.textContent = '🚀 Enviar Pedido para o Atendente';
@@ -1431,19 +1507,25 @@
       ? `Deseja solicitar o fechamento da conta para a mesa ${currentMesa.codigo}? O atendente virá até você.`
       : `Deseja chamar o atendente para a mesa ${currentMesa.codigo}?`;
 
-    if (!confirm(msgConfirmacao)) return;
+    const confirmado = await cardapioConfirmSheet({
+      titulo: tipo === 'conta' ? 'Pedir a Conta' : 'Chamar Atendente',
+      mensagem: msgConfirmacao,
+      textoConfirmar: 'Confirmar',
+      textoCancelar: 'Cancelar'
+    });
+    if (!confirmado) return;
 
     try {
       const res = await window.cafeteriaDB.clientePedido.chamarAtendente(qrTokenParam, tipo);
       if (res && res.sucesso) {
         if (res.repetido) {
-          alert('O chamado já foi registrado anteriormente. O atendente já foi notificado e virá em instantes!');
+          cardapioShowToast('O chamado já foi registrado anteriormente. O atendente já foi notificado e virá em instantes!', 'info');
         } else {
-          alert(tipo === 'conta' ? '🧾 Pedido de conta enviado! O atendente virá até sua mesa.' : '🙋 Atendente chamado com sucesso! Em instantes iremos até a sua mesa.');
+          cardapioShowToast(tipo === 'conta' ? '🧾 Pedido de conta enviado! O atendente virá até sua mesa.' : '🙋 Atendente chamado com sucesso! Em instantes iremos até a sua mesa.', 'success');
         }
       }
     } catch (err) {
-      alert('Não foi possível registrar o chamado: ' + (err.message || 'Verifique a conexão'));
+      cardapioShowToast('Não foi possível registrar o chamado: ' + (err.message || 'Verifique a conexão'), 'error');
     }
   }
 })();
