@@ -605,6 +605,124 @@
       executePrint(html);
     },
 
+    // CAF-000112: Impressão de Comprovante de Pagamento Parcial de Mesa
+    printPagamentoParcialMesa: function (mesaCodigo, itensPagos, pagamentos, totalPago, saldoRestante, troco = 0, taxa = 0) {
+      const date = new Date().toLocaleString('pt-BR');
+      const esc = (s) => (window.escapeHtml ? window.escapeHtml(String(s ?? '')) : String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+
+      let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>${baseStyles}</style>
+        </head>
+        <body>
+          <div class="center bold" style="font-size: 15px;">CAFETERIA DO TEATRO</div>
+          <div class="center bold">COMPROVANTE DE PAGAMENTO PARCIAL</div>
+          <div class="center" style="font-size: 11px;">*** NÃO É DOCUMENTO FISCAL ***</div>
+          
+          <div class="divider"></div>
+          
+          <div><span class="bold">MESA / LOCAL:</span> <span style="font-size: 16px; font-weight: bold;">${esc(mesaCodigo)}</span></div>
+          <div><span class="bold">DATA:</span> ${date}</div>
+          <div><span class="bold">STATUS:</span> <span style="font-size: 14px; font-weight: bold; color: #D97706;">PARCIALMENTE PAGO ⏳</span></div>
+          
+          <div class="divider"></div>
+      `;
+
+      if (Array.isArray(itensPagos) && itensPagos.length > 0) {
+        html += `
+          <div class="bold" style="font-size: 12px; margin-bottom: 4px;">ITENS QUITADOS NESTA OPERAÇÃO:</div>
+          <table>
+        `;
+        itensPagos.forEach(item => {
+          const qtd = Number(item.quantidade || 1);
+          const preco = Number(item.preco_unitario || item.precoUnitario || 0);
+          const subtotal = (qtd * preco).toFixed(2).replace('.', ',');
+          html += `
+            <tr>
+              <td class="qty">${qtd}x</td>
+              <td>${esc(item.nome_produto || item.nome || 'Item')}</td>
+              <td class="price">R$ ${subtotal}</td>
+            </tr>
+          `;
+        });
+        html += `</table>`;
+      } else {
+        html += `
+          <div class="center" style="font-size: 12px; margin: 6px 0;">
+            <em>Abatimento de valor avulso na conta da mesa</em>
+          </div>
+        `;
+      }
+
+      const totalStr = Number(totalPago || 0).toFixed(2).replace('.', ',');
+      const saldoStr = Number(saldoRestante || 0).toFixed(2).replace('.', ',');
+
+      html += `
+        <div class="divider"></div>
+      `;
+
+      if (taxa > 0) {
+        html += `
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span>Taxa de Serviço:</span>
+            <span>R$ ${Number(taxa).toFixed(2).replace('.', ',')}</span>
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="bold" style="font-size: 16px; display: flex; justify-content: space-between; margin-top: 4px;">
+          <span>TOTAL PAGO AGORA:</span>
+          <span>R$ ${totalStr}</span>
+        </div>
+
+        <div class="divider"></div>
+        <div class="bold" style="font-size: 13px; text-align: left;">
+          FORMAS DE PAGAMENTO:
+        </div>
+        <table style="margin-top: 4px;">
+      `;
+
+      (pagamentos || []).forEach(pag => {
+        html += `
+          <tr>
+            <td>${formatFormaPagamento(pag.forma)}</td>
+            <td class="price">R$ ${Number(pag.valor).toFixed(2).replace('.', ',')}</td>
+          </tr>
+        `;
+      });
+
+      html += `</table>`;
+
+      if (troco > 0) {
+        html += `
+          <div class="divider"></div>
+          <div class="bold" style="font-size: 14px; text-align: right;">
+            TROCO: R$ ${Number(troco).toFixed(2).replace('.', ',')}
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="divider"></div>
+        <div class="bold" style="font-size: 15px; display: flex; justify-content: space-between; background: #eee; padding: 4px;">
+          <span>SALDO RESTANTE DA MESA:</span>
+          <span>R$ ${saldoStr}</span>
+        </div>
+        <div class="divider"></div>
+        <div class="center" style="font-size: 11px; margin-top: 8px;">
+          A mesa continua aberta com o saldo remanescente acima.
+        </div>
+      </body>
+      </html>
+      `;
+
+      executePrint(html);
+    },
+
     // CAF-000043: Impressão de Etiquetas Adesivas por Unidade (Copo / Embalagem)
     printEtiquetas: function (pedido, itens, options = {}) {
       const listaItens = (itens || []).filter(it => !it.cancelado);

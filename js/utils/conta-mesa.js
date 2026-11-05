@@ -35,7 +35,8 @@ export function filterAtivosNaoCancelados(pedidos = []) {
 export function calculateMesaTotals(pedidos = [], options = {}) {
   const {
     taxaServicoPercent = 0,
-    descontoManualCents = 0
+    descontoManualCents = 0,
+    jaPagoParcialCents = 0
   } = options;
 
   const pedidosValidos = filterAtivosNaoCancelados(pedidos);
@@ -45,13 +46,20 @@ export function calculateMesaTotals(pedidos = [], options = {}) {
     subtotalCents += parseCurrencyToCents(p.total);
   }
 
-  const taxaServicoCents = Math.round((subtotalCents * (Number(taxaServicoPercent) || 0)) / 100);
-  const descontoCents = Math.min(subtotalCents + taxaServicoCents, Number(descontoManualCents) || 0);
-  const totalCents = Math.max(0, subtotalCents + taxaServicoCents - descontoCents);
+  const jaPagoCents = Math.max(0, parseInt(jaPagoParcialCents, 10) || 0);
+  const subtotalRestanteCents = Math.max(0, subtotalCents - jaPagoCents);
+
+  const taxaServicoCents = Math.round((subtotalRestanteCents * (Number(taxaServicoPercent) || 0)) / 100);
+  const descontoCents = Math.min(subtotalRestanteCents + taxaServicoCents, Number(descontoManualCents) || 0);
+  const totalCents = Math.max(0, subtotalRestanteCents + taxaServicoCents - descontoCents);
 
   return {
     subtotalCents,
     subtotal: formatCentsToCurrency(subtotalCents),
+    jaPagoCents,
+    jaPago: formatCentsToCurrency(jaPagoCents),
+    subtotalRestanteCents,
+    subtotalRestante: formatCentsToCurrency(subtotalRestanteCents),
     taxaServicoCents,
     taxaServico: formatCentsToCurrency(taxaServicoCents),
     descontoCents,
@@ -166,6 +174,141 @@ export function distribuirTaxaEDesconto(subtotaisCents = [], taxaCents = 0, desc
 }
 
 /**
+ * CAF-000112: Extrai todos os itens não cancelados dos pedidos da mesa com status de pagamento por item.
+ */
+export function extrairItensMesaComSaldo(pedidos = []) {
+  const pedidosValidos = filterAtivosNaoCancelados(pedidos);
+  const itens = [];
+
+  for (const p of pedidosValidos) {
+    const pItens = Array.isArray(p.pedido_itens) ? p.pedido_itens : [];
+    for (const it of pItens) {
+      if (it.cancelado) continue;
+      const qtdTotal = Number(it.quantidade) || 0;
+      const qtdPaga = Number(it.quantidade_paga) || 0;
+      const qtdPendente = Math.max(0, qtdTotal - qtdPaga);
+      const precoUnitCents = parseCurrencyToCents(it.preco_unitario);
+      const subtotalCents = Math.round(qtdTotal * precoUnitCents);
+      const saldoCents = Math.round(qtdPendente * precoUnitCents);
+
+      itens.push({
+        id: it.id,
+        pedidoId: p.id,
+        nome: it.nome_produto || 'Item',
+        quantidadeTotal: qtdTotal,
+        quantidadePaga: qtdPaga,
+        quantidadePendente: qtdPendente,
+        precoUnitarioCents: precoUnitCents,
+        precoUnitario: formatCentsToCurrency(precoUnitCents),
+        subtotalCents,
+        subtotal: formatCentsToCurrency(subtotalCents),
+        saldoCents,
+        saldo: formatCentsToCurrency(saldoCents),
+        quitado: qtdPendente <= 0
+      });
+    }
+  }
+
+  return itens;
+}
+
+/**
+ * CAF-000112: Calcula o total e taxa proporcional de uma lista de itens selecionados para pagamento parcial.
+ */
+export function calcularTotalItensSelecionados(itensSelecionados = [], taxaServicoPercent = 0) {
+  let subtotalCents = 0;
+  for (const item of (itensSelecionados || [])) {
+    const qtd = Number(item.quantidade) || 0;
+    const precoUnitCents = parseCurrencyToCents(item.preco_unitario || item.precoUnitario);
+    subtotalCents += Math.round(qtd * precoUnitCents);
+  }
+  const taxaServicoCents = Math.round((subtotalCents * (Number(taxaServicoPercent) || 0)) / 100);
+  const totalCents = subtotalCents + taxaServicoCents;
+
+  return {
+    subtotalCents,
+    subtotal: formatCentsToCurrency(subtotalCents),
+    taxaServicoCents,
+    taxaServico: formatCentsToCurrency(taxaServicoCents),
+    totalCents,
+    total: formatCentsToCurrency(totalCents)
+  };
+}
+
+/**
+ * CAF-000112: Validação completa de payload de pagamento parcial (Itens ou Abatimento).
+ */
+export function validarPagamentoParcialPayload({
+  mesaCodigo,
+  pagamentos = [],
+  itens = [],
+  valorAbatimentoCents = 0,
+  saldoRestanteCents = 0,
+  taxaServicoPercent = 0
+} = {}) {
+  if (!mesaCodigo || String(mesaCodigo).trim().length === 0) {
+    return { valido: false, erro: 'Mesa não informada.' };
+  }
+
+  const temItens = Array.isArray(itens) && itens.some(it => Number(it.quantidade) > 0);
+  const abatimento = Math.max(0, parseInt(valorAbatimentoCents, 10) || 0);
+
+  if (!temItens && abatimento <= 0) {
+    return { valido: false, erro: 'Informe itens a pagar ou um valor de abatimento maior que zero.' };
+  }
+
+  let valorEsperadoCents = 0;
+  if (temItens) {
+    const calc = calcularTotalItensSelecionados(itens, 0);
+    valorEsperadoCents = calc.subtotalCents;
+  } else {
+    valorEsperadoCents = abatimento;
+  }
+
+  if (valorEsperadoCents <= 0) {
+    return { valido: false, erro: 'Valor a pagar deve ser maior que zero.' };
+  }
+
+  const saldoDisponivel = Math.max(0, parseInt(saldoRestanteCents, 10) || 0);
+  if (saldoDisponivel > 0 && valorEsperadoCents > (saldoDisponivel + 5)) {
+    return {
+      valido: false,
+      erro: `Valor a pagar (R$ ${formatCentsToCurrency(valorEsperadoCents)}) excede o saldo restante da mesa (R$ ${formatCentsToCurrency(saldoDisponivel)}).`
+    };
+  }
+
+  const taxaCents = Math.round((valorEsperadoCents * (Number(taxaServicoPercent) || 0)) / 100);
+  const totalEsperadoCents = valorEsperadoCents + taxaCents;
+
+  if (!Array.isArray(pagamentos) || pagamentos.length === 0) {
+    return { valido: false, erro: 'Nenhuma forma de pagamento informada.' };
+  }
+
+  let totalPagoCents = 0;
+  for (const pg of pagamentos) {
+    totalPagoCents += parseCurrencyToCents(pg.valor);
+  }
+
+  if (totalPagoCents < (totalEsperadoCents - 5)) {
+    return {
+      valido: false,
+      erro: `Total pago (R$ ${formatCentsToCurrency(totalPagoCents)}) é inferior ao total a pagar (R$ ${formatCentsToCurrency(totalEsperadoCents)}).`
+    };
+  }
+
+  const trocoCents = Math.max(0, totalPagoCents - totalEsperadoCents);
+
+  return {
+    valido: true,
+    valorEsperadoCents,
+    taxaCents,
+    totalEsperadoCents,
+    totalPagoCents,
+    trocoCents
+  };
+}
+
+/**
  * CAF-000108: Filtra pedidos elegíveis para transferência de mesa.
  * Inclui pedidos em status 'entregue' desde que ainda não estejam pagos.
  * Exclui pedidos cancelados e pedidos já pagos (históricos de clientes anteriores).
@@ -211,6 +354,9 @@ export default {
   calculateMesaTotals,
   buildFecharContaMesaPayload,
   validarFecharContaPayload,
+  extrairItensMesaComSaldo,
+  calcularTotalItensSelecionados,
+  validarPagamentoParcialPayload,
   dividirIgualmenteCents,
   dividirPorConsumoItens,
   distribuirTaxaEDesconto,

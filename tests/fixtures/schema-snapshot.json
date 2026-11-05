@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-05T14:00:56.177Z",
+  "gerado_em": "2026-11-05T19:17:33.533Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -497,6 +497,21 @@
     "obter_consumo_estoque_30d": {
       "parameters": []
     },
+    "registrar_pagamento_parcial_mesa": {
+      "parameters": [
+        "p_mesa_codigo",
+        "p_pagamentos",
+        "p_itens",
+        "p_valor_abatimento",
+        "p_taxa_servico",
+        "p_idempotency_key"
+      ]
+    },
+    "obter_resumo_conta_mesa": {
+      "parameters": [
+        "p_mesa_codigo"
+      ]
+    },
     "validar_cortesia": {
       "parameters": []
     },
@@ -631,7 +646,8 @@
         "fechado_em",
         "idempotency_key",
         "cupom_codigo",
-        "campanha_id"
+        "campanha_id",
+        "parcial"
       ]
     },
     "fichas_tecnicas": {
@@ -668,7 +684,8 @@
         "pronto_por",
         "lancado_depois",
         "impresso_em",
-        "custo_unitario"
+        "custo_unitario",
+        "quantidade_paga"
       ]
     },
     "pedidos": {
@@ -1280,6 +1297,17 @@
         "ativo",
         "created_at",
         "updated_at"
+      ]
+    },
+    "fechamento_itens": {
+      "columns": [
+        "id",
+        "fechamento_id",
+        "pedido_item_id",
+        "quantidade",
+        "valor_unitario",
+        "subtotal",
+        "created_at"
       ]
     },
     "cortesia_regras": {

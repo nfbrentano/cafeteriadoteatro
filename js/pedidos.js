@@ -197,6 +197,10 @@
   const fecharContaPainelPagamento = document.getElementById('fechar-conta-painel-pagamento');
   const tituloPagamentoParte = document.getElementById('titulo-pagamento-parte');
   const fecharContaImprimirCupom = document.getElementById('fechar-conta-imprimir-cupom');
+  const fecharContaDivParcialItens = document.getElementById('fechar-conta-div-parcial-itens');
+  const fecharContaListaItensParcial = document.getElementById('fechar-conta-lista-itens-parcial');
+  const fecharContaDivParcialValor = document.getElementById('fechar-conta-div-parcial-valor');
+  const fecharContaInputParcialValor = document.getElementById('fechar-conta-input-parcial-valor');
 
 
   const audioPronto = document.getElementById('audio-pronto');
@@ -4044,10 +4048,14 @@
     modalMesaTitle.textContent = `Consumo Atual: ${mesaCodigo}`;
 
     let total = 0;
+    let jaPagoMesa = 0;
     let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
 
     pedidosMesa.forEach(p => {
       total += Number(p.total || 0);
+      if (p.status_pagamento === 'pago') {
+        jaPagoMesa += Number(p.total || 0);
+      }
       const dataStr = new Date(p.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       const statusPagStr = p.status_pagamento === 'pago' ? ' (Já Pago ✅)' : ' (A pagar)';
 
@@ -4086,15 +4094,39 @@
         
         let obsLabel = it.observacoes ? `<em style="color:#D97706">(${window.escapeHtml(it.observacoes)})</em>` : '';
 
-        html += `<li ${cancelClass}>${it.quantidade}x ${window.escapeHtml(it.nome_produto)} ${obsLabel} — R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')} ${cancelLabel} ${btnCancelarItemHtml} ${adicText} ${cortesiaHtml}</li>`;
+        // CAF-000112: Badge de pagamento parcial por item
+        const qtdPaga = Number(it.quantidade_paga || 0);
+        const qtdTotal = Number(it.quantidade || 0);
+        let badgePagoItem = '';
+        if (!it.cancelado) {
+          if (qtdPaga >= qtdTotal && qtdTotal > 0) {
+            badgePagoItem = '<span class="badge-item-pago" style="background:#e8f8f5; color:#27ae60; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px; margin-left:6px;">Pago ✓</span>';
+            if (p.status_pagamento !== 'pago') {
+              jaPagoMesa += (qtdTotal * Number(it.preco_unitario || 0));
+            }
+          } else if (qtdPaga > 0) {
+            badgePagoItem = `<span class="badge-item-parcial" style="background:#fef9e7; color:#d35400; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px; margin-left:6px;">${qtdPaga}/${qtdTotal} Pago</span>`;
+            if (p.status_pagamento !== 'pago') {
+              jaPagoMesa += (qtdPaga * Number(it.preco_unitario || 0));
+            }
+          }
+        }
+
+        html += `<li ${cancelClass}>${it.quantidade}x ${window.escapeHtml(it.nome_produto)} ${obsLabel} — R$ ${(it.quantidade * it.preco_unitario).toFixed(2).replace('.', ',')} ${badgePagoItem} ${cancelLabel} ${btnCancelarItemHtml} ${adicText} ${cortesiaHtml}</li>`;
       });
 
       html += '</ul></div>';
     });
 
+    const saldoRestanteMesa = Math.max(0, total - jaPagoMesa);
+
     html += `
-      <div style="text-align:right; font-size:18px; font-weight:bold; margin-top:10px; color:var(--marrom-escuro);">
-        TOTAL GERAL DA MESA: R$ ${total.toFixed(2).replace('.', ',')}
+      <div style="text-align:right; margin-top:10px;">
+        <div style="font-size:14px; color:#666;">SUBTOTAL GERAL: R$ ${total.toFixed(2).replace('.', ',')}</div>
+        ${jaPagoMesa > 0 ? `<div style="font-size:14px; color:#27ae60; font-weight:bold;">(-) JÁ AMORTIZADO: R$ ${jaPagoMesa.toFixed(2).replace('.', ',')}</div>` : ''}
+        <div style="font-size:18px; font-weight:bold; color:var(--marrom-escuro); margin-top:4px;">
+          SALDO A PAGAR: R$ ${saldoRestanteMesa.toFixed(2).replace('.', ',')}
+        </div>
       </div>
     </div>`;
 
@@ -4519,10 +4551,15 @@
       } else {
         // Iniciar pedidos com % de atribuição
         p._atribuicoes = []; // { parteId, perc }
+        (p.pedido_itens || []).forEach(it => {
+          if (!it.cancelado && Number(it.quantidade_paga || 0) > 0) {
+            currentFechamento.jaPago += (Number(it.quantidade_paga) * Number(it.preco_unitario || 0));
+          }
+        });
       }
     });
 
-    if (currentFechamento.subtotal - currentFechamento.jaPago <= 0) {
+    if (currentFechamento.subtotal - currentFechamento.jaPago <= 0.001) {
       showToast('Esta mesa não tem pedidos pendentes de pagamento.', 'info');
       return;
     }
@@ -4578,49 +4615,153 @@
 
   window.baristaAbrirModalFecharConta = abrirModalFecharConta;
 
-  function recalcularTotaisFechamento() {
-    let desconto = 0;
-    if (fecharContaDescontoValor.value) {
-      let val = Number(fecharContaDescontoValor.value);
-      if (fecharContaDescontoTipo.value === 'percent') {
-        desconto = (currentFechamento.subtotal * val) / 100;
-      } else {
-        desconto = val;
-      }
-    }
-    
-    // Limita desconto ao subtotal
-    if (desconto > currentFechamento.subtotal) {
-      desconto = currentFechamento.subtotal;
-    }
-    currentFechamento.descontoAplicado = desconto;
-    currentFechamento.descontoMotivo = fecharContaDescontoMotivo.value.trim();
+  function renderListaItensParciais() {
+    if (!fecharContaListaItensParcial) return;
+    const itens = [];
+    (currentFechamento.pedidos || []).forEach(p => {
+      if (p.status_pagamento === 'pago') return;
+      (p.pedido_itens || []).forEach(it => {
+        if (it.cancelado) return;
+        const qtdTotal = Number(it.quantidade) || 0;
+        const qtdPaga = Number(it.quantidade_paga) || 0;
+        const pendente = Math.max(0, qtdTotal - qtdPaga);
+        if (pendente > 0) {
+          itens.push({
+            id: it.id,
+            pedidoId: p.id,
+            nome: it.nome_produto || 'Item',
+            pendente,
+            precoUnit: Number(it.preco_unitario) || 0
+          });
+        }
+      });
+    });
 
-    let subtotalAposDesconto = currentFechamento.subtotal - desconto;
-    let taxa = 0;
-    if (configTaxaServico.ativa && fecharContaTaxaCheck.checked) {
-      taxa = (subtotalAposDesconto * configTaxaServico.percentual) / 100;
+    if (itens.length === 0) {
+      fecharContaListaItensParcial.innerHTML = '<div style="color:#777; font-size:12px; padding:6px;">Todos os itens individuais já estão quitados.</div>';
+      return;
     }
-    currentFechamento.taxaServico = taxa;
-    
-    currentFechamento.totalConta = subtotalAposDesconto + taxa;
-    currentFechamento.aPagar = currentFechamento.totalConta - currentFechamento.jaPago;
-    
+
+    let html = '';
+    itens.forEach(it => {
+      html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #eee;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; flex:1;">
+            <input type="checkbox" class="chk-item-parcial" data-id="${it.id}" data-preco="${it.precoUnit}" style="width:18px; height:18px;">
+            <span><strong>${it.pendente}x</strong> ${window.escapeHtml(it.nome)} (R$ ${it.precoUnit.toFixed(2).replace('.', ',')}/un)</span>
+          </label>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:12px; color:#555;">Pagar:</span>
+            <input type="number" class="input-qtd-parcial input-padrao" data-id="${it.id}" min="1" max="${it.pendente}" value="${it.pendente}" style="width:55px; text-align:center; padding:2px;" disabled>
+          </div>
+        </div>
+      `;
+    });
+    fecharContaListaItensParcial.innerHTML = html;
+
+    fecharContaListaItensParcial.querySelectorAll('.chk-item-parcial').forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const id = e.target.getAttribute('data-id');
+        const inputQtd = fecharContaListaItensParcial.querySelector(`.input-qtd-parcial[data-id="${id}"]`);
+        if (inputQtd) {
+          inputQtd.disabled = !e.target.checked;
+        }
+        recalcularTotaisFechamento();
+      });
+    });
+
+    fecharContaListaItensParcial.querySelectorAll('.input-qtd-parcial').forEach(inp => {
+      inp.addEventListener('input', () => {
+        recalcularTotaisFechamento();
+      });
+    });
+  }
+
+  function recalcularTotaisFechamento() {
+    const modo = fecharContaModo?.value || 'padrao';
+    let subtotalOperacao = 0;
+
+    if (modo === 'parcial_item') {
+      let subtotalItens = 0;
+      const chks = fecharContaListaItensParcial?.querySelectorAll('.chk-item-parcial:checked') || [];
+      chks.forEach(chk => {
+        const id = chk.getAttribute('data-id');
+        const preco = Number(chk.getAttribute('data-preco')) || 0;
+        const inputQtd = fecharContaListaItensParcial.querySelector(`.input-qtd-parcial[data-id="${id}"]`);
+        const maxQtd = Number(inputQtd?.getAttribute('max')) || 1;
+        let qtd = Number(inputQtd?.value) || 1;
+        if (qtd > maxQtd) qtd = maxQtd;
+        if (qtd < 1) qtd = 1;
+        subtotalItens += (qtd * preco);
+      });
+      subtotalOperacao = subtotalItens;
+
+      let taxa = 0;
+      if (configTaxaServico.ativa && fecharContaTaxaCheck.checked) {
+        taxa = (subtotalOperacao * configTaxaServico.percentual) / 100;
+      }
+      currentFechamento.taxaServico = taxa;
+      currentFechamento.descontoAplicado = 0;
+      currentFechamento.totalConta = subtotalOperacao + taxa;
+      currentFechamento.aPagar = currentFechamento.totalConta;
+    } else if (modo === 'parcial_valor') {
+      const saldoRestanteMax = Math.max(0, currentFechamento.subtotal - currentFechamento.jaPago);
+      let valAbatimento = Number(fecharContaInputParcialValor?.value) || 0;
+      if (valAbatimento > saldoRestanteMax) {
+        valAbatimento = saldoRestanteMax;
+        if (fecharContaInputParcialValor) fecharContaInputParcialValor.value = valAbatimento.toFixed(2);
+      }
+      subtotalOperacao = valAbatimento;
+
+      let taxa = 0;
+      if (configTaxaServico.ativa && fecharContaTaxaCheck.checked) {
+        taxa = (subtotalOperacao * configTaxaServico.percentual) / 100;
+      }
+      currentFechamento.taxaServico = taxa;
+      currentFechamento.descontoAplicado = 0;
+      currentFechamento.totalConta = subtotalOperacao + taxa;
+      currentFechamento.aPagar = currentFechamento.totalConta;
+    } else {
+      let saldoRestanteBase = Math.max(0, currentFechamento.subtotal - currentFechamento.jaPago);
+      let desconto = 0;
+      if (fecharContaDescontoValor.value) {
+        let val = Number(fecharContaDescontoValor.value);
+        if (fecharContaDescontoTipo.value === 'percent') {
+          desconto = (saldoRestanteBase * val) / 100;
+        } else {
+          desconto = val;
+        }
+      }
+      if (desconto > saldoRestanteBase) {
+        desconto = saldoRestanteBase;
+      }
+      currentFechamento.descontoAplicado = desconto;
+      currentFechamento.descontoMotivo = fecharContaDescontoMotivo.value.trim();
+
+      let subtotalAposDesconto = saldoRestanteBase - desconto;
+      let taxa = 0;
+      if (configTaxaServico.ativa && fecharContaTaxaCheck.checked) {
+        taxa = (subtotalAposDesconto * configTaxaServico.percentual) / 100;
+      }
+      currentFechamento.taxaServico = taxa;
+      currentFechamento.totalConta = subtotalAposDesconto + taxa;
+      currentFechamento.aPagar = currentFechamento.totalConta;
+    }
+
     fecharContaSubtotalLbl.textContent = `R$ ${currentFechamento.subtotal.toFixed(2).replace('.', ',')}`;
     fecharContaTaxaValLbl.textContent = `R$ ${currentFechamento.taxaServico.toFixed(2).replace('.', ',')}`;
     fecharContaTotalLbl.textContent = `R$ ${currentFechamento.totalConta.toFixed(2).replace('.', ',')}`;
     fecharContaJaPagoLbl.textContent = `R$ ${currentFechamento.jaPago.toFixed(2).replace('.', ',')}`;
     fecharContaAPagarLbl.textContent = `R$ ${currentFechamento.aPagar.toFixed(2).replace('.', ',')}`;
-    
-    // Recalcula divisões se necessário
-    if (fecharContaModo.value === 'padrao') {
-       if (currentPartes.length > 0) {
-         currentPartes[0].valor_devido = currentFechamento.aPagar;
-       }
-    } else if (fecharContaModo.value === 'igual') {
-       btnGerarPartesIgual.click(); // forca recalcular divisao igual
+
+    if (modo === 'padrao' || modo === 'parcial_item' || modo === 'parcial_valor') {
+      if (currentPartes.length > 0) {
+        currentPartes[0].valor_devido = currentFechamento.aPagar;
+      }
+    } else if (modo === 'igual') {
+      btnGerarPartesIgual.click();
     }
-    
+
     renderPartes();
     updateFecharContaFooterSummary();
   }
@@ -4712,6 +4853,8 @@
     const modo = fecharContaModo.value;
     fecharContaDivPessoas.classList.add('hidden');
     fecharContaDivAddParte.classList.add('hidden');
+    if (fecharContaDivParcialItens) fecharContaDivParcialItens.classList.add('hidden');
+    if (fecharContaDivParcialValor) fecharContaDivParcialValor.classList.add('hidden');
     
     currentPartes = [];
     parteAtivaId = null;
@@ -4731,10 +4874,36 @@
       fecharContaDivAddParte.classList.remove('hidden');
       // Limpar atribuições dos pedidos
       currentFechamento.pedidos.forEach(p => { if (p._atribuicoes) p._atribuicoes = []; });
+    } else if (modo === 'parcial_item') {
+      if (fecharContaDivParcialItens) fecharContaDivParcialItens.classList.remove('hidden');
+      renderListaItensParciais();
+      currentPartes.push({
+        id: 1,
+        nome: 'Pagamento Parcial (Itens)',
+        valor_devido: 0,
+        pagamentos: [],
+        dinheiro_recebido: 0
+      });
+      parteAtivaId = 1;
+    } else if (modo === 'parcial_valor') {
+      if (fecharContaDivParcialValor) fecharContaDivParcialValor.classList.remove('hidden');
+      currentPartes.push({
+        id: 1,
+        nome: 'Pagamento Parcial (Abatimento)',
+        valor_devido: 0,
+        pagamentos: [],
+        dinheiro_recebido: 0
+      });
+      parteAtivaId = 1;
     }
+    recalcularTotaisFechamento();
     renderPartes();
     renderResumoItens();
   });
+
+  if (fecharContaInputParcialValor) {
+    fecharContaInputParcialValor.addEventListener('input', recalcularTotaisFechamento);
+  }
 
   btnGerarPartesIgual.addEventListener('click', () => {
     const num = Number(fecharContaNumPessoas.value);
@@ -5229,6 +5398,96 @@
     if (todosPagamentos.length === 0) {
       showToast('Adicione pelo menos uma forma de pagamento.', 'error');
       return;
+    }
+
+    const modo = fecharContaModo?.value;
+    const isParcial = modo === 'parcial_item' || modo === 'parcial_valor';
+
+    // CAF-000112: Pagamento parcial por item ou abatimento de valor livre
+    if (isParcial) {
+      let itensPayload = [];
+      let itensParaImpressao = [];
+      let valorAbatimento = 0;
+
+      if (modo === 'parcial_item') {
+        const chks = fecharContaListaItensParcial?.querySelectorAll('.chk-item-parcial:checked') || [];
+        if (chks.length === 0) {
+          showToast('Selecione pelo menos um item para pagar.', 'warning');
+          return;
+        }
+        chks.forEach(chk => {
+          const id = Number(chk.getAttribute('data-id'));
+          const inputQtd = fecharContaListaItensParcial.querySelector(`.input-qtd-parcial[data-id="${id}"]`);
+          const qtd = Number(inputQtd?.value) || 1;
+          const preco = Number(chk.getAttribute('data-preco')) || 0;
+          itensPayload.push({ pedido_item_id: id, quantidade: qtd });
+          itensParaImpressao.push({
+            id,
+            quantidade: qtd,
+            preco_unitario: preco,
+            nome_produto: chk.closest('label')?.querySelector('span')?.textContent || 'Item'
+          });
+        });
+      } else {
+        valorAbatimento = Number(fecharContaInputParcialValor?.value) || 0;
+        if (valorAbatimento <= 0) {
+          showToast('Informe um valor de abatimento maior que zero.', 'warning');
+          return;
+        }
+      }
+
+      fecharContaConfirmar.disabled = true;
+      fecharContaConfirmar.textContent = 'Registrando...';
+
+      try {
+        if (!currentFechamento._idempotencyKey) {
+          currentFechamento._idempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random()}`;
+        }
+        const idempotencyKey = currentFechamento._idempotencyKey;
+
+        const pagamentosPayload = todosPagamentos.map(p => ({
+          forma: p.forma,
+          valor: p.valor
+        }));
+
+        const { data, error } = await window.cafeteriaSupabase.rpc('registrar_pagamento_parcial_mesa', {
+          p_mesa_codigo: currentFechamento.mesaCodigo,
+          p_pagamentos: pagamentosPayload,
+          p_itens: itensPayload,
+          p_valor_abatimento: valorAbatimento,
+          p_taxa_servico: Number(currentFechamento.taxaServico || 0),
+          p_idempotency_key: idempotencyKey
+        });
+
+        if (error) throw error;
+
+        // CAF-000112 / CA06: Impressão de comprovante de pagamento parcial
+        if (fecharContaImprimirCupom.checked && window.cafeteriaPrint && window.cafeteriaPrint.printPagamentoParcialMesa) {
+          window.cafeteriaPrint.printPagamentoParcialMesa(
+            currentFechamento.mesaCodigo,
+            itensParaImpressao,
+            pagamentosPayload,
+            data?.total_pago || currentFechamento.aPagar,
+            data?.saldo_restante || 0,
+            data?.troco || 0,
+            Number(currentFechamento.taxaServico || 0)
+          );
+        }
+
+        showToast('Pagamento parcial registrado com sucesso!', 'success');
+        modalFecharConta.classList.add('hidden');
+        await loadActivePedidos();
+        return;
+      } catch (err) {
+        console.error('[Fechamento Parcial] Erro:', err);
+        showToast('Erro ao registrar pagamento parcial: ' + (err.message || 'Falha na operação'), 'error');
+        return;
+      } finally {
+        fecharContaConfirmar.disabled = false;
+        fecharContaConfirmar.textContent = 'Confirmar Fechamento';
+      }
     }
 
     // Validação de Conta do Cliente (CAF-000083 / CA02, CA03)

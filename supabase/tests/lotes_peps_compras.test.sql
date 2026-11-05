@@ -66,3 +66,4 @@ SELECT has_trigger(
 
 SELECT * FROM finish();
 ROLLBACK;
+

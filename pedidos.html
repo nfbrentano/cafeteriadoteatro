@@ -582,6 +582,8 @@
               <option value="padrao">Padrão (Conta Única / Tudo Junto)</option>
               <option value="igual">Dividir Igualmente por Pessoas</option>
               <option value="item">Dividir por Item / Pessoa</option>
+              <option value="parcial_item">Pagamento Parcial: Selecionar Itens</option>
+              <option value="parcial_valor">Pagamento Parcial: Abater Valor Livre</option>
             </select>
             
             <div id="fechar-conta-div-pessoas" class="hidden" style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
@@ -593,6 +595,19 @@
             <div id="fechar-conta-div-add-parte" class="hidden" style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
               <input type="text" id="fechar-conta-nome-parte" class="input-padrao" placeholder="Nome da pessoa" style="flex: 1;">
               <button type="button" id="btn-add-parte-item" class="btn btn--secondary btn--md">+ Adicionar</button>
+            </div>
+
+            <!-- Pagamento Parcial por Itens (CAF-000112) -->
+            <div id="fechar-conta-div-parcial-itens" class="hidden" style="margin-top: 12px;">
+              <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--marrom-escuro);">Selecione os itens a pagar agora:</div>
+              <div id="fechar-conta-lista-itens-parcial" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--cinza-borda); border-radius: 6px; padding: 8px; background: #fff;"></div>
+            </div>
+
+            <!-- Pagamento Parcial por Abatimento de Valor (CAF-000112) -->
+            <div id="fechar-conta-div-parcial-valor" class="hidden" style="margin-top: 12px;">
+              <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Valor de Abatimento Avulso (R$):</label>
+              <input type="number" step="0.01" min="0.01" id="fechar-conta-input-parcial-valor" class="input-padrao" style="width: 100%;" placeholder="0,00">
+              <small style="color: #666; font-size: 11px;">O valor será abatido do saldo devedor da mesa mantendo-a aberta.</small>
             </div>
           </div>
 

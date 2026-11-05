@@ -274,3 +274,4 @@ GRANT EXECUTE ON FUNCTION public.obter_consumo_estoque_30d() TO anon, authentica
 INSERT INTO public.app_migrations (versao, arquivo, aplicada_em, aplicada_por)
 VALUES ('111', 'migration_caf_000111_lotes_validade_peps_sugestao_compras.sql', timezone('utc', now()), current_user)
 ON CONFLICT (versao) DO NOTHING;
+
