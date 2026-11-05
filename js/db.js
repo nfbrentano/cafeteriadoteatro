@@ -780,6 +780,8 @@
           quantidade: movimento.quantidade,
           custo_unitario: movimento.custo_unitario,
           validade: movimento.validade || movimento.data_validade || null,
+          lote_codigo: movimento.lote_codigo || null,
+          lote_id: movimento.lote_id || null,
           fornecedor_id: movimento.fornecedor_id || null,
           despesa_id: movimento.despesa_id || null,
           motivo: movimento.motivo || null
@@ -794,6 +796,71 @@
           throw error;
         }
         return data;
+      },
+      async listarLotes(itemId = null) {
+        if (!window.cafeteriaSupabase) return [];
+        let query = window.cafeteriaSupabase
+          .from('estoque_lotes')
+          .select('*, estoque_itens(id, nome, unidade, estoque_minimo)')
+          .order('data_validade', { ascending: true, nullsFirst: false })
+          .order('created_at', { ascending: true });
+        if (itemId) {
+          query = query.eq('item_id', itemId);
+        }
+        const { data, error } = await query;
+        if (error) {
+          db.logger.error('estoque.listarLotes', error);
+          throw error;
+        }
+        return data || [];
+      },
+      async listarAlertasValidade(diasAlerta = 7) {
+        if (!window.cafeteriaSupabase) return { vencidos: [], vencendo: [], total: 0 };
+        const hojeStr = new Date().toISOString().slice(0, 10);
+        const limiteD = new Date(Date.now() + diasAlerta * 86400000).toISOString().slice(0, 10);
+        const { data, error } = await window.cafeteriaSupabase
+          .from('estoque_lotes')
+          .select('*, estoque_itens(id, nome, unidade, estoque_minimo)')
+          .gt('quantidade_restante', 0)
+          .eq('ativo', true)
+          .not('data_validade', 'is', null)
+          .lte('data_validade', limiteD)
+          .order('data_validade', { ascending: true });
+        if (error) {
+          db.logger.error('estoque.listarAlertasValidade', error);
+          throw error;
+        }
+        const lotes = data || [];
+        const vencidos = lotes.filter(l => l.data_validade < hojeStr);
+        const vencendo = lotes.filter(l => l.data_validade >= hojeStr && l.data_validade <= limiteD);
+        return { vencidos, vencendo, total: lotes.length };
+      },
+      async darBaixaLoteVencido(loteId, motivo = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase client indisponível');
+        const { data, error } = await window.cafeteriaSupabase
+          .rpc('dar_baixa_lote_vencido', {
+            p_lote_id: loteId,
+            p_motivo: motivo
+          });
+        if (error) {
+          db.logger.error('estoque.darBaixaLoteVencido', error);
+          throw error;
+        }
+        return data;
+      },
+      async obterConsumo30d() {
+        if (!window.cafeteriaSupabase) return new Map();
+        const { data, error } = await window.cafeteriaSupabase
+          .rpc('obter_consumo_estoque_30d');
+        if (error) {
+          db.logger.warn('estoque.obterConsumo30d fallback', error);
+          return new Map();
+        }
+        const map = new Map();
+        (data || []).forEach(r => {
+          map.set(Number(r.item_id), Number(r.consumo_medio_diario || 0));
+        });
+        return map;
       }
     },
 

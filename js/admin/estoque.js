@@ -18,7 +18,11 @@
     scannerStream: null,
     scannerTimer: null,
     scannerTargetInputId: null,
-    isInitialized: false
+    isInitialized: false,
+    alertasValidade: { vencidos: [], vencendo: [], total: 0 },
+    consumo30d: new Map(),
+    comprasDiasCobertura: 14,
+    comprasModoEspetaculo: false
   };
 
   function estoqueEls() {
@@ -127,16 +131,108 @@
         }
       }
 
+      // Carregar alertas de validade de lotes e consumo 30d (CAF-000111)
+      try {
+        if (window.cafeteriaDB && window.cafeteriaDB.estoque) {
+          if (typeof window.cafeteriaDB.estoque.listarAlertasValidade === 'function') {
+            state.alertasValidade = await window.cafeteriaDB.estoque.listarAlertasValidade(7);
+          }
+          if (typeof window.cafeteriaDB.estoque.obterConsumo30d === 'function') {
+            state.consumo30d = await window.cafeteriaDB.estoque.obterConsumo30d();
+          }
+        }
+      } catch (lErr) {
+        console.warn('[Estoque] Erro ao carregar alertas de lote/consumo 30d:', lErr);
+      }
+
       if (admin && admin.appData) {
         admin.appData.estoqueItens = state.itens;
       }
 
       atualizarKPIs();
+      renderAlertasValidade();
       renderTabelaEstoque();
     } catch (err) {
       console.error('Erro ao carregar estoque:', err);
       admin.toast('Erro', 'Não foi possível carregar os dados de estoque.', 'error');
     }
+  }
+
+  function renderAlertasValidade() {
+    const painel = document.getElementById('painel-alertas-validade');
+    const listaEl = document.getElementById('lista-alertas-validade-itens');
+    const badgeEl = document.getElementById('badge-total-alertas-validade');
+    if (!painel || !listaEl) return;
+
+    const alertas = state.alertasValidade || { vencidos: [], vencendo: [], total: 0 };
+    const todosLotes = [...(alertas.vencidos || []), ...(alertas.vencendo || [])];
+
+    if (todosLotes.length === 0) {
+      painel.style.display = 'none';
+      return;
+    }
+
+    painel.style.display = 'block';
+    if (badgeEl) {
+      badgeEl.textContent = `${todosLotes.length} lote(s)`;
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    listaEl.innerHTML = todosLotes.map(lote => {
+      const itemNome = lote.estoque_itens ? lote.estoque_itens.nome : `Item #${lote.item_id}`;
+      const un = lote.estoque_itens ? (lote.estoque_itens.unidade || lote.estoque_itens.unidade_medida || 'un') : 'un';
+      const dVal = lote.data_validade ? new Date(lote.data_validade + 'T00:00:00') : null;
+      const dValStr = dVal ? dVal.toLocaleDateString('pt-BR') : 'Sem data';
+      const isVencido = dVal && dVal < hoje;
+      const diffDias = dVal ? Math.ceil((dVal - hoje) / 86400000) : 0;
+
+      const badgeStatus = isVencido
+        ? `<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:2px 8px; border-radius:999px; font-size:11px;">⛔ Vencido (${dValStr})</span>`
+        : `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 8px; border-radius:999px; font-size:11px;">⏳ Vence em ${diffDias}d (${dValStr})</span>`;
+
+      const codLote = lote.lote_codigo ? `Lote: <strong>${window.escapeHtml(lote.lote_codigo)}</strong>` : `Lote #${lote.id}`;
+
+      return `
+        <div style="background:#fff; border:1px solid ${isVencido ? '#fca5a5' : '#fde68a'}; border-radius:8px; padding:12px; display:flex; flex-direction:column; justify-content:space-between; gap:8px;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:4px;">
+              <strong style="color:var(--admin-text, #1e293b); font-size:13px;">${window.escapeHtml(itemNome)}</strong>
+              ${badgeStatus}
+            </div>
+            <div style="font-size:12px; color:var(--text-sec, #64748b);">
+              ${codLote} • Saldo no lote: <strong>${lote.quantidade_restante} ${un}</strong>
+            </div>
+          </div>
+          <button type="button" class="btn btn--sm btn-baixar-lote-perda" data-lote-id="${lote.id}" style="width:100%; font-size:11px; padding:5px 8px; border:1px solid #ef4444; color:#ef4444; background:transparent; border-radius:6px; cursor:pointer;">
+            🗑️ Dar baixa por vencimento
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    listaEl.querySelectorAll('.btn-baixar-lote-perda').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const loteId = parseInt(btn.dataset.loteId, 10);
+        if (!loteId) return;
+        const confirmou = confirm('Deseja registrar a perda total deste lote vencido e zerar o saldo restante?');
+        if (!confirmou) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Baixando...';
+        try {
+          await window.cafeteriaDB.estoque.darBaixaLoteVencido(loteId);
+          admin.toast('Lote Baixado', 'A perda do lote foi registrada com sucesso!', 'success');
+          await carregarDadosEstoque();
+        } catch (err) {
+          console.error('Erro ao dar baixa em lote vencido:', err);
+          admin.toast('Erro', err.message || 'Não foi possível baixar o lote.', 'error');
+          btn.disabled = false;
+          btn.textContent = '🗑️ Dar baixa por vencimento';
+        }
+      });
+    });
   }
 
   function atualizarKPIs() {
@@ -146,17 +242,21 @@
     const totalItens = itens.length;
     const abaixoMinimo = itens.filter(i => Number(i.quantidade ?? i.saldo_atual ?? 0) <= Number(i.estoque_minimo || 0)).length;
 
-    // Próximos 3 dias para validade
+    // Próximos 7 dias para validade
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    const limite3Dias = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
-    limite3Dias.setHours(23, 59, 59, 999);
+    const limite7Dias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000);
+    limite7Dias.setHours(23, 59, 59, 999);
 
     const vencendo = itens.filter(i => {
       if (!i.validade_proxima) return false;
       const d = new Date(i.validade_proxima + 'T00:00:00');
-      return d >= hoje && d <= limite3Dias;
+      return d >= hoje && d <= limite7Dias;
     }).length;
+
+    const totalAlertas = (state.alertasValidade && state.alertasValidade.total !== undefined)
+      ? state.alertasValidade.total
+      : vencendo;
 
     // Valor total do inventário (apenas saldo positivo * custo médio)
     const valorTotal = itens.reduce((acc, i) => {
@@ -167,7 +267,7 @@
 
     if (el.kpiTotal) el.kpiTotal.textContent = totalItens;
     if (el.kpiCritico) el.kpiCritico.textContent = abaixoMinimo;
-    if (el.kpiVencendo) el.kpiVencendo.textContent = vencendo;
+    if (el.kpiVencendo) el.kpiVencendo.textContent = totalAlertas;
     if (el.kpiValorTotal) {
       el.kpiValorTotal.textContent = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
@@ -478,6 +578,7 @@
     const qtdInput = parseFloat(el.inputMovQtd.value);
     const custoUnit = parseFloat(document.getElementById('mov-estoque-custo').value) || null;
     const dataValidade = document.getElementById('mov-estoque-validade').value || null;
+    const loteCodigo = document.getElementById('mov-estoque-lote-codigo')?.value.trim() || null;
     const motivoRapido = document.getElementById('mov-estoque-motivo-rapido').value;
     const obs = document.getElementById('mov-estoque-observacao').value.trim();
 
@@ -580,6 +681,7 @@
         quantidade: qtdFinal,
         custo_unitario: custoUnit,
         validade: dataValidade,
+        lote_codigo: loteCodigo,
         fornecedor_id: fornId,
         despesa_id: despesaId,
         motivo: motivoFinal
@@ -597,24 +699,39 @@
     }
   }
 
-  // --- Modal Lista de Compras por Fornecedor (CAF-000068) ---
-  window.abrirModalListaCompras = function () {
+  // --- Modal Lista de Compras por Fornecedor (CAF-000068 / CAF-000111) ---
+  function renderModalListaComprasConteudo() {
     const body = document.getElementById('modal-lista-compras-body');
     if (!body || !window.cafeteriaStockPurchase) return;
 
-    const lista = window.cafeteriaStockPurchase.buildShoppingListBySupplier(state.itens, state.fornecedores);
+    const selDias = document.getElementById('compras-dias-cobertura');
+    const chkEspetaculo = document.getElementById('compras-modo-espetaculo');
+    const dias = selDias ? (parseInt(selDias.value, 10) || 14) : 14;
+    const espetaculo = chkEspetaculo ? !!chkEspetaculo.checked : false;
+
+    state.comprasDiasCobertura = dias;
+    state.comprasModoEspetaculo = espetaculo;
+
+    const lista = window.cafeteriaStockPurchase.buildShoppingListBySupplier(
+      state.itens,
+      state.fornecedores,
+      {
+        diasCobertura: dias,
+        modoEspetaculo: espetaculo,
+        consumoMap: state.consumo30d
+      }
+    );
 
     if (!lista || lista.length === 0) {
       body.innerHTML = `
         <div style="padding: 40px; text-align: center;">
           <div style="font-size: 3rem; margin-bottom: 12px;">✅</div>
-          <h4 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 6px;">Nenhum item com estoque baixo!</h4>
+          <h4 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 6px;">Nenhum item com necessidade de compra!</h4>
           <p style="color: var(--text-sec); font-size: 0.9rem;">
-            Todos os insumos e produtos estão com saldo superior ao estoque mínimo de alerta.
+            O estoque atual cobre a demanda projetada para os próximos ${dias} dias e atende ao estoque mínimo de segurança.
           </p>
         </div>
       `;
-      admin.openModal('modal-lista-compras-overlay');
       return;
     }
 
@@ -623,7 +740,11 @@
         ${lista.map((grupo, gIdx) => {
           const forn = grupo.fornecedor;
           const itensTotal = grupo.itens.length;
-          const msgWhatsapp = window.cafeteriaStockPurchase.formatSupplierWhatsAppOrder(forn.nome, grupo.itens);
+          const msgWhatsapp = window.cafeteriaStockPurchase.formatSupplierWhatsAppOrder(
+            forn.nome,
+            grupo.itens,
+            { modoEspetaculo: espetaculo }
+          );
           const linkWhatsapp = window.cafeteriaStockPurchase.getWhatsAppShareUrl(forn.telefone, msgWhatsapp);
 
           return `
@@ -654,18 +775,33 @@
                       <th style="padding:8px;">Item / Insumo</th>
                       <th style="padding:8px; text-align:center;">Estoque Atual</th>
                       <th style="padding:8px; text-align:center;">Estoque Mínimo</th>
-                      <th style="padding:8px; text-align:center; color:#16a34a; font-weight:700;">Reposição Sugerida</th>
+                      <th style="padding:8px; text-align:center;">Consumo (CMD 30d)</th>
+                      <th style="padding:8px; text-align:center;">Autonomia</th>
+                      <th style="padding:8px; text-align:center; color:#16a34a; font-weight:700;">Sugerido (${dias}d)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    ${grupo.itens.map(it => `
-                      <tr style="border-bottom:1px solid #f1f5f9;">
-                        <td style="padding:8px; font-weight:600; color:#1e293b;">${window.escapeHtml(it.nome)}</td>
-                        <td style="padding:8px; text-align:center; color:#dc2626; font-weight:600;">${it.saldoAtual} ${it.unidade}</td>
-                        <td style="padding:8px; text-align:center; color:#64748b;">${it.estoqueMinimo} ${it.unidade}</td>
-                        <td style="padding:8px; text-align:center; font-weight:700; color:#16a34a; background:#f0fdf4;">+ ${it.quantidadeSugerida} ${it.unidade}</td>
-                      </tr>
-                    `).join('')}
+                    ${grupo.itens.map(it => {
+                      const cmdStr = (it.cmd && it.cmd > 0) ? `${it.cmd} ${it.unidade}/dia` : '—';
+                      let autBadge = '<span style="color:#64748b;">—</span>';
+                      if (it.autonomiaDias === 0) {
+                        autBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:2px 8px; border-radius:999px; font-size:11px;">🚨 0 dias</span>';
+                      } else if (it.autonomiaDias !== null) {
+                        const cor = it.autonomiaDias <= 3 ? '#fee2e2; color:#b91c1c' : (it.autonomiaDias <= 7 ? '#fef3c7; color:#92400e' : '#e0f2fe; color:#0369a1');
+                        autBadge = `<span class="badge" style="background:${cor}; font-weight:700; padding:2px 8px; border-radius:999px; font-size:11px;">⏳ ${it.autonomiaDias}d</span>`;
+                      }
+
+                      return `
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                          <td style="padding:8px; font-weight:600; color:#1e293b;">${window.escapeHtml(it.nome)}</td>
+                          <td style="padding:8px; text-align:center; color:#dc2626; font-weight:600;">${it.saldoAtual} ${it.unidade}</td>
+                          <td style="padding:8px; text-align:center; color:#64748b;">${it.estoqueMinimo} ${it.unidade}</td>
+                          <td style="padding:8px; text-align:center; color:#475569; font-size:12px;">${cmdStr}</td>
+                          <td style="padding:8px; text-align:center;">${autBadge}</td>
+                          <td style="padding:8px; text-align:center; font-weight:700; color:#16a34a; background:#f0fdf4;">+ ${it.quantidadeSugerida} ${it.unidade}</td>
+                        </tr>
+                      `;
+                    }).join('')}
                   </tbody>
                 </table>
               </div>
@@ -680,7 +816,11 @@
         const idx = parseInt(btn.dataset.idx, 10);
         const grupo = lista[idx];
         if (grupo) {
-          const text = window.cafeteriaStockPurchase.formatSupplierWhatsAppOrder(grupo.fornecedor.nome, grupo.itens);
+          const text = window.cafeteriaStockPurchase.formatSupplierWhatsAppOrder(
+            grupo.fornecedor.nome,
+            grupo.itens,
+            { modoEspetaculo: espetaculo }
+          );
           navigator.clipboard.writeText(text).then(() => {
             admin.toast('Copiado', 'Texto do pedido copiado para a área de transferência!', 'success');
           }).catch(() => {
@@ -689,7 +829,20 @@
         }
       });
     });
+  }
 
+  window.abrirModalListaCompras = function () {
+    const selDias = document.getElementById('compras-dias-cobertura');
+    const chkEspetaculo = document.getElementById('compras-modo-espetaculo');
+    if (selDias && !selDias._hasListener) {
+      selDias._hasListener = true;
+      selDias.addEventListener('change', renderModalListaComprasConteudo);
+    }
+    if (chkEspetaculo && !chkEspetaculo._hasListener) {
+      chkEspetaculo._hasListener = true;
+      chkEspetaculo.addEventListener('change', renderModalListaComprasConteudo);
+    }
+    renderModalListaComprasConteudo();
     admin.openModal('modal-lista-compras-overlay');
   };
 
@@ -1123,6 +1276,17 @@
     }
     inputCustoTotal?.addEventListener('input', recalcularUnit);
     inputQtd?.addEventListener('input', recalcularUnit);
+
+    // CAF-000111: Toggle Alertas de Validade
+    const btnToggleAlertas = document.getElementById('btn-toggle-alertas-validade');
+    const listaAlertas = document.getElementById('lista-alertas-validade-itens');
+    if (btnToggleAlertas && listaAlertas) {
+      btnToggleAlertas.addEventListener('click', () => {
+        const isHidden = listaAlertas.style.display === 'none';
+        listaAlertas.style.display = isHidden ? 'grid' : 'none';
+        btnToggleAlertas.textContent = isHidden ? 'Recolher' : 'Expandir';
+      });
+    }
   }
 
 })();

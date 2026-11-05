@@ -1002,12 +1002,27 @@
           <div class="stat-card">
             <div class="stat-card__icon">🟠</div>
             <div class="stat-card__value" id="stat-estoque-vencimento">0</div>
-            <div class="stat-card__label">Vencimento Próximo (≤ 3d)</div>
+            <div class="stat-card__label">Vencimento Próximo (≤ 7d)</div>
           </div>
           <div class="stat-card">
             <div class="stat-card__icon">💰</div>
             <div class="stat-card__value" id="stat-estoque-valor-total">R$ 0,00</div>
             <div class="stat-card__label">Valor Total em Estoque</div>
+          </div>
+        </div>
+
+        <!-- Alertas de Validade de Lotes (CAF-000111) -->
+        <div id="painel-alertas-validade" style="display:none; margin-bottom: 1.5rem; background: var(--bg-card, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.25rem;">⚠️</span>
+              <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--admin-text, #1e293b);">Alertas de Validade de Lotes</h4>
+              <span class="badge" id="badge-total-alertas-validade" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:2px 8px; border-radius:999px; font-size:12px;">0 lote(s)</span>
+            </div>
+            <button type="button" class="btn btn--ghost btn--sm" id="btn-toggle-alertas-validade" style="font-size: 12px; padding:4px 8px;">Recolher</button>
+          </div>
+          <div id="lista-alertas-validade-itens" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+            <!-- Itens com lotes vencidos ou a vencer gerados dinamicamente -->
           </div>
         </div>
 
@@ -3854,6 +3869,10 @@
             <label class="field__label" for="mov-estoque-validade">Data de Validade do Lote</label>
             <input class="field__input" type="date" id="mov-estoque-validade" />
           </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-lote-codigo">Código / Identificador do Lote (opcional)</label>
+            <input class="field__input" type="text" id="mov-estoque-lote-codigo" placeholder="Ex: L-2026-A" />
+          </div>
 
           <!-- Integração com Contas a Pagar (CAF-000068) -->
           <div class="field" style="grid-column: 1/-1; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 10px; margin: 0;">
@@ -3910,17 +3929,31 @@
   </div>
 </div>
 
-<!-- MODAL LISTA DE COMPRAS POR FORNECEDOR (CAF-000068) -->
+<!-- MODAL LISTA DE COMPRAS POR FORNECEDOR (CAF-000068 / CAF-000111) -->
 <div class="modal-overlay" id="modal-lista-compras-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-lista-compras-title">
-  <div class="modal modal--lg" id="modal-lista-compras" style="max-width: 850px; width: 95%;">
+  <div class="modal modal--lg" id="modal-lista-compras" style="max-width: 900px; width: 95%;">
     <div class="modal__header">
       <div>
-        <h3 class="modal__title" id="modal-lista-compras-title">📋 Lista de Compras & Reposição de Estoque</h3>
+        <h3 class="modal__title" id="modal-lista-compras-title">📋 Lista de Compras & Sugestão Inteligente</h3>
         <p class="modal__subtitle" style="font-size:0.85rem; color:var(--text-sec); margin:2px 0 0 0;">
-          Itens em ponto de pedido (estoque atual &le; estoque mínimo), agrupados por fornecedor com quantidades sugeridas.
+          Sugestão baseada no consumo real dos últimos 30 dias (CMD), autonomia em dias e cobertura desejada.
         </p>
       </div>
       <button class="modal__close" id="modal-lista-compras-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div style="background: var(--bg-hover, #f8fafc); border-bottom: 1px solid var(--border, #e2e8f0); padding: 10px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="compras-dias-cobertura" style="font-size: 13px; font-weight: 600; color: var(--admin-text, #334155);">Cobertura Desejada:</label>
+        <select id="compras-dias-cobertura" class="field__select" style="width: auto; padding: 4px 10px; font-size: 13px;">
+          <option value="7">7 dias (1 semana)</option>
+          <option value="14" selected>14 dias (2 semanas)</option>
+          <option value="30">30 dias (1 mês)</option>
+        </select>
+      </div>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--admin-text, #334155);">
+        <input type="checkbox" id="compras-modo-espetaculo" style="width: 16px; height: 16px; accent-color: var(--primary, #d97706);" />
+        <span>🎭 Semana com Espetáculo (+30% demanda)</span>
+      </label>
     </div>
     <div class="modal__body" id="modal-lista-compras-body" style="max-height: 65vh; overflow-y: auto;">
       <!-- Preenchido via JavaScript -->

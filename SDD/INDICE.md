@@ -119,7 +119,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000108** | [FIX] Correção de Integridade Operacional: Transferência de Pedidos Já Entregues na Mesa, Débito Atômico da Conta do Cliente no Fechamento e Corte de Pagamento no Caixa | Concluída | `migration_caf_000108_integridade_transferencia_fechamento_caixa.sql` | `caf-000108-integridade-operacional-mesa-caixa.test.js` | — |
 | **CAF-000109** | [FIX] Eliminação de Diálogos Nativos Bloqueantes (`alert`/`confirm`/`prompt`) e Modal de Recebimento de Pedidos do Totem no PDV | Concluída | — | `caf-000109-eliminacao-dialogos-nativos.test.js` | — |
 | **CAF-000110** | [FEAT] Combos e Kits Configuráveis no Cardápio Digital, Totem e PDV com Separação Automática por Estação no KDS | Concluída | `migration_caf_000110_combos_kits.sql` | `caf-000110-combos-kits.test.js` | — |
-| **CAF-000111** | [FEAT] Controle de Validade de Lotes (PEPS) e Sugestão Inteligente de Compras Baseada no Consumo dos Últimos 30 Dias | Rascunho | `migration_caf_000111_estoque_lotes_peps_compras.sql` | `caf-000111-estoque-lotes-peps-compras.test.js` | — |
+| **CAF-000111** | [FEAT] Controle de Validade de Lotes (PEPS) e Sugestão Inteligente de Compras Baseada no Consumo dos Últimos 30 Dias | Concluída | `migration_caf_000111_lotes_validade_peps_sugestao_compras.sql` | `caf-000111-lotes-validade-peps-sugestao-compras.test.js` | — |
 | **CAF-000112** | [FEAT] Fechamento Parcial de Conta da Mesa: Pagamento por Item Selecionado ou Abatimento Parcial no PDV | Rascunho | `migration_caf_000112_fechamento_parcial_mesa.sql` | `caf-000112-fechamento-parcial-mesa.test.js` | — |
 | **CAF-000113** | [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo | Rascunho | `migration_caf_000113_dre_gerencial_recebiveis_metas.sql` | `caf-000113-dre-gerencial-recebiveis-metas.test.js` | — |
 | **CAF-000114** | [CHORE] Atualização de Dependências de Desenvolvimento (vite, vitest, @vitest/coverage-v8 e fake-indexeddb) | Concluída | — | `caf-000114-atualizacao-dependencias.test.js` | — |
@@ -172,3 +172,4 @@ A ordem sequencial auditada para instanciar um ambiente limpo ou aplicar em prod
    - `migration_caf_000107_hardening_supabase_advisors.sql`
    - `migration_caf_000108_integridade_transferencia_fechamento_caixa.sql`
    - `migration_caf_000110_combos_kits.sql`
+   - `migration_caf_000111_lotes_validade_peps_sugestao_compras.sql`

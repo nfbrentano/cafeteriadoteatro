@@ -1,9 +1,37 @@
 /**
- * CAF-000068: Lista de Compras por Fornecedor e Entrada de Estoque Integrada ao Contas a Pagar
+ * CAF-000068 / CAF-000111: Lista de Compras por Fornecedor, Entrada de Estoque
+ * e Sugestão Inteligente Baseada no Consumo dos Últimos 30 Dias (PEPS / Dias de Cobertura)
  */
 
 /**
- * Calcula a quantidade sugerida de reposição para itens com estoque baixo.
+ * Calcula o Consumo Médio Diário (CMD) a partir do total de saídas no período.
+ * @param {number} totalSaidas Quantidade total de saídas no período
+ * @param {number} dias Quantidade de dias do período (padrão 30)
+ * @returns {number} CMD arredondado com 3 casas decimais
+ */
+export function calcularConsumoMedioDiario(totalSaidas, dias = 30) {
+  const saidas = Math.max(0, Number(totalSaidas) || 0);
+  const periodo = Number(dias) || 30;
+  if (periodo <= 0) return 0;
+  return Number((saidas / periodo).toFixed(3));
+}
+
+/**
+ * Calcula a autonomia estimada em dias com base no saldo atual e no CMD.
+ * @param {number} saldoAtual Saldo disponível no estoque
+ * @param {number} cmd Consumo Médio Diário
+ * @returns {number|null} Autonomia em dias (arredondada para 1 casa decimal) ou null se CMD <= 0
+ */
+export function calcularAutonomiaDias(saldoAtual, cmd) {
+  const saldo = Math.max(0, Number(saldoAtual) || 0);
+  const consumo = Number(cmd) || 0;
+  if (consumo <= 0) return null;
+  if (saldo === 0) return 0;
+  return Number((saldo / consumo).toFixed(1));
+}
+
+/**
+ * Calcula a quantidade sugerida de reposição clássica para itens com estoque baixo.
  * Fórmula: MAX(estoque_minimo * 2 - estoque_atual, estoque_minimo)
  */
 export function calculateSuggestedPurchaseQuantity(estoqueAtual, estoqueMinimo) {
@@ -23,6 +51,44 @@ export function calculateSuggestedPurchaseQuantity(estoqueAtual, estoqueMinimo) 
 }
 
 /**
+ * Calcula a sugestão de compra inteligente baseada no consumo real, horizonte de cobertura e estoque mínimo.
+ * @param {Object} params
+ * @param {number} params.saldoAtual
+ * @param {number} params.estoqueMinimo
+ * @param {number} [params.cmd] Consumo Médio Diário dos últimos 30 dias
+ * @param {number} [params.diasCobertura=14] Horizonte desejado (ex.: 7, 14 ou 30 dias)
+ * @param {number} [params.fatorEspetaculo=1.0] Fator de espetáculo (ex.: 1.30 para +30%)
+ * @returns {number} Quantidade inteira sugerida para compra
+ */
+export function calcularSugestaoCompraInteligente({
+  saldoAtual,
+  estoqueMinimo,
+  cmd = 0,
+  diasCobertura = 14,
+  fatorEspetaculo = 1.0
+}) {
+  const atual = Math.max(0, Number(saldoAtual) || 0);
+  const minimo = Number(estoqueMinimo) || 0;
+  const consumo = Math.max(0, Number(cmd) || 0);
+  const dias = Number(diasCobertura) || 14;
+  const fator = Number(fatorEspetaculo) || 1.0;
+
+  if (consumo > 0) {
+    const demandaProjetada = consumo * dias * fator;
+    const necessidadeDemanda = demandaProjetada - atual;
+    const necessidadePiso = minimo - atual;
+    const metaNecessidade = Math.max(necessidadeDemanda, necessidadePiso);
+    return Math.max(0, Math.ceil(metaNecessidade));
+  }
+
+  // Fallback quando não há histórico de consumo nos últimos 30 dias
+  if (atual <= minimo) {
+    return calculateSuggestedPurchaseQuantity(atual, minimo);
+  }
+  return 0;
+}
+
+/**
  * Calcula o custo unitário da compra com base no custo total e quantidade.
  */
 export function calculateUnitPrice(custoTotal, quantidade) {
@@ -33,15 +99,34 @@ export function calculateUnitPrice(custoTotal, quantidade) {
 }
 
 /**
- * Monta a lista de compras/reposição agrupada por fornecedor.
+ * Monta a lista de compras/reposição agrupada por fornecedor com suporte a sugestão inteligente.
  * @param {Array} items Lista de itens de estoque
  * @param {Array} suppliers Lista de fornecedores cadastrados
+ * @param {Object} [options]
+ * @param {number} [options.diasCobertura=14] Dias de cobertura desejados
+ * @param {boolean} [options.modoEspetaculo=false] Se aplica multiplicador de espetáculo (+30%)
+ * @param {Map|Object} [options.consumoMap] Mapa de CMD por item_id
  */
-export function buildShoppingListBySupplier(items = [], suppliers = []) {
+export function buildShoppingListBySupplier(items = [], suppliers = [], options = {}) {
   const supplierMap = new Map();
   (suppliers || []).forEach(s => {
     supplierMap.set(String(s.id), s);
   });
+
+  const diasCobertura = Number(options.diasCobertura) || 14;
+  const modoEspetaculo = !!options.modoEspetaculo;
+  const fatorEspetaculo = modoEspetaculo ? 1.3 : (Number(options.fatorEspetaculo) || 1.0);
+  const consumoMap = options.consumoMap || new Map();
+
+  function getCmd(itemId) {
+    if (consumoMap instanceof Map) {
+      return Number(consumoMap.get(itemId) ?? consumoMap.get(String(itemId)) ?? 0);
+    }
+    if (typeof consumoMap === 'object' && consumoMap !== null) {
+      return Number(consumoMap[itemId] ?? consumoMap[String(itemId)] ?? 0);
+    }
+    return 0;
+  }
 
   const semFornecedorId = '__sem_fornecedor__';
   const grupos = new Map();
@@ -49,10 +134,22 @@ export function buildShoppingListBySupplier(items = [], suppliers = []) {
   items.forEach(item => {
     const atual = Number(item.saldo_atual !== undefined ? item.saldo_atual : (item.quantidade !== undefined ? item.quantidade : 0));
     const minimo = Number(item.estoque_minimo || 0);
+    const cmd = getCmd(item.id);
+    const autonomiaDias = calcularAutonomiaDias(atual, cmd);
 
-    // Considera apenas itens em ponto de pedido (<= estoque_minimo)
-    if (atual <= minimo) {
-      const sugerida = calculateSuggestedPurchaseQuantity(atual, minimo);
+    // Sugestão de compra calculada com base na cobertura e piso mínimo
+    const sugerida = calcularSugestaoCompraInteligente({
+      saldoAtual: atual,
+      estoqueMinimo: minimo,
+      cmd,
+      diasCobertura,
+      fatorEspetaculo
+    });
+
+    // Item entra na lista se estiver abaixo do mínimo OU se a autonomia for menor/igual aos dias de cobertura com sugestão > 0
+    const precisaRepor = (atual <= minimo) || (autonomiaDias !== null && autonomiaDias <= diasCobertura && sugerida > 0);
+
+    if (precisaRepor && sugerida > 0) {
       const fornecedorId = item.fornecedor_padrao_id ? String(item.fornecedor_padrao_id) : semFornecedorId;
 
       if (!grupos.has(fornecedorId)) {
@@ -78,6 +175,8 @@ export function buildShoppingListBySupplier(items = [], suppliers = []) {
         unidade: item.unidade_medida || item.unidade || 'un',
         saldoAtual: atual,
         estoqueMinimo: minimo,
+        cmd,
+        autonomiaDias,
         quantidadeSugerida: sugerida
       });
     }
@@ -94,14 +193,23 @@ export function buildShoppingListBySupplier(items = [], suppliers = []) {
 /**
  * Formata o texto de mensagem do WhatsApp para envio do pedido ao fornecedor.
  */
-export function formatSupplierWhatsAppOrder(supplierName, items = []) {
+export function formatSupplierWhatsAppOrder(supplierName, items = [], options = {}) {
   const header = `☕ *Cafeteria do Teatro Univates — Pedido de Reposição*\n\nOlá, ${supplierName || 'Fornecedor'}!\nPrecisamos repor os seguintes itens para a nossa cafeteria:\n\n`;
   
-  const lines = items.map(it => `• *${it.quantidadeSugerida} ${it.unidade}* — ${it.nome} _(estoque atual: ${it.saldoAtual})_`).join('\n');
+  const lines = items.map(it => {
+    const autonomiaStr = (it.autonomiaDias !== undefined && it.autonomiaDias !== null)
+      ? `, autonomia: ${it.autonomiaDias}d`
+      : '';
+    return `• *${it.quantidadeSugerida} ${it.unidade}* — ${it.nome} _(estoque atual: ${it.saldoAtual}${autonomiaStr})_`;
+  }).join('\n');
   
-  const footer = `\n\nPor favor, informe a confirmação dos itens e a previsão de entrega.\nMuito obrigado!`;
+  const avisoEspetaculo = options.modoEspetaculo
+    ? `\n\n🎭 *Nota:* Quantidades com reforço de demanda para semana de espetáculo (+30%).`
+    : '';
 
-  return `${header}${lines}${footer}`;
+  const footer = `\n\nPor favor, confirme os itens e a previsão de entrega.\nMuito obrigado!`;
+
+  return `${header}${lines}${avisoEspetaculo}${footer}`;
 }
 
 /**
@@ -165,7 +273,10 @@ export function calcularPedidoCompra(itens = []) {
 
 if (typeof window !== 'undefined') {
   window.cafeteriaStockPurchase = {
+    calcularConsumoMedioDiario,
+    calcularAutonomiaDias,
     calculateSuggestedPurchaseQuantity,
+    calcularSugestaoCompraInteligente,
     calculateUnitPrice,
     buildShoppingListBySupplier,
     formatSupplierWhatsAppOrder,

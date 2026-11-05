@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-03T14:54:31.309Z",
+  "gerado_em": "2026-11-05T14:00:56.177Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -482,6 +482,21 @@
     "fn_baixa_estoque_combo_escolha": {
       "parameters": []
     },
+    "fn_estoque_criar_lote_entrada": {
+      "parameters": []
+    },
+    "fn_estoque_abater_lotes_peps": {
+      "parameters": []
+    },
+    "dar_baixa_lote_vencido": {
+      "parameters": [
+        "p_lote_id",
+        "p_motivo"
+      ]
+    },
+    "obter_consumo_estoque_30d": {
+      "parameters": []
+    },
     "validar_cortesia": {
       "parameters": []
     },
@@ -596,7 +611,9 @@
         "criado_por",
         "created_at",
         "fornecedor_id",
-        "despesa_id"
+        "despesa_id",
+        "lote_id",
+        "lote_codigo"
       ]
     },
     "fechamentos": {
@@ -1248,6 +1265,21 @@
         "quantidade",
         "pronto_em",
         "created_at"
+      ]
+    },
+    "estoque_lotes": {
+      "columns": [
+        "id",
+        "item_id",
+        "lote_codigo",
+        "data_validade",
+        "quantidade_inicial",
+        "quantidade_restante",
+        "custo_unitario",
+        "movimento_entrada_id",
+        "ativo",
+        "created_at",
+        "updated_at"
       ]
     },
     "cortesia_regras": {
