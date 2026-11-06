@@ -76,15 +76,21 @@ BEGIN
   -- 1. Faturamento Bruto e Descontos Concedidos
   SELECT 
     COALESCE(ROUND(SUM(
-      COALESCE(p.subtotal, p.total + COALESCE(p.desconto, 0))
+      p.total + COALESCE(p.desconto_cupom, 0)
     ), 2), 0),
-    COALESCE(ROUND(SUM(COALESCE(p.desconto, 0)), 2), 0)
+    COALESCE(ROUND(SUM(COALESCE(p.desconto_cupom, 0)), 2), 0)
   INTO v_faturamento_bruto, v_descontos
   FROM public.pedidos p
   WHERE p.status != 'cancelado'
     AND p.status_pagamento = 'pago'
     AND p.created_at >= v_inicio
     AND p.created_at <= v_fim;
+
+  SELECT v_descontos + COALESCE(ROUND(SUM(COALESCE(f.desconto_manual, 0)), 2), 0)
+  INTO v_descontos
+  FROM public.fechamentos f
+  WHERE f.created_at >= v_inicio
+    AND f.created_at <= v_fim;
 
   -- 2. Taxas de Meios de Pagamento (Cartão/Pix)
   SELECT COALESCE(ROUND(SUM(valor_taxa), 2), 0)
