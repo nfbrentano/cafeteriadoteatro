@@ -20,10 +20,12 @@
   const btnTabContas = document.getElementById('btn-tab-contas');
   const btnTabFluxo = document.getElementById('btn-tab-fluxo');
   const btnTabResultado = document.getElementById('btn-tab-resultado');
+  const btnTabRecebiveis = document.getElementById('btn-tab-recebiveis');
 
   const subtabContas = document.getElementById('subtab-financeiro-contas');
   const subtabFluxo = document.getElementById('subtab-financeiro-fluxo');
   const subtabResultado = document.getElementById('subtab-financeiro-resultado');
+  const subtabRecebiveis = document.getElementById('subtab-financeiro-recebiveis');
 
   // KPIs Topo
   const kpiVencidasTotal = document.getElementById('kpi-contas-vencidas-total');
@@ -108,20 +110,58 @@
   const cardFluxoSaldo = document.getElementById('card-fluxo-saldo');
   const tbodyFluxoCaixa = document.getElementById('tbody-fluxo-caixa');
 
-  // DRE Resultado Elements
+  // Meta Diária Elements (CAF-000113)
+  const metaDiariaBanner = document.getElementById('financeiro-meta-diaria-banner');
+  const metaDiariaBadge = document.getElementById('meta-diaria-badge');
+  const metaDiariaProgressoTexto = document.getElementById('meta-diaria-progresso-texto');
+  const metaDiariaBarra = document.getElementById('meta-diaria-barra');
+  const metaDiariaFaltaLabel = document.getElementById('meta-diaria-falta-label');
+  const metaDiariaPorcentagemLabel = document.getElementById('meta-diaria-porcentagem-label');
+  const btnConfigurarMetas = document.getElementById('btn-configurar-metas');
+  const modalMetasOverlay = document.getElementById('modal-metas-overlay');
+  const modalMetasClose = document.getElementById('modal-metas-close');
+  const btnCancelarMetas = document.getElementById('btn-cancelar-metas');
+  const formMetas = document.getElementById('form-metas');
+  const inputMetaNormal = document.getElementById('input-meta-normal');
+  const inputMetaEspetaculo = document.getElementById('input-meta-espetaculo');
+
+  // DRE Resultado Elements (CAF-000113)
   const filterResultadoMes = document.getElementById('filter-resultado-mes');
+  const filterResultadoRegime = document.getElementById('filter-resultado-regime');
   const btnRecarregarResultado = document.getElementById('btn-recarregar-resultado');
+  const btnExportarDRECSV = document.getElementById('btn-exportar-dre-csv');
   const drePeriodoLabel = document.getElementById('dre-periodo-label');
   const dreFaturamentoBruto = document.getElementById('dre-faturamento-bruto');
+  const dreFaturamentoBrutoPct = document.getElementById('dre-faturamento-bruto-pct');
   const dreDescontos = document.getElementById('dre-descontos');
+  const dreDescontosPct = document.getElementById('dre-descontos-pct');
+  const dreTaxasPagamento = document.getElementById('dre-taxas-pagamento');
+  const dreTaxasPagamentoPct = document.getElementById('dre-taxas-pagamento-pct');
   const dreFaturamentoLiquido = document.getElementById('dre-faturamento-liquido');
+  const dreFaturamentoLiquidoPct = document.getElementById('dre-faturamento-liquido-pct');
+  const dreTotalCMV = document.getElementById('dre-total-cmv');
+  const dreTotalCMVPct = document.getElementById('dre-total-cmv-pct');
+  const dreCMVItens = document.getElementById('dre-cmv-itens');
+  const dreCMVPerdas = document.getElementById('dre-cmv-perdas');
+  const dreMargemContribuicao = document.getElementById('dre-margem-contribuicao');
+  const dreMargemContribuicaoPct = document.getElementById('dre-margem-contribuicao-pct');
+  const dreTotalDespesasOperacionais = document.getElementById('dre-total-despesas-operacionais');
+  const dreTotalDespesasPct = document.getElementById('dre-total-despesas-pct');
   const dreTotalVariaveis = document.getElementById('dre-total-variaveis');
   const dreListaVariaveis = document.getElementById('dre-lista-variaveis');
-  const dreMargemContribuicao = document.getElementById('dre-margem-contribuicao');
   const dreTotalFixas = document.getElementById('dre-total-fixas');
   const dreListaFixas = document.getElementById('dre-lista-fixas');
   const dreBoxResultadoFinal = document.getElementById('dre-box-resultado-final');
   const dreResultadoFinal = document.getElementById('dre-resultado-final');
+  const dreResultadoFinalPct = document.getElementById('dre-resultado-final-pct');
+  let dreCacheAtual = null;
+
+  // Recebíveis Elements (CAF-000113)
+  const btnRecarregarRecebiveis = document.getElementById('btn-recarregar-recebiveis');
+  const kpiRecebiveisHoje = document.getElementById('kpi-recebiveis-hoje');
+  const kpiRecebiveis7d = document.getElementById('kpi-recebiveis-7d');
+  const kpiRecebiveis30d = document.getElementById('kpi-recebiveis-30d');
+  const tbodyRecebiveis = document.getElementById('tbody-recebiveis');
 
   // --- Helpers de Formatação ---
   function formatarMoeda(val) {
@@ -175,35 +215,49 @@
 
   // --- Sub-abas Navigation ---
   function switchTab(tab) {
-    [btnTabContas, btnTabFluxo, btnTabResultado].forEach(b => {
+    [btnTabContas, btnTabFluxo, btnTabResultado, btnTabRecebiveis].forEach(b => {
       if (b) {
         b.classList.remove('active');
         b.style.background = '#f8fafc';
         b.style.color = '#64748b';
       }
     });
-    [subtabContas, subtabFluxo, subtabResultado].forEach(s => {
+    [subtabContas, subtabFluxo, subtabResultado, subtabRecebiveis].forEach(s => {
       if (s) s.style.display = 'none';
     });
 
     if (tab === 'contas') {
-      btnTabContas.classList.add('active');
-      btnTabContas.style.background = '#fff';
-      btnTabContas.style.color = '#1e293b';
-      subtabContas.style.display = 'block';
+      if (btnTabContas) {
+        btnTabContas.classList.add('active');
+        btnTabContas.style.background = '#fff';
+        btnTabContas.style.color = '#1e293b';
+      }
+      if (subtabContas) subtabContas.style.display = 'block';
       renderTabelaDespesas();
     } else if (tab === 'fluxo') {
-      btnTabFluxo.classList.add('active');
-      btnTabFluxo.style.background = '#fff';
-      btnTabFluxo.style.color = '#1e293b';
-      subtabFluxo.style.display = 'block';
+      if (btnTabFluxo) {
+        btnTabFluxo.classList.add('active');
+        btnTabFluxo.style.background = '#fff';
+        btnTabFluxo.style.color = '#1e293b';
+      }
+      if (subtabFluxo) subtabFluxo.style.display = 'block';
       carregarFluxoCaixa();
     } else if (tab === 'resultado') {
-      btnTabResultado.classList.add('active');
-      btnTabResultado.style.background = '#fff';
-      btnTabResultado.style.color = '#1e293b';
-      subtabResultado.style.display = 'block';
+      if (btnTabResultado) {
+        btnTabResultado.classList.add('active');
+        btnTabResultado.style.background = '#fff';
+        btnTabResultado.style.color = '#1e293b';
+      }
+      if (subtabResultado) subtabResultado.style.display = 'block';
       carregarResultadoDRE();
+    } else if (tab === 'recebiveis') {
+      if (btnTabRecebiveis) {
+        btnTabRecebiveis.classList.add('active');
+        btnTabRecebiveis.style.background = '#fff';
+        btnTabRecebiveis.style.color = '#1e293b';
+      }
+      if (subtabRecebiveis) subtabRecebiveis.style.display = 'block';
+      carregarRecebiveis();
     }
   }
 
@@ -228,6 +282,7 @@
 
     await carregarDespesas();
     await carregarResumoKPIs();
+    await carregarMetaDiaria();
   };
 
   function bindEvents() {
@@ -235,6 +290,23 @@
     if (btnTabContas) btnTabContas.addEventListener('click', () => switchTab('contas'));
     if (btnTabFluxo) btnTabFluxo.addEventListener('click', () => switchTab('fluxo'));
     if (btnTabResultado) btnTabResultado.addEventListener('click', () => switchTab('resultado'));
+    if (btnTabRecebiveis) btnTabRecebiveis.addEventListener('click', () => switchTab('recebiveis'));
+
+    // DRE e Metas Events (CAF-000113)
+    if (filterResultadoMes) filterResultadoMes.addEventListener('change', carregarResultadoDRE);
+    if (filterResultadoRegime) filterResultadoRegime.addEventListener('change', carregarResultadoDRE);
+    if (btnRecarregarResultado) btnRecarregarResultado.addEventListener('click', carregarResultadoDRE);
+    if (btnExportarDRECSV) btnExportarDRECSV.addEventListener('click', exportarCSVDRE);
+    if (btnRecarregarRecebiveis) btnRecarregarRecebiveis.addEventListener('click', carregarRecebiveis);
+    if (btnConfigurarMetas) btnConfigurarMetas.addEventListener('click', abrirModalMetas);
+    if (modalMetasClose) modalMetasClose.addEventListener('click', fecharModalMetas);
+    if (btnCancelarMetas) btnCancelarMetas.addEventListener('click', fecharModalMetas);
+    if (formMetas) formMetas.addEventListener('submit', salvarMetas);
+    if (modalMetasOverlay) {
+      modalMetasOverlay.addEventListener('click', e => {
+        if (e.target === modalMetasOverlay) fecharModalMetas();
+      });
+    }
 
     // Filtros Contas
     if (filterStatus) filterStatus.addEventListener('change', renderTabelaDespesas);
@@ -942,96 +1014,375 @@
     }
   }
 
-  // --- Sub-aba 3: Demonstrativo de Resultado (DRE) ---
+  // --- Sub-aba 3: Demonstrativo de Resultado (DRE Gerencial - CAF-000113) ---
   async function carregarResultadoDRE() {
     const mesYM = filterResultadoMes ? filterResultadoMes.value : getMesAtualYM();
     if (!mesYM) return;
+    const regime = filterResultadoRegime ? filterResultadoRegime.value : 'caixa';
 
-    if (drePeriodoLabel) drePeriodoLabel.textContent = `Período de Apuração: ${formatarNomeMes(mesYM)}`;
+    const [anoStr, mesStr] = mesYM.split('-');
+    const ano = parseInt(anoStr, 10);
+    const mes = parseInt(mesStr, 10);
+    const ultimoDia = new Date(ano, mes, 0).getDate();
+    const inicio = `${mesYM}-01`;
+    const fim = `${mesYM}-${String(ultimoDia).padStart(2, '0')}`;
+
+    if (drePeriodoLabel) {
+      drePeriodoLabel.textContent = `Período de Apuração: ${formatarNomeMes(mesYM)} (Regime de ${regime === 'competencia' ? 'Competência' : 'Caixa'})`;
+    }
 
     try {
       const db = window.cafeteriaDB?.financeiro;
-      if (!db) return;
+      let dreData = null;
+      if (db && typeof db.obterDRE === 'function') {
+        dreData = await db.obterDRE(inicio, fim, regime);
+      }
 
-      const r = await db.getResumo(mesYM);
-      if (!r) return;
+      // Se não retornar da RPC, recalcula a partir do cache local
+      if (!dreData) {
+        const pagasNoPeriodo = despesasCache.filter(d => {
+          const refDate = regime === 'competencia' ? d.vencimento : d.pago_em;
+          return refDate && refDate.substring(0, 7) === mesYM;
+        });
 
-      const fatBruto = Number(r.vendas_brutas) || 0;
-      const descontos = Number(r.descontos) || 0;
-      const fatLiquido = Number(r.faturamento_liquido) || 0;
-      const totalVar = Number(r.total_variaveis) || 0;
-      const margemContribuicao = Number(r.margem_contribuicao) || (fatLiquido - totalVar);
-      const totalFixas = Number(r.total_fixas) || 0;
-      const resultadoOperacional = Number(r.resultado_operacional) || (margemContribuicao - totalFixas);
+        let fixas = 0;
+        let variaveis = 0;
+        const mapaCategorias = new Map();
 
-      const pctMargem = fatLiquido > 0 ? ((margemContribuicao / fatLiquido) * 100).toFixed(1) : '0.0';
-      const pctResultado = fatLiquido > 0 ? ((resultadoOperacional / fatLiquido) * 100).toFixed(1) : '0.0';
+        pagasNoPeriodo.forEach(d => {
+          const catNome = d.categoria?.nome || 'Outros';
+          const catTipo = d.tipo || 'fixa';
+          const val = Number(d.valor_pago || d.valor) || 0;
+          if (catNome.toLowerCase().includes('taxa') || catNome.toLowerCase().includes('maquininha')) return;
+          if (catTipo === 'variavel') variaveis += val;
+          else fixas += val;
+          mapaCategorias.set(catNome, {
+            categoria: catNome,
+            tipo: catTipo,
+            total: (mapaCategorias.get(catNome)?.total || 0) + val
+          });
+        });
+
+        dreData = {
+          faturamento_bruto: 0,
+          faturamento_bruto_pct: 100.0,
+          descontos: 0,
+          descontos_pct: 0,
+          taxas_pagamento: 0,
+          taxas_pagamento_pct: 0,
+          receita_liquida: 0,
+          receita_liquida_pct: 0,
+          cmv_itens: 0,
+          cmv_perdas: 0,
+          cmv_total: 0,
+          cmv_total_pct: 0,
+          margem_contribuicao: 0,
+          margem_contribuicao_pct: 0,
+          despesas_fixas: fixas,
+          despesas_fixas_pct: 0,
+          despesas_variaveis: variaveis,
+          despesas_variaveis_pct: 0,
+          despesas_total: fixas + variaveis,
+          despesas_total_pct: 0,
+          despesas_categorias: Array.from(mapaCategorias.values()),
+          resultado_liquido: -(fixas + variaveis),
+          resultado_liquido_pct: 0
+        };
+      }
+
+      dreCacheAtual = dreData;
+
+      const fatBruto = Number(dreData.faturamento_bruto) || 0;
+      const fatBrutoPct = Number(dreData.faturamento_bruto_pct) || 100;
+      const descontos = Number(dreData.descontos) || 0;
+      const descontosPct = Number(dreData.descontos_pct) || 0;
+      const taxas = Number(dreData.taxas_pagamento) || 0;
+      const taxasPct = Number(dreData.taxas_pagamento_pct) || 0;
+      const fatLiquido = Number(dreData.receita_liquida) || 0;
+      const fatLiquidoPct = Number(dreData.receita_liquida_pct) || 0;
+      const cmvTotal = Number(dreData.cmv_total) || 0;
+      const cmvTotalPct = Number(dreData.cmv_total_pct) || 0;
+      const cmvItens = Number(dreData.cmv_itens) || 0;
+      const cmvPerdas = Number(dreData.cmv_perdas) || 0;
+      const margem = Number(dreData.margem_contribuicao) || 0;
+      const margemPct = Number(dreData.margem_contribuicao_pct) || 0;
+      const totalDespesas = Number(dreData.despesas_total) || 0;
+      const totalDespesasPct = Number(dreData.despesas_total_pct) || 0;
+      const totalFixas = Number(dreData.despesas_fixas) || 0;
+      const totalVar = Number(dreData.despesas_variaveis) || 0;
+      const resultado = Number(dreData.resultado_liquido) || 0;
+      const resultadoPct = Number(dreData.resultado_liquido_pct) || 0;
 
       if (dreFaturamentoBruto) dreFaturamentoBruto.textContent = formatarMoeda(fatBruto);
-      if (dreDescontos) dreDescontos.textContent = formatarMoeda(descontos);
+      if (dreFaturamentoBrutoPct) dreFaturamentoBrutoPct.textContent = `(${fatBrutoPct.toFixed(1)}%)`;
+      if (dreDescontos) dreDescontos.textContent = `-${formatarMoeda(descontos)}`;
+      if (dreDescontosPct) dreDescontosPct.textContent = `(${descontosPct.toFixed(1)}%)`;
+      if (dreTaxasPagamento) dreTaxasPagamento.textContent = `-${formatarMoeda(taxas)}`;
+      if (dreTaxasPagamentoPct) dreTaxasPagamentoPct.textContent = `(${taxasPct.toFixed(1)}%)`;
       if (dreFaturamentoLiquido) dreFaturamentoLiquido.textContent = formatarMoeda(fatLiquido);
-      if (dreTotalVariaveis) dreTotalVariaveis.textContent = formatarMoeda(totalVar);
-      if (dreMargemContribuicao) dreMargemContribuicao.textContent = `${formatarMoeda(margemContribuicao)} (${pctMargem}%)`;
+      if (dreFaturamentoLiquidoPct) dreFaturamentoLiquidoPct.textContent = `(${fatLiquidoPct.toFixed(1)}%)`;
+      if (dreTotalCMV) dreTotalCMV.textContent = `-${formatarMoeda(cmvTotal)}`;
+      if (dreTotalCMVPct) dreTotalCMVPct.textContent = `(${cmvTotalPct.toFixed(1)}%)`;
+      if (dreCMVItens) dreCMVItens.textContent = formatarMoeda(cmvItens);
+      if (dreCMVPerdas) dreCMVPerdas.textContent = formatarMoeda(cmvPerdas);
+      if (dreMargemContribuicao) dreMargemContribuicao.textContent = formatarMoeda(margem);
+      if (dreMargemContribuicaoPct) dreMargemContribuicaoPct.textContent = `(${margemPct.toFixed(1)}%)`;
+      if (dreTotalDespesasOperacionais) dreTotalDespesasOperacionais.textContent = `-${formatarMoeda(totalDespesas)}`;
+      if (dreTotalDespesasPct) dreTotalDespesasPct.textContent = `(${totalDespesasPct.toFixed(1)}%)`;
       if (dreTotalFixas) dreTotalFixas.textContent = formatarMoeda(totalFixas);
+      if (dreTotalVariaveis) dreTotalVariaveis.textContent = formatarMoeda(totalVar);
 
       if (dreResultadoFinal) {
-        dreResultadoFinal.textContent = `${formatarMoeda(resultadoOperacional)} (${pctResultado}%)`;
+        dreResultadoFinal.textContent = formatarMoeda(resultado);
+      }
+      if (dreResultadoFinalPct) {
+        dreResultadoFinalPct.textContent = `(${resultadoPct.toFixed(1)}%)`;
       }
       if (dreBoxResultadoFinal) {
-        dreBoxResultadoFinal.style.background = resultadoOperacional >= 0 ? '#f0fdf4' : '#fef2f2';
-        dreBoxResultadoFinal.style.color = resultadoOperacional >= 0 ? '#15803d' : '#b91c1c';
-        dreBoxResultadoFinal.style.borderColor = resultadoOperacional >= 0 ? '#bbf7d0' : '#fecaca';
+        dreBoxResultadoFinal.style.background = resultado >= 0 ? '#f0fdf4' : '#fef2f2';
+        dreBoxResultadoFinal.style.color = resultado >= 0 ? '#15803d' : '#b91c1c';
+        dreBoxResultadoFinal.style.borderColor = resultado >= 0 ? '#bbf7d0' : '#fecaca';
       }
 
-      // Detalha despesas pagas por categoria
-      renderDRECategorias(mesYM);
+      renderDRECategoriasDetalhe(dreData.despesas_categorias || []);
     } catch (err) {
       console.error('Erro ao calcular DRE:', err);
     }
   }
 
-  function renderDRECategorias(mesYM) {
+  function renderDRECategoriasDetalhe(categorias = []) {
     if (!dreListaVariaveis || !dreListaFixas) return;
 
-    // Filtra as despesas pagas do mês selecionado
-    const pagasNoMes = despesasCache.filter(d => {
-      if (!d.pago_em) return false;
-      return d.pago_em.substring(0, 7) === mesYM;
-    });
+    const fixas = categorias.filter(c => c.tipo !== 'variavel');
+    const variaveis = categorias.filter(c => c.tipo === 'variavel');
 
-    const mapaVariaveis = new Map();
-    const mapaFixas = new Map();
-
-    pagasNoMes.forEach(d => {
-      const catNome = d.categoria ? `${d.categoria.icone || '🏷️'} ${d.categoria.nome}` : 'Outros';
-      const val = Number(d.valor_pago || d.valor) || 0;
-      if (d.tipo === 'variavel') {
-        mapaVariaveis.set(catNome, (mapaVariaveis.get(catNome) || 0) + val);
-      } else {
-        mapaFixas.set(catNome, (mapaFixas.get(catNome) || 0) + val);
-      }
-    });
-
-    if (mapaVariaveis.size === 0) {
-      dreListaVariaveis.innerHTML = `<div style="font-size:12px; color:#94a3b8; font-style:italic;">Nenhum custo variável pago neste mês.</div>`;
+    if (fixas.length === 0) {
+      dreListaFixas.innerHTML = `<div style="font-size:12px; color:#94a3b8; font-style:italic;">Nenhuma despesa fixa no período.</div>`;
     } else {
-      dreListaVariaveis.innerHTML = Array.from(mapaVariaveis.entries()).map(([cat, val]) => `
+      dreListaFixas.innerHTML = fixas.map(c => `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>• ${cat}</span>
-          <span style="font-weight:600; color:#334155;">${formatarMoeda(val)}</span>
+          <span>• ${c.categoria}</span>
+          <span style="font-weight:600; color:#334155;">${formatarMoeda(c.total)}</span>
         </div>
       `).join('');
     }
 
-    if (mapaFixas.size === 0) {
-      dreListaFixas.innerHTML = `<div style="font-size:12px; color:#94a3b8; font-style:italic;">Nenhuma despesa fixa paga neste mês.</div>`;
+    if (variaveis.length === 0) {
+      dreListaVariaveis.innerHTML = `<div style="font-size:12px; color:#94a3b8; font-style:italic;">Nenhum custo variável no período.</div>`;
     } else {
-      dreListaFixas.innerHTML = Array.from(mapaFixas.entries()).map(([cat, val]) => `
+      dreListaVariaveis.innerHTML = variaveis.map(c => `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>• ${cat}</span>
-          <span style="font-weight:600; color:#334155;">${formatarMoeda(val)}</span>
+          <span>• ${c.categoria}</span>
+          <span style="font-weight:600; color:#334155;">${formatarMoeda(c.total)}</span>
         </div>
       `).join('');
+    }
+  }
+
+  // --- Exportar DRE CSV (CAF-000113) ---
+  function exportarCSVDRE() {
+    if (!dreCacheAtual) {
+      showToast('Calcule o DRE antes de exportar.', 'warning');
+      return;
+    }
+    const mesYM = filterResultadoMes ? filterResultadoMes.value : getMesAtualYM();
+    const d = dreCacheAtual;
+
+    const linhas = [
+      ['Estrutura do DRE Gerencial', 'Valor (R$)', 'AV (%)'],
+      ['(+) Faturamento Bruto (Vendas Realizadas)', (Number(d.faturamento_bruto) || 0).toFixed(2).replace('.', ','), '100,0%'],
+      ['(-) Descontos e Cupons Concedidos', `-${(Number(d.descontos) || 0).toFixed(2).replace('.', ',')}`, `${(Number(d.descontos_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['(-) Taxas de Meios de Pagamento', `-${(Number(d.taxas_pagamento) || 0).toFixed(2).replace('.', ',')}`, `${(Number(d.taxas_pagamento_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['(=) Receita Operacional Líquida', (Number(d.receita_liquida) || 0).toFixed(2).replace('.', ','), `${(Number(d.receita_liquida_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['(-) Custo da Mercadoria Vendida (CMV Real + Perdas)', `-${(Number(d.cmv_total) || 0).toFixed(2).replace('.', ',')}`, `${(Number(d.cmv_total_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['   • CMV dos Produtos Vendidos (Fichas Técnicas)', (Number(d.cmv_itens) || 0).toFixed(2).replace('.', ','), ''],
+      ['   • Perdas e Quebras de Estoque', (Number(d.cmv_perdas) || 0).toFixed(2).replace('.', ','), ''],
+      ['(=) Margem de Contribuição Bruta', (Number(d.margem_contribuicao) || 0).toFixed(2).replace('.', ','), `${(Number(d.margem_contribuicao_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['(-) Despesas Operacionais Totais', `-${(Number(d.despesas_total) || 0).toFixed(2).replace('.', ',')}`, `${(Number(d.despesas_total_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['   • Despesas Fixas', `-${(Number(d.despesas_fixas) || 0).toFixed(2).replace('.', ',')}`, `${(Number(d.despesas_fixas_pct) || 0).toFixed(1).replace('.', ',')}%`],
+      ['   • Despesas Variáveis (sem taxas)', `-${(Number(d.despesas_variaveis) || 0).toFixed(2).replace('.', ',')}`, `${(Number(d.despesas_variaveis_pct) || 0).toFixed(1).replace('.', ',')}%`]
+    ];
+
+    if (Array.isArray(d.despesas_categorias) && d.despesas_categorias.length > 0) {
+      linhas.push(['--- Detalhamento por Categoria ---', '', '']);
+      d.despesas_categorias.forEach(cat => {
+        linhas.push([
+          `   [${cat.tipo === 'fixa' ? 'Fixa' : 'Variável'}] ${cat.categoria}`,
+          `-${(Number(cat.total) || 0).toFixed(2).replace('.', ',')}`,
+          `${(Number(cat.percentual_receita || 0)).toFixed(1).replace('.', ',')}%`
+        ]);
+      });
+    }
+
+    linhas.push([
+      '(=) Resultado Operacional Líquido',
+      (Number(d.resultado_liquido) || 0).toFixed(2).replace('.', ','),
+      `${(Number(d.resultado_liquido_pct) || 0).toFixed(1).replace('.', ',')}%`
+    ]);
+
+    const csvContent = linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const nomeArquivo = `dre_gerencial_${mesYM}.csv`;
+
+    if (window.cafeteriaAdmin && typeof window.cafeteriaAdmin.downloadCSV === 'function') {
+      window.cafeteriaAdmin.downloadCSV(nomeArquivo, csvContent);
+    } else {
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nomeArquivo;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    showToast(`DRE ${nomeArquivo} exportado com sucesso!`, 'success');
+  }
+
+  // --- Sub-aba 4: Recebíveis & Conciliação de Taxas (CAF-000113) ---
+  async function carregarRecebiveis() {
+    if (!tbodyRecebiveis) return;
+    try {
+      tbodyRecebiveis.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Carregando recebíveis...</td></tr>`;
+      const db = window.cafeteriaDB?.financeiro;
+      if (!db || typeof db.obterPrevisaoRecebiveis !== 'function') return;
+
+      const data = await db.obterPrevisaoRecebiveis();
+      if (!data) {
+        tbodyRecebiveis.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Nenhuma previsão de recebimento encontrada.</td></tr>`;
+        return;
+      }
+
+      if (kpiRecebiveisHoje) kpiRecebiveisHoje.textContent = formatarMoeda(data.total_hoje || 0);
+      if (kpiRecebiveis7d) kpiRecebiveis7d.textContent = formatarMoeda(data.total_7dias || 0);
+      if (kpiRecebiveis30d) kpiRecebiveis30d.textContent = formatarMoeda(data.total_30dias || 0);
+
+      const lista = data.recebiveis || [];
+      if (lista.length === 0) {
+        tbodyRecebiveis.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Nenhum recebível previsto no período.</td></tr>`;
+        return;
+      }
+
+      tbodyRecebiveis.innerHTML = lista.map(r => {
+        const prazoLabel = Number(r.prazo_dias) === 0 ? 'D+0 (Hoje)' : `D+${r.prazo_dias}`;
+        const formaLabel = String(r.forma || 'outros').replace(/_/g, ' ').toUpperCase();
+
+        return `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:10px 12px; font-weight:700; color:#1e293b;">${formatarData(r.data_prevista)}</td>
+            <td style="padding:10px 12px; color:#64748b;">${formatarData(r.data_venda)}</td>
+            <td style="padding:10px 12px; font-weight:600; color:#334155;">${formaLabel}</td>
+            <td style="padding:10px 12px; text-align:center;"><span style="background:#e2e8f0; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">${prazoLabel}</span></td>
+            <td style="padding:10px 12px; text-align:right; color:#334155;">${formatarMoeda(r.valor_bruto)}</td>
+            <td style="padding:10px 12px; text-align:right; color:#b91c1c;">-${formatarMoeda(r.taxa_valor)}</td>
+            <td style="padding:10px 12px; text-align:right; font-weight:700; color:#15803d;">${formatarMoeda(r.valor_liquido)}</td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Erro ao carregar recebíveis:', err);
+      tbodyRecebiveis.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Erro ao carregar recebíveis.</td></tr>`;
+    }
+  }
+
+  // --- Metas de Venda (CAF-000113) ---
+  let metaConfigCache = { normal: 1500, espetaculo: 3000 };
+
+  async function carregarMetaDiaria() {
+    try {
+      const db = window.cafeteriaDB?.financeiro;
+      if (!db || typeof db.obterMetaProgressoDia !== 'function') return;
+
+      const meta = await db.obterMetaProgressoDia();
+      if (!meta) return;
+
+      const isEsp = Boolean(meta.is_espetaculo);
+      const metaValor = Number(meta.meta_valor) || (isEsp ? 3000 : 1500);
+      const vendasHoje = Number(meta.vendas_hoje) || 0;
+      const pct = Number(meta.percentual_atingido) || 0;
+      const falta = Number(meta.falta_para_meta) || Math.max(0, metaValor - vendasHoje);
+
+      if (metaDiariaBadge) {
+        metaDiariaBadge.textContent = isEsp ? '🎭 Modo Dia de Espetáculo' : 'Dia Normal';
+        metaDiariaBadge.style.background = isEsp ? '#fae8ff' : '#e0f2fe';
+        metaDiariaBadge.style.color = isEsp ? '#86198f' : '#0369a1';
+      }
+
+      if (metaDiariaProgressoTexto) {
+        metaDiariaProgressoTexto.textContent = `${formatarMoeda(vendasHoje)} de ${formatarMoeda(metaValor)} (${pct.toFixed(0)}%)`;
+      }
+
+      if (metaDiariaBarra) {
+        metaDiariaBarra.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      }
+
+      if (metaDiariaFaltaLabel) {
+        metaDiariaFaltaLabel.textContent = falta > 0
+          ? `Faltam ${formatarMoeda(falta)} para bater a meta`
+          : '🎉 Meta do dia atingida com sucesso!';
+      }
+
+      if (metaDiariaPorcentagemLabel) {
+        metaDiariaPorcentagemLabel.textContent = `${pct.toFixed(0)}%`;
+      }
+    } catch (err) {
+      console.error('Erro ao carregar meta diária:', err);
+    }
+  }
+
+  async function abrirModalMetas() {
+    if (!modalMetasOverlay) return;
+    try {
+      if (window.cafeteriaSupabase) {
+        const { data } = await window.cafeteriaSupabase
+          .from('configuracoes_sistema')
+          .select('chave, valor')
+          .in('chave', ['meta_faturamento_dia_normal', 'meta_faturamento_dia_espetaculo']);
+
+        if (data && Array.isArray(data)) {
+          data.forEach(cfg => {
+            const valNum = Number(cfg.valor) || 0;
+            if (cfg.chave === 'meta_faturamento_dia_normal') metaConfigCache.normal = valNum;
+            if (cfg.chave === 'meta_faturamento_dia_espetaculo') metaConfigCache.espetaculo = valNum;
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao buscar configuracoes de meta:', e);
+    }
+
+    if (inputMetaNormal) inputMetaNormal.value = metaConfigCache.normal || 1500;
+    if (inputMetaEspetaculo) inputMetaEspetaculo.value = metaConfigCache.espetaculo || 3000;
+    modalMetasOverlay.style.display = 'flex';
+  }
+
+  function fecharModalMetas() {
+    if (modalMetasOverlay) modalMetasOverlay.style.display = 'none';
+  }
+
+  async function salvarMetas(e) {
+    if (e) e.preventDefault();
+    const valNormal = parseFloat(inputMetaNormal?.value) || 1500;
+    const valEspetaculo = parseFloat(inputMetaEspetaculo?.value) || 3000;
+
+    try {
+      if (window.cafeteriaSupabase) {
+        await Promise.all([
+          window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert({ chave: 'meta_faturamento_dia_normal', valor: valNormal, updated_at: new Date().toISOString() }),
+          window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .upsert({ chave: 'meta_faturamento_dia_espetaculo', valor: valEspetaculo, updated_at: new Date().toISOString() })
+        ]);
+      }
+      metaConfigCache.normal = valNormal;
+      metaConfigCache.espetaculo = valEspetaculo;
+      fecharModalMetas();
+      await carregarMetaDiaria();
+      showToast('Metas atualizadas com sucesso!', 'success');
+    } catch (err) {
+      console.error('Erro ao salvar metas:', err);
+      showToast('Erro ao salvar metas.', 'error');
     }
   }
 
@@ -1099,10 +1450,25 @@
     showToast(`Arquivo ${nomeArquivo} baixado com sucesso!`, 'success');
   }
 
+  // Exporta métodos internos para testes e integração
+  window.cafeteriaFinanceiroAdmin = {
+    initAdminFinanceiro: window.initAdminFinanceiro,
+    switchTab,
+    carregarResultadoDRE,
+    carregarRecebiveis,
+    carregarMetaDiaria,
+    exportarCSVDRE,
+    salvarMetas
+  };
+
   if (typeof globalThis !== 'undefined') {
     globalThis.initAdminFinanceiro = window.initAdminFinanceiro;
+    globalThis.cafeteriaFinanceiroAdmin = window.cafeteriaFinanceiroAdmin;
   }
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { initAdminFinanceiro: window.initAdminFinanceiro };
+    module.exports = {
+      initAdminFinanceiro: window.initAdminFinanceiro,
+      cafeteriaFinanceiroAdmin: window.cafeteriaFinanceiroAdmin
+    };
   }
 })();

@@ -1,7 +1,7 @@
 # [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo
 
-> **Status:** Rascunho
-> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-29 · **Atualizada em:** 2026-10-29
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael · **Criada em:** 2026-10-29 · **Atualizada em:** 2026-11-06
 
 ## Detalhes da Atividade
 
@@ -63,11 +63,11 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um período com R$ 10.000,00 de vendas brutas pagas, R$ 200,00 de descontos, R$ 180,00 de taxas de cartão, R$ 3.120,00 de CMV (fichas técnicas + perdas) e R$ 4.000,00 de despesas operacionais, quando o administrador consultar o DRE Gerencial, então o sistema exibe `Receita Líquida = R$ 9.620,00`, `Margem de Contribuição = R$ 6.500,00 (65,0%)` e `Resultado Líquido = R$ 2.500,00 (25,0%)`.
-- [ ] **CA02:** Dado o filtro de regime no DRE Gerencial, quando o administrador alternar entre **Regime de Caixa** (`despesas.pago_em`) e **Regime de Competência** (`despesas.vencimento`), então as linhas de despesas e o Resultado Líquido são recalculados imediatamente conforme o regime escolhido.
-- [ ] **CA03:** Dado uma venda de R$ 100,00 no Cartão de Crédito com taxa de `3,10%` e `prazo_recebimento_dias = 30`, quando consultado o painel de Recebíveis e Conciliação, então o sistema projeta um recebimento líquido de `R$ 96,90` para `data_venda + 30 dias`.
-- [ ] **CA04:** Dado que hoje está com o Modo Dia de Espetáculo ativo e a meta de espetáculo é R$ 3.000,00, quando as vendas do dia atingirem R$ 1.500,00, então o indicador de meta exibe `50%` da meta de espetáculo atingida.
-- [ ] **CA05:** Dado o DRE Gerencial carregado na tela, quando o administrador clicar em "Exportar DRE (CSV)", então é gerado um arquivo CSV com UTF-8 BOM contendo todas as linhas do demonstrativo e seus respectivos valores e percentuais.
+- [x] **CA01:** Dado um período com R$ 10.000,00 de vendas brutas pagas, R$ 200,00 de descontos, R$ 180,00 de taxas de cartão, R$ 3.120,00 de CMV (fichas técnicas + perdas) e R$ 4.000,00 de despesas operacionais, quando o administrador consultar o DRE Gerencial, então o sistema exibe `Receita Líquida = R$ 9.620,00`, `Margem de Contribuição = R$ 6.500,00 (65,0%)` e `Resultado Líquido = R$ 2.500,00 (25,0%)`.
+- [x] **CA02:** Dado o filtro de regime no DRE Gerencial, quando o administrador alternar entre **Regime de Caixa** (`despesas.pago_em`) e **Regime de Competência** (`despesas.vencimento`), então as linhas de despesas e o Resultado Líquido são recalculados imediatamente conforme o regime escolhido.
+- [x] **CA03:** Dado uma venda de R$ 100,00 no Cartão de Crédito com taxa de `3,10%` e `prazo_recebimento_dias = 30`, quando consultado o painel de Recebíveis e Conciliação, então o sistema projeta um recebimento líquido de `R$ 96,90` para `data_venda + 30 dias`.
+- [x] **CA04:** Dado que hoje está com o Modo Dia de Espetáculo ativo e a meta de espetáculo é R$ 3.000,00, quando as vendas do dia atingirem R$ 1.500,00, então o indicador de meta exibe `50%` da meta de espetáculo atingida.
+- [x] **CA05:** Dado o DRE Gerencial carregado na tela, quando o administrador clicar em "Exportar DRE (CSV)", então é gerado um arquivo CSV com UTF-8 BOM contendo todas as linhas do demonstrativo e seus respectivos valores e percentuais.
 
 ## O que a atividade não inclui
 

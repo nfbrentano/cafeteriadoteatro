@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-05T19:17:33.533Z",
+  "gerado_em": "2026-11-06T17:18:39.097Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -511,6 +511,22 @@
       "parameters": [
         "p_mesa_codigo"
       ]
+    },
+    "obter_dre_gerencial": {
+      "parameters": [
+        "p_inicio",
+        "p_fim",
+        "p_regime"
+      ]
+    },
+    "obter_previsao_recebiveis": {
+      "parameters": [
+        "p_data_inicio",
+        "now("
+      ]
+    },
+    "obter_meta_progresso_dia": {
+      "parameters": []
     },
     "validar_cortesia": {
       "parameters": []

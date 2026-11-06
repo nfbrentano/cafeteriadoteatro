@@ -2221,6 +2221,31 @@
           </div>
         </div>
 
+        <!-- Barra de Progresso da Meta Diária (CAF-000113) -->
+        <div id="financeiro-meta-diaria-banner" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px; margin-bottom:1.5rem; display:flex; flex-direction:column; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:22px;">🎯</span>
+              <div>
+                <span style="font-size:15px; font-weight:700; color:#1e293b;">Meta de Faturamento do Dia</span>
+                <span id="meta-diaria-badge" style="margin-left:8px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; background:#e0f2fe; color:#0369a1;">Dia Normal</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <span id="meta-diaria-progresso-texto" style="font-size:14px; font-weight:600; color:#334155;">R$ 0,00 de R$ 1.500,00 (0%)</span>
+              <button type="button" class="btn btn--ghost btn-sm" id="btn-configurar-metas" style="padding:4px 10px; font-size:12px;">⚙️ Ajustar Metas</button>
+            </div>
+          </div>
+          <!-- Barra de Progresso -->
+          <div style="width:100%; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden;">
+            <div id="meta-diaria-barra" style="width:0%; height:100%; background:linear-gradient(90deg, #3b82f6, #10b981); transition:width 0.4s ease; border-radius:5px;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b;">
+            <span id="meta-diaria-falta-label">Faltam R$ 1.500,00 para bater a meta</span>
+            <span id="meta-diaria-porcentagem-label">0%</span>
+          </div>
+        </div>
+
         <!-- Alertas & KPIs Financeiros -->
         <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
           <div class="kpi-card" id="card-kpi-vencidas" style="border-left: 4px solid #ef4444;">
@@ -2270,6 +2295,9 @@
           </button>
           <button type="button" class="btn btn--tab" id="btn-tab-resultado" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:none; color:#64748b;">
             📈 Resultado do Mês (DRE)
+          </button>
+          <button type="button" class="btn btn--tab" id="btn-tab-recebiveis" style="padding:10px 18px; border-radius:8px 8px 0 0; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:none; color:#64748b;">
+            💳 Recebíveis & Taxas
           </button>
         </div>
 
@@ -2396,79 +2424,224 @@
           </div>
         </div>
 
-        <!-- ── SUB-ABA 3: RESULTADO DO MÊS (DRE GERENCIAL) ── -->
+        <!-- ── SUB-ABA 3: RESULTADO DO MÊS (DRE GERENCIAL - CAF-000113) ── -->
         <div id="subtab-financeiro-resultado" class="financeiro-subtab-content" style="display:none;">
           <div class="table-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;">
-            <div style="display:flex; gap:0.5rem; align-items:center;">
-              <label for="filter-resultado-mes" style="font-size:13px; font-weight:600; color:#475569;">Mês de Apuração:</label>
-              <input type="month" id="filter-resultado-mes" class="field__input" style="width:auto; padding:6px 10px;" />
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <label for="filter-resultado-mes" style="font-size:13px; font-weight:600; color:#475569;">Mês:</label>
+                <input type="month" id="filter-resultado-mes" class="field__input" style="width:auto; padding:6px 10px;" />
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <label for="filter-resultado-regime" style="font-size:13px; font-weight:600; color:#475569;">Regime:</label>
+                <select id="filter-resultado-regime" class="filter-select" style="padding:6px 10px;">
+                  <option value="caixa" selected>Regime de Caixa (Data Pagamento)</option>
+                  <option value="competencia">Regime de Competência (Data Vencimento)</option>
+                </select>
+              </div>
               <button type="button" class="btn btn--ghost" id="btn-recarregar-resultado" style="padding:6px 12px;">Calcular DRE</button>
             </div>
-            <div style="font-size:12px; color:#64748b;">
-              Demonstrativo de Resultado do Exercício Gerencial (Regime de Caixa)
+            <div>
+              <button type="button" class="btn btn--primary" id="btn-exportar-dre-csv" style="padding:6px 14px;">📥 Exportar DRE (CSV)</button>
             </div>
           </div>
 
-          <!-- Painel DRE -->
-          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; max-width:800px; margin:0 auto; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+          <!-- Painel DRE Estruturado -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; max-width:850px; margin:0 auto; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
             <div style="text-align:center; margin-bottom:20px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
-              <h3 style="margin:0; font-size:18px; color:#1e293b;">Demonstrativo de Resultado Gerencial</h3>
+              <h3 style="margin:0; font-size:18px; color:#1e293b;">Demonstrativo de Resultado do Exercício Gerencial (DRE)</h3>
               <p style="margin:4px 0 0 0; font-size:13px; color:#64748b;" id="dre-periodo-label">Período de Apuração: --</p>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
               <!-- 1. Receita Bruta -->
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:600; color:#1e293b; padding:8px 12px; background:#f8fafc; border-radius:6px;">
                 <span>(+) Faturamento Bruto (Vendas Realizadas)</span>
-                <span id="dre-faturamento-bruto">R$ 0,00</span>
+                <div>
+                  <span id="dre-faturamento-bruto">R$ 0,00</span>
+                  <span id="dre-faturamento-bruto-pct" style="font-size:12px; color:#64748b; margin-left:8px;">(100,0%)</span>
+                </div>
               </div>
 
               <!-- 2. Deduções -->
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#b91c1c; padding:4px 12px 4px 28px;">
-                <span>(−) Descontos Concedidos em Vendas</span>
-                <span id="dre-descontos">R$ 0,00</span>
+                <span>(−) Descontos e Cupons Concedidos em Vendas</span>
+                <div>
+                  <span id="dre-descontos">-R$ 0,00</span>
+                  <span id="dre-descontos-pct" style="font-size:12px; color:#b91c1c; margin-left:8px;">(0,0%)</span>
+                </div>
+              </div>
+
+              <!-- 2.1 Taxas de Meios de Pagamento -->
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#b91c1c; padding:4px 12px 4px 28px;">
+                <span>(−) Taxas de Meios de Pagamento (Cartão / Maquininha / Pix)</span>
+                <div>
+                  <span id="dre-taxas-pagamento">-R$ 0,00</span>
+                  <span id="dre-taxas-pagamento-pct" style="font-size:12px; color:#b91c1c; margin-left:8px;">(0,0%)</span>
+                </div>
               </div>
 
               <!-- 3. Receita Líquida -->
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#0f172a; padding:8px 12px; border-top:1px dashed #cbd5e1; border-bottom:1px dashed #cbd5e1;">
-                <span>(=) Faturamento Líquido</span>
-                <span id="dre-faturamento-liquido">R$ 0,00</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#0f172a; padding:8px 12px; border-top:1px dashed #cbd5e1; border-bottom:1px dashed #cbd5e1; background:#f1f5f9;">
+                <span>(=) Receita Operacional Líquida</span>
+                <div>
+                  <span id="dre-faturamento-liquido">R$ 0,00</span>
+                  <span id="dre-faturamento-liquido-pct" style="font-size:12px; color:#475569; margin-left:8px;">(0,0%)</span>
+                </div>
               </div>
 
-              <!-- 4. Custos Variáveis -->
-              <div style="margin-top:6px;">
+              <!-- 4. CMV Total (Fichas Técnicas + Perdas de Estoque) -->
+              <div style="margin-top:4px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:600; color:#c2410c; padding:6px 12px; background:#fff7ed; border-radius:6px;">
-                  <span>(−) Custos / Despesas Variáveis Pagas</span>
-                  <span id="dre-total-variaveis">R$ 0,00</span>
+                  <span>(−) Custo da Mercadoria Vendida (CMV Real + Perdas)</span>
+                  <div>
+                    <span id="dre-total-cmv">-R$ 0,00</span>
+                    <span id="dre-total-cmv-pct" style="font-size:12px; color:#c2410c; margin-left:8px;">(0,0%)</span>
+                  </div>
                 </div>
-                <div id="dre-lista-variaveis" style="padding:6px 12px 6px 28px; font-size:13px; color:#475569; display:flex; flex-direction:column; gap:4px;">
-                  <!-- Categorias variáveis preenchidas dinamicamente -->
+                <div style="padding:4px 12px 4px 28px; font-size:13px; color:#64748b; display:flex; flex-direction:column; gap:2px;">
+                  <div style="display:flex; justify-content:space-between;">
+                    <span>• CMV dos Produtos Vendidos (Fichas Técnicas)</span>
+                    <span id="dre-cmv-itens">R$ 0,00</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between;">
+                    <span>• Perdas e Quebras de Estoque Registradas</span>
+                    <span id="dre-cmv-perdas">R$ 0,00</span>
+                  </div>
                 </div>
               </div>
 
               <!-- 5. Margem de Contribuição -->
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#2563eb; padding:8px 12px; background:#eff6ff; border-radius:6px;">
                 <span>(=) Margem de Contribuição Bruta</span>
-                <span id="dre-margem-contribuicao">R$ 0,00 (0%)</span>
+                <div>
+                  <span id="dre-margem-contribuicao">R$ 0,00</span>
+                  <span id="dre-margem-contribuicao-pct" style="font-size:12px; color:#2563eb; margin-left:8px;">(0,0%)</span>
+                </div>
               </div>
 
-              <!-- 6. Despesas Fixas -->
-              <div style="margin-top:6px;">
+              <!-- 6. Despesas Operacionais -->
+              <div style="margin-top:4px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:600; color:#991b1b; padding:6px 12px; background:#fef2f2; border-radius:6px;">
-                  <span>(−) Despesas Fixas Operacionais Pagas</span>
-                  <span id="dre-total-fixas">R$ 0,00</span>
+                  <span>(−) Despesas Operacionais Totais</span>
+                  <div>
+                    <span id="dre-total-despesas-operacionais">-R$ 0,00</span>
+                    <span id="dre-total-despesas-pct" style="font-size:12px; color:#991b1b; margin-left:8px;">(0,0%)</span>
+                  </div>
                 </div>
-                <div id="dre-lista-fixas" style="padding:6px 12px 6px 28px; font-size:13px; color:#475569; display:flex; flex-direction:column; gap:4px;">
-                  <!-- Categorias fixas preenchidas dinamicamente -->
+                <!-- Subdivisão Fixas e Variáveis -->
+                <div style="padding:6px 12px 6px 28px; display:flex; flex-direction:column; gap:8px;">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:#475569;">
+                      <span>• Custos / Despesas Fixas</span>
+                      <span id="dre-total-fixas">R$ 0,00</span>
+                    </div>
+                    <div id="dre-lista-fixas" style="font-size:12px; color:#64748b; margin-left:12px; display:flex; flex-direction:column; gap:2px; margin-top:2px;"></div>
+                  </div>
+                  <div>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:#475569;">
+                      <span>• Custos / Despesas Variáveis (sem taxas de cartão)</span>
+                      <span id="dre-total-variaveis">R$ 0,00</span>
+                    </div>
+                    <div id="dre-lista-variaveis" style="font-size:12px; color:#64748b; margin-left:12px; display:flex; flex-direction:column; gap:2px; margin-top:2px;"></div>
+                  </div>
                 </div>
               </div>
 
               <!-- 7. Resultado Operacional Líquido -->
               <div id="dre-box-resultado-final" style="display:flex; justify-content:space-between; align-items:center; font-size:17px; font-weight:800; padding:14px 16px; border-radius:8px; margin-top:10px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">
                 <span>(=) Resultado Operacional Líquido</span>
-                <span id="dre-resultado-final">R$ 0,00 (0%)</span>
+                <div>
+                  <span id="dre-resultado-final">R$ 0,00</span>
+                  <span id="dre-resultado-final-pct" style="font-size:14px; margin-left:8px;">(0,0%)</span>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 4: RECEBÍVEIS & CONCILIAÇÃO DE TAXAS (CAF-000113) ── -->
+        <div id="subtab-financeiro-recebiveis" class="financeiro-subtab-content" style="display:none;">
+          <div class="table-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;">
+            <div>
+              <h3 style="margin:0; font-size:16px; color:#1e293b;">Previsão de Recebíveis & Liquidação de Cartões / Pix</h3>
+              <p style="margin:2px 0 0 0; font-size:12px; color:#64748b;">Valores líquidos previstos para depósito conforme prazos da maquininha (D+0, D+1, D+30)</p>
+            </div>
+            <button type="button" class="btn btn--ghost" id="btn-recarregar-recebiveis" style="padding:6px 12px;">🔄 Atualizar</button>
+          </div>
+
+          <!-- Cards de Projeção -->
+          <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="kpi-card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" style="color:#166534;">A Receber Hoje</span>
+                <span class="kpi-card__icon">💰</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-recebiveis-hoje" style="color:#15803d;">R$ 0,00</div>
+              <div class="kpi-card__subtitle">D+0 / Liquidações do dia</div>
+            </div>
+
+            <div class="kpi-card" style="background:#eff6ff; border:1px solid #bfdbfe;">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" style="color:#1e40af;">Próximos 7 Dias</span>
+                <span class="kpi-card__icon">📅</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-recebiveis-7d" style="color:#2563eb;">R$ 0,00</div>
+              <div class="kpi-card__subtitle">Débito (D+1) acumulado</div>
+            </div>
+
+            <div class="kpi-card" style="background:#faf5ff; border:1px solid #e9d5ff;">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" style="color:#6b21a8;">Próximos 30 Dias</span>
+                <span class="kpi-card__icon">💳</span>
+              </div>
+              <div class="kpi-card__value" id="kpi-recebiveis-30d" style="color:#7c3aed;">R$ 0,00</div>
+              <div class="kpi-card__subtitle">Crédito (D+30) acumulado</div>
+            </div>
+          </div>
+
+          <!-- Tabela de Projeção -->
+          <div class="table-container" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; min-width:750px;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                  <th>Data Prevista Depósito</th>
+                  <th>Data da Venda</th>
+                  <th>Forma de Pagamento</th>
+                  <th style="text-align:center;">Prazo</th>
+                  <th style="text-align:right;">Valor Bruto</th>
+                  <th style="text-align:right; color:#b91c1c;">Taxa Retida</th>
+                  <th style="text-align:right; font-weight:700; color:#15803d;">Valor Líquido</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-recebiveis">
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Carregando recebíveis...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Ajustar Metas (CAF-000113) -->
+        <div id="modal-metas-overlay" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+          <div class="modal" style="background:#fff; border-radius:12px; width:90%; max-width:420px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="margin:0; font-size:18px; color:#1e293b;">Configurar Metas de Venda</h3>
+              <button type="button" id="modal-metas-close" style="background:none; border:none; font-size:20px; cursor:pointer; color:#64748b;">✕</button>
+            </div>
+            <form id="form-metas" style="display:flex; flex-direction:column; gap:14px;">
+              <div>
+                <label for="input-meta-normal" style="font-size:13px; font-weight:600; display:block; margin-bottom:4px; color:#334155;">Meta Dia Normal (R$):</label>
+                <input type="number" step="0.01" min="0" id="input-meta-normal" class="input-padrao" style="width:100%;" required>
+              </div>
+              <div>
+                <label for="input-meta-espetaculo" style="font-size:13px; font-weight:600; display:block; margin-bottom:4px; color:#334155;">Meta Dia de Espetáculo (R$):</label>
+                <input type="number" step="0.01" min="0" id="input-meta-espetaculo" class="input-padrao" style="width:100%;" required>
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                <button type="button" id="btn-cancelar-metas" class="btn btn--ghost">Cancelar</button>
+                <button type="submit" id="btn-salvar-metas" class="btn btn--primary">Salvar Metas</button>
+              </div>
+            </form>
           </div>
         </div>
 

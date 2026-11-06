@@ -1525,6 +1525,49 @@
           db.logger.error('financeiro.getFluxoCaixa', err);
           return [];
         }
+      },
+
+      // --- CAF-000113: DRE Gerencial, Recebíveis e Metas ---
+      async obterDRE(inicio, fim, regime = 'caixa') {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_dre_gerencial', { p_inicio: inicio, p_fim: fim, p_regime: regime });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('financeiro.obterDRE', err);
+          return null;
+        }
+      },
+
+      async obterPrevisaoRecebiveis(dataInicio = null, diasFuturos = 30) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const params = {};
+          if (dataInicio) params.p_data_inicio = dataInicio;
+          if (diasFuturos !== undefined && diasFuturos !== null) params.p_dias_futuros = diasFuturos;
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_previsao_recebiveis', params);
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('financeiro.obterPrevisaoRecebiveis', err);
+          return null;
+        }
+      },
+
+      async obterMetaProgressoDia() {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_meta_progresso_dia', {});
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('financeiro.obterMetaProgressoDia', err);
+          return null;
+        }
       }
     },
 
