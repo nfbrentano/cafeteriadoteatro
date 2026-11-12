@@ -8,24 +8,27 @@ O repositório Git é a **única fonte de verdade** para a estrutura e o código
 
 ## 2. Ordem Oficial de Aplicação das Migrations
 
-Para instanciar um banco novo ou aplicar atualizações com consistência, a ordem cronológica e lógica é:
+A ordem oficial, cronológica e auditada de todas as migrations ativas está definida no arquivo de manifesto canônico:
+👉 **[`supabase/migrations.manifest.json`](migrations.manifest.json)** (CAF-000116).
 
+Para aplicar as migrations de forma determinística e com validação de checksum:
+```bash
+# Simular aplicação sem alterar o banco
+npm run db:migrate -- --dry-run
+
+# Executar aplicação em ambiente com DATABASE_URL configurada
+npm run db:migrate
+```
+
+A sequência compreende:
 1. `pedidos_schema.sql` (schema base inicial do sistema)
 2. `migration_CAF-000001.sql` até `migration_caf_000044_caixa_fix.sql`
 3. `migration_caf_000061_cupons_desconto.sql` até `migration_caf_000069_menu_analytics.sql`
 4. `migration_caf_000072_baseline_producao.sql` (reconciliação baseline de produção)
-5. Migrations de correções e estabilização:
-   - `migration_caf_000073_fechamento_conta_mesa.sql`
-   - `migration_caf_000074_correcao_estoque_ficha_tecnica.sql`
-   - `migration_caf_000075_validacao_adicionais_xss.sql`
-   - `migration_caf_000076_correcao_cashback.sql`
-   - `migration_caf_000077_cupons_uso_unico.sql`
-   - `migration_caf_000078_financeiro_despesas.sql`
-   - `migration_caf_000079_pix_admin_taxas_caixa.sql`
-   - `migration_caf_000080_fuso_horario.sql`
-   - `migration_caf_000081_seguranca_pin_rls.sql`
-   - `migration_caf_000082_seguranca.sql`
-   - `migration_caf_000083_pendencias_operacao.sql`
+5. Migrations 073 a 083 (estabilização operacional)
+6. Migrations 103 a 115 (novas funcionalidades, combos, PEPS, DRE e observabilidade)
+
+Para instruções completas de backup e recuperação de desastres, consulte **[`supabase/RESTAURACAO.md`](RESTAURACAO.md)**.
 
 ## 3. Papel de `migrations_todas_consolidadas.sql`
 

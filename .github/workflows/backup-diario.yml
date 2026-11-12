@@ -1,0 +1,40 @@
+name: Backup Diário do Banco de Dados (Supabase → Google Drive)
+
+on:
+  schedule:
+    # Executa diariamente às 03:00 no Horário de Brasília (06:00 UTC)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  database-backup:
+    name: Backup Lógico & Retenção 30d
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependências e cliente PostgreSQL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client gzip
+          npm ci
+
+      - name: Executar Dump e Upload para Google Drive
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          GDRIVE_SERVICE_ACCOUNT_KEY: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_KEY }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          node scripts/backup-db.mjs
+

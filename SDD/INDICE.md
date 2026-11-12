@@ -124,7 +124,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000113** | [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo | Concluída | `migration_caf_000113_dre_gerencial_recebiveis_metas.sql` | `caf-000113-dre-gerencial-recebiveis-metas.test.js` | — |
 | **CAF-000114** | [CHORE] Atualização de Dependências de Desenvolvimento (vite, vitest, @vitest/coverage-v8 e fake-indexeddb) | Concluída | — | `caf-000114-atualizacao-dependencias.test.js` | — |
 | **CAF-000115** | [CHORE] Observabilidade: captura de erros do front em produção e painel de saúde no Admin | Concluída | `migration_caf_000115_erros_cliente.sql` | `caf-000115-observabilidade-erros.test.js` | — |
-| **CAF-000116** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–113 | Rascunho | — | — | — |
+| **[CAF-000116](CONCLUIDAS/CAF-000116-backup-restauracao-e-runner-de-migrations.md)** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–115 | Concluída | `supabase/migrations.manifest.json` | `caf-000116-backup-migrations-runner.test.js` | — |
 | **CAF-000117** | [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot | Rascunho | — | — | — |
 | **CAF-000118** | [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin | Rascunho | — | — | — |
 | **CAF-000119** | [CHORE] Qualidade contínua: ESLint, cobertura medida sobre o código real das telas e limites mínimos no CI | Rascunho | — | — | — |
@@ -159,8 +159,16 @@ As seguintes 11 migrations foram criadas com nomenclatura histórica anterior à
 
 ## 3. Ordem Oficial de Aplicação das Migrations
 
-A ordem sequencial auditada para instanciar um ambiente limpo ou aplicar em produção é:
+A ordem sequencial auditada e canônica é definida em:
+👉 **[`supabase/migrations.manifest.json`](../supabase/migrations.manifest.json)** (CAF-000116).
 
+Para aplicar ou auditar as migrations automaticamente com validação de checksum:
+```bash
+npm run db:migrate -- --dry-run
+npm run db:migrate
+```
+
+A sequência compreende:
 1. `pedidos_schema.sql` (schema base inicial do sistema)
 2. `migration_CAF-000001.sql` até `migration_caf_000044_caixa_fix.sql`
 3. `migration_caf_000061_cupons_desconto.sql` até `migration_caf_000069_menu_analytics.sql`
@@ -186,3 +194,4 @@ A ordem sequencial auditada para instanciar um ambiente limpo ou aplicar em prod
    - `migration_caf_000111_lotes_validade_peps_sugestao_compras.sql`
    - `migration_caf_000112_fechamento_parcial_mesa.sql`
    - `migration_caf_000113_dre_gerencial_recebiveis_metas.sql`
+   - `migration_caf_000115_erros_cliente.sql`

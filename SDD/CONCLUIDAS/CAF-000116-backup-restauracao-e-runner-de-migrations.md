@@ -1,7 +1,7 @@
 # [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–113
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-12
 
 ## Detalhes da Atividade
 
@@ -51,14 +51,14 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um banco com migrations até a 112, quando rodo `npm run db:migrate`, então só a 113 é aplicada e registrada em `app_migrations`.
-- [ ] **CA02:** Dado que o arquivo de uma migration já aplicada foi alterado, quando rodo o runner, então ele aborta com erro citando o arquivo, sem aplicar nada.
-- [ ] **CA03:** Dado o manifesto, quando comparo com os arquivos `migration_*.sql` do diretório, então todo arquivo está no manifesto ou em uma lista explícita de "históricos/não aplicar".
-- [ ] **CA04:** Dado `--dry-run`, quando há pendentes, então elas são listadas e o banco permanece inalterado.
-- [ ] **CA05:** Dado um banco na 113, quando aplico os rollbacks 113→103 e reaplico as migrations, então os testes pgTAP passam.
-- [ ] **CA06:** Dado o agendamento diário, quando o job roda, então um dump novo aparece no destino e dumps com mais de 30 dias são removidos; nenhuma credencial aparece nos logs.
-- [ ] **CA07:** Dado um dump de produção, quando sigo `RESTAURACAO.md` em um banco vazio, então as contagens de `pedidos`, `fechamentos` e `clientes` batem com a origem.
-- [ ] **CA08:** Dado um PR que adiciona migration sem rollback ou fora do manifesto, quando o CI roda, então o job falha.
+- [x] **CA01:** Dado um banco com migrations até a 112, quando rodo `npm run db:migrate`, então só a 113 é aplicada e registrada em `app_migrations`.
+- [x] **CA02:** Dado que o arquivo de uma migration já aplicada foi alterado, quando rodo o runner, então ele aborta com erro citando o arquivo, sem aplicar nada.
+- [x] **CA03:** Dado o manifesto, quando comparo com os arquivos `migration_*.sql` do diretório, então todo arquivo está no manifesto ou em uma lista explícita de "históricos/não aplicar".
+- [x] **CA04:** Dado `--dry-run`, quando há pendentes, então elas são listadas e o banco permanece inalterado.
+- [x] **CA05:** Dado um banco na 113, quando aplico os rollbacks 113→103 e reaplico as migrations, então os testes pgTAP passam.
+- [x] **CA06:** Dado o agendamento diário, quando o job roda, então um dump novo aparece no destino e dumps com mais de 30 dias são removidos; nenhuma credencial aparece nos logs.
+- [x] **CA07:** Dado um dump de produção, quando sigo `RESTAURACAO.md` em um banco vazio, então as contagens de `pedidos`, `fechamentos` e `clientes` batem com a origem.
+- [x] **CA08:** Dado um PR que adiciona migration sem rollback ou fora do manifesto, quando o CI roda, então o job falha.
 
 ## O que a atividade não inclui
 
@@ -75,9 +75,9 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Qual o plano atual da Supabase e ele já inclui backup diário? Se sim, o RF05 vira "backup adicional fora do fornecedor" | PO | Sim | |
-| D02 | Onde guardar os dumps (Google Drive, S3, R2)? | PO | Sim | |
-| D03 | `migrations_todas_consolidadas.sql`, `migration_fase2.sql`, `migration_fase3_final.sql` e `migration_pedidos_v2.sql` entram no manifesto ou na lista de históricos? | dev | Não | |
+| D01 | Qual o plano atual da Supabase e ele já inclui backup diário? Se sim, o RF05 vira "backup adicional fora do fornecedor" | PO | Sim | Plano gratuito (Free). O backup diário externo automatizado via GitHub Actions é indispensável para evitar perda de dados por inatividade/falha. |
+| D02 | Onde guardar os dumps (Google Drive, S3, R2)? | PO | Sim | Google Drive (via Service Account em secrets do GitHub), com retenção e limpeza automática de 30 dias. |
+| D03 | `migrations_todas_consolidadas.sql`, `migration_fase2.sql`, `migration_fase3_final.sql` e `migration_pedidos_v2.sql` entram no manifesto ou na lista de históricos? | dev | Não | Entram na lista explícita de `arquivos_historicos_ignorados` no manifesto `supabase/migrations.manifest.json`. |
 
 ## Sugestões de casos de teste
 

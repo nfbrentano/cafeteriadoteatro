@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "descricao": "Manifesto canônico e ordenado de migrations do banco de dados (CAF-000116)",
+  "gerado_em": "2026-11-12T12:09:26.914Z",
+  "arquivos_historicos_ignorados": [
+    "migration_fase2.sql",
+    "migration_fase3_final.sql",
+    "migration_pedidos_v2.sql",
+    "migrations_todas_consolidadas.sql"
+  ],
+  "arquivos_manutencao_ignorados": [
+    "cardapio_seed_completo.sql",
+    "contador_rotina.sql",
+    "diagnostico_schema_producao.sql"
+  ],
+  "migrations": [
+    {
+      "versao": "000",
+      "arquivo": "pedidos_schema.sql",
+      "checksum": "95fe1540d5082cda3f88c62bb4efcc09f21ccab10254a5b091811c7c39b8f600",
+      "rollback": null
+    },
+    {
+      "versao": "1",
+      "arquivo": "migration_CAF-000001.sql",
+      "checksum": "a4d6a3901cd898fbae14eaf9cf942104bf88e07e8cfc44601a09fd7f1d372af2",
+      "rollback": null
+    },
+    {
+      "versao": "2",
+      "arquivo": "migration_caf_000002.sql",
+      "checksum": "083deab1140a6c611462721e89c21ef55e914e62d366ceca9f348c7465080711",
+      "rollback": null
+    },
+    {
+      "versao": "3",
+      "arquivo": "migration_caf_000003.sql",
+      "checksum": "7e70c1eb094e19115068dd2c349bfcad697ec9ca09da668044ae9bb963101187",
+      "rollback": null
+    },
+    {
+      "versao": "4",
+      "arquivo": "migration_caf_000004.sql",
+      "checksum": "1628a4dd22b95704fa9953d30c5812eadaa8c8ce01cae21ad15262c87bed9606",
+      "rollback": null
+    },
+    {
+      "versao": "5",
+      "arquivo": "migration_caf_000005.sql",
+      "checksum": "66807b2208e13c40774bf7d837d7d4d40d5e9467570879bd2b49da7fda575a99",
+      "rollback": null
+    },
+    {
+      "versao": "6",
+      "arquivo": "migration_caf_000006_estacoes.sql",
+      "checksum": "08fb8010bd40431a4594e2870b151deae6b2596268c6cfdef181c7b706186e42",
+      "rollback": null
+    },
+    {
+      "versao": "8",
+      "arquivo": "migration_caf_000008_pronto.sql",
+      "checksum": "2f1bdec6eb950fe7a6eebe7efd698b10624fc9d5b3114709a9adf158ff8a01ac",
+      "rollback": null
+    },
+    {
+      "versao": "19",
+      "arquivo": "migration_caf_000019_log_auditoria.sql",
+      "checksum": "7d100a69e778afc6464cfa4e4e6130125306c29f42593eaa587a202fa697ea47",
+      "rollback": null
+    },
+    {
+      "versao": "20",
+      "arquivo": "migration_caf_000020_vinculo_adicionais.sql",
+      "checksum": "a589cfef5864bb9a45010df5098f6f4b0276fb90b69f4d7e9beb53f068347209",
+      "rollback": null
+    },
+    {
+      "versao": "21",
+      "arquivo": "migration_caf_000021_cliente_viagem.sql",
+      "checksum": "f8b91935b0de481f517c88f116df26a0c2c069a6396d39f4090bd749793dde6d",
+      "rollback": null
+    },
+    {
+      "versao": "22",
+      "arquivo": "migration_caf_000022_transferir_mesa.sql",
+      "checksum": "20485bff6ca2b2a4f33acd4f29f91e7c82316c15a4df9ce168a08acd5cb32d86",
+      "rollback": null
+    },
+    {
+      "versao": "23",
+      "arquivo": "migration_caf_000023_taxa_desconto.sql",
+      "checksum": "76038061a5fd1569836400cd52a6055bcc4a15fdef7d7eee94ec05cc7b6b7f0c",
+      "rollback": null
+    },
+    {
+      "versao": "24",
+      "arquivo": "migration_caf_000024_relatorios.sql",
+      "checksum": "fb442d66eadbce15675098c9a73c836dabc9608930418c85e923ca795e581ee4",
+      "rollback": null
+    },
+    {
+      "versao": "25",
+      "arquivo": "migration_caf_000025_caixa.sql",
+      "checksum": "3862065fd5a9784453c62d055f4f5a64141430b0ac7f918755b127ebf842e8a1",
+      "rollback": null
+    },
+    {
+      "versao": "26",
+      "arquivo": "migration_caf_000026_idempotencia.sql",
+      "checksum": "88248bbc546495e1491a65ed95a9f46a61bcf03fd9a6a3703101545b9fac777e",
+      "rollback": null
+    },
+    {
+      "versao": "27",
+      "arquivo": "migration_caf_000027_conclusao_estacao.sql",
+      "checksum": "7e21baa61a7885e8db7b0b25bdcbd6457606c0112da14d145373387931349247",
+      "rollback": null
+    },
+    {
+      "versao": "27",
+      "arquivo": "migration_caf_000027_painel_retirada.sql",
+      "checksum": "225b364a8103a4f2d3892f1ae9d5b9cfd4adc6ac78800ecdb712af1fd1352509",
+      "rollback": null
+    },
+    {
+      "versao": "28",
+      "arquivo": "migration_caf_000028_itens_lancados_depois.sql",
+      "checksum": "cafdd37b02bbac6f384d3cbf83eb5da1f0257eed46a8eaa6372d6e1090f89660",
+      "rollback": null
+    },
+    {
+      "versao": "28",
+      "arquivo": "migration_caf_000028_tela_impressora.sql",
+      "checksum": "bdf9e6af17e0f992558f5f8c0baa2a9f20df275621d2cd28ec6d648741bff0fd",
+      "rollback": null
+    },
+    {
+      "versao": "29",
+      "arquivo": "migration_caf_000029_prioridade_teclado.sql",
+      "checksum": "8b4fd79380b7938efae2ea9f76f734231e84ec11c98c5bc387f9648d7f331c7b",
+      "rollback": null
+    },
+    {
+      "versao": "29",
+      "arquivo": "migration_caf_000029_tempo_alvo_semaforo.sql",
+      "checksum": "b9d0b8defb0259203b55e1df76f82cde000db6c3f622df69e16606ddd507ec11",
+      "rollback": null
+    },
+    {
+      "versao": "31",
+      "arquivo": "migration_caf_000031_controle_estoque.sql",
+      "checksum": "d9ff2caa103626e6eb5bc0456b7edc36921aebde1c81a2fffb704c3d5f93545d",
+      "rollback": null
+    },
+    {
+      "versao": "32",
+      "arquivo": "migration_caf_000032_ficha_tecnica.sql",
+      "checksum": "c3482ca8436fd8a54b12598d91a5767ad6ed198789279042a686c4a1f144388e",
+      "rollback": null
+    },
+    {
+      "versao": "33",
+      "arquivo": "migration_caf_000033_cadastro_clientes.sql",
+      "checksum": "b38f207ce0dc5cf7b9e46014d04c47d245a5de716a2c29db75a01b075f7e4a2d",
+      "rollback": null
+    },
+    {
+      "versao": "34",
+      "arquivo": "migration_caf_000034_conta_cliente.sql",
+      "checksum": "7ff19e5609b724a8817da4284fdb7edcfda82bfce233e57baa328c7d21ed5118",
+      "rollback": null
+    },
+    {
+      "versao": "35",
+      "arquivo": "migration_caf_000035_financeiro_despesas.sql",
+      "checksum": "cb9336ca6bb6d2671c61cf16158a3ef560ae62e9e78e0d9d327455f97dda09e2",
+      "rollback": null
+    },
+    {
+      "versao": "36",
+      "arquivo": "migration_caf_000036_cargos_permissoes.sql",
+      "checksum": "1ea00d4a7b4fea7d6349e7d3ea82eb57c7853cb4fe8667a8300a87e73d558aca",
+      "rollback": null
+    },
+    {
+      "versao": "37",
+      "arquivo": "migration_caf_000037_qr_pedidos_cliente.sql",
+      "checksum": "2ee0dab532f24bea05d2b5e05c731bd7baff731e3608757ee7114371de220cb0",
+      "rollback": null
+    },
+    {
+      "versao": "38",
+      "arquivo": "migration_caf_000038_pedido_online.sql",
+      "checksum": "6225d8e6bb08a9a474d9ce94746233f21cb9edfb4541b3f197646d6a1c7e1f4d",
+      "rollback": null
+    },
+    {
+      "versao": "39",
+      "arquivo": "migration_caf_000039_pix_taxas.sql",
+      "checksum": "cc43f4c1d4ec81e176bfa1d57600086fbe648bb994fbda266cac16c32d1f47c1",
+      "rollback": null
+    },
+    {
+      "versao": "40",
+      "arquivo": "migration_caf_000040_totem.sql",
+      "checksum": "39a5d7cd5f3050892d18920dc12f7b9d6cad1c8a8cf04b2b856af4b0c039006b",
+      "rollback": null
+    },
+    {
+      "versao": "41",
+      "arquivo": "migration_caf_000041_crm_campanhas.sql",
+      "checksum": "4a742318a8d7f9bdd22507a512eae8ae5b9032515ac3e9646306b3297f00158d",
+      "rollback": null
+    },
+    {
+      "versao": "42",
+      "arquivo": "migration_caf_000042_avaliacoes.sql",
+      "checksum": "3473e391fb004a8854e8491b32cdb914ee1390612a2225cc9f6eb53437dc54d3",
+      "rollback": null
+    },
+    {
+      "versao": "43",
+      "arquivo": "migration_caf_000043_etiquetas.sql",
+      "checksum": "ce6cbd38d2faaf54a8568227efd84b7ebc4d5372c1b1ad842f7ec3e65ffdde42",
+      "rollback": null
+    },
+    {
+      "versao": "44",
+      "arquivo": "migration_caf_000044_caixa_fix.sql",
+      "checksum": "b1ca3527e3f44c2cbb583827a07d20daa1f3a0bb60578aee232269a808ce57e2",
+      "rollback": null
+    },
+    {
+      "versao": "050_aviso",
+      "arquivo": "migration_add_aviso_especial.sql",
+      "checksum": "ce152fea9c28df68b1e829f70b1752b805e08aeb5cc7fc8969e2d6e414bf9471",
+      "rollback": null
+    },
+    {
+      "versao": "051_hours",
+      "arquivo": "migration_business_hours_fix.sql",
+      "checksum": "f0a1e733cf736a2ea9b07a418be1a6679ba02852ad12817efc0200b57c3ee364",
+      "rollback": null
+    },
+    {
+      "versao": "61",
+      "arquivo": "migration_caf_000061_cupons_desconto.sql",
+      "checksum": "9fc8a5d4ec67c871893f79ef9b682378ef924e4032fb0002b09fd8184a5ee2a0",
+      "rollback": null
+    },
+    {
+      "versao": "62",
+      "arquivo": "migration_caf_000062_dia_de_espetaculo.sql",
+      "checksum": "a3bc48d96ce6269c9917bbeb5d36bb2f60288c7acc005683ba2c1d846467a560",
+      "rollback": null
+    },
+    {
+      "versao": "63",
+      "arquivo": "migration_caf_000063_cashback_fidelidade.sql",
+      "checksum": "b972a5198b5577e23007be063b21f1eb6b5300998843c028f764e4bf00f2c486",
+      "rollback": null
+    },
+    {
+      "versao": "68",
+      "arquivo": "migration_caf_000068_lista_compras_fornecedor.sql",
+      "checksum": "6024e517f97fc9f3dcd84080c3afc6af7a5f84c95a8ef042c8e7fb56d72aff79",
+      "rollback": null
+    },
+    {
+      "versao": "69",
+      "arquivo": "migration_caf_000069_menu_analytics.sql",
+      "checksum": "08a0f3874435f9cad11efe49f1e9056448c43397996dba667ca89be17dcf0b16",
+      "rollback": null
+    },
+    {
+      "versao": "72",
+      "arquivo": "migration_caf_000072_baseline_producao.sql",
+      "checksum": "fa100ec3a11a58cb3fc69a303ac53a94e4d4933e493db02a3ec92dc9acca6f9e",
+      "rollback": "rollback_caf_000072.sql"
+    },
+    {
+      "versao": "73",
+      "arquivo": "migration_caf_000073_fechamento_conta_mesa.sql",
+      "checksum": "f5445b10b90b352acfaaf0ac122859e41dd64c1e6ff3e7391a565c17707853d4",
+      "rollback": "rollback_caf_000073.sql"
+    },
+    {
+      "versao": "74",
+      "arquivo": "migration_caf_000074_correcao_estoque_ficha_tecnica.sql",
+      "checksum": "2a02ce77af5b128b3fba1a1f9a86e7a4187ac0d2cad42a6a9c66573ddf9d0ae6",
+      "rollback": "rollback_caf_000074.sql"
+    },
+    {
+      "versao": "75",
+      "arquivo": "migration_caf_000075_validacao_adicionais_xss.sql",
+      "checksum": "c91c188abd769cb920ab0b9b74cf41c349800a148c6992b86659399ede2aa352",
+      "rollback": "rollback_caf_000075.sql"
+    },
+    {
+      "versao": "76",
+      "arquivo": "migration_caf_000076_correcao_cashback.sql",
+      "checksum": "fa58053cb4ca0badb71be6a8533c6ae9af46e02ef6e09f2f455b163b482db3fd",
+      "rollback": "rollback_caf_000076.sql"
+    },
+    {
+      "versao": "77",
+      "arquivo": "migration_caf_000077_cupons_uso_unico.sql",
+      "checksum": "45d071b0b9b05674b3f2682935e4e0bdbddd809d991a3b56da25bee30b113aee",
+      "rollback": "rollback_caf_000077.sql"
+    },
+    {
+      "versao": "78",
+      "arquivo": "migration_caf_000078_financeiro_despesas.sql",
+      "checksum": "9d23b4cfb49ab14d500f4633cfc5ceba0e3dffee10b76b7962206fd670466578",
+      "rollback": "rollback_caf_000078.sql"
+    },
+    {
+      "versao": "79",
+      "arquivo": "migration_caf_000079_pix_admin_taxas_caixa.sql",
+      "checksum": "f879cc4ad4d191704c94b5db3564554a3929aea3f001c7f8a71d14bbb6005feb",
+      "rollback": "rollback_caf_000079.sql"
+    },
+    {
+      "versao": "80",
+      "arquivo": "migration_caf_000080_fuso_horario.sql",
+      "checksum": "f7ab2c039afd4d6da94756d79ab6d7b369eb56912754dd10db338ec5cb2892f4",
+      "rollback": "rollback_caf_000080.sql"
+    },
+    {
+      "versao": "81",
+      "arquivo": "migration_caf_000081_seguranca_pin_rls.sql",
+      "checksum": "033833c1d5bec6079888ac575fb6ecc767ce870d03d0fa76e10071940b78a1b8",
+      "rollback": "rollback_caf_000081.sql"
+    },
+    {
+      "versao": "82",
+      "arquivo": "migration_caf_000082_seguranca.sql",
+      "checksum": "ad23b9dd4469f8832cb4be4f5b6d18512ab8480d5ecdf5738ea99b7565f13dd0",
+      "rollback": "rollback_caf_000082.sql"
+    },
+    {
+      "versao": "83",
+      "arquivo": "migration_caf_000083_pendencias_operacao.sql",
+      "checksum": "88501f1f34617ffa8adf68335186f960bdca66b26d5a1aa7b1294e93186d8264",
+      "rollback": "rollback_caf_000083.sql"
+    },
+    {
+      "versao": "103",
+      "arquivo": "migration_caf_000103_totem_animacao_fundo.sql",
+      "checksum": "1a1ce96589b0d11b892422fe9f3b3205e9341d09706558e140908b8544e61542",
+      "rollback": "rollback_caf_000103.sql"
+    },
+    {
+      "versao": "104",
+      "arquivo": "migration_caf_000104_correcao_prioridade_pedidos.sql",
+      "checksum": "39e8af22c515a4c667fb2ebd578403d5a26750900e5b595ec9b2d2f67e1d49a5",
+      "rollback": "rollback_caf_000104.sql"
+    },
+    {
+      "versao": "106",
+      "arquivo": "migration_caf_000106_habilitar_rls_todas_tabelas.sql",
+      "checksum": "ab5851a2090e9e35cbd4fb93be35d4cddd9aaf25244f6c3e566c159efce34971",
+      "rollback": "rollback_caf_000106.sql"
+    },
+    {
+      "versao": "107",
+      "arquivo": "migration_caf_000107_hardening_supabase_advisors.sql",
+      "checksum": "80deb8d2c99d072af9c019bf94a42362e2c3bdf95dfec7f287f4cfbb1f0a8522",
+      "rollback": "rollback_caf_000107.sql"
+    },
+    {
+      "versao": "108",
+      "arquivo": "migration_caf_000108_integridade_transferencia_fechamento_caixa.sql",
+      "checksum": "885b5344b0f76ee657058d12b63deab0401b4e5bb59bcde97b6e3a0e0aa7a090",
+      "rollback": "rollback_caf_000108.sql"
+    },
+    {
+      "versao": "110",
+      "arquivo": "migration_caf_000110_combos_kits.sql",
+      "checksum": "4b9f2bac7f586d8f20982455dd159d8165cc05886cc4463aa1004da55c0af41e",
+      "rollback": "rollback_caf_000110.sql"
+    },
+    {
+      "versao": "111",
+      "arquivo": "migration_caf_000111_lotes_validade_peps_sugestao_compras.sql",
+      "checksum": "4bdb1563e8f11fa1561c63a5af79a0737b431c689433fa6b82146e17b921672b",
+      "rollback": "rollback_caf_000111.sql"
+    },
+    {
+      "versao": "112",
+      "arquivo": "migration_caf_000112_fechamento_parcial_mesa.sql",
+      "checksum": "5ecf4eef44f25f0ea92eb2dd8b5d6a2d5133780bbd2ce1bac89a694e1c5b0723",
+      "rollback": "rollback_caf_000112.sql"
+    },
+    {
+      "versao": "113",
+      "arquivo": "migration_caf_000113_dre_gerencial_recebiveis_metas.sql",
+      "checksum": "3cefb2b04c89a104c2409e6e1867914a5b105be7e788c973706443bf5a9d05ff",
+      "rollback": "rollback_caf_000113.sql"
+    },
+    {
+      "versao": "115",
+      "arquivo": "migration_caf_000115_erros_cliente.sql",
+      "checksum": "b5c911b1dccef56d8e04345b1dbd59afff30191992c3ea9ef10669a75e40a0bf",
+      "rollback": "rollback_caf_000115.sql"
+    }
+  ]
+}
