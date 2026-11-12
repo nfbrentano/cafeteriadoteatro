@@ -206,7 +206,8 @@
       usuarios: 'admin.usuarios',
       configuracoes: 'admin.configuracoes',
       caixa: 'caixa.abrir_fechar',
-      financeiro: 'admin.financeiro'
+      financeiro: 'admin.financeiro',
+      erros: 'admin.relatorios'
     },
 
     podeAcessarPagina(pageId) {
@@ -273,7 +274,8 @@
         estoque: 'Estoque de Produtos e Insumos',
         clientes: 'Gestão de Clientes',
         avaliacoes: 'Avaliações dos Clientes',
-        financeiro: 'Financeiro & Fluxo de Caixa'
+        financeiro: 'Financeiro & Fluxo de Caixa',
+        erros: 'Saúde & Observabilidade'
       };
       document.getElementById('topbar-title').textContent = titles[pageId] || '';
       
@@ -295,7 +297,8 @@
         estoque:    'initAdminEstoque',
         clientes:   'initAdminClientes',
         avaliacoes: 'initAdminAvaliacoes',
-        financeiro: 'initAdminFinanceiro'
+        financeiro: 'initAdminFinanceiro',
+        erros:      'initAdminErros'
       };
       if (renderers[pageId] && typeof window[renderers[pageId]] === 'function') {
         window[renderers[pageId]]();

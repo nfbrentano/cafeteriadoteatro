@@ -30,6 +30,15 @@
     logger: {
       error: (context, err) => {
         console.error(`[CafeteriaDB][${context}]`, err?.message || err);
+        try {
+          if (typeof window !== 'undefined' && window.errorReporter && typeof window.errorReporter.reportRpcError === 'function') {
+            if (context && !context.includes('registrar_erro_cliente') && context !== 'errorReporter') {
+              window.errorReporter.reportRpcError(context, err);
+            }
+          }
+        } catch {
+          // Silencioso por design (RNF02)
+        }
       },
       warn: (context, msg) => {
         console.warn(`[CafeteriaDB][${context}]`, msg);
@@ -2027,6 +2036,50 @@
           });
         if (error) throw error;
         return data;
+      }
+    },
+
+    // --- CAF-000115: Observabilidade e Erros de Cliente ---
+    erros: {
+      async registrar(payload = {}) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('registrar_erro_cliente', payload);
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          console.warn('[CafeteriaDB][erros.registrar]', err?.message || err);
+          return null;
+        }
+      },
+
+      async obterResumo(horas = 24, tela = null) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const params = { p_horas: horas };
+          if (tela) params.p_tela = tela;
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_resumo_erros_cliente', params);
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('erros.obterResumo', err);
+          return null;
+        }
+      },
+
+      async limparAntigos(dias = 30) {
+        if (!window.cafeteriaSupabase) return 0;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('limpar_erros_antigos', { p_dias: dias });
+          if (error) throw error;
+          return data || 0;
+        } catch (err) {
+          db.logger.error('erros.limparAntigos', err);
+          return 0;
+        }
       }
     },
 

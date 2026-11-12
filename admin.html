@@ -125,6 +125,9 @@
       <button class="sidebar__link" data-page="financeiro" id="nav-financeiro">
         <span class="sidebar__link-icon">💰</span> Financeiro
       </button>
+      <button class="sidebar__link" data-page="erros" id="nav-erros">
+        <span class="sidebar__link-icon">🩺</span> Saúde & Erros
+      </button>
 
       <div class="sidebar__section-title" style="margin-top:12px">Aparência</div>
 
@@ -2647,6 +2650,91 @@
 
       </section>
 
+      <!-- ── SAÚDE & OBSERVABILIDADE (CAF-000115) ────────────────────── -->
+      <section class="page" id="page-erros">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Saúde & Observabilidade</div>
+            <div class="page-header__sub">Erros do front-end e falhas de RPC capturados em produção</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select class="filter-select" id="erros-filtro-periodo" style="padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:13px;">
+              <option value="24" selected>Últimas 24 horas</option>
+              <option value="48">Últimas 48 horas</option>
+              <option value="168">Últimos 7 dias</option>
+              <option value="720">Últimos 30 dias</option>
+            </select>
+            <select class="filter-select" id="erros-filtro-tela" style="padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:13px;">
+              <option value="todas" selected>Todas as Telas</option>
+              <option value="pedidos">PDV (pedidos)</option>
+              <option value="cozinha">KDS (cozinha)</option>
+              <option value="totem">Totem</option>
+              <option value="cardapio">Cardápio</option>
+              <option value="admin">Admin</option>
+              <option value="retirada">Retirada</option>
+            </select>
+            <button type="button" class="btn btn--outline btn--sm" id="btn-limpar-erros-antigos" style="font-size:13px;">
+              🧹 Limpar &gt; 30d
+            </button>
+            <button type="button" class="btn btn--primary btn--sm" id="btn-atualizar-erros" style="font-size:13px;">
+              🔄 Atualizar
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs Resumo -->
+        <div class="stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+          <div class="stat-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
+            <div style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Total de Ocorrências</div>
+            <div id="kpi-erros-total" style="font-size:26px; font-weight:800; color:#ef4444; margin-top:4px;">0</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">No período selecionado</div>
+          </div>
+          <div class="stat-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
+            <div style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Telas Afetadas</div>
+            <div id="kpi-erros-telas" style="font-size:26px; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Origens distintas de erro</div>
+          </div>
+          <div class="stat-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
+            <div style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Falhas de RPC / Banco</div>
+            <div id="kpi-erros-rpcs" style="font-size:26px; font-weight:800; color:#3b82f6; margin-top:4px;">0</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Erros em chamadas do Supabase</div>
+          </div>
+        </div>
+
+        <!-- Tabela de Erros Agrupados -->
+        <div class="card" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:16px; font-weight:700; color:#1e293b;">Ocorrências Agrupadas por Mensagem</h3>
+          </div>
+
+          <div id="erros-loading" style="display:none; padding:32px; text-align:center; color:#64748b; font-size:14px;">
+            Carregando registros de observabilidade...
+          </div>
+
+          <div id="erros-empty" style="display:none; padding:48px 20px; text-align:center; color:#64748b;">
+            <div style="font-size:36px; margin-bottom:8px;">✅</div>
+            <div style="font-size:16px; font-weight:600; color:#0f172a;">Nenhum erro registrado no período!</div>
+            <div style="font-size:13px; color:#94a3b8; margin-top:4px;">O sistema está operando de forma estável.</div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+              <thead style="background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+                <tr>
+                  <th style="padding:12px; text-align:center; width:80px;">Qtd</th>
+                  <th style="padding:12px; width:130px;">Tela / Versão</th>
+                  <th style="padding:12px; width:150px;">Tipo</th>
+                  <th style="padding:12px;">Mensagem &amp; Stack</th>
+                  <th style="padding:12px; width:180px;">Ocorrência</th>
+                </tr>
+              </thead>
+              <tbody id="erros-tabela-body">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- ── AVALIAÇÕES DE CLIENTES (CAF-000042) ────────────────────── -->
       <section class="page" id="page-avaliacoes">
         <div class="page-header">
@@ -5074,6 +5162,8 @@
 <script defer src="js/admin/clientes-admin.js"></script>
 <script defer src="js/admin/avaliacoes-admin.js"></script>
 <script defer src="js/admin/financeiro-admin.js"></script>
+<script defer src="js/admin/erros-admin.js"></script>
+<script type="module" src="js/utils/error-reporter.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

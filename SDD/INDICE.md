@@ -123,6 +123,17 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000112** | [FEAT] Fechamento Parcial de Conta da Mesa: Pagamento por Item Selecionado ou Abatimento Parcial no PDV | Concluída | `migration_caf_000112_fechamento_parcial_mesa.sql` | `caf-000112-fechamento-parcial-mesa.test.js` | — |
 | **CAF-000113** | [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo | Concluída | `migration_caf_000113_dre_gerencial_recebiveis_metas.sql` | `caf-000113-dre-gerencial-recebiveis-metas.test.js` | — |
 | **CAF-000114** | [CHORE] Atualização de Dependências de Desenvolvimento (vite, vitest, @vitest/coverage-v8 e fake-indexeddb) | Concluída | — | `caf-000114-atualizacao-dependencias.test.js` | — |
+| **CAF-000115** | [CHORE] Observabilidade: captura de erros do front em produção e painel de saúde no Admin | Concluída | `migration_caf_000115_erros_cliente.sql` | `caf-000115-observabilidade-erros.test.js` | — |
+| **CAF-000116** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–113 | Rascunho | — | — | — |
+| **CAF-000117** | [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot | Rascunho | — | — | — |
+| **CAF-000118** | [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin | Rascunho | — | — | — |
+| **CAF-000119** | [CHORE] Qualidade contínua: ESLint, cobertura medida sobre o código real das telas e limites mínimos no CI | Rascunho | — | — | — |
+| **CAF-000120** | [CHORE] Testes ponta a ponta em navegador real dos fluxos críticos (pedido → cozinha → fechamento → caixa) | Rascunho | — | — | — |
+| **CAF-000121** | [REFACTOR] Modularização do PDV (`js/pedidos.js`) e do Admin (`admin.html`) sem mudança de comportamento | Rascunho | — | — | — |
+| **CAF-000122** | [CHORE] Higiene do repositório: arquivos pesados e temporários versionados, Node do CI e README | Rascunho | — | — | — |
+| **CAF-000123** | [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV | Rascunho | — | — | — |
+| **CAF-000124** | [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal | Rascunho | — | — | — |
+| **CAF-000125** | [UI] Acessibilidade do Totem e do cardápio com pedido do cliente (WCAG 2.1 AA) | Rascunho | — | — | — |
 
 ---
 

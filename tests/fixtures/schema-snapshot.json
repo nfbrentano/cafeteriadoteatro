@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-06T17:18:39.097Z",
+  "gerado_em": "2026-11-11T17:46:08.698Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -527,6 +527,29 @@
     },
     "obter_meta_progresso_dia": {
       "parameters": []
+    },
+    "registrar_erro_cliente": {
+      "parameters": [
+        "p_tela",
+        "p_mensagem",
+        "p_tipo",
+        "p_stack",
+        "p_versao",
+        "p_rpc_nome",
+        "p_erro_codigo",
+        "p_metadados"
+      ]
+    },
+    "obter_resumo_erros_cliente": {
+      "parameters": [
+        "p_horas",
+        "p_tela"
+      ]
+    },
+    "limpar_erros_antigos": {
+      "parameters": [
+        "p_dias"
+      ]
     },
     "validar_cortesia": {
       "parameters": []
@@ -1324,6 +1347,23 @@
         "valor_unitario",
         "subtotal",
         "created_at"
+      ]
+    },
+    "erros_cliente": {
+      "columns": [
+        "id",
+        "tela",
+        "tipo",
+        "mensagem",
+        "stack",
+        "rpc_nome",
+        "erro_codigo",
+        "versao_app",
+        "user_agent",
+        "usuario_id",
+        "usuario_email",
+        "metadados",
+        "criado_em"
       ]
     },
     "cortesia_regras": {
