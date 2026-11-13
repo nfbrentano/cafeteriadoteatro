@@ -157,9 +157,22 @@
         <td>${p.start_date || p.inicio || '-'} a ${p.end_date || p.fim || '-'}</td>
         <td>${p.active ? '<span class="status-pill status-pill--ativo">Ativa</span>' : '<span class="status-pill status-pill--inativo">Pausada</span>'}</td>
         <td>
-          <button class="btn btn--icon" onclick="window.deletePromo('${p.id}')" title="Excluir">🗑️</button>
+          <button class="btn btn--icon" data-action="admin-delete-promo" data-id="${p.id}" title="Excluir">🗑️</button>
         </td>
       </tr>`).join('');
+
+    if (!list._hasDeletePromoListener) {
+      list._hasDeletePromoListener = true;
+      list.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="admin-delete-promo"]');
+        if (btn) {
+          const id = btn.getAttribute('data-id');
+          if (id && typeof window.deletePromo === 'function') {
+            window.deletePromo(id);
+          }
+        }
+      });
+    }
   };
 
   window.deletePromo = async function(id) {

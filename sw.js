@@ -107,13 +107,24 @@ self.addEventListener('fetch', (event) => {
   // Ignorar protocolos não suportados (ex: chrome-extension)
   if (!url.protocol.startsWith('http')) return;
 
-  // Não interceptar requisições ao painel admin, rotas de autenticação ou chamadas REST da API do Supabase
-  if (
-    url.pathname.includes('/admin') ||
-    url.pathname.includes('/auth/v1') ||
-    ((url.hostname === 'supabase.co' || url.hostname.endsWith('.supabase.co')) && url.pathname.startsWith('/rest/v1'))
-  ) {
-    return; // Deixa o navegador ir direto para a rede
+  // CAF-000118 / RNF01 / CA08: Chamadas ao Supabase (REST, RPC, Auth, Storage, Realtime) NUNCA passam pelo cache
+  const isSupabaseRequest =
+    url.hostname.includes('supabase.co') ||
+    url.pathname.startsWith('/rest/v1') ||
+    url.pathname.startsWith('/auth/v1') ||
+    url.pathname.startsWith('/storage/v1') ||
+    url.pathname.startsWith('/realtime/v1');
+
+  if (isSupabaseRequest) {
+    return; // Deixa o navegador ir 100% direto para a rede
+  }
+
+  // version.json sempre busca versão mais recente da rede com fallback para cache
+  if (url.pathname.endsWith('/version.json')) {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
   }
 
   // 1. Navegação de páginas HTML -> Network First com fallback para cache/offline
@@ -131,8 +142,10 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(async () => {
-          const cached = await caches.match(request);
+          const cached = await caches.match(request, { ignoreSearch: true });
           if (cached) return cached;
+          const cachedPath = await caches.match(url.pathname);
+          if (cachedPath) return cachedPath;
           return caches.match('/index.html');
         })
     );

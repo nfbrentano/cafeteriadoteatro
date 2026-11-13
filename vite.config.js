@@ -1,6 +1,20 @@
 import { resolve, basename } from 'path';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { generatePrecache } from './scripts/sw-precache-generator.js';
+
+function swPrecachePlugin() {
+  return {
+    name: 'sw-precache-plugin',
+    apply: 'build',
+    enforce: 'post',
+    closeBundle: async () => {
+      const distDir = resolve(import.meta.dirname, 'dist');
+      const res = await generatePrecache(distDir);
+      console.log(`[SW Precache] Gerado com sucesso: versão ${res.version}, ${res.assetsCount} arquivos (${(res.totalSizeBytes / (1024 * 1024)).toFixed(2)} MB)`);
+    }
+  };
+}
 
 function inlineCssPlugin() {
   return {
@@ -62,7 +76,8 @@ export default defineConfig({
         { src: 'css', dest: '' },
         { src: 'js', dest: '' }
       ]
-    })
+    }),
+    swPrecachePlugin()
   ],
   server: {
     port: 3000

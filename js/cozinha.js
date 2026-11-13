@@ -1364,6 +1364,7 @@
           
           let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
           let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
+          let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
           let horaLancamentoStr = item.created_at ? new Date(item.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
           let novoLabel = isNovoNaoPronto ? `<span class="badge-item-novo" title="Item adicionado após o envio">NOVO${horaLancamentoStr ? ' ' + horaLancamentoStr : ''}</span>` : '';
           let prontoClass = item.pronto_em ? 'is-pronto' : '';
@@ -1372,7 +1373,7 @@
           
           const isClickable = !isCancelado && (tipo !== 'concluido' || aguardandoOutraEstacao);
           let actionClass = isClickable ? 'is-clickable' : '';
-          let onClick = isClickable ? `onclick="window.toggleItemPronto(${pedido.id}, ${item.id}, ${item.pronto_em ? 'true' : 'false'})"` : '';
+          let dataActionAttr = isClickable ? `data-action="kds-toggle-item" data-pedido-id="${pedido.id}" data-item-id="${item.id}" data-pronto="${item.pronto_em ? 'true' : 'false'}"` : '';
 
           const obsItemHtml = item.observacoes 
             ? `<div class="item-obs-badge">⚠️ Obs: ${window.escapeHtml(item.observacoes)}</div>` 
@@ -1394,11 +1395,11 @@
           }
 
           const btnEtiquetaItemHtml = !isCancelado
-            ? `<button type="button" class="btn-item-etiqueta" onclick="event.stopPropagation(); window.cozinhaImprimirEtiquetaItem(${pedido.id}, ${item.id})" title="Imprimir etiqueta deste item" aria-label="Imprimir etiqueta deste item">🏷</button>`
+            ? `<button type="button" class="btn-item-etiqueta" data-action="kds-imprimir-etiqueta-item" data-pedido-id="${pedido.id}" data-item-id="${item.id}" title="Imprimir etiqueta deste item" aria-label="Imprimir etiqueta deste item">🏷</button>`
             : '';
 
           itensHtml += `
-            <div class="item-row ${actionClass} ${prontoClass} ${lancadoDepoisClass}" ${onClick}>
+            <div class="item-row ${actionClass} ${prontoClass} ${lancadoDepoisClass}" ${dataActionAttr}>
               <div class="item-main" ${cancelClass} style="display:flex; align-items:center; gap:6px; width:100%;">
                 <span class="item-qty">${item.quantidade}x</span>
                 <span class="item-name">${checkHtml}${window.escapeHtml(item.nome_produto)} ${cortesiaLabel} ${novoLabel} ${cancelLabel}</span>
@@ -1420,10 +1421,10 @@
 
       const isPrioritario = pedido.prioridade === 1;
       const prioridadeBadgeHtml = isPrioritario
-        ? `<span class="badge-prioridade-kds" onclick="window.cozinhaTogglePrioridade(${pedido.id})" title="Prioridade ativa! Motivo: ${window.escapeHtml(pedido.prioridade_motivo || 'Espetáculo')}. Clique para alterar.">⚡ PRIORIDADE${pedido.prioridade_motivo ? ': ' + window.escapeHtml(pedido.prioridade_motivo) : ''}</span>`
+        ? `<span class="badge-prioridade-kds" data-action="kds-toggle-prioridade" data-pedido-id="${pedido.id}" title="Prioridade ativa! Motivo: ${window.escapeHtml(pedido.prioridade_motivo || 'Espetáculo')}. Clique para alterar.">⚡ PRIORIDADE${pedido.prioridade_motivo ? ': ' + window.escapeHtml(pedido.prioridade_motivo) : ''}</span>`
         : '';
       const btnPrioridadeHtml = `
-        <button type="button" class="btn-card--prioridade btn--icon ${isPrioritario ? 'is-active' : ''}" onclick="window.cozinhaTogglePrioridade(${pedido.id})" title="${isPrioritario ? 'Remover prioridade' : 'Marcar como prioritário'}" aria-label="${isPrioritario ? 'Remover prioridade do pedido' : 'Marcar pedido como prioritário'}">
+        <button type="button" class="btn-card--prioridade btn--icon ${isPrioritario ? 'is-active' : ''}" data-action="kds-toggle-prioridade" data-pedido-id="${pedido.id}" title="${isPrioritario ? 'Remover prioridade' : 'Marcar como prioritário'}" aria-label="${isPrioritario ? 'Remover prioridade do pedido' : 'Marcar pedido como prioritário'}">
           ⚡ ${isPrioritario ? 'Prioritário' : 'Priorizar'}
         </button>
       `;
@@ -1454,12 +1455,12 @@
       if (tipo === 'pendente') {
         botoesHtml = `
           <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda" aria-label="Imprimir Comanda">🖨 Comanda</button>
-            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem" aria-label="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
+            <button type="button" class="btn-card--print btn--icon" data-action="kds-reimprimir" data-pedido-id="${pedido.id}" title="Imprimir Comanda" aria-label="Imprimir Comanda">🖨 Comanda</button>
+            <button type="button" class="btn-card--print btn--icon" data-action="kds-imprimir-etiquetas" data-pedido-id="${pedido.id}" title="Imprimir Etiquetas de Copo/Embalagem" aria-label="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
-            <button type="button" class="btn-card btn-card--preparo btn--primary btn--full" onclick="window.iniciarPreparoEstacao(${pedido.id})" aria-label="Iniciar Preparo">
+            <button type="button" class="btn-card btn-card--preparo btn--primary btn--full" data-action="kds-iniciar-preparo" data-pedido-id="${pedido.id}" aria-label="Iniciar Preparo">
                Iniciar Preparo
             </button>
           </div>
@@ -1470,12 +1471,12 @@
           : (isBar ? 'Pronto! (Bar)' : 'Pronto! (Cozinha)');
         botoesHtml = `
           <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaReimprimir(${pedido.id})" title="Imprimir Comanda" aria-label="Imprimir Comanda">🖨 Comanda</button>
-            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Imprimir Etiquetas de Copo/Embalagem" aria-label="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
+            <button type="button" class="btn-card--print btn--icon" data-action="kds-reimprimir" data-pedido-id="${pedido.id}" title="Imprimir Comanda" aria-label="Imprimir Comanda">🖨 Comanda</button>
+            <button type="button" class="btn-card--print btn--icon" data-action="kds-imprimir-etiquetas" data-pedido-id="${pedido.id}" title="Imprimir Etiquetas de Copo/Embalagem" aria-label="Imprimir Etiquetas de Copo/Embalagem">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
-            <button type="button" class="btn-card btn-card--concluir btn--primary btn--full" onclick="window.concluirPreparoEstacao(${pedido.id})" aria-label="${btnLabel}">
+            <button type="button" class="btn-card btn-card--concluir btn--primary btn--full" data-action="kds-concluir-preparo" data-pedido-id="${pedido.id}" aria-label="${btnLabel}">
               ${btnLabel}
             </button>
           </div>
@@ -1495,13 +1496,13 @@
 
         botoesHtml = `
           <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaReimprimir(${pedido.id})" title="Reimprimir Comanda" aria-label="Reimprimir Comanda">🖨 Comanda</button>
-            <button type="button" class="btn-card--print btn--icon" onclick="window.cozinhaImprimirEtiquetas(${pedido.id})" title="Reimprimir Etiquetas" aria-label="Reimprimir Etiquetas">🏷 Etiquetas</button>
+            <button type="button" class="btn-card--print btn--icon" data-action="kds-reimprimir" data-pedido-id="${pedido.id}" title="Reimprimir Comanda" aria-label="Reimprimir Comanda">🖨 Comanda</button>
+            <button type="button" class="btn-card--print btn--icon" data-action="kds-imprimir-etiquetas" data-pedido-id="${pedido.id}" title="Reimprimir Etiquetas" aria-label="Reimprimir Etiquetas">🏷 Etiquetas</button>
             ${btnPrioridadeHtml}
           </div>
           <div class="footer-actions">
             ${botaoChamar}
-            <button type="button" class="btn-card btn-card--desfazer btn--ghost" onclick="window.desfazerPreparo(${pedido.id})" aria-label="Desfazer conclusão">
+            <button type="button" class="btn-card btn-card--desfazer btn--ghost" data-action="kds-desfazer-preparo" data-pedido-id="${pedido.id}" aria-label="Desfazer conclusão">
               ↩ Desfazer
             </button>
           </div>
@@ -1838,7 +1839,7 @@
         if (orig.quantidade > 1) {
           desc += ` (${orig.quantidade}x)`;
         }
-        return `<button type="button" class="origem-chip" onclick="window.focarPedidoDoChip(${orig.pedidoId})" title="Ver pedido #${orig.numeroPedido}">${desc}</button>`;
+        return `<button type="button" class="origem-chip" data-action="kds-focar-pedido" data-pedido-id="${orig.pedidoId}" title="Ver pedido #${orig.numeroPedido}">${desc}</button>`;
       }).join('');
 
       card.innerHTML = `
@@ -1858,7 +1859,7 @@
           </div>
         </div>
         <div class="producao-action">
-          <button type="button" class="btn-marcar-grupo" data-group-key="${window.escapeHtml(group.key)}" onclick="window.marcarGrupoPronto('${encodeURIComponent(group.key)}')">
+          <button type="button" class="btn-marcar-grupo" data-group-key="${window.escapeHtml(group.key)}" data-action="kds-marcar-grupo">
             ✓ Marcar ${group.quantidadeTotal} como pronto${group.quantidadeTotal > 1 ? 's' : ''}
           </button>
         </div>
@@ -2480,10 +2481,10 @@
             </div>
           </div>
           <div class="historico-acoes">
-            <button class="btn-recall-reimprimir" onclick="window.cozinhaReimprimir(${p.id})" title="Reimprimir Comanda">
+            <button class="btn-recall-reimprimir" data-action="kds-reimprimir" data-pedido-id="${p.id}" title="Reimprimir Comanda">
               🖨️ Reimprimir
             </button>
-            <button class="btn-recall-desfazer" onclick="window.desfazerRecallPreparo(${p.id})" title="Desfazer e retornar para Em Preparo">
+            <button class="btn-recall-desfazer" data-action="kds-desfazer-recall" data-pedido-id="${p.id}" title="Desfazer e retornar para Em Preparo">
               ↩️ Desfazer
             </button>
           </div>
@@ -2491,6 +2492,101 @@
       `;
     }).join('');
   }
+
+  // CAF-000117: Delegação de eventos centralizada para eliminar onclicks inline e atender CSP sem unsafe-inline
+  document.addEventListener('click', (event) => {
+    // 1. Botão etiqueta de item dentro da linha (evita toggle de pronto)
+    const btnEtiqueta = event.target.closest('[data-action="kds-imprimir-etiqueta-item"]');
+    if (btnEtiqueta) {
+      event.stopPropagation();
+      const pedidoId = Number(btnEtiqueta.getAttribute('data-pedido-id'));
+      const itemId = Number(btnEtiqueta.getAttribute('data-item-id'));
+      if (pedidoId && itemId && typeof window.cozinhaImprimirEtiquetaItem === 'function') {
+        window.cozinhaImprimirEtiquetaItem(pedidoId, itemId);
+      }
+      return;
+    }
+
+    // 2. Elemento com data-action geral
+    const actionEl = event.target.closest('[data-action]');
+    if (!actionEl) return;
+
+    const action = actionEl.getAttribute('data-action');
+    switch (action) {
+      case 'kds-toggle-item': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        const itemId = Number(actionEl.getAttribute('data-item-id'));
+        const pronto = actionEl.getAttribute('data-pronto') === 'true';
+        if (pedidoId && itemId && typeof window.toggleItemPronto === 'function') {
+          window.toggleItemPronto(pedidoId, itemId, pronto);
+        }
+        break;
+      }
+      case 'kds-toggle-prioridade': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.cozinhaTogglePrioridade === 'function') {
+          window.cozinhaTogglePrioridade(pedidoId);
+        }
+        break;
+      }
+      case 'kds-reimprimir': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.cozinhaReimprimir === 'function') {
+          window.cozinhaReimprimir(pedidoId);
+        }
+        break;
+      }
+      case 'kds-imprimir-etiquetas': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.cozinhaImprimirEtiquetas === 'function') {
+          window.cozinhaImprimirEtiquetas(pedidoId);
+        }
+        break;
+      }
+      case 'kds-iniciar-preparo': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.iniciarPreparoEstacao === 'function') {
+          window.iniciarPreparoEstacao(pedidoId);
+        }
+        break;
+      }
+      case 'kds-concluir-preparo': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.concluirPreparoEstacao === 'function') {
+          window.concluirPreparoEstacao(pedidoId);
+        }
+        break;
+      }
+      case 'kds-desfazer-preparo': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.desfazerPreparo === 'function') {
+          window.desfazerPreparo(pedidoId);
+        }
+        break;
+      }
+      case 'kds-focar-pedido': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.focarPedidoDoChip === 'function') {
+          window.focarPedidoDoChip(pedidoId);
+        }
+        break;
+      }
+      case 'kds-marcar-grupo': {
+        const groupKey = actionEl.getAttribute('data-group-key');
+        if (groupKey && typeof window.marcarGrupoPronto === 'function') {
+          window.marcarGrupoPronto(groupKey);
+        }
+        break;
+      }
+      case 'kds-desfazer-recall': {
+        const pedidoId = Number(actionEl.getAttribute('data-pedido-id'));
+        if (pedidoId && typeof window.desfazerRecallPreparo === 'function') {
+          window.desfazerRecallPreparo(pedidoId);
+        }
+        break;
+      }
+    }
+  });
 
   window.desfazerRecallPreparo = async function(pedidoId) {
     await window.desfazerPreparo(pedidoId);

@@ -36,8 +36,8 @@
         </div>
         ${c.ativo ? '<span class="status-pill status-pill--ativo">Ativa</span>' : '<span class="status-pill status-pill--inativo">Inativa</span>'}
         <div class="cat-item__actions">
-          <button class="btn btn--icon btn--ghost" onclick="window.openCatModal('${c.id}')">✏️</button>
-          <button class="btn btn--icon btn--danger" onclick="window.deleteCategoria('${c.id}')">🗑️</button>
+          <button class="btn btn--icon btn--ghost" data-action="admin-open-cat-modal" data-id="${c.id}">✏️</button>
+          <button class="btn btn--icon btn--danger" data-action="admin-delete-categoria" data-id="${c.id}">🗑️</button>
         </div>
       </div>`).join('');
 
@@ -190,6 +190,19 @@
 
     els.btnNew.addEventListener('click', () => window.openCatModal());
     els.btnSave.addEventListener('click', saveCategoria);
+
+    // CAF-000117: Delegação de eventos para botões de editar e excluir categorias
+    els.container.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      const id = btn.getAttribute('data-id');
+      if (action === 'admin-open-cat-modal' && typeof window.openCatModal === 'function') {
+        window.openCatModal(id);
+      } else if (action === 'admin-delete-categoria' && typeof window.deleteCategoria === 'function') {
+        window.deleteCategoria(id);
+      }
+    });
 
     // Emoji Picker
     document.querySelectorAll('.emoji-btn').forEach(btn => {

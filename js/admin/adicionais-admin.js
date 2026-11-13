@@ -53,8 +53,8 @@
           <td style="font-size: 0.9em; color: var(--text-muted);">${vinculadoText}</td>
           <td>${statusPill}</td>
           <td>
-            <button class="btn btn--icon btn--ghost" onclick="window.openAdicionalModal('${a.id}')" title="Editar">✏️</button>
-            <button class="btn btn--icon btn--danger" onclick="window.deleteAdicional('${a.id}')" title="Excluir">🗑️</button>
+            <button class="btn btn--icon btn--ghost" data-action="admin-open-adicional-modal" data-id="${a.id}" title="Editar">✏️</button>
+            <button class="btn btn--icon btn--danger" data-action="admin-delete-adicional" data-id="${a.id}" title="Excluir">🗑️</button>
           </td>
         </tr>
       `;
@@ -197,6 +197,21 @@
   document.addEventListener('DOMContentLoaded', () => {
     const el = adicEls();
     if (el.btnNew) el.btnNew.addEventListener('click', () => window.openAdicionalModal());
+
+    // CAF-000117: Delegação de eventos para botões de editar e excluir adicionais
+    if (el.tbody) {
+      el.tbody.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
+        if (action === 'admin-open-adicional-modal' && typeof window.openAdicionalModal === 'function') {
+          window.openAdicionalModal(id);
+        } else if (action === 'admin-delete-adicional' && typeof window.deleteAdicional === 'function') {
+          window.deleteAdicional(id);
+        }
+      });
+    }
     if (document.getElementById('modal-adicional-cancel')) {
       document.getElementById('modal-adicional-cancel').addEventListener('click', (e) => {
         e.preventDefault();

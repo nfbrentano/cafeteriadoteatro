@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://nyretgvzbnbtiyeioeju.supabase.co https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://nyretgvzbnbtiyeioeju.supabase.co wss://nyretgvzbnbtiyeioeju.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self';">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DWC0E8ZFJ5"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-DWC0E8ZFJ5');
-  </script>
-  <meta charset="UTF-8" />
+  <script defer src="js/gtag-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://nyretgvzbnbtiyeioeju.supabase.co" crossorigin />
@@ -25,7 +21,7 @@
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script crossorigin="anonymous" integrity="sha384-Emf5ZVIUiarAdhkgtqK+5/Z5qIvM6QoVrS+qAVtfyZVuD5lIHrac0me485+Antp0" src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1"></script>
   <title>Painel Admin | Cafeteria do Teatro</title>
 </head>
 <body>
@@ -164,6 +160,9 @@
       <button class="btn btn--ghost btn--full" id="btn-logout">
         🚪 Sair do Painel
       </button>
+      <div id="admin-app-version-box" class="sidebar__version" style="font-size:11px; color:#94a3b8; text-align:center; padding:8px 4px 0 4px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.08);">
+        Versão: <strong id="app-version-val">—</strong>
+      </div>
     </div>
   </aside>
 
@@ -5129,7 +5128,7 @@
 <div id="toast-container" aria-live="polite"></div>
 
 <!-- SUPABASE SDK & CLIENT -->
-<script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer crossorigin="anonymous" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
 <script defer src="js/supabase-client.js"></script>
 <script defer src="js/db.js"></script>
 
@@ -5164,14 +5163,6 @@
 <script defer src="js/admin/financeiro-admin.js"></script>
 <script defer src="js/admin/erros-admin.js"></script>
 <script type="module" src="js/utils/error-reporter.js"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Admin SW registrado!', reg))
-        .catch(err => console.error('Erro no SW Admin:', err));
-    });
-  }
-</script>
+<script defer src="js/sw-register.js"></script>
 </body>
 </html>

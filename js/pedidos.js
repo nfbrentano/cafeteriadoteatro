@@ -938,8 +938,8 @@
             <div style="margin-top: 2px;">${safeStatusText}</div>
           </div>
           <div class="offline-card__actions">
-            <button class="btn-queue-action btn-queue-action--retry" onclick="window.baristaReenviarPedidoOffline('${safeClientId}')">Reenviar</button>
-            <button class="btn-queue-action btn-queue-action--discard" onclick="window.baristaDescartarPedidoOffline('${safeClientId}')">Descartar</button>
+            <button class="btn-queue-action btn-queue-action--retry" data-action="barista-retry-offline" data-client-id="${safeClientId}">Reenviar</button>
+            <button class="btn-queue-action btn-queue-action--discard" data-action="barista-discard-offline" data-client-id="${safeClientId}">Descartar</button>
           </div>
         </div>
       `;
@@ -2481,13 +2481,13 @@
             ${promoHtml}
           </div>
           <div class="cart-item-actions">
-            <button class="cart-btn obs-btn" title="Adicionar/Editar Observação" onclick="window.baristaOpenObs(${index})">
+            <button class="cart-btn obs-btn" title="Adicionar/Editar Observação" data-action="barista-open-obs" data-index="${index}">
               ${item.observacoes ? 'Editar obs' : '+ Obs'}
             </button>
-            <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, -1)">-</button>
+            <button class="cart-btn" data-action="barista-update-qty" data-index="${index}" data-delta="-1">-</button>
             <span class="cart-qty">${Number(item.quantidade)}</span>
-            <button class="cart-btn" onclick="window.baristaUpdateQty(${index}, 1)">+</button>
-            <button class="cart-btn remove" onclick="window.baristaUpdateQty(${index}, -999)">🗑</button>
+            <button class="cart-btn" data-action="barista-update-qty" data-index="${index}" data-delta="1">+</button>
+            <button class="cart-btn remove" data-action="barista-update-qty" data-index="${index}" data-delta="-999">🗑</button>
           </div>
         </div>
       `;
@@ -2778,9 +2778,12 @@
   if (btnAbrirCadastroCliente) {
     btnAbrirCadastroCliente.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
       const termoAtual = pedidoClienteNome ? pedidoClienteNome.value.trim() : '';
-      abrirModalCadastroCliente(termoAtual);
+      if (typeof window.baristaAbrirCadastroCliente === 'function') {
+        window.baristaAbrirCadastroCliente(termoAtual);
+      } else {
+        abrirModalCadastroCliente(termoAtual);
+      }
     });
   }
   if (btnFecharModalCliente) btnFecharModalCliente.addEventListener('click', fecharModalCadastroCliente);
@@ -3706,7 +3709,8 @@
         : '';
       const btnPrioridadeHtml = `
         <button class="btn-toggle-prioridade ${isPrioritario ? 'is-active' : ''}" 
-                onclick="window.baristaTogglePrioridade(${pedido.id})" 
+                data-action="barista-toggle-prioridade"
+                data-pedido-id="${pedido.id}" 
                 title="${isPrioritario ? 'Remover prioridade' : 'Marcar como prioritário'}">
           ⚡ ${isPrioritario ? 'Prioritário' : 'Priorizar'}
         </button>
@@ -3736,12 +3740,12 @@
 
       const isOnlineOuRetirada = pedido.origem === 'online' || pedido.origem === 'online_retirada' || pedido.mesa_codigo === 'RETIRADA';
       const btnWhatsappPronto = (pedido.cliente_telefone)
-        ? `<button type="button" class="btn-ghost-small btn-whatsapp-pronto" onclick="window.baristaAvisarWhatsAppPronto(${pedido.id})" title="Avisar cliente pelo WhatsApp">
+        ? `<button type="button" class="btn-ghost-small btn-whatsapp-pronto" data-action="barista-whatsapp-pronto" data-pedido-id="${pedido.id}" title="Avisar cliente pelo WhatsApp">
             📲 WhatsApp
            </button>`
         : '';
       const btnNaoRetirado = isOnlineOuRetirada
-        ? `<button type="button" class="btn-ghost-small btn-nao-retirado" onclick="window.baristaMarcarNaoRetirado(${pedido.id})" title="Marcar pedido como não retirado pelo cliente">
+        ? `<button type="button" class="btn-ghost-small btn-nao-retirado" data-action="barista-nao-retirado" data-pedido-id="${pedido.id}" title="Marcar pedido como não retirado pelo cliente">
             🚫 Não retirado
            </button>`
         : '';
@@ -3750,7 +3754,7 @@
       if (pedido.status === 'aguardando_pagamento') {
         btnAcaoHtml = `
           <div class="pedido-card-barista__actions" style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn-entregar btn-receber-totem" onclick="window.baristaReceberPedidoTotem(${pedido.id})">
+            <button type="button" class="btn-entregar btn-receber-totem" data-action="barista-receber-totem" data-pedido-id="${pedido.id}">
               💰 Receber & Enviar à Cozinha
             </button>
           </div>
@@ -3762,7 +3766,7 @@
             <button class="btn-chamar-voz" data-pedido-id="${pedido.id}" title="Fazer chamada por voz">
               📢 Chamar
             </button>
-            <button class="btn-entregar" onclick="window.baristaMarcarEntregue(${pedido.id})">
+            <button class="btn-entregar" data-action="barista-marcar-entregue" data-pedido-id="${pedido.id}">
               ✅ Entregue
             </button>
             ${btnNaoRetirado}
@@ -4080,7 +4084,7 @@
           disponiveis.forEach(d => {
             const prod = allProducts.find(pr => pr.id === d.produto_cortesia_id);
             if (prod) {
-              cortesiaHtml += `<button class="btn-ghost-small btn-cortesia-item" onclick="window.baristaLancarCortesia(${p.id}, ${it.id}, decodeURIComponent('${encodeURIComponent(prod.id)}'))" title="Lançar ${window.escapeHtml(prod.nome)} como cortesia">🎁 ${window.escapeHtml(prod.nome)} (${d.saldo_disponivel})</button>`;
+              cortesiaHtml += `<button class="btn-ghost-small btn-cortesia-item" data-action="barista-lancar-cortesia" data-pedido-id="${p.id}" data-item-id="${it.id}" data-produto-id="${window.escapeHtml(prod.id)}" title="Lançar ${window.escapeHtml(prod.nome)} como cortesia">🎁 ${window.escapeHtml(prod.nome)} (${d.saldo_disponivel})</button>`;
             }
           });
         }
@@ -4089,7 +4093,7 @@
         let cancelLabel = it.cancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
         let btnCancelarItemHtml = '';
         if (!it.cancelado && p.status !== 'concluido' && p.status !== 'cancelado') {
-          btnCancelarItemHtml = `<button class="btn-ghost-small btn-cancelar-item" onclick="window.baristaCancelarItem(${it.id}, ${p.id}, decodeURIComponent('${encodeURIComponent(currentSelectedMesaParaConta.mesaCodigo)}'))">✕ Cancelar</button>`;
+          btnCancelarItemHtml = `<button class="btn-ghost-small btn-cancelar-item" data-action="barista-cancelar-item" data-item-id="${it.id}" data-pedido-id="${p.id}" data-mesa-codigo="${window.escapeHtml(currentSelectedMesaParaConta.mesaCodigo || '')}">✕ Cancelar</button>`;
         }
         
         let obsLabel = it.observacoes ? `<em style="color:#D97706">(${window.escapeHtml(it.observacoes)})</em>` : '';
@@ -5025,9 +5029,9 @@
           let faltante = 100 - atribuido;
           botoesAtrib = `
             <div style="margin-top: 4px;">
-              ${faltante === 100 ? `<button class="btn-ghost-small btn-atribuir-parte" onclick="window.atribuirItem(${p.id}, 100)">Atribuir 100%</button>` : ''}
-              <button class="btn-ghost-small btn-atribuir-parte" onclick="window.atribuirItem(${p.id}, 50)">+50%</button>
-              <button class="btn-ghost-small btn-atribuir-parte" onclick="window.atribuirItem(${p.id}, ${faltante})">Restante (${faltante}%)</button>
+              ${faltante === 100 ? `<button class="btn-ghost-small btn-atribuir-parte" data-action="barista-atribuir-item" data-pedido-item-id="${p.id}" data-percentual="100">Atribuir 100%</button>` : ''}
+              <button class="btn-ghost-small btn-atribuir-parte" data-action="barista-atribuir-item" data-pedido-item-id="${p.id}" data-percentual="50">+50%</button>
+              <button class="btn-ghost-small btn-atribuir-parte" data-action="barista-atribuir-item" data-pedido-item-id="${p.id}" data-percentual="${faltante}">Restante (${faltante}%)</button>
             </div>
           `;
         }
@@ -5059,7 +5063,7 @@
       const nomeSeguro = window.escapeHtml(pt.nome || '');
       
       htmlPartes += `
-        <div onclick="window.selecionarParte(${pt.id})" style="border: 2px solid ${isActive ? 'var(--marrom)' : '#E5E5E5'}; padding: 8px 12px; border-radius: 8px; cursor: pointer; background: ${isActive ? '#fdf7f1' : '#fff'};">
+        <div data-action="barista-selecionar-parte" data-parte-id="${pt.id}" style="border: 2px solid ${isActive ? 'var(--marrom)' : '#E5E5E5'}; padding: 8px 12px; border-radius: 8px; cursor: pointer; background: ${isActive ? '#fdf7f1' : '#fff'};">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong style="color: ${isActive ? 'var(--marrom-escuro)' : '#333'}">${nomeSeguro}</strong>
             <span style="font-size:12px; font-weight:bold; color: ${statusColor}">
@@ -5169,14 +5173,14 @@
       const isPix = pag.forma === 'pix';
       const txidPag = `CAF${String(currentFechamento?.mesaCodigo || '').replace(/[^A-Za-z0-9]/g, '')}P${pt.id}`;
       const botoesPixHtml = isPix
-        ? `<button type="button" class="btn-ghost-small btn--pix-copy" onclick="window.mostrarQrPixPagamento(${pag.valor}, '${txidPag}', decodeURIComponent('${encodeURIComponent(pt.nome)}'))">📱 QR Pix</button>`
+        ? `<button type="button" class="btn-ghost-small btn--pix-copy" data-action="barista-mostrar-qr-pix" data-valor="${pag.valor}" data-txid="${txidPag}" data-parte-nome="${window.escapeHtml(pt.nome || '')}">📱 QR Pix</button>`
         : '';
       htmlLista += `
         <div style="display:flex; justify-content: space-between; align-items:center; background:#f9f9f9; border:1px solid #ddd; padding:6px; border-radius:4px; margin-bottom:4px; font-size:13px; gap:6px;">
           <span>${formasNomes[pag.forma] || pag.forma}: <strong>R$ ${pag.valor.toFixed(2).replace('.', ',')}</strong></span>
           <div style="display:flex; align-items:center; gap:4px;">
             ${botoesPixHtml}
-            <button type="button" class="btn-ghost-small btn--remover-item" onclick="window.removerPagamentoFechamento(${pag.id})">X</button>
+            <button type="button" class="btn-ghost-small btn--remover-item" data-action="barista-remover-pagamento" data-pagamento-id="${pag.id}">X</button>
           </div>
         </div>
       `;
@@ -6370,6 +6374,130 @@
       }
     });
   }
+
+  // CAF-000117: Delegação de eventos centralizada para eliminar onclicks inline e atender CSP sem unsafe-inline
+  document.addEventListener('click', (event) => {
+    // 1. Botão abrir cadastro cliente em pedidos.html
+    if (event.target.closest('#btn-abrir-cadastro-cliente')) {
+      if (typeof window.baristaAbrirCadastroCliente === 'function') {
+        window.baristaAbrirCadastroCliente();
+      }
+      return;
+    }
+
+    // 2. Botões de sugestão de observação em pedidos.html
+    const btnObsSugestao = event.target.closest('[data-obs-sugestao]');
+    if (btnObsSugestao) {
+      const input = document.getElementById('modal-montagem-obs');
+      if (input) {
+        input.value += btnObsSugestao.getAttribute('data-obs-sugestao');
+      }
+      return;
+    }
+
+    // 3. Botão com data-action
+    const actionEl = event.target.closest('[data-action]');
+    if (!actionEl) return;
+
+    const action = actionEl.getAttribute('data-action');
+    switch (action) {
+      case 'barista-retry-offline': {
+        const id = actionEl.getAttribute('data-client-id');
+        if (id && typeof window.baristaReenviarPedidoOffline === 'function') window.baristaReenviarPedidoOffline(id);
+        break;
+      }
+      case 'barista-discard-offline': {
+        const id = actionEl.getAttribute('data-client-id');
+        if (id && typeof window.baristaDescartarPedidoOffline === 'function') window.baristaDescartarPedidoOffline(id);
+        break;
+      }
+      case 'barista-open-obs': {
+        const idx = Number(actionEl.getAttribute('data-index'));
+        if (!isNaN(idx) && typeof window.baristaOpenObs === 'function') window.baristaOpenObs(idx);
+        break;
+      }
+      case 'barista-update-qty': {
+        const idx = Number(actionEl.getAttribute('data-index'));
+        const delta = Number(actionEl.getAttribute('data-delta'));
+        if (!isNaN(idx) && !isNaN(delta) && typeof window.baristaUpdateQty === 'function') window.baristaUpdateQty(idx, delta);
+        break;
+      }
+      case 'barista-toggle-prioridade': {
+        const id = Number(actionEl.getAttribute('data-pedido-id'));
+        if (!isNaN(id) && typeof window.baristaTogglePrioridade === 'function') window.baristaTogglePrioridade(id);
+        break;
+      }
+      case 'barista-whatsapp-pronto': {
+        const id = Number(actionEl.getAttribute('data-pedido-id'));
+        if (!isNaN(id) && typeof window.baristaAvisarWhatsAppPronto === 'function') window.baristaAvisarWhatsAppPronto(id);
+        break;
+      }
+      case 'barista-nao-retirado': {
+        const id = Number(actionEl.getAttribute('data-pedido-id'));
+        if (!isNaN(id) && typeof window.baristaMarcarNaoRetirado === 'function') window.baristaMarcarNaoRetirado(id);
+        break;
+      }
+      case 'barista-receber-totem': {
+        const id = Number(actionEl.getAttribute('data-pedido-id'));
+        if (!isNaN(id) && typeof window.baristaReceberPedidoTotem === 'function') window.baristaReceberPedidoTotem(id);
+        break;
+      }
+      case 'barista-marcar-entregue': {
+        const id = Number(actionEl.getAttribute('data-pedido-id'));
+        if (!isNaN(id) && typeof window.baristaMarcarEntregue === 'function') window.baristaMarcarEntregue(id);
+        break;
+      }
+      case 'barista-lancar-cortesia': {
+        const pId = Number(actionEl.getAttribute('data-pedido-id'));
+        const itId = Number(actionEl.getAttribute('data-item-id'));
+        const prodId = actionEl.getAttribute('data-produto-id');
+        if (pId && itId && prodId && typeof window.baristaLancarCortesia === 'function') {
+          window.baristaLancarCortesia(pId, itId, prodId);
+        }
+        break;
+      }
+      case 'barista-cancelar-item': {
+        const itId = Number(actionEl.getAttribute('data-item-id'));
+        const pId = Number(actionEl.getAttribute('data-pedido-id'));
+        const mesa = actionEl.getAttribute('data-mesa-codigo');
+        if (itId && pId && typeof window.baristaCancelarItem === 'function') {
+          window.baristaCancelarItem(itId, pId, mesa);
+        }
+        break;
+      }
+      case 'barista-atribuir-item': {
+        const pId = Number(actionEl.getAttribute('data-pedido-item-id'));
+        const perc = Number(actionEl.getAttribute('data-percentual'));
+        if (pId && !isNaN(perc) && typeof window.atribuirItem === 'function') {
+          window.atribuirItem(pId, perc);
+        }
+        break;
+      }
+      case 'barista-selecionar-parte': {
+        const parteId = Number(actionEl.getAttribute('data-parte-id'));
+        if (parteId && typeof window.selecionarParte === 'function') {
+          window.selecionarParte(parteId);
+        }
+        break;
+      }
+      case 'barista-mostrar-qr-pix': {
+        const valor = Number(actionEl.getAttribute('data-valor'));
+        const txid = actionEl.getAttribute('data-txid');
+        const nome = actionEl.getAttribute('data-parte-nome');
+        if (typeof window.mostrarQrPixPagamento === 'function') {
+          window.mostrarQrPixPagamento(valor, txid, nome);
+        }
+        break;
+      }
+      case 'barista-remover-pagamento': {
+        const pagId = Number(actionEl.getAttribute('data-pagamento-id'));
+        if (pagId && typeof window.removerPagamentoFechamento === 'function') {
+          window.removerPagamentoFechamento(pagId);
+        }
+        break;
+      }
+    }
+  });
 
   // Inicializar
   updateConnectionStatus(navigator.onLine);

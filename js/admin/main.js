@@ -631,6 +631,16 @@
         if (e.target.id === id) admin.closeModal(id);
       });
     });
+
+    // CAF-000118: Exibir versão do app no rodapé da sidebar do Admin (CA07)
+    const updateAdminVersionDisplay = () => {
+      const verEl = document.getElementById('app-version-val');
+      if (verEl && window.APP_VERSION) {
+        verEl.textContent = window.APP_VERSION;
+      }
+    };
+    updateAdminVersionDisplay();
+    window.addEventListener('app-version-ready', updateAdminVersionDisplay);
   });
 
 })();

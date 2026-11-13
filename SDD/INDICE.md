@@ -124,9 +124,9 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000113** | [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo | Concluída | `migration_caf_000113_dre_gerencial_recebiveis_metas.sql` | `caf-000113-dre-gerencial-recebiveis-metas.test.js` | — |
 | **CAF-000114** | [CHORE] Atualização de Dependências de Desenvolvimento (vite, vitest, @vitest/coverage-v8 e fake-indexeddb) | Concluída | — | `caf-000114-atualizacao-dependencias.test.js` | — |
 | **CAF-000115** | [CHORE] Observabilidade: captura de erros do front em produção e painel de saúde no Admin | Concluída | `migration_caf_000115_erros_cliente.sql` | `caf-000115-observabilidade-erros.test.js` | — |
-| **[CAF-000116](CONCLUIDAS/CAF-000116-backup-restauracao-e-runner-de-migrations.md)** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–115 | Concluída | `supabase/migrations.manifest.json` | `caf-000116-backup-migrations-runner.test.js` | — |
-| **CAF-000117** | [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot | Rascunho | — | — | — |
-| **CAF-000118** | [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin | Rascunho | — | — | — |
+| **CAF-000116** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–115 | Concluída | `supabase/migrations.manifest.json` | `caf-000116-backup-migrations-runner.test.js` | — |
+| **CAF-000117** | [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot | Concluída | — | `caf-000117-seguranca-front-csp-sri.test.js` | — |
+| **CAF-000118** | [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin | Concluída | — | `caf-000118-pwa-service-worker-precache.test.js` | — |
 | **CAF-000119** | [CHORE] Qualidade contínua: ESLint, cobertura medida sobre o código real das telas e limites mínimos no CI | Rascunho | — | — | — |
 | **CAF-000120** | [CHORE] Testes ponta a ponta em navegador real dos fluxos críticos (pedido → cozinha → fechamento → caixa) | Rascunho | — | — | — |
 | **CAF-000121** | [REFACTOR] Modularização do PDV (`js/pedidos.js`) e do Admin (`admin.html`) sem mudança de comportamento | Rascunho | — | — | — |

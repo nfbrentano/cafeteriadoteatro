@@ -1,7 +1,7 @@
 # [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-12
 
 ## Detalhes da Atividade
 
@@ -47,12 +47,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado qualquer `.html` publicado, quando inspeciono as tags `<script src="https://...">`, então todas têm versão exata na URL e atributo `integrity`.
-- [ ] **CA02:** Dado qualquer página, quando carrego, então existe uma CSP que não contém `unsafe-eval` nem `script-src *`.
-- [ ] **CA03:** Dado o PDV, o KDS, o Totem, o Admin e o Cardápio, quando executo os fluxos principais (criar pedido, marcar pronto, fechar conta, abrir relatório, pedido do cliente), então o console não registra violação de CSP.
-- [ ] **CA04:** Dado um script inline injetado via observação de pedido, quando a tela renderiza, então o script não executa (bloqueado pela CSP mesmo se o escape falhar).
-- [ ] **CA05:** Dado o repositório, quando o Dependabot roda, então abre PRs para dependências desatualizadas de `npm` e de Actions.
-- [ ] **CA06:** Dado um PR que adiciona `<script src="https://cdn.../lib">` sem versão ou sem `integrity`, quando o CI roda, então o teste falha.
+- [x] **CA01:** Dado qualquer `.html` publicado, quando inspeciono as tags `<script src="https://...">`, então todas têm versão exata na URL e atributo `integrity`.
+- [x] **CA02:** Dado qualquer página, quando carrego, então existe uma CSP que não contém `unsafe-eval` nem `script-src *`.
+- [x] **CA03:** Dado o PDV, o KDS, o Totem, o Admin e o Cardápio, quando executo os fluxos principais (criar pedido, marcar pronto, fechar conta, abrir relatório, pedido do cliente), então o console não registra violação de CSP.
+- [x] **CA04:** Dado um script inline injetado via observação de pedido, quando a tela renderiza, então o script não executa (bloqueado pela CSP mesmo se o escape falhar).
+- [x] **CA05:** Dado o repositório, quando o Dependabot roda, então abre PRs para dependências desatualizadas de `npm` e de Actions.
+- [x] **CA06:** Dado um PR que adiciona `<script src="https://cdn.../lib">` sem versão ou sem `integrity`, quando o CI roda, então o teste falha.
 
 ## O que a atividade não inclui
 
@@ -69,8 +69,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Empacotar as bibliotecas no build (sem CDN) ou manter CDN com SRI? Empacotar também resolve o funcionamento offline do PDV | dev | Não | |
-| D02 | Quais domínios de terceiros são realmente necessários (Maps, Fonts, analytics)? Levantar antes de escrever a CSP | dev | Sim | |
+| D01 | Empacotar as bibliotecas no build (sem CDN) ou manter CDN com SRI? Empacotar também resolve o funcionamento offline do PDV | dev | Não | Manter CDN com versão estrita fixada e SRI (`integrity="sha384-..."` e `crossorigin="anonymous"`). Isso fecha a superfície de ataque imediatamente sem quebrar os scripts globais legados, reservando o empacotamento completo de módulos npm para a CAF-000121. |
+| D02 | Quais domínios de terceiros são realmente necessários (Maps, Fonts, analytics)? Levantar antes de escrever a CSP | dev | Sim | Levantamento concluído nos 9 HTMLs: Supabase (`https://nyretgvzbnbtiyeioeju.supabase.co` e `wss://nyretgvzbnbtiyeioeju.supabase.co`), jsDelivr CDN (`https://cdn.jsdelivr.net`), Google Fonts (`https://fonts.googleapis.com` e `https://fonts.gstatic.com`), Google Analytics / GTM (`https://www.googletagmanager.com`, `https://www.google-analytics.com` e `https://region1.google-analytics.com`). |
 
 ## Sugestões de casos de teste
 

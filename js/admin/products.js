@@ -85,14 +85,14 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; gap:8px; align-items:center; flex:1; min-width: 200px;">
               <span style="font-weight:700; color:var(--admin-text, #fff); font-size:13px;">Etapa ${gIdx + 1}:</span>
-              <input type="text" class="field__input grupo-nome-input" value="${window.escapeHtml(g.nome || '')}" placeholder="Nome (ex: Bebida, Salgado)" style="min-height:36px; padding:4px 8px; font-size:13px; font-weight:600;" onchange="window.updateComboGrupoNome(${gIdx}, this.value)" />
+              <input type="text" class="field__input grupo-nome-input" value="${window.escapeHtml(g.nome || '')}" placeholder="Nome (ex: Bebida, Salgado)" style="min-height:36px; padding:4px 8px; font-size:13px; font-weight:600;" data-change="combo-grupo-nome" data-gidx="${gIdx}" />
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
               <label style="font-size:11px; color:var(--admin-text-sub);">Mín:</label>
-              <input type="number" class="field__input grupo-min-input" min="0" max="10" value="${g.min_escolhas ?? 1}" style="width:55px; min-height:36px; padding:4px;" onchange="window.updateComboGrupoMin(${gIdx}, this.value)" />
+              <input type="number" class="field__input grupo-min-input" min="0" max="10" value="${g.min_escolhas ?? 1}" style="width:55px; min-height:36px; padding:4px;" data-change="combo-grupo-min" data-gidx="${gIdx}" />
               <label style="font-size:11px; color:var(--admin-text-sub);">Máx:</label>
-              <input type="number" class="field__input grupo-max-input" min="1" max="10" value="${g.max_escolhas ?? 1}" style="width:55px; min-height:36px; padding:4px;" onchange="window.updateComboGrupoMax(${gIdx}, this.value)" />
-              <button type="button" class="btn btn--icon btn--ghost" style="padding:4px 8px; color:#ef4444;" onclick="window.removerComboGrupo(${gIdx})" title="Excluir Etapa">🗑️</button>
+              <input type="number" class="field__input grupo-max-input" min="1" max="10" value="${g.max_escolhas ?? 1}" style="width:55px; min-height:36px; padding:4px;" data-change="combo-grupo-max" data-gidx="${gIdx}" />
+              <button type="button" class="btn btn--icon btn--ghost" style="padding:4px 8px; color:#ef4444;" data-action="combo-remover-grupo" data-gidx="${gIdx}" title="Excluir Etapa">🗑️</button>
             </div>
           </div>
 
@@ -100,7 +100,7 @@
           <div style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 8px; margin-top: 6px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
               <span style="font-size:11px; font-weight:700; color:var(--admin-text-sub); text-transform:uppercase;">Produtos da Etapa</span>
-              <button type="button" class="btn btn--secondary btn--sm" style="font-size:11px; padding:2px 8px; min-height:28px;" onclick="window.addOpcaoComboGrupo(${gIdx})">+ Adicionar Produto</button>
+              <button type="button" class="btn btn--secondary btn--sm" style="font-size:11px; padding:2px 8px; min-height:28px;" data-action="combo-add-opcao" data-gidx="${gIdx}">+ Adicionar Produto</button>
             </div>
             ${opcoes.length === 0 ? `<div style="font-size:11px; color:var(--admin-text-sub); text-align:center; padding:6px;">Nenhum produto vinculado.</div>` : ''}
             <div style="display:flex; flex-direction:column; gap:6px;">
@@ -108,7 +108,7 @@
                 const selId = op.produto_item_id || op.produto_id || '';
                 return `
                   <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:var(--admin-bg, #0f172a); padding:4px 8px; border-radius:4px; border:1px solid var(--admin-border2, #334155);" data-op-idx="${opIdx}">
-                    <select class="field__select opcao-prod-select" style="flex:2; min-width:160px; min-height:32px; font-size:12px; padding:2px 6px;" onchange="window.updateComboOpcaoProd(${gIdx}, ${opIdx}, this.value)">
+                    <select class="field__select opcao-prod-select" style="flex:2; min-width:160px; min-height:32px; font-size:12px; padding:2px 6px;" data-change="combo-opcao-prod" data-gidx="${gIdx}" data-opidx="${opIdx}">
                       <option value="">Selecione um produto...</option>
                       ${todosProds.map(p => `
                         <option value="${p.id}" ${String(p.id) === String(selId) ? 'selected' : ''}>
@@ -118,9 +118,9 @@
                     </select>
                     <div style="display:flex; align-items:center; gap:4px;">
                       <span style="font-size:11px; color:var(--admin-text-sub);">+ R$</span>
-                      <input type="number" step="0.50" min="0" class="field__input opcao-preco-input" value="${op.preco_adicional || 0}" placeholder="0,00" style="width:75px; min-height:32px; font-size:12px; padding:2px 6px;" onchange="window.updateComboOpcaoPreco(${gIdx}, ${opIdx}, this.value)" title="Acréscimo no preço do combo para esta opção" />
+                      <input type="number" step="0.50" min="0" class="field__input opcao-preco-input" value="${op.preco_adicional || 0}" placeholder="0,00" style="width:75px; min-height:32px; font-size:12px; padding:2px 6px;" data-change="combo-opcao-preco" data-gidx="${gIdx}" data-opidx="${opIdx}" title="Acréscimo no preço do combo para esta opção" />
                     </div>
-                    <button type="button" class="btn btn--icon btn--ghost" style="padding:2px 6px; font-size:11px; color:#ef4444;" onclick="window.removerComboOpcao(${gIdx}, ${opIdx})" title="Remover Opção">✕</button>
+                    <button type="button" class="btn btn--icon btn--ghost" style="padding:2px 6px; font-size:11px; color:#ef4444;" data-action="combo-remover-opcao" data-gidx="${gIdx}" data-opidx="${opIdx}" title="Remover Opção">✕</button>
                   </div>
                 `;
               }).join('')}
@@ -304,8 +304,8 @@
             </td>
             <td>
               <div class="td-actions">
-                <button class="btn btn--icon btn--ghost" onclick="window.openProdutoModal('${p.id}')">✏️</button>
-                <button class="btn btn--icon btn--danger" onclick="window.deleteProduto('${p.id}')">🗑️</button>
+                <button class="btn btn--icon btn--ghost" data-action="admin-open-produto-modal" data-id="${p.id}">✏️</button>
+                <button class="btn btn--icon btn--danger" data-action="admin-delete-produto" data-id="${p.id}">🗑️</button>
               </div>
             </td>
           </tr>`;
@@ -383,7 +383,7 @@
             <td style="padding: 6px 8px;">R$ ${custoUnit.toFixed(2)}</td>
             <td style="padding: 6px 8px; font-weight: 600;">R$ ${subtotal.toFixed(2)}</td>
             <td style="padding: 6px 8px; text-align: right;">
-              <button type="button" class="btn btn--icon btn--ghost" style="padding:2px 6px; font-size:12px;" onclick="window.removerInsumoFicha(${idx})">🗑️</button>
+              <button type="button" class="btn btn--icon btn--ghost" style="padding:2px 6px; font-size:12px;" data-action="admin-remover-insumo-ficha" data-idx="${idx}">🗑️</button>
             </td>
           </tr>`;
       }).join('');
@@ -763,6 +763,54 @@
     els.search.addEventListener('input', renderTable);
     els.btnNew.addEventListener('click', () => window.openProdutoModal());
     els.btnSave.addEventListener('click', saveProduto);
+
+    // CAF-000117: Delegação de eventos de produtos e combos para eliminar handlers inline
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      if (action === 'admin-open-produto-modal') {
+        const id = btn.getAttribute('data-id');
+        if (typeof window.openProdutoModal === 'function') window.openProdutoModal(id);
+      } else if (action === 'admin-delete-produto') {
+        const id = btn.getAttribute('data-id');
+        if (typeof window.deleteProduto === 'function') window.deleteProduto(id);
+      } else if (action === 'admin-remover-insumo-ficha') {
+        const idx = Number(btn.getAttribute('data-idx'));
+        if (typeof window.removerInsumoFicha === 'function') window.removerInsumoFicha(idx);
+      } else if (action === 'combo-remover-grupo') {
+        const gIdx = Number(btn.getAttribute('data-gidx'));
+        if (typeof window.removerComboGrupo === 'function') window.removerComboGrupo(gIdx);
+      } else if (action === 'combo-add-opcao') {
+        const gIdx = Number(btn.getAttribute('data-gidx'));
+        if (typeof window.addOpcaoComboGrupo === 'function') window.addOpcaoComboGrupo(gIdx);
+      } else if (action === 'combo-remover-opcao') {
+        const gIdx = Number(btn.getAttribute('data-gidx'));
+        const opIdx = Number(btn.getAttribute('data-opidx'));
+        if (typeof window.removerComboOpcao === 'function') window.removerComboOpcao(gIdx, opIdx);
+      }
+    });
+
+    document.addEventListener('change', (e) => {
+      const input = e.target.closest('[data-change]');
+      if (!input) return;
+      const changeType = input.getAttribute('data-change');
+      const gIdx = Number(input.getAttribute('data-gidx'));
+      const val = input.value;
+      if (changeType === 'combo-grupo-nome') {
+        if (typeof window.updateComboGrupoNome === 'function') window.updateComboGrupoNome(gIdx, val);
+      } else if (changeType === 'combo-grupo-min') {
+        if (typeof window.updateComboGrupoMin === 'function') window.updateComboGrupoMin(gIdx, val);
+      } else if (changeType === 'combo-grupo-max') {
+        if (typeof window.updateComboGrupoMax === 'function') window.updateComboGrupoMax(gIdx, val);
+      } else if (changeType === 'combo-opcao-prod') {
+        const opIdx = Number(input.getAttribute('data-opidx'));
+        if (typeof window.updateComboOpcaoProd === 'function') window.updateComboOpcaoProd(gIdx, opIdx, val);
+      } else if (changeType === 'combo-opcao-preco') {
+        const opIdx = Number(input.getAttribute('data-opidx'));
+        if (typeof window.updateComboOpcaoPreco === 'function') window.updateComboOpcaoPreco(gIdx, opIdx, val);
+      }
+    });
     
     if (els.cbPermiteAdd && els.fieldVinculos) {
       els.cbPermiteAdd.addEventListener('change', (e) => {

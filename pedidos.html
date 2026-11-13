@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://nyretgvzbnbtiyeioeju.supabase.co https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://nyretgvzbnbtiyeioeju.supabase.co wss://nyretgvzbnbtiyeioeju.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PDV Barista | Cafeteria do Teatro</title>
   <meta name="robots" content="noindex, nofollow">
@@ -182,7 +183,7 @@
           <div class="form-group" style="position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <label for="pedido-cliente-nome" style="margin-bottom: 0;">Nome do cliente (opcional):</label>
-              <button type="button" id="btn-abrir-cadastro-cliente" onclick="window.baristaAbrirCadastroCliente && window.baristaAbrirCadastroCliente()" class="btn btn--secondary btn--sm btn--novo-cliente">➕ Cadastrar</button>
+              <button type="button" id="btn-abrir-cadastro-cliente" class="btn btn--secondary btn--sm btn--novo-cliente">➕ Cadastrar</button>
             </div>
 
             <!-- Badge de cliente cadastrado selecionado -->
@@ -366,10 +367,10 @@
         <div style="margin-top: 16px;">
           <label for="modal-montagem-obs" style="font-size:14px; color:#aaa; margin-bottom:4px; display:block;">Observação (Opcional)</label>
           <div id="modal-montagem-fast-chips" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Sem açúcar '">Sem açúcar</button>
-            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Bem quente '">Bem quente</button>
-            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Para viagem '">Para viagem</button>
-            <button class="btn-ghost-small" type="button" onclick="document.getElementById('modal-montagem-obs').value += 'Sem cebola '">Sem cebola</button>
+            <button class="btn-ghost-small" type="button" data-obs-sugestao="Sem açúcar ">Sem açúcar</button>
+            <button class="btn-ghost-small" type="button" data-obs-sugestao="Bem quente ">Bem quente</button>
+            <button class="btn-ghost-small" type="button" data-obs-sugestao="Para viagem ">Para viagem</button>
+            <button class="btn-ghost-small" type="button" data-obs-sugestao="Sem cebola ">Sem cebola</button>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <label style="font-size:12px; font-weight:bold; color:var(--marrom-escuro);">Observação específica:</label>
@@ -900,7 +901,7 @@
   <iframe id="print-frame" style="display:none;"></iframe>
 
   <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script crossorigin="anonymous" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/db.js"></script>
   <script src="js/libs/qrcode.min.js"></script>
@@ -918,14 +919,6 @@
   <script type="module" src="js/utils/datas-sp.js"></script>
   <script type="module" src="js/utils/error-reporter.js"></script>
   <script src="js/pedidos.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('[PV-PDV] SW registrado:', reg.scope))
-          .catch(err => console.warn('[PV-PDV] SW falhou:', err));
-      });
-    }
-  </script>
+  <script defer src="js/sw-register.js"></script>
 </body>
 </html>

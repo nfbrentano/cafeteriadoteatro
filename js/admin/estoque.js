@@ -379,14 +379,33 @@
           </td>
           <td>
             <div class="td-actions">
-              <button class="btn btn--icon btn--ghost" title="Entrada / Ajuste / Perda" onclick="window.openMovimentoModal(${item.id})">⚖️</button>
-              <button class="btn btn--icon btn--ghost" title="Extrato / Histórico" onclick="window.openExtratoModal(${item.id})">📜</button>
-              <button class="btn btn--icon btn--ghost" title="Editar Item" onclick="window.openEstoqueItemModal(${item.id})">✏️</button>
-              <button class="btn btn--icon btn--danger" title="Excluir Item" onclick="window.deleteEstoqueItem(${item.id})">🗑️</button>
+              <button class="btn btn--icon btn--ghost" title="Entrada / Ajuste / Perda" data-action="admin-open-movimento-modal" data-id="${item.id}">⚖️</button>
+              <button class="btn btn--icon btn--ghost" title="Extrato / Histórico" data-action="admin-open-extrato-modal" data-id="${item.id}">📜</button>
+              <button class="btn btn--icon btn--ghost" title="Editar Item" data-action="admin-open-estoque-item-modal" data-id="${item.id}">✏️</button>
+              <button class="btn btn--icon btn--danger" title="Excluir Item" data-action="admin-delete-estoque-item" data-id="${item.id}">🗑️</button>
             </div>
           </td>
         </tr>`;
     }).join('');
+
+    if (el.tableBody && !el.tableBody._hasEstoqueActionsListener) {
+      el.tableBody._hasEstoqueActionsListener = true;
+      el.tableBody.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const id = Number(btn.getAttribute('data-id'));
+        if (action === 'admin-open-movimento-modal' && typeof window.openMovimentoModal === 'function') {
+          window.openMovimentoModal(id);
+        } else if (action === 'admin-open-extrato-modal' && typeof window.openExtratoModal === 'function') {
+          window.openExtratoModal(id);
+        } else if (action === 'admin-open-estoque-item-modal' && typeof window.openEstoqueItemModal === 'function') {
+          window.openEstoqueItemModal(id);
+        } else if (action === 'admin-delete-estoque-item' && typeof window.deleteEstoqueItem === 'function') {
+          window.deleteEstoqueItem(id);
+        }
+      });
+    }
   }
 
   // --- Modal de Item de Estoque (CRUD) ---

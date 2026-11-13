@@ -1,7 +1,7 @@
 # [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-13
 
 ## Detalhes da Atividade
 
@@ -45,14 +45,14 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado dois builds com conteúdo diferente em `js/pedidos.js`, quando comparo os `sw.js` gerados, então a versão do cache é diferente sem edição manual.
-- [ ] **CA02:** Dado dois builds idênticos, quando comparo, então a versão do cache é a mesma.
-- [ ] **CA03:** Dado o `sw.js` gerado, quando verifico a lista de precache, então todo arquivo listado existe em `dist/` e todo script/CSS referenciado por `pedidos.html`, `cozinha.html`, `totem.html` e `retirada.html` está na lista.
-- [ ] **CA04:** Dado o Totem aberto uma vez online, quando recarrego em modo avião, então a tela abre e mostra o cardápio em cache.
-- [ ] **CA05:** Dado um deploy novo, quando o operador abre o PDV, então vê o aviso de nova versão e, ao tocar em Atualizar, passa a rodar a versão nova.
-- [ ] **CA06:** Dado um carrinho com itens ou um fechamento de conta aberto, quando chega versão nova, então a tela não recarrega sozinha.
-- [ ] **CA07:** Dado o Admin, quando abro o rodapé, então vejo a versão do build.
-- [ ] **CA08:** Dado o service worker ativo, quando o PDV chama uma RPC, então a resposta nunca vem do cache.
+- [x] **CA01:** Dado dois builds com conteúdo diferente em `js/pedidos.js`, quando comparo os `sw.js` gerados, então a versão do cache é diferente sem edição manual.
+- [x] **CA02:** Dado dois builds idênticos, quando comparo, então a versão do cache é a mesma.
+- [x] **CA03:** Dado o `sw.js` gerado, quando verifico a lista de precache, então todo arquivo listado existe em `dist/` e todo script/CSS referenciado por `pedidos.html`, `cozinha.html`, `totem.html` e `retirada.html` está na lista.
+- [x] **CA04:** Dado o Totem aberto uma vez online, quando recarrego em modo avião, então a tela abre e mostra o cardápio em cache.
+- [x] **CA05:** Dado um deploy novo, quando o operador abre o PDV, então vê o aviso de nova versão e, ao tocar em Atualizar, passa a rodar a versão nova.
+- [x] **CA06:** Dado um carrinho com itens ou um fechamento de conta aberto, quando chega versão nova, então a tela não recarrega sozinha.
+- [x] **CA07:** Dado o Admin, quando abro o rodapé, então vejo a versão do build.
+- [x] **CA08:** Dado o service worker ativo, quando o PDV chama uma RPC, então a resposta nunca vem do cache.
 
 ## O que a atividade não inclui
 
@@ -69,8 +69,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | O Totem deve aceitar pedido offline (fila) ou apenas mostrar "sem conexão, peça no balcão"? | PO | Não | |
-| D02 | O Admin precisa abrir offline ou só as telas de operação? | PO | Não | |
+| D01 | O Totem deve aceitar pedido offline (fila) ou apenas mostrar "sem conexão, peça no balcão"? | PO | Não | O Totem abre o cardápio em cache para navegação; se o cliente tentar enviar o pedido sem rede, exibe toast/aviso amigável: "Sem conexão com a internet no momento. Por favor, dirija-se ao balcão para fazer seu pedido." (já que o Totem depende de confirmação financeira prévia). |
+| D02 | O Admin precisa abrir offline ou só as telas de operação? | PO | Não | Apenas as telas de operação (PDV, KDS, Totem, Retirada, Cardápio, Home) precisam de cache offline pleno. O Admin registra o Service Worker e cacheia seus assets essenciais para carregamento rápido e detecção de versão, mas suas operações administrativas dependem de rede com o Supabase. |
 
 ## Sugestões de casos de teste
 

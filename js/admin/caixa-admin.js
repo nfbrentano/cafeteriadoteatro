@@ -168,6 +168,21 @@ window.initAdminCaixa = async function () {
   const btnAtualizarHistorico = document.getElementById('btn-atualizar-historico-caixas');
   const sectionHistorico = document.getElementById('caixa-historico-section');
   const tbodyHistorico = document.getElementById('caixa-historico-tbody');
+  if (tbodyHistorico) {
+    // CAF-000117: Delegação de eventos para botões de histórico de caixa
+    tbodyHistorico.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      if (action === 'admin-imprimir-caixa-historico' && typeof window.imprimirCaixaHistorico === 'function') {
+        const idx = Number(btn.getAttribute('data-idx'));
+        window.imprimirCaixaHistorico(idx);
+      } else if (action === 'admin-reabrir-caixa' && typeof window.reabrirCaixaAdmin === 'function') {
+        const id = btn.getAttribute('data-id');
+        window.reabrirCaixaAdmin(id);
+      }
+    });
+  }
 
   const statData = document.getElementById('stat-caixa-data');
   const statFundo = document.getElementById('stat-caixa-fundo');
@@ -830,12 +845,12 @@ window.initAdminCaixa = async function () {
               <td>
                 ${
                   !isAberto
-                    ? `<button type="button" class="btn btn--ghost" style="padding:4px 8px; font-size:12px;" onclick="window.imprimirCaixaHistorico(${idx})">🖨️</button>`
+                    ? `<button type="button" class="btn btn--ghost" style="padding:4px 8px; font-size:12px;" data-action="admin-imprimir-caixa-historico" data-idx="${idx}">🖨️</button>`
                     : ''
                 }
                 ${
                   !isAberto && idx === 0 && (!currentCaixa || currentCaixa.status === 'fechado')
-                    ? `<button type="button" class="btn btn--danger" style="padding:4px 8px; font-size:12px; margin-left:4px;" title="Reabrir Caixa" onclick="window.reabrirCaixaAdmin('${cx.id}')">🔄 Reabrir</button>`
+                    ? `<button type="button" class="btn btn--danger" style="padding:4px 8px; font-size:12px; margin-left:4px;" title="Reabrir Caixa" data-action="admin-reabrir-caixa" data-id="${cx.id}">🔄 Reabrir</button>`
                     : ''
                 }
               </td>
@@ -957,13 +972,18 @@ window.initAdminCaixa = async function () {
         </div>
         ${cx.observacoes ? `<div style="margin-top:6px;"><strong>Obs:</strong> ${cx.observacoes}</div>` : ''}
         <div class="line"></div>
-        <script>
-          window.onload = function() { window.print(); };
-        </script>
       </body>
       </html>
     `);
     win.document.close();
+    setTimeout(() => {
+      try {
+        win.focus();
+        win.print();
+      } catch (err) {
+        console.warn('Erro ao disparar impressão de caixa:', err);
+      }
+    }, 250);
   }
 };
 

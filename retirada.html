@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://nyretgvzbnbtiyeioeju.supabase.co https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://nyretgvzbnbtiyeioeju.supabase.co wss://nyretgvzbnbtiyeioeju.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Retirada de Pedidos | Cafeteria do Teatro</title>
   <meta name="robots" content="noindex, nofollow">
@@ -98,9 +99,10 @@
   <audio id="audio-ding" src="assets/audio/ding.wav" preload="auto"></audio>
 
   <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script crossorigin="anonymous" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script src="js/supabase-client.js"></script>
   <script type="module" src="js/utils/wake-lock.js"></script>
   <script src="js/retirada.js"></script>
+  <script defer src="js/sw-register.js"></script>
 </body>
 </html>

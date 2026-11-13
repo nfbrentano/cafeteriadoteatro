@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://nyretgvzbnbtiyeioeju.supabase.co https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://nyretgvzbnbtiyeioeju.supabase.co wss://nyretgvzbnbtiyeioeju.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self';">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DWC0E8ZFJ5"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-DWC0E8ZFJ5');
-  </script>
-  <meta charset="UTF-8" />
+  <script defer src="js/gtag-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Cardápio da Cafeteria do Teatro — Cafés, bebidas geladas, doces artesanais, salgados e combos. Teatro da Univates, Lajeado/RS." />
   <meta property="og:title" content="Cardápio | Cafeteria do Teatro" />
@@ -33,27 +29,7 @@
   <link rel="canonical" href="https://cafeteriadoteatro.com.br/cardapio.html" />
   
   <!-- Pre-render Hero cache instant-load -->
-  <script>
-    (function() {
-      try {
-        const raw = localStorage.getItem('cafeteria_hero_cache');
-        if (raw) {
-          let hero = null;
-          try {
-            hero = JSON.parse(decodeURIComponent(atob(raw)));
-          } catch {
-            hero = JSON.parse(raw);
-          }
-          if (hero && hero.image_url) {
-            document.documentElement.style.setProperty('--dynamic-hero-bg', 'url(' + hero.image_url + ')');
-          }
-          if (hero && hero.blur_data_url) {
-            document.documentElement.style.setProperty('--hero-blur-bg', 'url(' + hero.blur_data_url + ')');
-          }
-        }
-      } catch(e) {}
-    })();
-  </script>
+  <script src="js/cardapio-init.js"></script>
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
   {
@@ -402,14 +378,14 @@
   </a>
 
   <!-- SUPABASE SDK & CLIENT -->
-  <script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer crossorigin="anonymous" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
   <script defer src="js/supabase-client.js"></script>
   <script defer src="js/db.js"></script>
 
   <!-- PDF.js (renderização de PDF) -->
-  <script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script defer crossorigin="anonymous" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <!-- StPageFlip (efeito flipbook) -->
-  <script defer crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  <script defer crossorigin="anonymous" integrity="sha384-L4eWrYFdqQ+LoGA0MMuqLqzV13x7SKkQaqacy4MED8e815dS37tTKlO/6xBEUpZW" src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 
   <script type="module" src="js/utils/smart-search.js"></script>
   <script type="module" src="js/utils/coupon-validator.js"></script>
@@ -423,14 +399,6 @@
   <script defer src="js/cardapio.js"></script>
   <script defer src="js/cardapio-pdf-viewer.js"></script>
   <script defer src="js/analytics.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('SW registrado!', reg))
-          .catch(err => console.error('Erro no SW:', err));
-      });
-    }
-  </script>
+  <script defer src="js/sw-register.js"></script>
 </body>
 </html>
