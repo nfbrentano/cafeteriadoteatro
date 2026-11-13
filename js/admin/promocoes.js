@@ -288,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function deletePromo(id) {
+    const admin = window.cafeteriaAdmin || window.admin;
     const ok = await admin.confirm({ title: 'Excluir promoção?', msg: 'Tem certeza que deseja excluir esta promoção?', okLabel: 'Excluir' });
     if (ok) {
       try {

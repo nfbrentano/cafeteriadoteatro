@@ -100,11 +100,18 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           ${promo.image_url ? `
             <div class="promo-hero__image">
-              <img src="${promo.image_url}" alt="${promo.titulo || 'Promoção'}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'" />
+              <img src="${promo.image_url}" alt="${promo.titulo || 'Promoção'}" loading="lazy" decoding="async" />
             </div>
           ` : ''}
         </div>
       `;
+
+      const promoImg = heroRoot.querySelector('.promo-hero__image img');
+      if (promoImg) {
+        promoImg.addEventListener('error', () => {
+          if (promoImg.parentElement) promoImg.parentElement.style.display = 'none';
+        }, { once: true });
+      }
     }
   };
 

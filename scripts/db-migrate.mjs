@@ -13,7 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { execSync } from 'child_process';
+import { execFileSync, execSync } from 'child_process';
 
 export const MANIFEST_PATH = path.resolve('supabase/migrations.manifest.json');
 export const SQL_DIR = path.resolve('supabase');
@@ -170,10 +170,14 @@ export async function rodarMigrations(options = {}) {
 
   if (!options.migrationsBanco && dbUrl) {
     try {
-      // Garante a tabela e busca histórico via psql
-      execSync(`psql "${dbUrl}" -c "${getSqlSetupAppMigrations().replace(/\n/g, ' ')}"`, { stdio: 'pipe' });
-      const rawJson = execSync(
-        `psql "${dbUrl}" -t -A -c "SELECT json_agg(m) FROM public.app_migrations m;"`,
+      // Garante a tabela e busca histórico via psql (passando SQL via stdin para evitar expansão de $$ pelo shell)
+      execFileSync('psql', [dbUrl, '-v', 'ON_ERROR_STOP=1'], {
+        input: getSqlSetupAppMigrations(),
+        stdio: 'pipe'
+      });
+      const rawJson = execFileSync(
+        'psql',
+        [dbUrl, '-t', '-A', '-c', 'SELECT json_agg(m) FROM public.app_migrations m;'],
         { encoding: 'utf-8', stdio: 'pipe' }
       ).trim();
       if (rawJson && rawJson !== '') {
@@ -237,7 +241,10 @@ export async function rodarMigrations(options = {}) {
     `;
 
     try {
-      execSync(`psql "${dbUrl}" -c "${sqlScript.replace(/"/g, '\\"')}"`, { stdio: 'pipe' });
+      execFileSync('psql', [dbUrl, '-v', 'ON_ERROR_STOP=1'], {
+        input: sqlScript,
+        stdio: 'pipe'
+      });
       executadas++;
       console.log(`   ✓ Versão ${m.versao} aplicada e registrada.`);
     } catch (err) {

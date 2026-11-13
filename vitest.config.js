@@ -22,6 +22,18 @@ export default defineConfig({
           branches: 65,
           functions: 85,
           statements: 85
+        },
+        'js/admin/**': {
+          lines: 35,
+          branches: 18,
+          functions: 29,
+          statements: 33
+        },
+        'js/*.js': {
+          lines: 45,
+          branches: 27,
+          functions: 39,
+          statements: 42
         }
       }
     }

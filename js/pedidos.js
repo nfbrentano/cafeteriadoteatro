@@ -1188,10 +1188,10 @@
         }
       }
 
-      carregarPainel(); // Recarrega PDV
+      await loadActivePedidos(); // Recarrega PDV
       if (currentSelectedMesaParaConta && currentSelectedMesaParaConta.mesaCodigo === mesaCodigo) {
         // Atualiza a view da mesa
-        const pd = window.cafeteriaDadosPainel.pedidosPendentes.filter(p => p.mesa_codigo === mesaCodigo);
+        const pd = (window.cafeteriaDadosPainel?.pedidosPendentes || activePedidos || []).filter(p => p.mesa_codigo === mesaCodigo);
         abrirModalMesa(mesaCodigo, pd);
       }
     } catch (err) {
@@ -2992,8 +2992,7 @@
 
     let retiradaEm = null;
     if (isIntervalo) {
-      const horaInt = (typeof espetaculoHojeConfig !== 'undefined' && espetaculoHojeConfig?.espetaculo_horario_intervalo)
-        || window.espetaculoHojeConfig?.espetaculo_horario_intervalo
+      const horaInt = window.espetaculoHojeConfig?.espetaculo_horario_intervalo
         || '21:30';
       const hojeYmd = (window.datasSP && window.datasSP.hojeSP) ? window.datasSP.hojeSP() : new Date().toISOString().split('T')[0];
       retiradaEm = new Date(`${hojeYmd}T${horaInt}:00-03:00`).toISOString();

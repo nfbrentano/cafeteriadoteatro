@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://nyretgvzbnbtiyeioeju.supabase.co https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://nyretgvzbnbtiyeioeju.supabase.co wss://nyretgvzbnbtiyeioeju.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://nyretgvzbnbtiyeioeju.supabase.co https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://nyretgvzbnbtiyeioeju.supabase.co wss://nyretgvzbnbtiyeioeju.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://cdn.jsdelivr.net; media-src 'self' data: blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; frame-src 'self' blob: https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#3B2314" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <title>Autoatendimento · Cafeteria do Teatro</title>
-  <link rel="icon" type="image/webp" href="assets/images/logo.webp" />
+  <link rel="icon" type="image/webp" href="assets/images/logo-cafeteria-do-teatro.webp" />
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +32,7 @@
   <!-- ── TELA DE PAREAMENTO / TOTEM REVOGADO ── -->
   <div id="totem-pairing-screen" class="totem-modal-backdrop hidden" style="z-index:400; background:#231309;">
     <div class="totem-modal" style="max-width:520px; text-align:center; padding:32px 26px;">
-      <img src="assets/images/logo.webp" alt="Logo" style="width:72px; height:72px; border-radius:18px; margin-bottom:12px;" />
+      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Logo" style="width:72px; height:72px; border-radius:18px; margin-bottom:12px;" />
       <h2 id="totem-pairing-title" style="margin:0 0 8px; font-size:1.6rem;">Ativar Totem de Balcão</h2>
       <p id="totem-pairing-desc" style="color:var(--totem-text-sub); margin:0 0 20px; font-size:1rem;">
         No painel Admin (Configurações → Totem), clique em <strong>+ Parear Novo Tablet</strong> e digite o código de 6 dígitos abaixo:
@@ -58,7 +58,7 @@
       <div class="totem-bg-overlay"></div>
     </div>
     <div style="position:relative; z-index:5;">
-      <img src="assets/images/logo.webp" alt="Cafeteria do Teatro" style="width:88px; height:88px; border-radius:22px; margin-bottom:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" />
+      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Cafeteria do Teatro" style="width:88px; height:88px; border-radius:22px; margin-bottom:12px; box-shadow:0 8px 24px rgba(0,0,0,0.4);" />
       <h1 style="font-family:'Playfair Display',serif; font-size:2.4rem; margin:0 0 6px;">Cafeteria do Teatro</h1>
       <p style="font-size:1.15rem; opacity:0.85; margin:0;">Autoatendimento Rápido · Sem Fila</p>
     </div>
@@ -88,7 +88,7 @@
   <!-- ── CABEÇALHO DO TOTEM ── -->
   <header class="totem-header">
     <div class="totem-brand">
-      <img src="assets/images/logo.webp" alt="Logo" class="totem-brand__logo" />
+      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Logo" class="totem-brand__logo" />
       <div>
         <h1 class="totem-brand__title">Cafeteria do Teatro</h1>
         <p class="totem-brand__sub" id="totem-device-label">Faça seu pedido aqui e pague no caixa</p>
@@ -347,9 +347,9 @@
 
   <!-- Scripts -->
   <script crossorigin="anonymous" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
-  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-client.js"></script>
   <script src="js/db.js"></script>
-  <script src="js/vendor/qrcode.js"></script>
+  <script src="js/libs/qrcode.min.js"></script>
   <script src="js/pix-brcode.js"></script>
   <script type="module" src="js/utils/wake-lock.js"></script>
   <script type="module" src="js/utils/coupon-validator.js"></script>

@@ -539,6 +539,7 @@
       return;
     }
 
+    const admin = window.cafeteriaAdmin || window.admin;
     const conf = await admin.confirm({
       title: 'Excluir cargo?',
       msg: `Deseja realmente excluir o cargo "${cargo.nome}"? Usuários vinculados a ele ficarão sem cargo definido.`,
@@ -593,6 +594,7 @@
 
   // --- Alterar Cargo Rápido do Usuário ---
   async function alterarCargoUsuario(userId, cargoAtualId) {
+    const admin = window.cafeteriaAdmin || window.admin;
     const cargoNomePrompt = await admin.prompt({
       title: 'Alterar Cargo do Colaborador',
       msg: 'Selecione ou digite o novo cargo:',
@@ -623,6 +625,7 @@
 
   // --- Alternar Ativo/Inativo ---
   async function alternarStatusUsuario(userId, novoStatus) {
+    const admin = window.cafeteriaAdmin || window.admin;
     const acao = novoStatus ? 'ativar' : 'desativar';
     const ok = await admin.confirm({
       title: `${novoStatus ? 'Ativar' : 'Desativar'} colaborador?`,

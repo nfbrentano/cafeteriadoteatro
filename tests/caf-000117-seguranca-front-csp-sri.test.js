@@ -130,6 +130,14 @@ describe('CAF-000117: Segurança do Front — CSP, SRI, Versões de CDN e Depend
         expect(content).toContain("wss://nyretgvzbnbtiyeioeju.supabase.co");
         expect(content).toContain("base-uri 'self'");
         expect(content).toContain("object-src 'none'");
+
+        if (fileName === 'index.html') {
+          expect(content, 'index.html deve liberar Google Maps em frame-src').toMatch(/frame-src[^;]*https:\/\/www\.google\.com/);
+        }
+        if (fileName === 'cardapio.html') {
+          expect(content, 'cardapio.html deve liberar jsdelivr em worker-src').toMatch(/worker-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
+          expect(content, 'cardapio.html deve liberar jsdelivr em connect-src').toMatch(/connect-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
+        }
       });
     });
 
@@ -156,17 +164,18 @@ describe('CAF-000117: Segurança do Front — CSP, SRI, Versões de CDN e Depend
   });
 
   describe('3. Ausência Total de Handlers Inline e Proteção Contra XSS (CA03 / CA04 / RF03)', () => {
-    it('RF03: nenhum elemento do HTML estático possui atributo inline onclick', () => {
+    it('RF03: nenhum elemento do HTML estático possui atributo inline de evento (onclick, onload, onerror, onchange, onsubmit, oninput, onkeydown, onkeyup)', () => {
+      const selector = '[onclick], [onload], [onerror], [onchange], [onsubmit], [oninput], [onkeydown], [onkeyup]';
       HTML_FILES.forEach(fileName => {
         const filePath = path.resolve(process.cwd(), fileName);
         const html = fs.readFileSync(filePath, 'utf-8');
         const dom = new Window();
         dom.document.write(html);
 
-        const inlineOnclicks = dom.document.querySelectorAll('[onclick]');
+        const inlineHandlers = dom.document.querySelectorAll(selector);
         expect(
-          inlineOnclicks.length,
-          `Página ${fileName} possui ${inlineOnclicks.length} elementos com atributo onclick=`
+          inlineHandlers.length,
+          `Página ${fileName} possui ${inlineHandlers.length} elementos com handler inline`
         ).toBe(0);
       });
     });

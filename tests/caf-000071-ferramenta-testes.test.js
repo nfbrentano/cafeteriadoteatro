@@ -34,8 +34,9 @@ describe('CAF-000071: Ferramenta de Testes Automatizados', () => {
   it('CA05 / RF05: .github/workflows/deploy.yml inclui etapa de testes antes do build', () => {
     expect(fs.existsSync('.github/workflows/deploy.yml')).toBe(true);
     const workflow = fs.readFileSync('.github/workflows/deploy.yml', 'utf8');
-    expect(workflow).toMatch(/npm test/);
-    const testPos = workflow.indexOf('npm test');
+    const match = workflow.match(/npm (?:test|run test:coverage)/);
+    expect(match).not.toBeNull();
+    const testPos = match.index;
     const buildPos = workflow.indexOf('npm run build');
     expect(testPos).toBeLessThan(buildPos);
   });

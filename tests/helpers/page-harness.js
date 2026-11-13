@@ -40,6 +40,22 @@ export function createPageHarness(htmlFileName, options = {}) {
   // Set up DOM
   document.documentElement.innerHTML = htmlContent;
 
+  // Isolate document/window event listeners per harness session
+  const origDocAdd = document.addEventListener.bind(document);
+  const origDocRemove = document.removeEventListener.bind(document);
+  const origWinAdd = window.addEventListener.bind(window);
+  const origWinRemove = window.removeEventListener.bind(window);
+  const docListeners = [];
+  const winListeners = [];
+  document.addEventListener = (type, listener, opts) => {
+    docListeners.push({ type, listener, opts });
+    return origDocAdd(type, listener, opts);
+  };
+  window.addEventListener = (type, listener, opts) => {
+    winListeners.push({ type, listener, opts });
+    return origWinAdd(type, listener, opts);
+  };
+
   // Block external network
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (url, opts) => {
@@ -82,6 +98,58 @@ export function createPageHarness(htmlFileName, options = {}) {
     };
   }
 
+  if (!window.qrcode) {
+    window.qrcode = () => ({
+      addData() {},
+      make() {},
+      createDataURL: () => 'data:image/gif;base64,R0lGODlhAQABAAAAACw=',
+      createImgTag: () => '<img />',
+      createSvgTag: () => '<svg></svg>',
+      getModuleCount: () => 21,
+      isDark: () => false
+    });
+  }
+
+  if (!window.Chart) {
+    window.Chart = class {
+      destroy() {}
+      update() {}
+    };
+  }
+
+  if (!window.pdfjsLib) {
+    window.pdfjsLib = {
+      GlobalWorkerOptions: { workerSrc: '' },
+      getDocument: () => ({ promise: Promise.reject(new Error('PDF mock')) })
+    };
+  }
+
+  if (!window.St) {
+    class MockPageFlip {
+      loadFromHTML() {}
+      on() {}
+      destroy() {}
+    }
+    window.St = { PageFlip: MockPageFlip };
+    if (!window.PageFlip) window.PageFlip = MockPageFlip;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  if (!window.gtag) {
+    window.gtag = function () {
+      window.dataLayer.push(arguments);
+    };
+  }
+
+  if (typeof URL !== 'undefined') {
+    if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:mock-url';
+    if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};
+  }
+  if (window.URL) {
+    if (!window.URL.createObjectURL) window.URL.createObjectURL = URL.createObjectURL;
+    if (!window.URL.revokeObjectURL) window.URL.revokeObjectURL = URL.revokeObjectURL;
+  }
+
   const loadedScripts = [];
 
   async function carregarScript(relativePath) {
@@ -96,7 +164,7 @@ export function createPageHarness(htmlFileName, options = {}) {
   }
 
 
-  async function carregarScriptsDaPagina(filtro = null) {
+  async function carregarScriptsDaPagina(filtro = null, opts = {}) {
     const scriptElements = Array.from(document.querySelectorAll('script[src]'));
     for (const el of scriptElements) {
       const src = el.getAttribute('src');
@@ -112,6 +180,14 @@ export function createPageHarness(htmlFileName, options = {}) {
       }
       await carregarScript(src);
     }
+    if (opts.dispararDOMContentLoaded !== false) {
+      dispararDOMContentLoaded();
+    }
+  }
+
+  function dispararDOMContentLoaded() {
+    document.dispatchEvent(new Event('DOMContentLoaded', { bubbles: true, cancelable: true }));
+    window.dispatchEvent(new Event('DOMContentLoaded', { bubbles: true, cancelable: true }));
   }
 
   return {
@@ -135,14 +211,19 @@ export function createPageHarness(htmlFileName, options = {}) {
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
     },
-    dispararDOMContentLoaded() {
-      document.dispatchEvent(new Event('DOMContentLoaded', { bubbles: true, cancelable: true }));
-      window.dispatchEvent(new Event('DOMContentLoaded', { bubbles: true, cancelable: true }));
-    },
+    dispararDOMContentLoaded,
     aguardarRender(ms = 20) {
       return new Promise(resolve => setTimeout(resolve, ms));
     },
     cleanup() {
+      for (const { type, listener, opts } of docListeners) {
+        origDocRemove(type, listener, opts);
+      }
+      for (const { type, listener, opts } of winListeners) {
+        origWinRemove(type, listener, opts);
+      }
+      document.addEventListener = origDocAdd;
+      window.addEventListener = origWinAdd;
       globalThis.fetch = originalFetch;
     }
   };

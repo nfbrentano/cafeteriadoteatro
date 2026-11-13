@@ -15,6 +15,7 @@ const _supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_AN
 
 // Exportar para uso global
 window.cafeteriaSupabase = _supabaseInstance;
+window.SUPABASE_URL = SUPABASE_URL;
 
 // Escape de HTML disponível em todas as páginas (pedidos/cozinha não carregam db.js)
 if (!window.escapeHtml) {

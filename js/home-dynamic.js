@@ -230,6 +230,13 @@
         if (window.loadInteractiveMap) window.loadInteractiveMap();
       });
     }
+
+    const mapImgEl = document.getElementById('chegar-map-img');
+    if (mapImgEl) {
+      mapImgEl.addEventListener('error', () => {
+        if (window.loadInteractiveMap) window.loadInteractiveMap();
+      }, { once: true });
+    }
   });
 
   window.loadInteractiveMap = function() {

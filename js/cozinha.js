@@ -136,7 +136,8 @@
   async function syncServerClock() {
     try {
       const t0 = Date.now();
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/health`, { method: 'GET' }).catch(() => null);
+      const supabaseUrl = window.SUPABASE_URL || (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : '');
+      const res = supabaseUrl ? await fetch(`${supabaseUrl}/auth/v1/health`, { method: 'GET' }).catch(() => null) : null;
       const dateHeader = res?.headers?.get('date');
       if (dateHeader) {
         const serverDate = new Date(dateHeader).getTime();

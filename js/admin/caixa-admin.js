@@ -887,7 +887,7 @@ window.initAdminCaixa = async function () {
       if (error) throw error;
 
       admin.toast('Sucesso', 'Caixa reaberto com sucesso!', 'success');
-      await Promise.all([initCaixa(), loadHistoricoCaixas()]);
+      await Promise.all([loadCaixaState(), loadHistoricoCaixas()]);
     } catch (err) {
       console.error('Erro ao reabrir caixa:', err);
       admin.toast('Erro', err.message || 'Falha ao reabrir caixa.', 'error');

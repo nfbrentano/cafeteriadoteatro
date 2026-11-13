@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
   const audioDing = document.getElementById('audio-ding');
 
+  const logoImgEl = document.querySelector('.retirada-header__logo');
+  if (logoImgEl) {
+    logoImgEl.addEventListener('error', () => {
+      logoImgEl.style.display = 'none';
+    }, { once: true });
+  }
+
   // Configurações e Estado
   const urlParams = new URLSearchParams(window.location.search);
   const mostrarMesas = urlParams.get('mostrar_mesas') === '1';

@@ -272,7 +272,7 @@ describe('CAF-000115: Observabilidade e Captura de Erros do Front em Produção'
   });
 
   describe('6. Segurança RLS da Tabela erros_cliente (CA04 / RF03)', () => {
-    it('CA04: migration_caf_000115_erros_cliente.sql define RLS ativo com SELECT restrito a admin e bloqueio de DML direto', () => {
+    it('CA04: migration_caf_000115_erros_cliente.sql define RLS ativo, revoga DML direto e restringe RPCs administrativas', () => {
       const sqlPath = path.resolve(process.cwd(), 'supabase/migration_caf_000115_erros_cliente.sql');
       const sqlContent = fs.readFileSync(sqlPath, 'utf-8');
 
@@ -290,26 +290,95 @@ describe('CAF-000115: Observabilidade e Captura de Erros do Front em Produção'
       expect(sqlContent).toMatch(/CREATE\s+OR\s+REPLACE\s+FUNCTION\s+public\.registrar_erro_cliente/i);
       expect(sqlContent).toMatch(/SECURITY\s+DEFINER/i);
       expect(sqlContent).toMatch(/SET\s+search_path\s*=\s*public/i);
+
+      // Valida guarda NULL-safe e revogação de EXECUTE para anon nas RPCs administrativas
+      expect(sqlContent).toMatch(/COALESCE\s*\(\s*v_role\s*,\s*''\s*\)\s*!=\s*'admin'/i);
+      expect(sqlContent).toMatch(/REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.obter_resumo_erros_cliente\([^)]+\)\s+FROM\s+anon,\s*public;/i);
+      expect(sqlContent).toMatch(/REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.limpar_erros_antigos\([^)]+\)\s+FROM\s+anon,\s*public;/i);
     });
 
-    it('CA04: simulação de RLS: anon e barista recebem zero linhas em SELECT direto', async () => {
-      function consultarErrosComo(usuarioRole) {
-        const dadosBanco = [
-          { id: '1', tela: 'pedidos', mensagem: 'Erro fatal 1' },
-          { id: '2', tela: 'cozinha', mensagem: 'Erro fatal 2' }
-        ];
+    it('CA04: db.js e erros-admin.js tratam bloqueio de RPC (42501/P0001) para anon e barista sem vazar dados no DOM, liberando para admin', async () => {
+      const prevErrorReporter = window.errorReporter;
+      delete window.errorReporter;
 
-        // Se for admin, a policy permite leitura; se for anon ou barista, retorna 0 linhas
-        if (usuarioRole === 'admin') {
-          return dadosBanco;
+      let roleAtual = 'anon';
+      const gruposAdmin = [
+        {
+          assinatura: 'pedidos|rpc_error|fechar_conta_mesa',
+          tela: 'pedidos',
+          tipo: 'rpc_error',
+          rpc_nome: 'fechar_conta_mesa',
+          mensagem: '[RPC fechar_conta_mesa] Mesa bloqueada',
+          total_ocorrencias: 2,
+          primeira_ocorrencia: '2026-11-11T10:00:00.000Z',
+          ultima_ocorrencia: '2026-11-11T11:00:00.000Z',
+          versao_app: '1.0.0',
+          stack_recente: 'Error at db.js:80'
         }
-        return [];
-      }
+      ];
 
-      expect(consultarErrosComo('anon')).toHaveLength(0);
-      expect(consultarErrosComo('barista')).toHaveLength(0);
-      expect(consultarErrosComo('garcom')).toHaveLength(0);
-      expect(consultarErrosComo('admin')).toHaveLength(2);
+      const harness = createPageHarness('admin.html', {
+        rpcHandlers: {
+          obter_resumo_erros_cliente: async () => {
+            if (roleAtual === 'anon') {
+              return { data: null, error: { code: '42501', message: 'permission denied for function obter_resumo_erros_cliente' } };
+            }
+            if (roleAtual !== 'admin') {
+              return { data: null, error: { code: 'P0001', message: 'Acesso negado: apenas administradores podem visualizar erros do sistema' } };
+            }
+            return {
+              data: { periodo_horas: 24, total_erros: 2, telas_afetadas: 1, grupos: gruposAdmin },
+              error: null
+            };
+          },
+          limpar_erros_antigos: async () => {
+            if (roleAtual === 'anon') {
+              return { data: null, error: { code: '42501', message: 'permission denied for function limpar_erros_antigos' } };
+            }
+            if (roleAtual !== 'admin') {
+              return { data: null, error: { code: 'P0001', message: 'Acesso negado: apenas administradores podem expurgar logs de erro' } };
+            }
+            return { data: 3, error: null };
+          }
+        }
+      });
+
+      try {
+        await harness.carregarScript('js/db.js');
+        await harness.carregarScript('js/admin/erros-admin.js');
+
+        // 1. Perfil anon bloqueado via REVOKE EXECUTE (42501)
+        roleAtual = 'anon';
+        expect(await harness.window.cafeteriaDB.erros.obterResumo(24, null)).toBeNull();
+        expect(await harness.window.cafeteriaDB.erros.limparAntigos(30)).toBe(0);
+
+        // 2. Perfil barista bloqueado via guarda v_role != 'admin' (P0001)
+        roleAtual = 'barista';
+        expect(await harness.window.cafeteriaDB.erros.obterResumo(24, null)).toBeNull();
+        expect(await harness.window.cafeteriaDB.erros.limparAntigos(30)).toBe(0);
+
+        harness.window.initAdminErros();
+        await new Promise(r => setTimeout(r, 60));
+        expect(harness.document.getElementById('erros-tabela-body').querySelectorAll('tr').length).toBe(0);
+
+        // 3. Perfil admin autorizado vê grupos e consegue limpar registros antigos
+        roleAtual = 'admin';
+        const resumoAdmin = await harness.window.cafeteriaDB.erros.obterResumo(24, null);
+        expect(resumoAdmin.grupos).toHaveLength(1);
+        expect(await harness.window.cafeteriaDB.erros.limparAntigos(30)).toBe(3);
+
+        harness.window.initAdminErros();
+        await new Promise(r => setTimeout(r, 60));
+
+        const tbodyAdmin = harness.document.getElementById('erros-tabela-body');
+        expect(tbodyAdmin.querySelectorAll('tr').length).toBe(1);
+        expect(tbodyAdmin.textContent).toContain('fechar_conta_mesa');
+      } finally {
+        if (prevErrorReporter !== undefined) {
+          window.errorReporter = prevErrorReporter;
+        }
+        harness.cleanup?.();
+      }
     });
   });
 

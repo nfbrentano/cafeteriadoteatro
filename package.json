@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build",
+    "lint": "eslint js/",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -16,10 +17,13 @@
     "db:migrate": "node scripts/db-migrate.mjs"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^5.1.0",
     "acorn": "^8.19.0",
     "acorn-walk": "^8.3.5",
+    "eslint": "^10.14.0",
     "fake-indexeddb": "^6.2.7",
+    "globals": "^17.14.0",
     "happy-dom": "^21.0.4",
     "sharp": "^0.35.5",
     "vite": "^8.3.5",

@@ -227,6 +227,12 @@
       `;
     }).join('');
 
+    container.querySelectorAll('img.produto-card__image').forEach((imgEl) => {
+      imgEl.addEventListener('error', () => {
+        imgEl.src = 'assets/images/produto-cafe.webp';
+      }, { once: true });
+    });
+
     // Trigger animations
     setTimeout(() => {
       document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
@@ -336,7 +342,7 @@
       <article class="produto-card fade-in ${esgotadoClass}" aria-label="${p.nome}">
         <div class="produto-card__image-wrap">
           ${imgUrl 
-            ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/images/produto-cafe.webp'">`
+            ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy" decoding="async">`
             : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">${catIcone || '☕'}</span><span>Foto em breve</span></div>`
           }
           <div class="produto-card__badges">${badgeHTML}</div>

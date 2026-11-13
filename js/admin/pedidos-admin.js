@@ -663,6 +663,7 @@
 
   if (btnExportPedidos) {
     btnExportPedidos.addEventListener('click', async () => {
+      const admin = window.cafeteriaAdmin || window.admin;
       const { query, inicio, fim } = buildPedidosQuery();
       const { data, error } = await query;
       if (error || !data) return admin.toast('Erro', 'Não foi possível buscar dados para exportação', 'error');
@@ -694,6 +695,7 @@
 
   if (btnExportItens) {
     btnExportItens.addEventListener('click', async () => {
+      const admin = window.cafeteriaAdmin || window.admin;
       const { query, inicio, fim } = buildPedidosQuery();
       const { data, error } = await query;
       if (error || !data) return admin.toast('Erro', 'Não foi possível buscar dados para exportação', 'error');

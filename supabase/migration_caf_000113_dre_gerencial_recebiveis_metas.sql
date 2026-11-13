@@ -55,7 +55,7 @@ DECLARE
   v_despesas_categorias JSONB := '[]'::JSONB;
 BEGIN
   v_role := public.get_user_role();
-  IF v_role != 'admin' AND NOT public.tem_permissao('admin.financeiro') THEN
+  IF COALESCE(v_role, '') != 'admin' AND NOT public.tem_permissao('admin.financeiro') THEN
     RAISE EXCEPTION 'Acesso negado: permissão admin.financeiro necessária';
   END IF;
 
@@ -251,7 +251,7 @@ DECLARE
   v_lista JSONB := '[]'::JSONB;
 BEGIN
   v_role := public.get_user_role();
-  IF v_role != 'admin' AND NOT public.tem_permissao('admin.financeiro') THEN
+  IF COALESCE(v_role, '') != 'admin' AND NOT public.tem_permissao('admin.financeiro') THEN
     RAISE EXCEPTION 'Acesso negado: permissão admin.financeiro necessária';
   END IF;
 
@@ -348,6 +348,11 @@ DECLARE
   v_percentual NUMERIC(5,1) := 0;
   v_falta NUMERIC(10,2) := 0;
 BEGIN
+  v_role := public.get_user_role();
+  IF v_role IS NOT NULL AND v_role NOT IN ('admin', 'barista') AND NOT public.tem_permissao('admin.financeiro') THEN
+    RAISE EXCEPTION 'Acesso negado: permissão necessária';
+  END IF;
+
   v_hoje := (timezone('America/Sao_Paulo', now()))::DATE;
   v_inicio := timezone('America/Sao_Paulo', make_timestamptz(
     EXTRACT(YEAR FROM v_hoje)::INT,
@@ -404,9 +409,14 @@ END;
 $$;
 
 -- 5. Conceder permissões de execução
-GRANT EXECUTE ON FUNCTION public.obter_dre_gerencial(DATE, DATE, TEXT) TO authenticated, anon;
-GRANT EXECUTE ON FUNCTION public.obter_previsao_recebiveis(DATE, INT) TO authenticated, anon;
-GRANT EXECUTE ON FUNCTION public.obter_meta_progresso_dia() TO authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.obter_dre_gerencial(DATE, DATE, TEXT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.obter_dre_gerencial(DATE, DATE, TEXT) TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.obter_previsao_recebiveis(DATE, INT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.obter_previsao_recebiveis(DATE, INT) TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.obter_meta_progresso_dia() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.obter_meta_progresso_dia() TO authenticated;
 
 -- 6. Registro na tabela app_migrations
 INSERT INTO public.app_migrations (versao, arquivo, aplicada_em, aplicada_por)

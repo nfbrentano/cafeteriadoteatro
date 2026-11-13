@@ -1,7 +1,7 @@
 # [CHORE] Qualidade contínua: ESLint, cobertura medida sobre o código real das telas e limites mínimos no CI
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-13
 
 ## Detalhes da Atividade
 
@@ -46,12 +46,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o repositório, quando rodo `npm run lint`, então termina com 0 erros (avisos permitidos e contados).
-- [ ] **CA02:** Dado um PR com variável não declarada em `js/`, quando o CI roda, então o job falha antes dos testes.
-- [ ] **CA03:** Dado um teste que carrega `admin.html` pelo harness e abre a aba Clientes, quando rodo a cobertura, então `js/admin/clientes-admin.js` aparece com cobertura maior que 0%.
-- [ ] **CA04:** Dado um PR que derruba a cobertura de uma pasta abaixo do piso, quando o CI roda, então o job falha.
-- [ ] **CA05:** Dado um push, quando o CI termina, então o resumo de cobertura aparece no job.
-- [ ] **CA06:** Dado o relatório final, quando listo os arquivos de `js/` (fora das exclusões), então nenhum está com 0% de linhas.
+- [x] **CA01:** Dado o repositório, quando rodo `npm run lint`, então termina com 0 erros (avisos permitidos e contados).
+- [x] **CA02:** Dado um PR com variável não declarada em `js/`, quando o CI roda, então o job falha antes dos testes.
+- [x] **CA03:** Dado um teste que carrega `admin.html` pelo harness e abre a aba Clientes, quando rodo a cobertura, então `js/admin/clientes-admin.js` aparece com cobertura maior que 0%.
+- [x] **CA04:** Dado um PR que derruba a cobertura de uma pasta abaixo do piso, quando o CI roda, então o job falha.
+- [x] **CA05:** Dado um push, quando o CI termina, então o resumo de cobertura aparece no job.
+- [x] **CA06:** Dado o relatório final, quando listo os arquivos de `js/` (fora das exclusões), então nenhum está com 0% de linhas.
 
 ## O que a atividade não inclui
 
@@ -67,8 +67,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Qual a causa do 0%: execução via `eval`/`new Function` no harness ou ausência de execução? Define o tamanho do RF03 | dev | Sim | |
-| D02 | Qual o piso inicial para `js/admin/**` (sugestão: valor medido menos 2 pontos, subindo a cada SDD)? | dev | Não | |
+| D01 | Qual a causa do 0%: execução via `eval`/`new Function` no harness ou ausência de execução? Define o tamanho do RF03 | dev | Sim | Confirmado: `page-harness.js` usa `import()` ESM rastreado pelo V8; os 0% vinham de: (1) `new Function()` em `caf-000118` para `js/sw-register.js`; (2) `carregarScriptsDaPagina()` não disparava `DOMContentLoaded` (Happy DOM inicia em `readyState === 'complete'`) e faltavam mocks de CDN (`qrcode`, `Chart`, `pdfjsLib`, `St/PageFlip`, `gtag`); e (3) ausência de testes exercitando `admin.html` e as páginas públicas no harness. |
+| D02 | Qual o piso inicial para `js/admin/**` (sugestão: valor medido menos 2 pontos, subindo a cada SDD)? | dev | Não | Calibrado em `vitest.config.js` (`Math.floor(medido - 2)`): `js/admin/**` com 35% linhas / 33% statements / 29% funções / 18% branches (medido: 37,59% / 35,58% / 31,28% / 20,63%); `js/*.js` com 45% / 42% / 39% / 27% (medido: 47,51% / 44,86% / 41,42% / 29,85%); `js/utils/**` mantido em 85% / 65% / 85% / 85%. |
 
 ## Sugestões de casos de teste
 

@@ -539,6 +539,15 @@
     return promocoesAtivas.find((pr) => pr.produto_id === prod.id || (pr.categoria_id && pr.categoria_id === prod.categoria_id));
   }
 
+  function applyTotemLogoFallback(container, selector) {
+    if (!container) return;
+    container.querySelectorAll(selector).forEach((imgEl) => {
+      imgEl.addEventListener('error', () => {
+        imgEl.src = 'assets/images/logo-cafeteria-do-teatro.webp';
+      }, { once: true });
+    });
+  }
+
   function renderizarProdutos() {
     if (!productsGrid) return;
     let lista = categoriaAtivaId
@@ -560,7 +569,7 @@
     }
 
     productsGrid.innerHTML = lista.map((p) => {
-      const img = p.imagem_data || p.imagem || 'assets/images/logo.webp';
+      const img = p.imagem_data || p.imagem || 'assets/images/logo-cafeteria-do-teatro.webp';
       const promo = obterPromoProduto(p);
       let promoBadge = '';
       if (promo) {
@@ -573,7 +582,7 @@
         <article class="totem-product-card" data-prod-id="${esc(p.id)}">
           <div class="totem-product-card__img-wrap">
             ${promoBadge}
-            <img src="${esc(img)}" alt="${esc(p.nome)}" class="totem-product-card__img" loading="lazy" onerror="this.src='assets/images/logo.webp'" />
+            <img src="${esc(img)}" alt="${esc(p.nome)}" class="totem-product-card__img" loading="lazy" />
           </div>
           <div class="totem-product-card__body">
             <h3 class="totem-product-card__title">${esc(p.nome)}</h3>
@@ -588,6 +597,8 @@
         </article>
       `;
     }).join('');
+
+    applyTotemLogoFallback(productsGrid, 'img.totem-product-card__img');
 
     productsGrid.querySelectorAll('.totem-product-card').forEach((card) => {
       card.addEventListener('click', () => {
@@ -861,11 +872,11 @@
   function abrirModalSugestoes(itensSugeridos, frase) {
     if (sugestoesFrase) sugestoesFrase.textContent = frase;
     sugestoesList.innerHTML = itensSugeridos.map((p) => {
-      const img = p.imagem_data || p.imagem || 'assets/images/logo.webp';
+      const img = p.imagem_data || p.imagem || 'assets/images/logo-cafeteria-do-teatro.webp';
       return `
         <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--totem-surface-alt); border:2px solid var(--totem-border); border-radius:18px; padding:12px 16px;">
           <div style="display:flex; align-items:center; gap:14px;">
-            <img src="${esc(img)}" alt="${esc(p.nome)}" style="width:72px; height:72px; border-radius:14px; object-fit:cover;" onerror="this.src='assets/images/logo.webp'" />
+            <img src="${esc(img)}" alt="${esc(p.nome)}" style="width:72px; height:72px; border-radius:14px; object-fit:cover;" />
             <div>
               <div style="font-weight:800; font-size:1.15rem;">${esc(p.nome)}</div>
               <div style="font-weight:800; color:var(--totem-primary); font-size:1.1rem;">+ ${fmtMoeda(p.preco)}</div>
@@ -877,6 +888,8 @@
         </div>
       `;
     }).join('');
+
+    applyTotemLogoFallback(sugestoesList, 'img');
 
     sugestoesList.querySelectorAll('.btn-add-sugestao-rapida').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1169,7 +1182,7 @@
         window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
           canal: 'totem',
           tipoEvento: 'purchase',
-          valor: valorTotalComDesconto
+          valor: ultimoPedidoGerado.total
         });
       }
 

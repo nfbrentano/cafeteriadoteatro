@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
+import { Window } from 'happy-dom';
 import {
   isPrecacheAsset,
   computePrecacheHash,
@@ -159,6 +161,62 @@ describe('CAF-000118: PWA — Service Worker, Precache e Versionamento', () => {
       expect(data.filesCount).toBeGreaterThan(50);
       expect(data.buildTime).toBeDefined();
     });
+
+    it('CA03: todo script, stylesheet e imagem local referenciados por pedidos, cozinha, totem e retirada existe no disco e em dist/', async () => {
+      const distDir = path.resolve(process.cwd(), 'dist');
+      const result = await generatePrecache(distDir);
+      const targetPages = ['pedidos.html', 'cozinha.html', 'totem.html', 'retirada.html'];
+
+      for (const page of targetPages) {
+        // 1. Valida referências no HTML fonte (raiz)
+        const srcHtml = fs.readFileSync(path.resolve(process.cwd(), page), 'utf8');
+        const srcDom = new Window();
+        srcDom.document.write(srcHtml);
+
+        const srcRefs = [
+          ...Array.from(srcDom.document.querySelectorAll('script[src]')).map(el => el.getAttribute('src')),
+          ...Array.from(srcDom.document.querySelectorAll('link[rel="stylesheet"][href]')).map(el => el.getAttribute('href')),
+          ...Array.from(srcDom.document.querySelectorAll('link[rel="icon"][href]')).map(el => el.getAttribute('href')),
+          ...Array.from(srcDom.document.querySelectorAll('img[src]')).map(el => el.getAttribute('src'))
+        ].filter(ref => ref && !/^https?:\/\//i.test(ref) && !ref.startsWith('data:'));
+
+        for (const ref of srcRefs) {
+          const cleanRef = ref.split('?')[0].replace(/^\//, '');
+          expect(cleanRef).not.toBe('js/supabase-config.js');
+          expect(cleanRef).not.toBe('js/vendor/qrcode.js');
+          expect(cleanRef).not.toBe('assets/images/logo.webp');
+          expect(
+            fs.existsSync(path.resolve(process.cwd(), cleanRef)),
+            `Recurso "${ref}" referenciado em ${page} não existe no disco`
+          ).toBe(true);
+        }
+
+        // 2. Valida scripts e folhas de estilo no HTML buildado (dist/) e presença no STATIC_ASSETS
+        const distHtmlPath = path.join(distDir, page);
+        expect(fs.existsSync(distHtmlPath), `${distHtmlPath} não encontrado após build`).toBe(true);
+        const distHtml = fs.readFileSync(distHtmlPath, 'utf8');
+        const distDom = new Window();
+        distDom.document.write(distHtml);
+
+        const distRefs = [
+          ...Array.from(distDom.document.querySelectorAll('script[src]')).map(el => el.getAttribute('src')),
+          ...Array.from(distDom.document.querySelectorAll('link[rel="stylesheet"][href]')).map(el => el.getAttribute('href'))
+        ].filter(ref => ref && !/^https?:\/\//i.test(ref));
+
+        for (const ref of distRefs) {
+          const normalizedUrl = ref.startsWith('/') ? ref : `/${ref}`;
+          const cleanRel = normalizedUrl.split('?')[0].replace(/^\//, '');
+          expect(
+            fs.existsSync(path.join(distDir, cleanRel)),
+            `Asset "${ref}" referenciado em dist/${page} não existe em dist/`
+          ).toBe(true);
+          expect(
+            result.assetsList,
+            `Asset "${normalizedUrl}" referenciado em dist/${page} deve estar em STATIC_ASSETS`
+          ).toContain(normalizedUrl);
+        }
+      }
+    });
   });
 
   describe('3. Cobertura do Service Worker nos Arquivos HTML (CA04)', () => {
@@ -192,9 +250,9 @@ describe('CAF-000118: PWA — Service Worker, Precache e Versionamento', () => {
     });
 
     it('CA05: showUpdateToast exibe toast amigável com botão "Atualizar" e envia SKIP_WAITING ao clicar', async () => {
-      // Importa a implementação real de sw-register
-      const swRegisterCode = fs.readFileSync(path.resolve(process.cwd(), 'js/sw-register.js'), 'utf8');
-      new Function(swRegisterCode)();
+      // Importa a implementação real de sw-register com URL de arquivo para instrumentação V8
+      const swRegisterUrl = `${pathToFileURL(path.resolve(process.cwd(), 'js/sw-register.js')).href}?t=${Date.now()}_${Math.random()}`;
+      await import(swRegisterUrl);
 
       expect(window.__swRegister).toBeDefined();
 
@@ -217,9 +275,49 @@ describe('CAF-000118: PWA — Service Worker, Precache e Versionamento', () => {
       expect(btnAtualizar.textContent).toContain('Atualizando');
     });
 
-    it('CA06: hasActiveCriticalOperation detecta fechamento de conta em andamento e bloqueia reload', () => {
-      const swRegisterCode = fs.readFileSync(path.resolve(process.cwd(), 'js/sw-register.js'), 'utf8');
-      new Function(swRegisterCode)();
+    it('CA05: sw.js não chama skipWaiting no install e ativa somente ao receber mensagem SKIP_WAITING', async () => {
+      const swCode = fs.readFileSync(path.resolve(process.cwd(), 'sw.js'), 'utf8');
+      const listeners = {};
+      const mockCache = {
+        addAll: vi.fn().mockResolvedValue(undefined)
+      };
+      const mockCaches = {
+        open: vi.fn().mockResolvedValue(mockCache),
+        keys: vi.fn().mockResolvedValue([]),
+        delete: vi.fn().mockResolvedValue(true)
+      };
+      const mockSelf = {
+        addEventListener: (event, cb) => {
+          listeners[event] = cb;
+        },
+        skipWaiting: vi.fn(),
+        clients: { claim: vi.fn().mockResolvedValue(undefined) }
+      };
+
+      const runSw = new Function('self', 'caches', swCode);
+      runSw(mockSelf, mockCaches);
+
+      expect(typeof listeners.install).toBe('function');
+      expect(typeof listeners.message).toBe('function');
+
+      let installPromise = null;
+      listeners.install({
+        waitUntil: (p) => { installPromise = p; }
+      });
+      await installPromise;
+
+      expect(mockSelf.skipWaiting).not.toHaveBeenCalled();
+
+      listeners.message({ data: { type: 'OTHER' } });
+      expect(mockSelf.skipWaiting).not.toHaveBeenCalled();
+
+      listeners.message({ data: { type: 'SKIP_WAITING' } });
+      expect(mockSelf.skipWaiting).toHaveBeenCalledTimes(1);
+    });
+
+    it('CA06: hasActiveCriticalOperation detecta fechamento de conta em andamento e bloqueia reload', async () => {
+      const swRegisterUrl = `${pathToFileURL(path.resolve(process.cwd(), 'js/sw-register.js')).href}?t=${Date.now()}_${Math.random()}`;
+      await import(swRegisterUrl);
 
       // Sem operação ativa
       expect(window.__swRegister.hasActiveCriticalOperation()).toBe(false);
@@ -281,8 +379,8 @@ describe('CAF-000118: PWA — Service Worker, Precache e Versionamento', () => {
         json: async () => ({ version: 'v-bld1234567', buildTime: '2026-11-13T10:00:00Z' })
       });
 
-      const swRegisterCode = fs.readFileSync(path.resolve(process.cwd(), 'js/sw-register.js'), 'utf8');
-      new Function(swRegisterCode)();
+      const swRegisterUrl = `${pathToFileURL(path.resolve(process.cwd(), 'js/sw-register.js')).href}?t=${Date.now()}_${Math.random()}`;
+      await import(swRegisterUrl);
 
       await window.__swRegister.initAppVersion();
 

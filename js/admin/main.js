@@ -601,6 +601,7 @@
 
   // Exportar para window
   window.cafeteriaAdmin = admin;
+  window.admin = admin;
 
   // Iniciar listeners globais
   document.addEventListener('DOMContentLoaded', () => {

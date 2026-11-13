@@ -395,13 +395,13 @@
     {
       "versao": "113",
       "arquivo": "migration_caf_000113_dre_gerencial_recebiveis_metas.sql",
-      "checksum": "3cefb2b04c89a104c2409e6e1867914a5b105be7e788c973706443bf5a9d05ff",
+      "checksum": "cf47c0c39a0d37315a01fe632f65a7845decbf83dc021c0bce75263a48211685",
       "rollback": "rollback_caf_000113.sql"
     },
     {
       "versao": "115",
       "arquivo": "migration_caf_000115_erros_cliente.sql",
-      "checksum": "b5c911b1dccef56d8e04345b1dbd59afff30191992c3ea9ef10669a75e40a0bf",
+      "checksum": "df93cb33583e5a9fbde4d74ea528a8b1f6c7606378d583fee7d7394ea599c103",
       "rollback": "rollback_caf_000115.sql"
     }
   ]

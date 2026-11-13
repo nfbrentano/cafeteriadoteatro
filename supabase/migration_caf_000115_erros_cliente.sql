@@ -136,7 +136,7 @@ DECLARE
   v_recentes JSONB := '[]'::jsonb;
 BEGIN
   v_role := public.get_user_role();
-  IF v_role != 'admin' THEN
+  IF COALESCE(v_role, '') != 'admin' THEN
     RAISE EXCEPTION 'Acesso negado: apenas administradores podem visualizar erros do sistema';
   END IF;
 
@@ -216,7 +216,7 @@ DECLARE
   v_deletados INT := 0;
 BEGIN
   v_role := public.get_user_role();
-  IF v_role != 'admin' THEN
+  IF COALESCE(v_role, '') != 'admin' THEN
     RAISE EXCEPTION 'Acesso negado: apenas administradores podem expurgar logs de erro';
   END IF;
 
@@ -230,8 +230,12 @@ $$;
 
 -- 6. Concessões de execução
 GRANT EXECUTE ON FUNCTION public.registrar_erro_cliente(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB) TO authenticated, anon;
-GRANT EXECUTE ON FUNCTION public.obter_resumo_erros_cliente(INT, TEXT) TO authenticated, anon;
-GRANT EXECUTE ON FUNCTION public.limpar_erros_antigos(INT) TO authenticated, anon;
+
+REVOKE EXECUTE ON FUNCTION public.obter_resumo_erros_cliente(INT, TEXT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.obter_resumo_erros_cliente(INT, TEXT) TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.limpar_erros_antigos(INT) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.limpar_erros_antigos(INT) TO authenticated;
 
 -- 7. Registro na tabela de controle de migrations
 INSERT INTO public.app_migrations (versao, arquivo, aplicada_em, aplicada_por)

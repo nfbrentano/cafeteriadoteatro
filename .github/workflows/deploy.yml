@@ -48,8 +48,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run automated test suite (real code + contract tests)
-        run: npm test
+      - name: Run static analysis (ESLint)
+        run: npm run lint
+
+      - name: Run automated test suite with real coverage (real code + contract tests)
+        run: npm run test:coverage
+
+      - name: Publish coverage summary
+        if: always()
+        run: node scripts/coverage-summary-md.mjs
 
       - name: Run SQL pgTAP contracts & security tests
         env:

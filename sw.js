@@ -71,7 +71,6 @@ self.addEventListener('install', (event) => {
       });
     })
   );
-  self.skipWaiting();
 });
 
 // Ativação: Limpeza de caches antigos e claim imediato
