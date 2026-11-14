@@ -1,0 +1,49 @@
+      <!-- ── PRODUTOS ─────────────────────────────────────── -->
+      <section class="page" id="page-produtos">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Produtos</div>
+            <div class="page-header__sub">Gerencie todos os itens do cardápio</div>
+          </div>
+          <div class="adm-s-049">
+            <button class="btn btn--ghost" id="btn-export-excel" title="Exportar produtos para planilha Excel (.xls)">📊 Exportar Excel</button>
+            <button class="btn btn--ghost" id="btn-export-produtos" title="Exportar produtos para CSV (.csv)">📄 Exportar CSV</button>
+            <button class="btn btn--primary" id="btn-novo-produto">
+              + Novo Produto
+            </button>
+          </div>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters">
+            <select class="filter-select" id="filter-categoria" aria-label="Filtrar por categoria">
+              <option value="">Todas as categorias</option>
+            </select>
+            <select class="filter-select" id="filter-status" aria-label="Filtrar por status">
+              <option value="">Todos</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+          </div>
+          <input type="search" class="search-input" id="search-produto"
+                 placeholder="🔍  Buscar produto..." aria-label="Buscar produto" />
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Tempo Alvo</th>
+                <th>Badges</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="produtos-table-body">
+            </tbody>
+          </table>
+        </div>
+      </section>

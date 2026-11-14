@@ -1,0 +1,99 @@
+      <!-- ── PEDIDOS ────────────────────────────────────── -->
+      <section class="page" id="page-pedidos">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Pedidos & Vendas</div>
+            <div class="page-header__sub">Histórico, indicadores de faturamento e gestão em tempo real</div>
+          </div>
+          <div class="adm-s-047">
+            <a href="cozinha.html" target="_blank" class="btn btn--outline-dark" id="btn-abrir-cozinha">
+              👨‍🍳 Abrir Painel Cozinha
+            </a>
+            <a href="pedidos.html" target="_blank" class="btn btn--primary" id="btn-abrir-barista">
+              ☕ Abrir Tela Barista
+            </a>
+          </div>
+        </div>
+
+        <!-- Indicadores / Métricas do Dia -->
+        <div class="stats-grid adm-s-022">
+          <div class="stat-card">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__value" id="stat-pedidos-faturamento">R$ 0,00</div>
+            <div class="stat-card__label">Faturamento (Hoje)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📦</div>
+            <div class="stat-card__value" id="stat-pedidos-total">0</div>
+            <div class="stat-card__label">Pedidos Fechados (Hoje)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📊</div>
+            <div class="stat-card__value" id="stat-pedidos-ticket">R$ 0,00</div>
+            <div class="stat-card__label">Ticket Médio (Hoje)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">⏳</div>
+            <div class="stat-card__value" id="stat-pedidos-abertos">0</div>
+            <div class="stat-card__label">Pedidos em Aberto</div>
+          </div>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters adm-s-041">
+            <select class="filter-select" id="filter-pedido-periodo">
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="7dias">Últimos 7 dias</option>
+              <option value="mes">Este Mês</option>
+              <option value="todos">Todo o Histórico</option>
+            </select>
+            <select class="filter-select" id="filter-pedido-status">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendentes</option>
+              <option value="em_preparo">Em Preparo</option>
+              <option value="concluido">Concluídos</option>
+              <option value="entregue">Entregues</option>
+              <option value="cancelado">Cancelados</option>
+            </select>
+            <select class="filter-select" id="filter-pedido-pagamento">
+              <option value="">Todas as formas</option>
+              <option value="pix">PIX</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="cartao_debito">Cartão Débito</option>
+              <option value="cartao_credito">Cartão Crédito</option>
+              <option value="outros">Outros</option>
+            </select>
+            <select class="filter-select" id="filter-pedido-usuario" title="Filtrar por atendente/operador">
+              <option value="">Todos os atendentes</option>
+            </select>
+            <input type="search" class="filter-input adm-s-048" id="filter-pedido-busca" placeholder="Buscar por cliente ou mesa..." />
+          </div>
+          <div class="adm-s-049">
+            <button class="btn btn--ghost" id="btn-export-pedidos">⬇ Exportar Pedidos CSV</button>
+            <button class="btn btn--ghost" id="btn-export-itens">⬇ Exportar Itens CSV</button>
+            <button class="btn btn--ghost" id="btn-refresh-pedidos">🔄 Atualizar</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Mesa</th>
+                <th>Cliente</th>
+                <th>Itens</th>
+                <th>Total</th>
+                <th>Pagamento</th>
+                <th>Status</th>
+                <th>Atendente</th>
+                <th>Data e Hora</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="pedidos-table-body">
+            </tbody>
+          </table>
+        </div>
+      </section>

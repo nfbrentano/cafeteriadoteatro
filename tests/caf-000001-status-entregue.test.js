@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000001 — Status "entregue" persistido no banco
  */
 describe('CAF-000001 — Status entregue persistido no banco', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
   const cozinhaJs = fs.readFileSync('js/cozinha.js', 'utf8');
 
   it('CA01: baristaMarcarEntregue atualiza status para entregue no banco', () => {

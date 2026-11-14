@@ -2,19 +2,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { formatComprovanteContaCliente } from '../js/utils/receipt-formatter.js';
+import { lerCodigoFontePDV, lerAdminHtmlCompleto } from './helpers/page-harness.js';
 
 describe('CAF-000083: Pendências funcionais de operação e caixa', () => {
   const migrationPath = path.resolve(__dirname, '../supabase/migration_caf_000083_pendencias_operacao.sql');
   const migrationSql = fs.readFileSync(migrationPath, 'utf8');
 
-  const pedidosJsPath = path.resolve(__dirname, '../js/pedidos.js');
-  const pedidosJs = fs.readFileSync(pedidosJsPath, 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   const caixaAdminJsPath = path.resolve(__dirname, '../js/admin/caixa-admin.js');
   const caixaAdminJs = fs.readFileSync(caixaAdminJsPath, 'utf8');
 
-  const adminHtmlPath = path.resolve(__dirname, '../admin.html');
-  const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
+  const adminHtml = lerAdminHtmlCompleto();
 
   const pedidosHtmlPath = path.resolve(__dirname, '../pedidos.html');
   const pedidosHtml = fs.readFileSync(pedidosHtmlPath, 'utf8');

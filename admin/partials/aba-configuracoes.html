@@ -1,0 +1,385 @@
+      <!-- ── CONFIGURAÇÕES ────────────────────────────────── -->
+      <section class="page" id="page-configuracoes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Configurações</div>
+            <div class="page-header__sub">Segurança e gerenciamento de dados</div>
+          </div>
+        </div>
+
+        <!-- Alterar senha -->
+        <div class="config-section">
+          <div class="config-section__title">🔒 Alterar Senha</div>
+          <form id="form-alterar-senha" novalidate>
+            <div class="field">
+              <label class="field__label" for="senha-atual">Senha Atual</label>
+              <input class="field__input" type="password" id="senha-atual"
+                     placeholder="Senha atual" autocomplete="current-password" />
+              <div class="field__error-msg" id="err-senha-atual"></div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="senha-nova">Nova Senha</label>
+              <input class="field__input" type="password" id="senha-nova"
+                     placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+              <div class="field__error-msg" id="err-senha-nova"></div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="senha-confirmar">Confirmar Nova Senha</label>
+              <input class="field__input" type="password" id="senha-confirmar"
+                     placeholder="Repita a nova senha" autocomplete="new-password" />
+              <div class="field__error-msg" id="err-senha-confirmar"></div>
+            </div>
+            <button type="submit" class="btn btn--primary" id="btn-salvar-senha">
+              Salvar Nova Senha
+            </button>
+          </form>
+        </div>
+
+        <!-- Dados -->
+        <div class="config-section">
+          <div class="config-section__title">💾 Dados do Cardápio</div>
+          <div class="config-actions">
+            <button class="btn btn--ghost" id="btn-exportar">
+              ⬇️ Exportar JSON
+            </button>
+            <label class="btn btn--ghost adm-s-079" for="import-file-input">
+              ⬆️ Importar JSON
+            </label>
+            <input class="adm-hidden" type="file" id="import-file-input" accept=".json" />
+          </div>
+          <p class="hint adm-s-080">
+            Exporte para fazer backup dos dados. Importe para restaurar de um backup anterior.
+          </p>
+        </div>
+
+        <!-- Painel de Senhas / Retirada (TV) - CAF-000027 -->
+        <div class="config-section">
+          <div class="config-section__title">📺 Painel de Senhas / Retirada (TV)</div>
+          <div class="config-actions">
+            <a href="retirada.html" target="_blank" class="btn btn--primary adm-s-081" id="btn-abrir-retirada">
+              📺 Abrir Painel de Retirada (TV)
+            </a>
+            <a href="retirada.html?mostrar_mesas=1" target="_blank" class="btn btn--ghost adm-s-081">
+              🍽️ Incluir Pedidos de Mesa
+            </a>
+          </div>
+          <p class="hint adm-s-080">
+            Abra esta página na TV ou tablet do salão voltado para os clientes. Pressione <strong>F11</strong> no teclado da TV ou no navegador para ativar o modo Tela Cheia sem barras.
+          </p>
+        <!-- Autoatendimento por QR Code (CAF-000037) -->
+        <div class="config-section">
+          <div class="config-section__title">📱 Autoatendimento por QR Code nas Mesas</div>
+          <div class="adm-s-082">
+            <div>
+              <strong>Habilitar pedidos feitos pelo cliente via QR Code</strong>
+              <p class="hint adm-s-083">
+                Se desativado, o cardápio público continuará abrindo pelo QR Code, mas apenas em modo de consulta (sem botões de adicionar ao carrinho e enviar pedidos).
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-pedido-cliente-ativo" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Conferência de Caixa (CAF-000044) -->
+        <div class="config-section">
+          <div class="config-section__title">🔒 Conferência e Fechamento de Caixa</div>
+          <div class="adm-s-084">
+            <div>
+              <strong>Conferência cega no fechamento de caixa</strong>
+              <p class="hint adm-s-083">
+                Quando ativa, o operador informa os valores contados sem ver o valor esperado pelo sistema. O cálculo e a diferença só são exibidos após confirmar.
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-caixa-conferencia-cega" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="field adm-s-085">
+            <label class="field__label" for="config-caixa-limite-diferenca">Limite de diferença sem justificativa (R$)</label>
+            <div class="adm-s-036">
+              <input class="field__input" type="number" id="config-caixa-limite-diferenca" value="5.00" step="0.50" min="0" />
+              <button type="button" class="btn btn--outline-dark adm-s-086" id="btn-salvar-config-caixa">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PIX (BR Code) e Taxas por Forma de Pagamento (CAF-000039) -->
+        <div class="config-section">
+          <div class="config-section__title">💠 PIX com QR Code (BR Code) e Taxas de Pagamento</div>
+          <div class="form-grid adm-s-087">
+            <div class="field">
+              <label class="field__label" for="config-pix-chave">Chave PIX da Cafeteria (CNPJ, CPF, E-mail, Celular ou EVP)</label>
+              <input class="field__input" type="text" id="config-pix-chave" placeholder="Ex: 00000000000191 ou pix@cafeteriadoteatro.com.br" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-recebedor">Nome do Recebedor (máx. 25 caracteres)</label>
+              <input class="field__input" type="text" id="config-pix-recebedor" maxlength="25" value="CAFETERIA DO TEATRO" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-cidade">Cidade (máx. 15 caracteres)</label>
+              <input class="field__input" type="text" id="config-pix-cidade" maxlength="15" value="LAJEADO" />
+            </div>
+            <div class="field adm-s-088">
+              <div>
+                <strong>Imprimir QR Code PIX na prévia da conta</strong>
+                <p class="hint adm-s-089">Exibe o QR Code com o valor total no extrato impresso da mesa.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="config-pix-imprimir-conta" checked />
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+          <div class="adm-s-090">
+            <button type="button" class="btn btn--primary" id="btn-salvar-config-pix">💾 Salvar Dados do PIX</button>
+            <button type="button" class="btn btn--ghost" id="btn-testar-qr-pix">📱 Testar QR Code (R$ 1,00)</button>
+          </div>
+          <div class="adm-s-091" id="config-pix-teste-preview" style="display:none;"></div>
+
+          <div class="adm-s-092">
+            <div class="adm-s-093">
+              <div>
+                <strong>Taxas por Forma de Pagamento</strong>
+                <p class="hint adm-s-089">As taxas são congeladas em cada venda no momento do pagamento, preservando o histórico de meses anteriores.</p>
+              </div>
+              <button type="button" class="btn btn--outline-dark" id="btn-salvar-taxas-pagamento">💾 Salvar Tabela de Taxas</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Forma de Pagamento</th>
+                    <th>Taxa Percentual (%)</th>
+                    <th>Taxa Fixa (R$)</th>
+                    <th>Prazo Recebimento (dias)</th>
+                    <th>Ativo</th>
+                  </tr>
+                </thead>
+                <tbody id="config-taxas-pagamento-tbody">
+                  <tr><td colspan="5" class="text-center">Carregando taxas...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pedido Online para Retirada e Encomendas (CAF-000038) -->
+        <div class="config-section">
+          <div class="config-section__title">🌐 Pedido Online para Retirada & Encomendas (Link do Cardápio)</div>
+          <div class="adm-s-084">
+            <div>
+              <strong>Aceitar pedidos online para retirada e encomendas agendadas</strong>
+              <p class="hint adm-s-083">
+                Permite que clientes façam pedidos pelo link público do cardápio (WhatsApp, Instagram, Google) para retirar no balcão.
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-pedido-online-ativo" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="form-grid adm-s-087">
+            <div class="field">
+              <label class="field__label" for="config-pedido-online-tempo">Tempo estimado "O quanto antes" (min)</label>
+              <input class="field__input" type="number" id="config-pedido-online-tempo" value="15" min="5" max="120" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pedido-online-limite">Limite de pedidos por janela (15 min)</label>
+              <input class="field__input" type="number" id="config-pedido-online-limite" value="5" min="1" max="50" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pedido-online-kds">Liberar encomenda no KDS antes do horário (min)</label>
+              <input class="field__input" type="number" id="config-pedido-online-kds" value="20" min="5" max="180" />
+            </div>
+          </div>
+          <div class="adm-s-094">
+            <button type="button" class="btn btn--primary" id="btn-salvar-config-online">💾 Salvar Configurações Online</button>
+            <button type="button" class="btn btn--ghost" id="btn-compartilhar-cardapio-online">📲 Compartilhar Cardápio & QR Code</button>
+          </div>
+          <div class="adm-s-095" id="config-online-qr-share-box" style="display:none;"></div>
+        </div>
+
+        <!-- Modo Dia de Espetáculo / Intervalo Teatro Univates (CAF-000062) -->
+        <div class="config-section" id="cfg-espetaculo-container">
+          <div class="config-section__title">🎭 Modo Dia de Espetáculo / Intervalo (Teatro Univates)</div>
+          <p class="hint adm-s-096">
+            Ative este modo em dias de evento para que o Cardápio e Totem destaquem reservas antecipadas sem fila para o intervalo.
+          </p>
+          <div class="adm-s-097">
+            <div class="field adm-s-098">
+              <label class="field__label">Ativar Modo Espetáculo Hoje?</label>
+              <label class="adm-s-099">
+                <input class="adm-s-100" type="checkbox" id="toggle-espetaculo-ativo" />
+                <span class="adm-s-101">Habilitar Banner e Pré-venda</span>
+              </label>
+            </div>
+            <div class="field adm-s-098">
+              <label class="field__label" for="config-espetaculo-nome">Nome do Evento / Espetáculo</label>
+              <input class="field__input" type="text" id="config-espetaculo-nome" placeholder="Ex: Stand-up Renato Albani" />
+            </div>
+            <div class="field adm-s-098">
+              <label class="field__label" for="config-espetaculo-data">Data do Evento</label>
+              <input class="field__input" type="date" id="config-espetaculo-data" />
+            </div>
+            <div class="field adm-s-098">
+              <label class="field__label" for="config-espetaculo-horario">Horário Previsto do Intervalo</label>
+              <input class="field__input" type="time" id="config-espetaculo-horario" value="21:00" />
+            </div>
+          </div>
+          <button type="button" class="btn btn--primary" id="btn-salvar-config-espetaculo">💾 Salvar Modo Espetáculo</button>
+        </div>
+
+        <!-- Fidelidade & Cashback Automático (CAF-000063) -->
+        <div class="config-section" id="cfg-cashback-container">
+          <div class="config-section__title">🪙 Fidelidade & Cashback Automático (Carteira do Cliente)</div>
+          <p class="hint adm-s-096">
+            Recompense os clientes com saldo cashback em suas carteiras a cada compra realizada via Pix, Dinheiro ou Cartão. Por padrão, este recurso fica desativado até ser explicitamente ativado pelo administrador.
+          </p>
+          <div class="adm-s-097">
+            <div class="field adm-s-098">
+              <label class="field__label">Ativar Sistema de Cashback?</label>
+              <label class="adm-s-099">
+                <input class="adm-s-100" type="checkbox" id="toggle-cashback-ativo" />
+                <span class="adm-s-101">Habilitar Cashback em Compras</span>
+              </label>
+            </div>
+            <div class="field adm-s-098">
+              <label class="field__label" for="config-cashback-percentual">Percentual de Cashback (%)</label>
+              <input class="field__input" type="number" id="config-cashback-percentual" min="0" max="100" step="0.5" value="5" placeholder="Ex: 5" />
+            </div>
+            <div class="field adm-s-098">
+              <label class="field__label" for="config-cashback-minimo">Valor Mínimo do Pedido (R$)</label>
+              <input class="field__input" type="number" id="config-cashback-minimo" min="0" step="0.50" value="0" placeholder="Ex: 0.00" />
+            </div>
+          </div>
+          <button type="button" class="btn btn--primary" id="btn-salvar-config-cashback">💾 Salvar Fidelidade & Cashback</button>
+        </div>
+
+        <!-- Totem de Autoatendimento no Balcão (CAF-000040) -->
+        <div class="config-section">
+          <div class="config-section__title">🖥️ Totem de Autoatendimento no Balcão (/totem.html)</div>
+          <div class="adm-s-102">
+            <div>
+              <strong>Habilitar Totens de Autoatendimento</strong>
+              <p class="hint adm-s-083">
+                Tablets pareados no balcão enviam pedidos com senha de chamada e status "Aguardando pagamento".
+              </p>
+            </div>
+            <div class="adm-s-103">
+              <a href="totem.html" target="_blank" class="btn btn--ghost adm-s-104">🖥️ Abrir Tela do Totem</a>
+              <button type="button" class="btn btn--primary" id="btn-gerar-pareamento-totem">+ Parear Novo Tablet / Totem</button>
+            </div>
+          </div>
+          <div class="adm-s-105" id="totem-codigo-gerado-box" style="display:none;"></div>
+          <div class="table-scroll adm-s-106">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome do Totem</th>
+                  <th>Código de Pareamento</th>
+                  <th>Último Acesso</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="totens-table-body">
+                <tr><td colspan="5" class="text-center">Carregando totens...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-s-107">
+            <strong class="adm-s-108">🎭 Tela de Descanso & Expiração de Pagamento</strong>
+            <div class="form-grid adm-s-109">
+              <div class="field">
+                <label class="field__label" for="config-totem-expiracao">Expirar pedido não pago após (min)</label>
+                <input class="field__input" type="number" id="config-totem-expiracao" value="15" min="5" max="120" />
+              </div>
+              <div class="field">
+                <label class="field__label" for="config-totem-aviso-titulo">Título do Aviso na Tela de Descanso</label>
+                <input class="field__input" type="text" id="config-totem-aviso-titulo" value="🎭 Hoje no Teatro Univates" maxlength="60" />
+              </div>
+              <div class="field">
+                <label class="field__label" for="config-totem-aviso-sub">Subtítulo / Programação do Teatro</label>
+                <input class="field__input" type="text" id="config-totem-aviso-sub" value="Garanta seu café e lanche sem fila antes do espetáculo começar!" maxlength="140" />
+              </div>
+            </div>
+            <!-- CAF-000103: Animação de Fundo do Totem -->
+            <div class="form-grid adm-s-109">
+              <div class="field">
+                <label class="field__label" for="config-totem-animacao-catalogo">Animação de Fundo (Catálogo)</label>
+                <select class="field__select" id="config-totem-animacao-catalogo">
+                  <option value="nenhuma">Nenhuma (Fundo Padrão)</option>
+                  <option value="cortina">Cortina do Teatro</option>
+                  <option value="vapor">Vapor de Café</option>
+                  <option value="graos">Grãos Caindo</option>
+                </select>
+              </div>
+              <div class="field adm-s-110">
+                <label class="field__label">Mídia Própria de Fundo (GIF ou MP4)</label>
+                <div class="adm-s-111">
+                  <input class="adm-s-112" type="file" id="input-totem-midia-file" accept="video/mp4,image/gif" />
+                  <button type="button" class="btn btn--secondary btn--sm" id="btn-publicar-totem-midia">📤 Publicar animação (GIF ou MP4)</button>
+                  <button type="button" class="btn btn--danger btn--sm" id="btn-remover-totem-midia" style="display:none;">Remover mídia</button>
+                </div>
+                <div class="adm-s-113" id="totem-midia-status"></div>
+              </div>
+            </div>
+            <button type="button" class="btn btn--outline-dark btn--sm" id="btn-salvar-config-totem">💾 Salvar Opções do Totem</button>
+          </div>
+
+          <div class="adm-s-114">
+            <strong class="adm-s-115">🥐 Sugestões de Complemento ("Que tal um acompanhamento?")</strong>
+            <p class="hint adm-s-116">Sugere até 3 produtos antes de finalizar o pedido no totem quando o carrinho tiver itens da categoria gatilho.</p>
+            <div class="adm-s-117">
+              <div class="field adm-s-118">
+                <label class="field__label" for="totem-sug-categoria">Quando tiver a Categoria</label>
+                <select class="field__select" id="totem-sug-categoria">
+                  <option value="">Qualquer categoria no carrinho</option>
+                </select>
+              </div>
+              <div class="field adm-s-119">
+                <label class="field__label" for="totem-sug-produto">Sugerir o Produto</label>
+                <select class="field__select" id="totem-sug-produto">
+                  <option value="">Selecione um produto...</option>
+                </select>
+              </div>
+              <div class="field adm-s-119">
+                <label class="field__label" for="totem-sug-frase">Frase de convite</label>
+                <input class="field__input" type="text" id="totem-sug-frase" value="Que tal acompanhar seu pedido?" maxlength="80" />
+              </div>
+              <button type="button" class="btn btn--secondary" id="btn-add-totem-sugestao">+ Adicionar Sugestão</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Quando o carrinho tiver</th>
+                    <th>Sugerir Produto</th>
+                    <th>Frase</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="totem-sugestoes-tbody">
+                  <tr><td colspan="4" class="text-center">Carregando sugestões...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="config-section danger-zone">
+          <div class="config-section__title">⚠️ Zona de Perigo</div>
+          <button class="btn btn--danger" id="btn-resetar">
+            🔄 Resetar para Padrão
+          </button>
+          <p class="hint adm-s-020">
+            Esta ação irá apagar todas as alterações e restaurar os dados originais do cardápio. Irreversível.
+          </p>
+        </div>
+      </section>

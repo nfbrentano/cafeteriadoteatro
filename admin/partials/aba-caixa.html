@@ -1,0 +1,108 @@
+      <!-- ── CAIXA ────────────────────────────────────── -->
+      <section class="page" id="page-caixa">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Caixa do Dia</div>
+            <div class="page-header__sub">Controle de abertura, fechamento cego, sangrias/suprimentos e auditoria</div>
+          </div>
+          <div class="adm-s-041">
+            <button class="btn btn--ghost" id="btn-historico-caixas">
+              📜 Histórico de Caixas
+            </button>
+            <button class="btn btn--primary" id="btn-fechar-caixa" style="display:none;">
+              🔒 Fechar Caixa
+            </button>
+          </div>
+        </div>
+
+        <div class="adm-s-042" id="caixa-estado-fechado" style="display:none;">
+          <h2>O Caixa está Fechado</h2>
+          <p class="adm-s-043">Abra o caixa para iniciar as operações do dia.</p>
+          <div class="adm-s-044">
+            <div class="field">
+              <label class="field__label" for="caixa-fundo-troco">Fundo de Troco (R$)</label>
+              <input class="field__input" type="number" id="caixa-fundo-troco" value="0.00" step="0.01" min="0" />
+            </div>
+            <button class="btn btn--primary btn--full" id="btn-abrir-caixa">Abrir Caixa</button>
+          </div>
+        </div>
+
+        <div id="caixa-estado-aberto" style="display:none;">
+          <div class="stats-grid adm-s-022">
+            <div class="stat-card">
+              <div class="stat-card__icon">🟢</div>
+              <div class="stat-card__value" id="stat-caixa-status">Aberto</div>
+              <div class="stat-card__label" id="stat-caixa-data">--</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon">💰</div>
+              <div class="stat-card__value" id="stat-caixa-fundo">R$ 0,00</div>
+              <div class="stat-card__label">Fundo de Troco</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon">📈</div>
+              <div class="stat-card__value" id="stat-caixa-entradas">R$ 0,00</div>
+              <div class="stat-card__label">Suprimentos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon">📉</div>
+              <div class="stat-card__value" id="stat-caixa-saidas">R$ 0,00</div>
+              <div class="stat-card__label">Sangrias</div>
+            </div>
+          </div>
+
+          <div class="adm-s-045">
+            <button class="btn btn--outline-dark" id="btn-suprimento">➕ Novo Suprimento</button>
+            <button class="btn btn--outline-dark" id="btn-sangria">➖ Nova Sangria</button>
+          </div>
+
+          <div class="section-card" id="caixa-resumo-card">
+            <div class="section-card__header adm-s-046">
+              <span class="section-card__title">Resumo do Sistema</span>
+              <span id="badge-modo-caixa" class="status-pill status-pill--ativo" style="display:none;">🔒 Conferência Cega Ativa</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Forma de Pagamento</th>
+                    <th>Bruto Calculado</th>
+                    <th>Taxas Estimadas</th>
+                    <th>Líquido Estimado</th>
+                  </tr>
+                </thead>
+                <tbody id="caixa-resumo-table-body">
+                  <tr><td colspan="4" class="text-center">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Histórico de Caixas (Auditoria) -->
+        <div class="section-card adm-s-028" id="caixa-historico-section" style="display:none;">
+          <div class="section-card__header adm-s-046">
+            <span class="section-card__title">📜 Histórico e Auditoria de Caixas</span>
+            <button class="btn btn--ghost adm-s-004" id="btn-atualizar-historico-caixas">🔄 Atualizar</button>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Período (Abertura / Fechamento)</th>
+                  <th>Operadores</th>
+                  <th>Fundo / Mov.</th>
+                  <th>Esperado</th>
+                  <th>Contado</th>
+                  <th>Diferença</th>
+                  <th>Detalhes por Forma / Obs</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="caixa-historico-tbody">
+                <tr><td colspan="8" class="text-center">Carregando histórico...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

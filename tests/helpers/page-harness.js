@@ -2,6 +2,44 @@ import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { createSupabaseMock } from './supabase-mock.js';
+import { expandHtmlPartials } from '../../scripts/html-partials.mjs';
+
+/**
+ * Lista todos os arquivos-fonte do PDV (entry point + modulos em js/pdv/).
+ */
+export function listarArquivosFontePDV(rootDir = process.cwd()) {
+  const resolvedRoot = path.resolve(rootDir);
+  const arquivos = ['js/pedidos.js'];
+  const pdvDir = path.join(resolvedRoot, 'js/pdv');
+  if (fs.existsSync(pdvDir)) {
+    const modulos = fs
+      .readdirSync(pdvDir)
+      .filter((f) => f.endsWith('.js'))
+      .sort()
+      .map((f) => path.posix.join('js/pdv', f));
+    arquivos.push(...modulos);
+  }
+  return arquivos;
+}
+
+/**
+ * Le e concatena todo o codigo-fonte do PDV modularizado (js/pedidos.js + js/pdv/*.js).
+ */
+export function lerCodigoFontePDV(rootDir = process.cwd()) {
+  const resolvedRoot = path.resolve(rootDir);
+  return listarArquivosFontePDV(resolvedRoot)
+    .map((relPath) => fs.readFileSync(path.join(resolvedRoot, relPath), 'utf-8'))
+    .join('\n');
+}
+
+/**
+ * Le admin.html com todas as parciais HTML (`<include src="...">`) expandidas.
+ */
+export function lerAdminHtmlCompleto(rootDir = process.cwd()) {
+  const resolvedRoot = path.resolve(rootDir);
+  const rawAdmin = fs.readFileSync(path.join(resolvedRoot, 'admin.html'), 'utf-8');
+  return expandHtmlPartials(rawAdmin, resolvedRoot);
+}
 
 /**
  * Harness para testes das páginas da aplicação em Happy DOM com mock isolado do Supabase,
@@ -13,7 +51,8 @@ export function createPageHarness(htmlFileName, options = {}) {
     throw new Error(`Página não encontrada: ${filePath}`);
   }
 
-  const htmlContent = fs.readFileSync(filePath, 'utf-8');
+  const rawHtmlContent = fs.readFileSync(filePath, 'utf-8');
+  const htmlContent = expandHtmlPartials(rawHtmlContent, process.cwd());
   const mockSupabase = options.supabase || createSupabaseMock(options.initialData || {}, {
     strict: options.strict,
     strictMock: options.strictMock,

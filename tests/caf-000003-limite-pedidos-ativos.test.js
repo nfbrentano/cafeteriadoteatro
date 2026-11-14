@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { montarFiltroPedidosAtivos, filtrarPedidosAtivosMemoria } from '../js/utils/pdv-filtros.js';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000003 — Limitar pedidos ativos carregados no PDV
  */
 describe('CAF-000003 — Limitar pedidos ativos carregados no PDV', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01: monta filtro com corte do dia operacional', () => {
     const filtro = montarFiltroPedidosAtivos(new Date('2026-10-21T10:00:00Z'));

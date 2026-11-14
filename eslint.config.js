@@ -6,9 +6,33 @@ export default [
       'dist/**',
       'coverage/**',
       'node_modules/**',
+      'playwright-report/**',
+      'test-results/**',
+      '.e2e-data/**',
       'js/libs/**',
       'js/vendor/**'
     ]
+  },
+  {
+    files: ['e2e/**/*.js', 'playwright.config.js', 'scripts/e2e-*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.es2021
+      }
+    },
+    rules: {
+      'no-undef': 'error',
+      'no-redeclare': 'error',
+      'no-unused-vars': ['warn', {
+        args: 'none',
+        caughtErrors: 'none',
+        varsIgnorePattern: '^_'
+      }]
+    }
   },
   {
     files: ['js/**/*.js'],

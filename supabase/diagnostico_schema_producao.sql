@@ -8,7 +8,7 @@ WITH fn AS (
   WHERE n.nspname = 'public' AND p.prokind = 'f'
     AND p.proname IN ('fechar_conta_mesa','criar_pedido','adicionar_itens_pedido','processar_cashback_pedido',
       'registrar_uso_cupom','fn_calcular_custo_produto','fn_calcular_custo_adicional','cancelar_item',
-      'transferir_mesa','validar_pin_autorizacao','fn_calcular_totais_caixa_interno','lancar_movimento_conta',
+      'transferir_mesa','validar_pin_autorizacao','fechar_caixa','fn_calcular_totais_caixa_interno','lancar_movimento_conta',
       'registrar_impressao','criar_pedido_cliente','criar_pedido_online','criar_pedido_totem','get_user_role','tem_permissao')
 )
 -- 1. Assinaturas das RPCs, SECURITY DEFINER e se anon pode executar

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { filtrarPedidosPdv, calcularTrocoPdv } from '../js/utils/pdv-filtros.js';
-import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000059 — Filtros do PDV (Meus pedidos, chips de troco e envio otimista)
  */
 describe('CAF-000059 — Filtros e Chips de Troco no PDV', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01 / CA06: calcula troco exato a partir do total da conta e do valor pago', () => {
     const total = 42.50;

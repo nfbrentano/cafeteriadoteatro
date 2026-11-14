@@ -128,9 +128,9 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000117** | [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot | Concluída | — | `caf-000117-seguranca-front-csp-sri.test.js` | — |
 | **CAF-000118** | [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin | Concluída | — | `caf-000118-pwa-service-worker-precache.test.js` | — |
 | **CAF-000119** | [CHORE] Qualidade contínua: ESLint, cobertura medida sobre o código real das telas e limites mínimos no CI | Concluída | — | `caf-000119-qualidade-eslint-cobertura.test.js` | — |
-| **CAF-000120** | [CHORE] Testes ponta a ponta em navegador real dos fluxos críticos (pedido → cozinha → fechamento → caixa) | Rascunho | — | — | — |
-| **CAF-000121** | [REFACTOR] Modularização do PDV (`js/pedidos.js`) e do Admin (`admin.html`) sem mudança de comportamento | Rascunho | — | — | — |
-| **CAF-000122** | [CHORE] Higiene do repositório: arquivos pesados e temporários versionados, Node do CI e README | Rascunho | — | — | — |
+| **CAF-000120** | [CHORE] Testes ponta a ponta em navegador real dos fluxos críticos (pedido → cozinha → fechamento → caixa) | Concluída | `00_bootstrap.sql` / `01_seed.sql` (`e2e/`) | `caf-000120-testes-e2e-navegador-real.test.js`, `e2e/fluxos-criticos.spec.js` | — |
+| **CAF-000121** | [REFACTOR] Modularização do PDV (`js/pedidos.js`) e do Admin (`admin.html`) sem mudança de comportamento | Concluída | — | `caf-000121-modularizacao-pdv-admin.test.js` | — |
+| **CAF-000122** | [CHORE] Higiene do repositório: arquivos pesados e temporários versionados, Node do CI e README | Concluída | — | `caf-000122-higiene-repositorio-ci-readme.test.js` | — |
 | **CAF-000123** | [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV | Rascunho | — | — | — |
 | **CAF-000124** | [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal | Rascunho | — | — | — |
 | **CAF-000125** | [UI] Acessibilidade do Totem e do cardápio com pedido do cliente (WCAG 2.1 AA) | Rascunho | — | — | — |

@@ -6,12 +6,13 @@ import {
   calcularTrocoCents
 } from '../js/utils/conta-mesa.js';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000002 — Fechamento de conta da mesa
  */
 describe('CAF-000002 — Fechamento de conta da mesa', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01: calcula subtotal da mesa somando apenas pedidos ativos não cancelados', () => {
     const pedidos = [

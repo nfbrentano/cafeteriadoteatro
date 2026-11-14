@@ -1,0 +1,441 @@
+      <!-- ═══════════════════════════════════════════════════════════
+           PÁGINA: FINANCEIRO & FLUXO DE CAIXA (CAF-000035)
+      ════════════════════════════════════════════════════════════ -->
+      <section class="page" id="page-financeiro">
+        <div class="page-header adm-s-071">
+          <div>
+            <div class="page-header__title">Gestão Financeira & Fluxo de Caixa</div>
+            <div class="page-header__sub">Contas a pagar, custos fixos e variáveis, fluxo de caixa diário e resultado operacional</div>
+          </div>
+          <div class="adm-s-049">
+            <button class="btn btn--ghost" id="btn-abrir-fornecedores" title="Gerenciar Fornecedores Cadastrados">🏢 Fornecedores</button>
+            <button class="btn btn--ghost" id="btn-exportar-financeiro-csv" title="Exportar despesas para planilha CSV">📥 Exportar CSV</button>
+            <button class="btn btn--primary" id="btn-nova-despesa">+ Nova Despesa</button>
+          </div>
+        </div>
+
+        <!-- Barra de Progresso da Meta Diária (CAF-000113) -->
+        <div class="adm-s-141" id="financeiro-meta-diaria-banner">
+          <div class="adm-s-019">
+            <div class="adm-s-142">
+              <span class="adm-s-143">🎯</span>
+              <div>
+                <span class="adm-s-144">Meta de Faturamento do Dia</span>
+                <span class="adm-s-145" id="meta-diaria-badge">Dia Normal</span>
+              </div>
+            </div>
+            <div class="adm-s-146">
+              <span class="adm-s-147" id="meta-diaria-progresso-texto">R$ 0,00 de R$ 1.500,00 (0%)</span>
+              <button type="button" class="btn btn--ghost btn-sm adm-s-004" id="btn-configurar-metas">⚙️ Ajustar Metas</button>
+            </div>
+          </div>
+          <!-- Barra de Progresso -->
+          <div class="adm-s-148">
+            <div class="adm-s-149" id="meta-diaria-barra"></div>
+          </div>
+          <div class="adm-s-150">
+            <span id="meta-diaria-falta-label">Faltam R$ 1.500,00 para bater a meta</span>
+            <span id="meta-diaria-porcentagem-label">0%</span>
+          </div>
+        </div>
+
+        <!-- Alertas & KPIs Financeiros -->
+        <div class="kpi-grid adm-s-151">
+          <div class="kpi-card adm-s-152" id="card-kpi-vencidas">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-132">Contas Vencidas</span>
+              <span class="kpi-card__icon">🔴</span>
+            </div>
+            <div class="kpi-card__value adm-s-153" id="kpi-contas-vencidas-total">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-contas-vencidas-count">0 conta(s) em atraso</div>
+          </div>
+
+          <div class="kpi-card adm-s-154" id="card-kpi-7dias">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-155">Vencem em 7 Dias</span>
+              <span class="kpi-card__icon">🟠</span>
+            </div>
+            <div class="kpi-card__value adm-s-156" id="kpi-contas-7dias-total">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-contas-7dias-count">0 conta(s) a pagar</div>
+          </div>
+
+          <div class="kpi-card adm-s-157">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Total Pago no Mês</span>
+              <span class="kpi-card__icon">🟢</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-contas-pago-mes">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-contas-pago-mes-sub">Despesas baixadas</div>
+          </div>
+
+          <div class="kpi-card adm-s-158" id="card-kpi-resultado">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Resultado do Mês</span>
+              <span class="kpi-card__icon">📊</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-financeiro-resultado-mes">R$ 0,00</div>
+            <div class="kpi-card__subtitle" id="kpi-financeiro-resultado-sub">Faturamento líq. − Despesas pagas</div>
+          </div>
+        </div>
+
+        <!-- Sub-navegação por abas -->
+        <div class="financeiro-tabs adm-s-159">
+          <button type="button" class="btn btn--tab active adm-s-073" id="btn-tab-contas">
+            📋 Contas a Pagar & Despesas
+          </button>
+          <button type="button" class="btn btn--tab adm-s-074" id="btn-tab-fluxo">
+            💵 Fluxo de Caixa Diário
+          </button>
+          <button type="button" class="btn btn--tab adm-s-074" id="btn-tab-resultado">
+            📈 Resultado do Mês (DRE)
+          </button>
+          <button type="button" class="btn btn--tab adm-s-074" id="btn-tab-recebiveis">
+            💳 Recebíveis & Taxas
+          </button>
+        </div>
+
+        <!-- ── SUB-ABA 1: CONTAS A PAGAR ── -->
+        <div id="subtab-financeiro-contas" class="financeiro-subtab-content">
+          <!-- Filtros e Barra de Ações -->
+          <div class="table-toolbar adm-s-160">
+            <div class="table-filters adm-s-161">
+              <select class="filter-select" id="filter-despesa-status" aria-label="Filtrar por status">
+                <option value="todas">Todos os Status</option>
+                <option value="pendentes" selected>Pendentes (Não pagas)</option>
+                <option value="vencidas">🔴 Vencidas (Em atraso)</option>
+                <option value="7dias">🟠 Vencem em 7 dias</option>
+                <option value="hoje">🟡 Vencem Hoje</option>
+                <option value="pagas">🟢 Pagas</option>
+              </select>
+
+              <select class="filter-select" id="filter-despesa-tipo" aria-label="Filtrar por tipo de custo">
+                <option value="">Todos os Tipos</option>
+                <option value="fixa">Custos Fixos</option>
+                <option value="variavel">Custos Variáveis</option>
+              </select>
+
+              <select class="filter-select" id="filter-despesa-categoria" aria-label="Filtrar por categoria">
+                <option value="">Todas as Categorias</option>
+              </select>
+
+              <select class="filter-select" id="filter-despesa-periodo" aria-label="Filtrar por período de vencimento">
+                <option value="mes_atual" selected>Vencem no Mês Atual</option>
+                <option value="proximo_mes">Vencem no Próximo Mês</option>
+                <option value="todos">Todo o Histórico</option>
+              </select>
+            </div>
+
+            <div class="search-box adm-s-162">
+              <input type="text" class="search-box__input" id="search-despesas" placeholder="🔍 Buscar despesa ou fornecedor..." />
+            </div>
+          </div>
+
+          <!-- Tabela de Despesas -->
+          <div class="table-wrap adm-s-075">
+            <table class="table adm-s-163">
+              <thead>
+                <tr class="adm-s-077">
+                  <th>Vencimento</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Fornecedor</th>
+                  <th class="adm-s-025">Tipo</th>
+                  <th class="adm-s-025">Recorrência</th>
+                  <th class="adm-s-021">Valor (R$)</th>
+                  <th class="adm-s-025">Status</th>
+                  <th class="adm-s-025">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-despesas">
+                <tr><td class="adm-s-078" colspan="9">Carregando despesas...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 2: FLUXO DE CAIXA DIÁRIO ── -->
+        <div id="subtab-financeiro-fluxo" class="financeiro-subtab-content" style="display:none;">
+          <div class="table-toolbar adm-s-164">
+            <div class="adm-s-165">
+              <label class="adm-s-166" for="filter-fluxo-mes">Mês de Referência:</label>
+              <input type="month" id="filter-fluxo-mes" class="field__input adm-s-167" />
+              <button type="button" class="btn btn--ghost adm-s-168" id="btn-recarregar-fluxo">Atualizar</button>
+            </div>
+            <div class="adm-s-169">
+              * Entradas consideram vendas pagas e recargas de crédito pré-pago. Saídas consideram despesas baixadas e sangrias de caixa.
+            </div>
+          </div>
+
+          <!-- Cards de Totais do Fluxo -->
+          <div class="kpi-grid adm-s-170">
+            <div class="kpi-card adm-s-171">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title adm-s-172">(+) Entradas do Período</span>
+                <span class="kpi-card__icon">💰</span>
+              </div>
+              <div class="kpi-card__value adm-s-173" id="fluxo-total-entradas">R$ 0,00</div>
+              <div class="kpi-card__subtitle" id="fluxo-total-entradas-sub">Vendas e créditos</div>
+            </div>
+
+            <div class="kpi-card adm-s-174">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title adm-s-175">(−) Saídas do Período</span>
+                <span class="kpi-card__icon">💸</span>
+              </div>
+              <div class="kpi-card__value adm-s-176" id="fluxo-total-saidas">R$ 0,00</div>
+              <div class="kpi-card__subtitle" id="fluxo-total-saidas-sub">Despesas e sangrias</div>
+            </div>
+
+            <div class="kpi-card adm-s-177" id="card-fluxo-saldo">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title" id="fluxo-saldo-title">(=) Saldo Líquido do Mês</span>
+                <span class="kpi-card__icon">⚖️</span>
+              </div>
+              <div class="kpi-card__value" id="fluxo-total-saldo">R$ 0,00</div>
+              <div class="kpi-card__subtitle">Diferença de caixa no período</div>
+            </div>
+          </div>
+
+          <!-- Tabela de Movimentação Diária -->
+          <div class="table-wrap adm-s-075">
+            <table class="table adm-s-076">
+              <thead>
+                <tr class="adm-s-077">
+                  <th>Data</th>
+                  <th class="adm-s-178">Vendas Recebidas</th>
+                  <th class="adm-s-179">Créditos Pré-pagos</th>
+                  <th class="adm-s-180">Despesas Pagas</th>
+                  <th class="adm-s-181">Sangrias</th>
+                  <th class="adm-s-182">Saldo do Dia</th>
+                  <th class="adm-s-182">Saldo Acumulado</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-fluxo-caixa">
+                <tr><td class="adm-s-078" colspan="7">Carregando fluxo de caixa...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 3: RESULTADO DO MÊS (DRE GERENCIAL - CAF-000113) ── -->
+        <div id="subtab-financeiro-resultado" class="financeiro-subtab-content" style="display:none;">
+          <div class="table-toolbar adm-s-183">
+            <div class="adm-s-184">
+              <div class="adm-s-165">
+                <label class="adm-s-166" for="filter-resultado-mes">Mês:</label>
+                <input type="month" id="filter-resultado-mes" class="field__input adm-s-167" />
+              </div>
+              <div class="adm-s-165">
+                <label class="adm-s-166" for="filter-resultado-regime">Regime:</label>
+                <select id="filter-resultado-regime" class="filter-select adm-s-185">
+                  <option value="caixa" selected>Regime de Caixa (Data Pagamento)</option>
+                  <option value="competencia">Regime de Competência (Data Vencimento)</option>
+                </select>
+              </div>
+              <button type="button" class="btn btn--ghost adm-s-168" id="btn-recarregar-resultado">Calcular DRE</button>
+            </div>
+            <div>
+              <button type="button" class="btn btn--primary adm-s-186" id="btn-exportar-dre-csv">📥 Exportar DRE (CSV)</button>
+            </div>
+          </div>
+
+          <!-- Painel DRE Estruturado -->
+          <div class="adm-s-187">
+            <div class="adm-s-188">
+              <h3 class="adm-s-189">Demonstrativo de Resultado do Exercício Gerencial (DRE)</h3>
+              <p class="adm-s-190" id="dre-periodo-label">Período de Apuração: --</p>
+            </div>
+
+            <div class="adm-s-191">
+              <!-- 1. Receita Bruta -->
+              <div class="adm-s-192">
+                <span>(+) Faturamento Bruto (Vendas Realizadas)</span>
+                <div>
+                  <span id="dre-faturamento-bruto">R$ 0,00</span>
+                  <span class="adm-s-193" id="dre-faturamento-bruto-pct">(100,0%)</span>
+                </div>
+              </div>
+
+              <!-- 2. Deduções -->
+              <div class="adm-s-194">
+                <span>(−) Descontos e Cupons Concedidos em Vendas</span>
+                <div>
+                  <span id="dre-descontos">-R$ 0,00</span>
+                  <span class="adm-s-195" id="dre-descontos-pct">(0,0%)</span>
+                </div>
+              </div>
+
+              <!-- 2.1 Taxas de Meios de Pagamento -->
+              <div class="adm-s-194">
+                <span>(−) Taxas de Meios de Pagamento (Cartão / Maquininha / Pix)</span>
+                <div>
+                  <span id="dre-taxas-pagamento">-R$ 0,00</span>
+                  <span class="adm-s-195" id="dre-taxas-pagamento-pct">(0,0%)</span>
+                </div>
+              </div>
+
+              <!-- 3. Receita Líquida -->
+              <div class="adm-s-196">
+                <span>(=) Receita Operacional Líquida</span>
+                <div>
+                  <span id="dre-faturamento-liquido">R$ 0,00</span>
+                  <span class="adm-s-197" id="dre-faturamento-liquido-pct">(0,0%)</span>
+                </div>
+              </div>
+
+              <!-- 4. CMV Total (Fichas Técnicas + Perdas de Estoque) -->
+              <div class="adm-s-068">
+                <div class="adm-s-198">
+                  <span>(−) Custo da Mercadoria Vendida (CMV Real + Perdas)</span>
+                  <div>
+                    <span id="dre-total-cmv">-R$ 0,00</span>
+                    <span class="adm-s-199" id="dre-total-cmv-pct">(0,0%)</span>
+                  </div>
+                </div>
+                <div class="adm-s-200">
+                  <div class="adm-s-016">
+                    <span>• CMV dos Produtos Vendidos (Fichas Técnicas)</span>
+                    <span id="dre-cmv-itens">R$ 0,00</span>
+                  </div>
+                  <div class="adm-s-016">
+                    <span>• Perdas e Quebras de Estoque Registradas</span>
+                    <span id="dre-cmv-perdas">R$ 0,00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Margem de Contribuição -->
+              <div class="adm-s-201">
+                <span>(=) Margem de Contribuição Bruta</span>
+                <div>
+                  <span id="dre-margem-contribuicao">R$ 0,00</span>
+                  <span class="adm-s-202" id="dre-margem-contribuicao-pct">(0,0%)</span>
+                </div>
+              </div>
+
+              <!-- 6. Despesas Operacionais -->
+              <div class="adm-s-068">
+                <div class="adm-s-203">
+                  <span>(−) Despesas Operacionais Totais</span>
+                  <div>
+                    <span id="dre-total-despesas-operacionais">-R$ 0,00</span>
+                    <span class="adm-s-204" id="dre-total-despesas-pct">(0,0%)</span>
+                  </div>
+                </div>
+                <!-- Subdivisão Fixas e Variáveis -->
+                <div class="adm-s-205">
+                  <div>
+                    <div class="adm-s-206">
+                      <span>• Custos / Despesas Fixas</span>
+                      <span id="dre-total-fixas">R$ 0,00</span>
+                    </div>
+                    <div class="adm-s-207" id="dre-lista-fixas"></div>
+                  </div>
+                  <div>
+                    <div class="adm-s-206">
+                      <span>• Custos / Despesas Variáveis (sem taxas de cartão)</span>
+                      <span id="dre-total-variaveis">R$ 0,00</span>
+                    </div>
+                    <div class="adm-s-207" id="dre-lista-variaveis"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 7. Resultado Operacional Líquido -->
+              <div class="adm-s-208" id="dre-box-resultado-final">
+                <span>(=) Resultado Operacional Líquido</span>
+                <div>
+                  <span id="dre-resultado-final">R$ 0,00</span>
+                  <span class="adm-s-209" id="dre-resultado-final-pct">(0,0%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 4: RECEBÍVEIS & CONCILIAÇÃO DE TAXAS (CAF-000113) ── -->
+        <div id="subtab-financeiro-recebiveis" class="financeiro-subtab-content" style="display:none;">
+          <div class="table-toolbar adm-s-183">
+            <div>
+              <h3 class="adm-s-210">Previsão de Recebíveis & Liquidação de Cartões / Pix</h3>
+              <p class="adm-s-211">Valores líquidos previstos para depósito conforme prazos da maquininha (D+0, D+1, D+30)</p>
+            </div>
+            <button type="button" class="btn btn--ghost adm-s-168" id="btn-recarregar-recebiveis">🔄 Atualizar</button>
+          </div>
+
+          <!-- Cards de Projeção -->
+          <div class="kpi-grid adm-s-170">
+            <div class="kpi-card adm-s-171">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title adm-s-172">A Receber Hoje</span>
+                <span class="kpi-card__icon">💰</span>
+              </div>
+              <div class="kpi-card__value adm-s-173" id="kpi-recebiveis-hoje">R$ 0,00</div>
+              <div class="kpi-card__subtitle">D+0 / Liquidações do dia</div>
+            </div>
+
+            <div class="kpi-card adm-s-212">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title adm-s-138">Próximos 7 Dias</span>
+                <span class="kpi-card__icon">📅</span>
+              </div>
+              <div class="kpi-card__value adm-s-213" id="kpi-recebiveis-7d">R$ 0,00</div>
+              <div class="kpi-card__subtitle">Débito (D+1) acumulado</div>
+            </div>
+
+            <div class="kpi-card adm-s-214">
+              <div class="kpi-card__header">
+                <span class="kpi-card__title adm-s-215">Próximos 30 Dias</span>
+                <span class="kpi-card__icon">💳</span>
+              </div>
+              <div class="kpi-card__value adm-s-216" id="kpi-recebiveis-30d">R$ 0,00</div>
+              <div class="kpi-card__subtitle">Crédito (D+30) acumulado</div>
+            </div>
+          </div>
+
+          <!-- Tabela de Projeção -->
+          <div class="table-container adm-s-075">
+            <table class="table adm-s-217">
+              <thead>
+                <tr class="adm-s-077">
+                  <th>Data Prevista Depósito</th>
+                  <th>Data da Venda</th>
+                  <th>Forma de Pagamento</th>
+                  <th class="adm-s-025">Prazo</th>
+                  <th class="adm-s-021">Valor Bruto</th>
+                  <th class="adm-s-180">Taxa Retida</th>
+                  <th class="adm-s-218">Valor Líquido</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-recebiveis">
+                <tr><td class="adm-s-078" colspan="7">Carregando recebíveis...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Ajustar Metas (CAF-000113) -->
+        <div id="modal-metas-overlay" class="modal-overlay adm-s-219" style="display:none;">
+          <div class="modal adm-s-220">
+            <div class="adm-s-221">
+              <h3 class="adm-s-189">Configurar Metas de Venda</h3>
+              <button class="adm-s-222" type="button" id="modal-metas-close">✕</button>
+            </div>
+            <form class="adm-s-223" id="form-metas">
+              <div>
+                <label class="adm-s-224" for="input-meta-normal">Meta Dia Normal (R$):</label>
+                <input type="number" step="0.01" min="0" id="input-meta-normal" class="input-padrao adm-s-225" required>
+              </div>
+              <div>
+                <label class="adm-s-224" for="input-meta-espetaculo">Meta Dia de Espetáculo (R$):</label>
+                <input type="number" step="0.01" min="0" id="input-meta-espetaculo" class="input-padrao adm-s-225" required>
+              </div>
+              <div class="adm-s-226">
+                <button type="button" id="btn-cancelar-metas" class="btn btn--ghost">Cancelar</button>
+                <button type="submit" id="btn-salvar-metas" class="btn btn--primary">Salvar Metas</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </section>

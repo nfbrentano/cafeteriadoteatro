@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000060 — Pedidos para viagem sem vinculação obrigatória de mesa
  */
 describe('CAF-000060 — Pedidos Para Viagem Sem Mesa', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01 / CA07: pedido para viagem sem mesa é permitido desde que o nome do cliente seja informado', () => {
     const validarEnvioPedido = (paraViagem, mesaId, clienteNome) => {

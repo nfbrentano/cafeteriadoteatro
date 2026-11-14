@@ -8,3 +8,8 @@ dist/
 ehthumbs.db
 Thumbs.db
 coverage/
+playwright-report/
+test-results/
+.e2e-data/
+supabase/.temp/
+assets/images_backup/

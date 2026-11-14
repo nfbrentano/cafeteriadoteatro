@@ -1,0 +1,87 @@
+      <!-- ── ESTOQUE (CAF-000031) ─────────────────────────────── -->
+      <section class="page" id="page-estoque">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Controle de Estoque</div>
+            <div class="page-header__sub">Produtos de revenda, insumos e baixa automática integrada às vendas</div>
+          </div>
+          <div class="adm-s-049">
+            <button class="btn btn--secondary" id="btn-estoque-lista-compras" title="Lista de compras e reposição por fornecedor">📋 Lista de Compras</button>
+            <button class="btn btn--ghost" id="btn-estoque-exportar-csv" title="Exportar inventário completo para CSV">📄 Exportar Inventário</button>
+            <button class="btn btn--ghost" id="btn-estoque-exportar-perdas" title="Exportar relatório de perdas para CSV">🗑️ Exportar Perdas</button>
+            <button class="btn btn--secondary" id="btn-estoque-movimentar" title="Registrar Entrada, Ajuste ou Perda">⚡ Movimentar</button>
+            <button class="btn btn--primary" id="btn-novo-estoque-item">+ Novo Item</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card__icon">📦</div>
+            <div class="stat-card__value" id="stat-estoque-total">0</div>
+            <div class="stat-card__label">Itens Cadastrados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🔴</div>
+            <div class="stat-card__value" id="stat-estoque-abaixo-min">0</div>
+            <div class="stat-card__label">Abaixo do Mínimo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🟠</div>
+            <div class="stat-card__value" id="stat-estoque-vencimento">0</div>
+            <div class="stat-card__label">Vencimento Próximo (≤ 7d)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__value" id="stat-estoque-valor-total">R$ 0,00</div>
+            <div class="stat-card__label">Valor Total em Estoque</div>
+          </div>
+        </div>
+
+        <!-- Alertas de Validade de Lotes (CAF-000111) -->
+        <div class="adm-s-051" id="painel-alertas-validade" style="display:none;">
+          <div class="adm-s-052">
+            <div class="adm-s-002">
+              <span class="adm-s-053">⚠️</span>
+              <h4 class="adm-s-054">Alertas de Validade de Lotes</h4>
+              <span class="badge adm-s-055" id="badge-total-alertas-validade">0 lote(s)</span>
+            </div>
+            <button type="button" class="btn btn--ghost btn--sm adm-s-037" id="btn-toggle-alertas-validade">Recolher</button>
+          </div>
+          <div class="adm-s-056" id="lista-alertas-validade-itens">
+            <!-- Itens com lotes vencidos ou a vencer gerados dinamicamente -->
+          </div>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters">
+            <select class="filter-select" id="filter-estoque-status" aria-label="Filtrar estoque por status">
+              <option value="todos">Todos os itens</option>
+              <option value="critico">🔴 Abaixo do Mínimo / Zerado</option>
+              <option value="validade">🟠 Vencimento Próximo (≤ 3d)</option>
+              <option value="inativo">Inativos</option>
+            </select>
+            <button class="btn btn--ghost" id="btn-scan-barcode-global" title="Escanear Código de Barras com a Câmera">📷 Escanear Código</button>
+          </div>
+          <input type="search" class="search-input" id="search-estoque" placeholder="🔍  Buscar por nome ou código de barras..." aria-label="Buscar item de estoque" />
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Item / Insumo</th>
+                <th>Código de Barras</th>
+                <th>Saldo Atual</th>
+                <th>Estoque Mínimo</th>
+                <th>Custo Médio</th>
+                <th>Próxima Validade</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="estoque-table-body">
+              <tr><td class="adm-s-050" colspan="8">Carregando itens de estoque...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>

@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000006 — Produto esgotado (liga/desliga rápido)
  */
 describe('CAF-000006 — Produto esgotado', () => {
   const cardapioJs = fs.readFileSync('js/cardapio-dynamic.js', 'utf8');
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01: produtos possuem campo disponivel no banco/schema', () => {
     expect(pedidosJs).toMatch(/disponivel/);

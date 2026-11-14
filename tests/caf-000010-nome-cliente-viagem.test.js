@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000010 — Nome do cliente e pedido para viagem
  */
 describe('CAF-000010 — Nome do cliente e pedido para viagem', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
   const cozinhaJs = fs.readFileSync('js/cozinha.js', 'utf8');
 
   it('CA01: aceita pedido para viagem sem exigir seleção de mesa física', () => {

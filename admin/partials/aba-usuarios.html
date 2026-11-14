@@ -1,0 +1,65 @@
+      <!-- ── USUÁRIOS & CARGOS (CAF-000036) ────────────────── -->
+      <section class="page" id="page-usuarios">
+        <div class="page-header adm-s-071">
+          <div>
+            <div class="page-header__title">Equipe & Permissões</div>
+            <div class="page-header__sub">Controle de colaboradores, cargos, permissões granulares e PIN de supervisor</div>
+          </div>
+          <div class="adm-s-049">
+            <button class="btn btn--ghost" id="btn-novo-cargo">+ Novo Cargo</button>
+            <button class="btn btn--primary" id="btn-novo-usuario">+ Novo Usuário</button>
+          </div>
+        </div>
+
+        <!-- Sub-navegação por abas -->
+        <div class="usuarios-tabs adm-s-072">
+          <button type="button" class="btn btn--tab active adm-s-073" id="btn-tab-usuarios-colabs">
+            👥 Colaboradores
+          </button>
+          <button type="button" class="btn btn--tab adm-s-074" id="btn-tab-usuarios-cargos">
+            🛡️ Cargos & Permissões Granulares
+          </button>
+        </div>
+
+        <!-- ── SUB-ABA 1: COLABORADORES ── -->
+        <div id="subtab-usuarios-colabs">
+          <div class="table-wrap adm-s-075">
+            <table class="table adm-s-076">
+              <thead>
+                <tr class="adm-s-077">
+                  <th>Nome</th>
+                  <th>E-mail (Login)</th>
+                  <th>Cargo</th>
+                  <th class="adm-s-025">PIN Supervisor</th>
+                  <th class="adm-s-025">Status</th>
+                  <th>Criado em</th>
+                  <th class="adm-s-025">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="usuarios-table-body">
+                <tr><td class="adm-s-078" colspan="7">Carregando usuários...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SUB-ABA 2: CARGOS & PERMISSÕES ── -->
+        <div id="subtab-usuarios-cargos" style="display:none;">
+          <div class="table-wrap adm-s-075">
+            <table class="table adm-s-076">
+              <thead>
+                <tr class="adm-s-077">
+                  <th>Nome do Cargo</th>
+                  <th>Descrição</th>
+                  <th class="adm-s-025">Tipo</th>
+                  <th>Permissões Ativas</th>
+                  <th class="adm-s-025">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="cargos-table-body">
+                <tr><td class="adm-s-078" colspan="5">Carregando cargos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

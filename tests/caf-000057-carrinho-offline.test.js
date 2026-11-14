@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000057 — Rascunho do carrinho persistido e faixa de conectividade offline
  */
 describe('CAF-000057 — Carrinho Persistido e Offline', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
   const pedidosHtml = fs.readFileSync('pedidos.html', 'utf8');
 
   it('CA01 / CA05: salva e restaura rascunho do carrinho no localStorage', () => {

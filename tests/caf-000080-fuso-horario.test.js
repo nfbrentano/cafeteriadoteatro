@@ -10,13 +10,13 @@ import {
   formatarDataSP,
   formatarHoraSP
 } from '../js/utils/datas-sp.js';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 describe('CAF-000080: Fuso horário consistente (America/Sao_Paulo) e corte do dia operacional', () => {
   const migrationPath = path.resolve(__dirname, '../supabase/migration_caf_000080_fuso_horario.sql');
   const migrationSql = fs.readFileSync(migrationPath, 'utf8');
 
-  const pedidosJsPath = path.resolve(__dirname, '../js/pedidos.js');
-  const pedidosJs = fs.readFileSync(pedidosJsPath, 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   const cardapioDynamicJsPath = path.resolve(__dirname, '../js/cardapio-dynamic.js');
   const cardapioDynamicJs = fs.readFileSync(cardapioDynamicJsPath, 'utf8');

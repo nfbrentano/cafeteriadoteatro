@@ -10,6 +10,7 @@ import {
   generatePrecache,
   scanDirectory
 } from '../scripts/sw-precache-generator.js';
+import { lerAdminHtmlCompleto } from './helpers/page-harness.js';
 
 /**
  * CAF-000118: PWA — Service Worker com Precache Gerado no Build, Versão Automática e Cobertura
@@ -390,7 +391,7 @@ describe('CAF-000118: PWA — Service Worker, Precache e Versionamento', () => {
     });
 
     it('CA07: admin.html contém o elemento de exibição de versão no rodapé da sidebar', () => {
-      const adminHtml = fs.readFileSync(path.resolve(process.cwd(), 'admin.html'), 'utf8');
+      const adminHtml = lerAdminHtmlCompleto();
       expect(adminHtml).toContain('id="admin-app-version-box"');
       expect(adminHtml).toContain('id="app-version-val"');
     });

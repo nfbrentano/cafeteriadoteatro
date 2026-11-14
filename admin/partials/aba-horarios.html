@@ -1,0 +1,109 @@
+      <!-- ── HORÁRIOS ─────────────────────────────────────── -->
+      <section class="page" id="page-horarios">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Horários de Funcionamento</div>
+            <div class="page-header__sub">Gerencie os horários exibidos no site e o status "Aberto Agora"</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card__header">
+            <span class="section-card__title">Configuração Semanal</span>
+          </div>
+          <div class="section-card__body">
+            <form id="form-horarios" novalidate>
+              
+              <!-- Seg a Qui -->
+              <div class="horarios-row">
+                <div class="horarios-row__info">
+                  <div class="horarios-row__label">Segunda a Quinta</div>
+                  <div class="horarios-row__sub">Horário padrão de dias úteis</div>
+                </div>
+                <div class="horarios-row__fields">
+                  <div class="field-inline">
+                    <label>Abertura</label>
+                    <input type="time" id="h-seg-qui-abre" class="field__input" />
+                  </div>
+                  <div class="field-inline">
+                    <label>Fechamento</label>
+                    <input type="time" id="h-seg-qui-fecha" class="field__input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Sexta -->
+              <div class="horarios-row">
+                <div class="horarios-row__info">
+                  <div class="horarios-row__label">Sexta-feira</div>
+                  <div class="horarios-row__sub">Horário diferenciado de encerramento</div>
+                </div>
+                <div class="horarios-row__fields">
+                  <div class="field-inline">
+                    <label>Abertura</label>
+                    <input type="time" id="h-sex-abre" class="field__input" />
+                  </div>
+                  <div class="field-inline">
+                    <label>Fechamento</label>
+                    <input type="time" id="h-sex-fecha" class="field__input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Sáb e Dom -->
+              <div class="horarios-row">
+                <div class="horarios-row__info">
+                  <div class="horarios-row__label">Sábado e Domingo</div>
+                  <div class="horarios-row__sub">Opcional para eventos ou finais de semana</div>
+                </div>
+                <div class="horarios-row__fields-wrap">
+                  <div class="toggle-wrap adm-s-057">
+                    <label class="toggle" for="h-sab-dom-ativo">
+                      <input type="checkbox" id="h-sab-dom-ativo" />
+                      <span class="toggle__slider"></span>
+                    </label>
+                    <span class="toggle-wrap__label">Ativar horário de fim de semana</span>
+                  </div>
+                  <div class="horarios-row__fields adm-s-058" id="wrap-sab-dom">
+                    <div class="field-inline">
+                      <label>Abertura</label>
+                      <input type="time" id="h-sab-dom-abre" class="field__input" />
+                    </div>
+                    <div class="field-inline">
+                      <label>Fechamento</label>
+                      <input type="time" id="h-sab-dom-fecha" class="field__input" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Aviso Especial -->
+              <div class="field adm-s-059">
+                <label class="field__label" for="h-aviso">Aviso Especial (opcional)</label>
+                <input class="field__input" type="text" id="h-aviso" 
+                       placeholder="Ex: Horários sujeitos à programação do Teatro." />
+                <div class="hint">Aparecerá como uma nota abaixo dos horários no site.</div>
+              </div>
+
+              <div class="form-actions adm-s-060">
+                <button type="submit" class="btn btn--primary" id="btn-save-horarios">
+                  💾 Salvar Horários
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="alert alert--info adm-s-028">
+          <div class="alert__icon">💡</div>
+          <div class="alert__content">
+            O status <b>"Aberto Agora"</b> no site é calculado automaticamente com base nestes horários e no relógio do dispositivo do visitante.
+          </div>
+        </div>
+      </section>

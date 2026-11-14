@@ -1,0 +1,174 @@
+      <!-- ── CLIENTES (CAF-000033) ─────────────────────────────── -->
+      <section class="page" id="page-clientes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Gestão de Clientes & CRM</div>
+            <div class="page-header__sub">Segmentação RFV automática, tags, campanhas WhatsApp, histórico de consumo e conformidade LGPD</div>
+          </div>
+          <div class="adm-s-049">
+            <button class="btn btn--ghost" id="btn-crm-tags" title="Gerenciar Tags e Limites de Segmentação RFV">🏷️ Tags & Regras RFV</button>
+            <button class="btn btn--secondary" id="btn-crm-campanhas" title="Criar listas de campanha e disparar pelo WhatsApp">📣 Campanhas WhatsApp</button>
+            <button class="btn btn--ghost" id="btn-export-clientes" title="Exportar lista de clientes para CSV (Apenas Admin)">📄 Exportar CSV</button>
+            <button class="btn btn--primary" id="btn-novo-cliente">+ Novo Cliente</button>
+          </div>
+        </div>
+
+        <!-- Cartões de Segmentação RFV com Variação vs. Mês Anterior (CAF-000041) -->
+        <div class="kpi-grid adm-s-121">
+          <div class="kpi-card crm-seg-card adm-s-122" data-seg="Novo">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-123">🌱 Novos</span>
+              <span class="kpi-card__icon adm-s-124" id="var-seg-Novo">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Novo">0</div>
+            <div class="kpi-card__subtitle">1ª compra ≤ 30 dias</div>
+          </div>
+          <div class="kpi-card crm-seg-card adm-s-125" data-seg="Fiel">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-126">👑 Fiéis</span>
+              <span class="kpi-card__icon adm-s-124" id="var-seg-Fiel">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Fiel">0</div>
+            <div class="kpi-card__subtitle">≥ 4 pedidos em 90d</div>
+          </div>
+          <div class="kpi-card crm-seg-card adm-s-127" data-seg="Ativo">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-128">✅ Ativos</span>
+              <span class="kpi-card__icon adm-s-124" id="var-seg-Ativo">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Ativo">0</div>
+            <div class="kpi-card__subtitle">Última compra ≤ 30d</div>
+          </div>
+          <div class="kpi-card crm-seg-card adm-s-129" data-seg="Em risco">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-130">⚠️ Em Risco</span>
+              <span class="kpi-card__icon adm-s-124" id="var-seg-Em risco">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Em risco">0</div>
+            <div class="kpi-card__subtitle">Sem comprar há 31–90d</div>
+          </div>
+          <div class="kpi-card crm-seg-card adm-s-131" data-seg="Perdido">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title adm-s-132">💤 Perdidos</span>
+              <span class="kpi-card__icon adm-s-124" id="var-seg-Perdido">—</span>
+            </div>
+            <div class="kpi-card__value" id="count-seg-Perdido">0</div>
+            <div class="kpi-card__subtitle">> 90 dias ou sem compra</div>
+          </div>
+        </div>
+
+        <!-- KPIs Gerais de Clientes -->
+        <div class="kpi-grid adm-s-133">
+          <div class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Total de Clientes</span>
+              <span class="kpi-card__icon">👥</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-clientes-total">0</div>
+            <div class="kpi-card__subtitle">Cadastrados na base</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Clientes com Pedidos</span>
+              <span class="kpi-card__icon">🛍️</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-clientes-com-pedidos">0</div>
+            <div class="kpi-card__subtitle">Já realizaram compras</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Autorizam WhatsApp</span>
+              <span class="kpi-card__icon">💬</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-clientes-whatsapp-pct">0%</div>
+            <div class="kpi-card__subtitle" id="kpi-clientes-whatsapp-count">0 autorizados (LGPD)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__title">Ticket Médio Geral</span>
+              <span class="kpi-card__icon">💰</span>
+            </div>
+            <div class="kpi-card__value" id="kpi-clientes-ticket-medio">R$ 0,00</div>
+            <div class="kpi-card__subtitle">Gasto médio por visita</div>
+          </div>
+        </div>
+
+        <!-- Barra de busca e filtros CRM -->
+        <div class="table-toolbar adm-s-134">
+          <div class="table-filters adm-s-049">
+            <select class="filter-select" id="filter-cliente-segmento" aria-label="Filtrar por segmento RFV">
+              <option value="">Todos os Segmentos</option>
+              <option value="Novo">🌱 Novo</option>
+              <option value="Fiel">👑 Fiel</option>
+              <option value="Ativo">✅ Ativo</option>
+              <option value="Em risco">⚠️ Em risco</option>
+              <option value="Perdido">💤 Perdido</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-tag" aria-label="Filtrar por Tag">
+              <option value="">Todas as Tags</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-produto" aria-label="Filtrar por produto já comprado">
+              <option value="">Qualquer produto comprado</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-periodo" aria-label="Filtrar por período da última compra">
+              <option value="">Qualquer período de compra</option>
+              <option value="7d">Comprou nos últimos 7 dias</option>
+              <option value="30d">Comprou nos últimos 30 dias</option>
+              <option value="31_90d">Última compra entre 31 e 90 dias</option>
+              <option value="mais_90d">Sem comprar há > 90 dias</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-contato" aria-label="Filtrar por autorização WhatsApp">
+              <option value="">Todos os contatos</option>
+              <option value="sim">Autoriza WhatsApp (LGPD)</option>
+              <option value="nao">Não autoriza WhatsApp</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-conta" aria-label="Filtrar por conta corrente">
+              <option value="todas">Todas as Contas</option>
+              <option value="com_saldo_positivo">Com Créditos (Pré-pago)</option>
+              <option value="com_saldo_devedor">Com Débito (Fiado)</option>
+              <option value="conta_ativa">Conta Habilitada</option>
+            </select>
+            <select class="filter-select" id="filter-cliente-status" aria-label="Filtrar por status">
+              <option value="ativos">Apenas Ativos</option>
+              <option value="todos">Todos (inclui inativos)</option>
+            </select>
+          </div>
+          <div class="adm-s-135">
+            <input type="search" class="search-input adm-s-136" id="search-cliente"
+                   placeholder="🔍  Buscar cliente por nome, telefone, email ou produto favorito..." aria-label="Buscar cliente" />
+            <!-- Barra de Ações em Lote (Tags) -->
+            <div class="adm-s-137" id="clientes-batch-bar" style="display:none;">
+              <strong class="adm-s-138" id="clientes-batch-count">0 selecionados</strong>
+              <select class="filter-select adm-s-139" id="batch-tag-select">
+                <option value="">Escolher Tag...</option>
+              </select>
+              <button type="button" class="btn btn--primary btn--sm adm-s-004" id="btn-batch-aplicar-tag">+ Aplicar Tag</button>
+              <button type="button" class="btn btn--ghost btn--sm adm-s-004" id="btn-batch-remover-tag">− Remover Tag</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="adm-s-140">
+                  <input type="checkbox" id="chk-select-all-clientes" title="Selecionar todos da lista" />
+                </th>
+                <th>Nome & Favorito</th>
+                <th>Segmento & Tags</th>
+                <th>Telefone / WhatsApp</th>
+                <th class="adm-s-025">Pedidos (90d / Total)</th>
+                <th class="adm-s-021">Total Gasto</th>
+                <th class="adm-s-025">Conta / Saldo</th>
+                <th>Última Compra</th>
+                <th class="adm-s-025">LGPD</th>
+                <th class="adm-s-025">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-clientes">
+              <tr><td class="adm-s-050" colspan="10">Carregando clientes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>

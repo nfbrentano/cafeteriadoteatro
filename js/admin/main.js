@@ -224,7 +224,16 @@
       try {
         if (!window.cafeteriaDB?.cargos) return;
         const perms = await window.cafeteriaDB.cargos.getMinhasPermissoes();
-        this.permissoes = Array.isArray(perms) ? perms : [];
+        if (Array.isArray(perms)) {
+          this.permissoes = perms;
+        } else if (perms && typeof perms === 'object') {
+          this.permissoes = Array.isArray(perms.permissoes) ? perms.permissoes : [];
+          if ('is_admin' in perms) {
+            this.session.isAdmin = Boolean(perms.is_admin);
+          }
+        } else {
+          this.permissoes = [];
+        }
         this.aplicarPermissoesSidebar();
       } catch (err) {
         console.warn('Erro ao carregar permissões do admin:', err);

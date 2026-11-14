@@ -1,0 +1,42 @@
+      <!-- ── PROMOÇÕES ────────────────────────────────────── -->
+      <section class="page" id="page-promocoes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Promoções e Banners</div>
+            <div class="page-header__sub">Gerencie campanhas sazonais e ofertas temporárias</div>
+          </div>
+          <button class="btn btn--primary" id="btn-nova-campanha">
+            + Nova Campanha
+          </button>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="table-filters">
+            <select class="filter-select" id="filter-promo-status">
+              <option value="">Todos os status</option>
+              <option value="ativos">Agendados/Ativos</option>
+              <option value="encerrados">Encerrados</option>
+            </select>
+          </div>
+          <p class="hint adm-s-070">
+            Campanhas aparecem automaticamente nas datas configuradas.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campanha</th>
+                <th>Selo</th>
+                <th>Período</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="promo-table-body">
+              <!-- Gerado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>

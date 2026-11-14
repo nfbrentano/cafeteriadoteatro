@@ -5,12 +5,13 @@ import {
   podeAplicarDesconto
 } from '../js/utils/conta-mesa.js';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000013 — Taxa de serviço e desconto manual
  */
 describe('CAF-000013 — Taxa de serviço e desconto manual', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01: calcula taxa de serviço opcional (ex: 10%) sobre o subtotal válido', () => {
     const pedidos = [{ id: '1', total: '100.00', status: 'concluido' }];

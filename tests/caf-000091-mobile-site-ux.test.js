@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import { filtrarPedidosPdv, calcularTrocoPdv } from '../js/utils/pdv-filtros.js';
 import { formatarComprovanteTexto } from '../js/utils/receipt-formatter.js';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000091 — Cobertura de Testes de Mobile, Site Institucional e UX do PDV
@@ -49,7 +50,7 @@ describe('CAF-000091 — Mobile, Site Institucional e UX do PDV', () => {
   });
 
   it('CA05: persistência de rascunho de carrinho e suporte offline', () => {
-    const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+    const pedidosJs = lerCodigoFontePDV();
     expect(pedidosJs).toMatch(/localStorage/);
     expect(pedidosJs).toMatch(/offline/);
   });
@@ -63,7 +64,7 @@ describe('CAF-000091 — Mobile, Site Institucional e UX do PDV', () => {
   });
 
   it('CA07: pedido para viagem sem mesa aceito com identificação do cliente', () => {
-    const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+    const pedidosJs = lerCodigoFontePDV();
     expect(pedidosJs).toMatch(/para_viagem/);
   });
 
@@ -90,7 +91,7 @@ describe('CAF-000091 — Mobile, Site Institucional e UX do PDV', () => {
   });
 
   it('CA11: aviso de pedido pronto via áudio e vibração', () => {
-    const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+    const pedidosJs = lerCodigoFontePDV();
     expect(pedidosJs).toMatch(/audioPronto|ding\.wav/);
   });
 

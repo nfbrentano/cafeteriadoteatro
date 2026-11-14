@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000005 — Adicionar itens a um pedido já enviado
  */
 describe('CAF-000005 — Adicionar itens a um pedido já enviado', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01: permite modo de adição vinculado a uma mesa/pedido existente', () => {
     expect(pedidosJs).toMatch(/modoAdicao|pedidoOrigemIdAdicao/);

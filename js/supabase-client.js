@@ -2,16 +2,19 @@
    SUPABASE-CLIENT.JS — Inicialização do Cliente
    ========================================================= */
 
-// Credenciais dinâmicas enviadas pelo usuário
-const SUPABASE_URL = 'https://nyretgvzbnbtiyeioeju.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55cmV0Z3Z6Ym5idGl5ZWlvZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NDMyNjUsImV4cCI6MjA5MjAxOTI2NX0.095yucTEyF_aZx9BnWDkGKT6439r_S8PCPmJt_TlP3Q';
+// Credenciais dinâmicas (com suporte a override isolado para testes E2E em ambiente local/CI)
+const e2eConfig = (typeof window !== 'undefined' && window.__CAFETERIA_E2E_CONFIG__) || null;
+const SUPABASE_URL = (e2eConfig && e2eConfig.url) || 'https://nyretgvzbnbtiyeioeju.supabase.co';
+const SUPABASE_ANON_KEY = (e2eConfig && e2eConfig.anonKey) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55cmV0Z3Z6Ym5idGl5ZWlvZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NDMyNjUsImV4cCI6MjA5MjAxOTI2NX0.095yucTEyF_aZx9BnWDkGKT6439r_S8PCPmJt_TlP3Q';
 
-// Inicializar cliente global (window.supabase vem do SDK via CDN)
+// Inicializar cliente global (window.supabase vem do SDK via CDN ou shim E2E)
 if (!window.supabase) {
   console.error('Supabase SDK não carregado! Verifique a conexão com a CDN.');
 }
 
-const _supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _supabaseInstance = (e2eConfig && typeof e2eConfig.createClient === 'function')
+  ? e2eConfig.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Exportar para uso global
 window.cafeteriaSupabase = _supabaseInstance;

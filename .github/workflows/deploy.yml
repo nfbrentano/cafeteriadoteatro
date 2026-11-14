@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
@@ -50,6 +50,9 @@ jobs:
 
       - name: Run static analysis (ESLint)
         run: npm run lint
+
+      - name: Run static analysis on E2E suite (ESLint)
+        run: npm run lint:e2e
 
       - name: Run automated test suite with real coverage (real code + contract tests)
         run: npm run test:coverage
@@ -62,6 +65,23 @@ jobs:
         env:
           TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: npm run test:db
+
+      - name: Install Playwright Chromium for E2E
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E critical flows
+        timeout-minutes: 5
+        run: npm run test:e2e
+
+      - name: Upload Playwright E2E failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-e2e-artifacts
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
 
       - name: Validate build
         run: npm run build
@@ -81,7 +101,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies

@@ -1,0 +1,135 @@
+      <!-- ── CONTEÚDO HOME ─────────────────────────────────── -->
+      <section class="page" id="page-conteudo">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Conteúdo Institucional</div>
+            <div class="page-header__sub">Altere os textos de apresentação da cafeteria na página inicial</div>
+          </div>
+        </div>
+
+        <form id="form-conteudo" novalidate>
+          <!-- SOBRE -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Sobre a Cafeteria</span>
+            </div>
+            <div class="section-card__body">
+                <div class="field">
+                  <label class="field__label">Imagem da Seção</label>
+                  <div class="upload-zone adm-s-062" id="sobre-upload-zone">
+                    <div class="upload-zone__idle" id="sobre-upload-idle">
+                      <div class="upload-zone__icon adm-s-063">📸</div>
+                      <div class="upload-zone__title adm-s-064">Clique para alterar a imagem do Sobre</div>
+                    </div>
+                    <div class="upload-zone__preview hidden" id="sobre-upload-preview-wrap">
+                      <img class="adm-s-065" src="" id="sobre-upload-preview-img" width="800" height="400" />
+                      <div class="upload-zone__overlay">
+                        <button class="upload-zone__change" id="btn-sobre-change-img" type="button">Trocar Imagem</button>
+                      </div>
+                    </div>
+                    <input type="file" id="sobre-image-file" accept="image/*" class="hidden" />
+                    <input type="hidden" id="sobre-image-data" />
+                  </div>
+
+                  <!-- Info bar for stats -->
+                  <div class="upload-info adm-s-066" id="sobre-upload-info" style="display:none;">
+                    <span class="upload-info__badge">Otimizada</span>
+                    <span class="upload-info__text" id="sobre-info-dims">800 × 800px</span>
+                    <span class="upload-info__text" id="sobre-info-size">45 KB</span>
+                    <span class="upload-info__saving" id="sobre-info-saving">↓ 92%</span>
+                  </div>
+                </div>
+                
+                <div class="field">
+                  <label class="field__label" for="c-sobre-titulo">Título da Seção</label>
+                  <input class="field__input" type="text" id="c-sobre-titulo" 
+                         placeholder="Ex: Uma cafeteria que respira cultura" />
+                </div>
+              <div class="field">
+                <label class="field__label" for="c-sobre-texto">Texto Principal</label>
+                <textarea class="field__textarea" id="c-sobre-texto" rows="8" 
+                          placeholder="Fale sobre a história e propósito da cafeteria..."></textarea>
+                <div class="hint">Use quebras de linha para separar parágrafos.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXPERIÊNCIA / AMBIENTE -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Ambiente (Experiência)</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="field__label" for="c-exp-subtitulo">Subtítulo de Convite</label>
+                <input class="field__input" type="text" id="c-exp-subtitulo" 
+                       placeholder="Cada visita à Cafeteria do Teatro é uma pausa..." />
+              </div>
+            </div>
+          </div>
+
+          <!-- GALERIA / CONVITE -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Galeria</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="field__label" for="c-galeria-subtitulo">Mensagem da Galeria</label>
+                <input class="field__input" type="text" id="c-galeria-subtitulo" 
+                       placeholder="Fotos de ambiente, balcão, café e momentos..." />
+              </div>
+            </div>
+          </div>
+
+          <!-- WHATSAPP -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Seção: Contato / WhatsApp</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="switch-field adm-s-067">
+                  <input type="checkbox" id="c-whatsapp-ativo" class="switch-field__input" />
+                  <span class="switch-field__label">Ativar Botão Flutuante do WhatsApp na Home</span>
+                </label>
+                <div class="hint adm-s-068">Mostra um ícone do WhatsApp no canto da tela para os visitantes do site.</div>
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="c-whatsapp-numero">Número do WhatsApp (com DDD)</label>
+                <input class="field__input" type="text" id="c-whatsapp-numero" 
+                       placeholder="Ex: 51984224792" />
+                <div class="hint">Apenas números. Inclua o código do país se necessário (ex: 55) e o DDD. Oculte espaços ou traços.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAXA DE SERVIÇO -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Taxa de Serviço</span>
+            </div>
+            <div class="section-card__body">
+              <div class="field">
+                <label class="switch-field adm-s-067">
+                  <input type="checkbox" id="c-taxa-servico-ativa" class="switch-field__input" />
+                  <span class="switch-field__label">Habilitar sugestão de taxa de serviço no PDV</span>
+                </label>
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="c-taxa-servico-percentual">Percentual Padrão (%)</label>
+                <input class="field__input" type="number" id="c-taxa-servico-percentual" 
+                       placeholder="Ex: 10" min="0" max="100" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions adm-s-069">
+            <button type="submit" class="btn btn--primary" id="btn-save-conteudo">
+              💾 Salvar Textos
+            </button>
+          </div>
+        </form>
+      </section>

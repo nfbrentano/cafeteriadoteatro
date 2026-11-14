@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import { lerAdminHtmlCompleto } from './helpers/page-harness.js';
 
 /**
  * CAF-000036 — Permissões por cargo e bloqueio de PIN
  */
 describe('CAF-000036 — Permissões por cargo e PIN', () => {
   const authJs = fs.readFileSync('js/admin/auth.js', 'utf8');
-  const adminHtml = fs.readFileSync('admin.html', 'utf8');
+  const adminHtml = lerAdminHtmlCompleto();
 
   it('CA01: validação de PIN e bloqueio após 5 tentativas incorretas implementados no banco e client', () => {
     const migration081 = fs.readFileSync('supabase/migration_caf_000081_seguranca_pin_rls.sql', 'utf8');

@@ -1,0 +1,367 @@
+      <!-- ── RELATÓRIOS ────────────────────────────────────── -->
+      <section class="page" id="page-relatorios">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Relatórios</div>
+            <div class="page-header__sub">Métricas, vendas e tempo de preparo</div>
+          </div>
+          <div class="adm-s-007">
+            <select class="filter-select" id="filter-relatorio-periodo">
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="7dias">Últimos 7 dias</option>
+              <option value="mes">Mês Atual</option>
+              <option value="personalizado">Personalizado</option>
+            </select>
+            <div class="adm-s-008" id="relatorio-datas-custom" style="display:none;">
+              <input type="date" class="field__input adm-s-009" id="relatorio-data-inicio">
+              <span>até</span>
+              <input type="date" class="field__input adm-s-009" id="relatorio-data-fim">
+            </div>
+            <button class="btn btn--primary" id="btn-gerar-relatorio">Gerar</button>
+          </div>
+        </div>
+
+        <!-- KPIs Operacionais -->
+        <div class="stats-grid adm-s-010">
+          <div class="stat-card">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__value" id="relatorio-faturamento">R$ 0,00</div>
+            <div class="stat-card__label">Faturamento Total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📊</div>
+            <div class="stat-card__value" id="relatorio-ticket">R$ 0,00</div>
+            <div class="stat-card__label">Ticket Médio</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">⏳</div>
+            <div class="stat-card__value" id="relatorio-fila">0 min</div>
+            <div class="stat-card__label">Tempo Médio (Fila)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">👨‍🍳</div>
+            <div class="stat-card__value" id="relatorio-preparo">0 min</div>
+            <div class="stat-card__label">Tempo Médio (Preparo)</div>
+          </div>
+        </div>
+
+        <!-- KPIs Financeiros e CMV (CAF-000032 + CAF-000039) -->
+        <div class="stats-grid adm-s-011">
+          <div class="stat-card">
+            <div class="stat-card__icon">📦</div>
+            <div class="stat-card__value" id="relatorio-cmv-total">R$ 0,00</div>
+            <div class="stat-card__label">CMV Total (<span id="relatorio-cmv-pct">0%</span>)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">📈</div>
+            <div class="stat-card__value adm-s-012" id="relatorio-lucro-bruto">R$ 0,00</div>
+            <div class="stat-card__label">Lucro Bruto (Margem: <span id="relatorio-margem-media">0%</span>)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💳</div>
+            <div class="stat-card__value adm-s-013" id="relatorio-taxas-pagamento">R$ 0,00</div>
+            <div class="stat-card__label">Taxas de Pagamento</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💵</div>
+            <div class="stat-card__value adm-s-014" id="relatorio-faturamento-liquido">R$ 0,00</div>
+            <div class="stat-card__label">Faturamento Líquido (pós-taxas)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🎁</div>
+            <div class="stat-card__value" id="relatorio-custo-cortesias">R$ 0,00</div>
+            <div class="stat-card__label">Custo das Cortesias</div>
+          </div>
+        </div>
+
+        <div class="adm-s-015">
+          <!-- Horários de Pico -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Horários de Pico (Hora)</span>
+            </div>
+            <div class="section-card__body">
+              <canvas id="chartHorariosHora" width="400" height="200"></canvas>
+            </div>
+          </div>
+          <!-- Dias da Semana -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Horários de Pico (Dia)</span>
+            </div>
+            <div class="section-card__body">
+              <canvas id="chartHorariosDia" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-s-015">
+          <!-- Mais Vendidos -->
+          <div class="section-card">
+            <div class="section-card__header adm-s-016">
+              <span class="section-card__title">Produtos Mais Vendidos</span>
+              <select class="filter-select adm-s-017" id="filter-relatorio-categoria">
+                <option value="">Todas as categorias</option>
+              </select>
+            </div>
+            <div class="table-scroll adm-s-018">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Qtd</th>
+                    <th>Faturamento</th>
+                  </tr>
+                </thead>
+                <tbody id="relatorio-mais-vendidos">
+                  <tr><td colspan="3" class="text-center">Sem dados</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pagamentos: Gráfico + Tabela Bruto / Taxas / Líquido (CAF-000039) -->
+          <div class="section-card">
+            <div class="section-card__header adm-s-019">
+              <span class="section-card__title">Formas de Pagamento (Bruto × Taxas × Líquido)</span>
+              <button type="button" class="btn btn--outline-dark adm-s-004" id="btn-lancar-taxas-despesa" title="Lançar as taxas de pagamento do mês atual como despesa no módulo Financeiro">
+                💸 Lançar taxas do mês como despesa
+              </button>
+            </div>
+            <div class="section-card__body">
+              <canvas id="chartPagamentos" width="400" height="160"></canvas>
+              <div class="table-scroll adm-s-020">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Forma</th>
+                      <th class="adm-s-021">Bruto</th>
+                      <th class="adm-s-021">Taxa</th>
+                      <th class="adm-s-021">Líquido</th>
+                    </tr>
+                  </thead>
+                  <tbody id="relatorio-pagamentos-tbody">
+                    <tr><td colspan="4" class="text-center">Sem dados</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Margem e Lucro por Produto (CAF-000032) -->
+        <div class="section-card adm-s-022">
+          <div class="section-card__header adm-s-019">
+            <div>
+              <span class="section-card__title">Margem e Lucro por Produto (CMV Real)</span>
+              <span class="adm-s-023">Análise de rentabilidade baseada no custo histórico de insumos e fichas técnicas</span>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-exportar-margens-csv">📥 Exportar CSV</button>
+          </div>
+          <div class="table-scroll adm-s-024">
+            <table>
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th class="adm-s-021">Qtd</th>
+                  <th class="adm-s-021">Faturamento</th>
+                  <th class="adm-s-021">Custo Total</th>
+                  <th class="adm-s-021">Lucro Bruto</th>
+                  <th class="adm-s-025">Margem %</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-margem-produtos">
+                <tr><td colspan="6" class="text-center">Carregando relatório...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="adm-s-026">
+          <!-- Cortesias -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Cortesias Concedidas</span>
+            </div>
+            <div class="table-scroll adm-s-027">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Prato Liberador</th>
+                    <th>Qtd</th>
+                    <th>Valor Abonado</th>
+                    <th>Custo Real</th>
+                  </tr>
+                </thead>
+                <tbody id="relatorio-cortesias">
+                  <tr><td colspan="4" class="text-center">Sem dados</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Promoções com Rentabilidade -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">Descontos Promocionais e Lucro</span>
+            </div>
+            <div class="table-scroll adm-s-027">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Promoção</th>
+                    <th>Aplicações</th>
+                    <th>Desconto</th>
+                    <th>Faturamento</th>
+                    <th>Custo</th>
+                    <th>Lucro Líquido</th>
+                  </tr>
+                </thead>
+                <tbody id="relatorio-promocoes">
+                  <tr><td colspan="6" class="text-center">Sem dados</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tempo de Preparo x Meta por Categoria (CAF-000025) -->
+        <div class="section-card adm-s-028">
+          <div class="section-card__header">
+            <span class="section-card__title">⏱️ Tempo Médio de Preparo × Meta / Tempo Alvo (Por Categoria)</span>
+          </div>
+          <div class="table-scroll adm-s-029">
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoria</th>
+                  <th>Meta (Tempo Alvo)</th>
+                  <th>Média Real de Preparo</th>
+                  <th>Status do Semáforo</th>
+                  <th>Itens Finalizados</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-tempo-categorias">
+                <tr><td colspan="5" class="text-center">Sem dados no período</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Ranking e Recorrência de Clientes (CAF-000033) -->
+        <div class="section-card adm-s-028">
+          <div class="section-card__header">
+            <span class="section-card__title">👥 Comportamento e Ranking de Clientes no Período</span>
+          </div>
+
+          <div class="adm-s-030">
+            <div>
+              <span class="adm-s-031">Clientes Novos no Período</span>
+              <div class="adm-s-032" id="relatorio-clientes-novos">0</div>
+            </div>
+            <div>
+              <span class="adm-s-031">Clientes Recorrentes no Período</span>
+              <div class="adm-s-033" id="relatorio-clientes-recorrentes">0</div>
+            </div>
+            <div>
+              <span class="adm-s-031">Taxa de Recorrência</span>
+              <div class="adm-s-034" id="relatorio-clientes-taxa-recorrencia">0%</div>
+            </div>
+          </div>
+
+          <div class="table-scroll adm-s-018">
+            <table>
+              <thead>
+                <tr>
+                  <th class="adm-s-035">#</th>
+                  <th>Cliente</th>
+                  <th>Telefone</th>
+                  <th class="adm-s-025">Pedidos no Período</th>
+                  <th class="adm-s-021">Total Gasto no Período</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-ranking-clientes">
+                <tr><td colspan="5" class="text-center">Carregando ranking de clientes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        <!-- Desempenho por Operador / Atendente (CAF-000036) -->
+        <div class="section-card adm-s-028">
+          <div class="section-card__header adm-s-019">
+            <div>
+              <span class="section-card__title">👤 Desempenho e Indicadores por Operador</span>
+              <span class="adm-s-023">Métricas de vendas, ticket médio, cancelamentos e descontos por colaborador no período</span>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-exportar-operadores-csv">📥 Exportar CSV</button>
+          </div>
+          <div class="table-scroll adm-s-024">
+            <table>
+              <thead>
+                <tr>
+                  <th>Colaborador</th>
+                  <th>Cargo</th>
+                  <th class="adm-s-021">Pedidos Concluídos</th>
+                  <th class="adm-s-021">Total Faturado</th>
+                  <th class="adm-s-021">Ticket Médio</th>
+                  <th class="adm-s-025">Cancelamentos</th>
+                  <th class="adm-s-021">Descontos Concedidos</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-desempenho-operadores">
+                <tr><td colspan="7" class="text-center">Carregando desempenho dos operadores...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Menu Analytics: Funil do Cardápio & Desempenho de Produtos (CAF-000069) -->
+        <div class="section-card adm-s-028" id="sec-menu-analytics-funil">
+          <div class="section-card__header adm-s-019">
+            <div>
+              <span class="section-card__title">📊 Funil do Cardápio Digital & Desempenho de Produtos (Menu Analytics)</span>
+              <span class="adm-s-023">
+                Taxa de passagem entre etapas do autoatendimento (Visitas → Detalhes → Sacola → Checkout → Pedidos) e conversão por item
+              </span>
+            </div>
+            <div class="adm-s-036">
+              <select class="filter-select adm-s-037" id="filter-funil-canal">
+                <option value="todos">Todos os Canais</option>
+                <option value="mesa">QR Code na Mesa</option>
+                <option value="retirada">Retirada Online</option>
+                <option value="totem">Totem de Balcão</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Cards das 5 Etapas do Funil -->
+          <div class="adm-s-038" id="funil-etapas-cards">
+            <!-- Preenchido via relatorios-admin.js -->
+          </div>
+
+          <!-- Tabela de Conversão Individual por Produto -->
+          <div class="adm-s-039">
+            <div class="adm-s-040">
+              Matriz de Conversão de Produtos (Cliques vs. Sacola)
+            </div>
+            <div class="table-scroll adm-s-024">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th class="adm-s-025">Visualizações (Modal)</th>
+                    <th class="adm-s-025">Adições à Sacola</th>
+                    <th class="adm-s-025">Taxa de Conversão</th>
+                    <th class="adm-s-025">Diagnóstico Automático</th>
+                  </tr>
+                </thead>
+                <tbody id="tabela-produtos-conversao">
+                  <tr><td colspan="6" class="text-center">Carregando dados do funil...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>

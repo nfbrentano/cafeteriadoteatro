@@ -1,0 +1,192 @@
+      <!-- ── HERO DA HOME ─────────────────────────────────── -->
+      <section class="page" id="page-hero">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Hero da Home</div>
+            <div class="page-header__sub">Gerencie a imagem principal de boas-vindas do site</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card__header">
+            <span class="section-card__title">Imagem Atual do Hero</span>
+          </div>
+          <div class="section-card__body">
+            
+            <!-- Hero Preview Card -->
+            <div class="hero-manage-preview" id="hero-preview-container">
+              <div class="hero-manage-preview__bg" id="hero-preview-bg"></div>
+              <div class="hero-manage-preview__overlay"></div>
+              <div class="hero-manage-preview__content">
+                <div class="hero-manage-preview__tag">Teatro da Univates · Lajeado, RS</div>
+                <div class="hero-manage-preview__title">Onde o café encontra a <em>cultura.</em></div>
+              </div>
+              <div class="hero-manage-preview__badge" id="hero-preview-badge">Padrão</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+              <label class="field__label">Upload de Nova Imagem</label>
+              <div class="upload-zone" id="hero-upload-zone" tabindex="0">
+                <div class="upload-zone__idle" id="hero-upload-idle">
+                  <div class="upload-zone__icon">📸</div>
+                  <div class="upload-zone__title">Arraste uma nova imagem para o Hero</div>
+                  <div class="upload-zone__sub">PNG, JPG, WEBP · Recomendado: 1920x1080px</div>
+                </div>
+                
+                <div class="upload-zone__preview hidden" id="hero-upload-preview-wrap">
+                  <img src="" id="hero-upload-preview-img" alt="Novo hero" width="1200" height="400" />
+                  <div class="upload-zone__overlay">
+                    <button class="upload-zone__change" id="btn-hero-change-img" type="button">Trocar Imagem</button>
+                    <button class="upload-zone__remove" id="btn-hero-remove-img" type="button">Remover</button>
+                  </div>
+                </div>
+                <input type="file" id="hero-image-file" accept="image/*" class="hidden" />
+                <input type="hidden" id="hero-image-data" />
+              </div>
+
+              <!-- Info bar for stats -->
+              <div class="upload-info" id="hero-upload-info" style="display:none;">
+                <span class="upload-info__badge">Otimizada</span>
+                <span class="upload-info__text" id="hero-info-dims">1920 × 1080px</span>
+                <span class="upload-info__text" id="hero-info-size">245 KB</span>
+                <span class="upload-info__saving" id="hero-info-saving">↓ 82%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="hero-alt">Descrição da Imagem (Acessibilidade)</label>
+              <input class="field__input" type="text" id="hero-alt" 
+                     placeholder="Ex: Interior da Cafeteria do Teatro com luz natural" />
+              <div class="hint">Usado como aria-label para leitores de tela.</div>
+            </div>
+
+            <div class="form-actions adm-s-028">
+              <button class="btn btn--primary" id="btn-save-hero" type="button">
+                💾 Salvar Alterações do Hero
+              </button>
+              <button class="btn btn--ghost" id="btn-reset-hero" type="button">
+                🗑️ Remover Personalização
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="alert alert--info adm-s-059">
+          <div class="alert__icon">💡</div>
+          <div class="alert__content">
+            A imagem é processada e comprimida automaticamente para o formato <strong>WebP</strong> (ou JPEG como fallback) antes de ser salva, garantindo que o carregamento da página inicial continue extremamente rápido.
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CARDÁPIO PDF / LIVRO DIGITAL ──────────────────── -->
+      <section class="page" id="page-menu-pdf">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Cardápio PDF</div>
+            <div class="page-header__sub">Envie o PDF do cardápio para exibição como livro digital interativo</div>
+          </div>
+          <a href="cardapio.html" target="_blank" class="btn btn--ghost" id="btn-preview-cardapio-pdf">
+            👁️ Ver no site
+          </a>
+        </div>
+
+        <!-- STATUS DO PDF ATUAL -->
+        <div class="section-card" id="pdf-current-status">
+          <div class="section-card__header">
+            <span class="section-card__title">📄 PDF Atual</span>
+            <span id="pdf-active-badge" class="pdf-status-badge pdf-status-badge--active" style="display:none;">● Ativo</span>
+          </div>
+          <div class="section-card__body">
+
+            <!-- Estado: sem PDF -->
+            <div id="pdf-empty-state" class="pdf-empty-state">
+              <div class="pdf-empty-state__icon">📂</div>
+              <div class="pdf-empty-state__title">Nenhum cardápio digital enviado</div>
+              <div class="pdf-empty-state__sub">Faça o upload abaixo para ativar o cardápio interativo no site.</div>
+            </div>
+
+            <!-- Estado: PDF ativo -->
+            <div id="pdf-active-state" class="pdf-active-state hidden">
+              <div class="pdf-info-grid">
+                <div class="pdf-info-item">
+                  <span class="pdf-info-label">📄 Arquivo</span>
+                  <span class="pdf-info-value" id="pdf-current-name">—</span>
+                </div>
+                <div class="pdf-info-item">
+                  <span class="pdf-info-label">🕐 Última atualização</span>
+                  <span class="pdf-info-value" id="pdf-current-date">—</span>
+                </div>
+                <div class="pdf-info-item">
+                  <span class="pdf-info-label">🔗 Link público</span>
+                  <a class="pdf-info-link" id="pdf-current-link" href="#" target="_blank" rel="noopener">Abrir PDF ↗</a>
+                </div>
+              </div>
+              <div class="pdf-active-actions">
+                <button class="btn btn--ghost" id="btn-replace-pdf">🔄 Substituir PDF</button>
+                <button class="btn btn--danger" id="btn-remove-pdf">🗑️ Remover PDF</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- UPLOAD DE NOVO PDF -->
+        <div class="section-card adm-s-028">
+          <div class="section-card__header">
+            <span class="section-card__title">📤 Enviar Novo PDF</span>
+          </div>
+          <div class="section-card__body">
+
+            <!-- Upload zone -->
+            <div class="pdf-upload-zone" id="pdf-upload-zone" tabindex="0" role="button"
+                 aria-label="Clique ou arraste um PDF aqui">
+              <div class="pdf-upload-zone__idle">
+                <div class="pdf-upload-zone__icon">📄</div>
+                <div class="pdf-upload-zone__title">Arraste o PDF aqui ou clique para selecionar</div>
+                <div class="pdf-upload-zone__sub">Somente .PDF · Máximo 20 MB</div>
+              </div>
+              <div class="pdf-upload-zone__has-file">
+                <div class="pdf-upload-zone__icon">✅</div>
+                <div class="pdf-upload-zone__title" id="pdf-selected-name">Nenhum arquivo selecionado</div>
+                <div class="pdf-upload-zone__sub" id="pdf-selected-size"></div>
+              </div>
+              <input type="file" id="pdf-file-input" accept="application/pdf,.pdf"
+                     class="hidden" aria-hidden="true" />
+            </div>
+
+            <!-- Barra de progresso -->
+            <div class="adm-s-039" id="pdf-progress-wrap" style="display:none;">
+              <div class="pdf-progress-bar-track">
+                <div class="pdf-progress-bar adm-s-120" id="pdf-progress-bar"></div>
+              </div>
+              <div class="pdf-progress-text" id="pdf-progress-text">Enviando…</div>
+            </div>
+
+            <!-- Ações -->
+            <div class="form-actions adm-s-059">
+              <button class="btn btn--primary" id="btn-upload-pdf" disabled>
+                📤 Enviar PDF
+              </button>
+              <button class="btn btn--ghost" id="btn-cancel-pdf">
+                Cancelar
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Alerta informativo -->
+        <div class="alert alert--info adm-s-028">
+          <div class="alert__icon">💡</div>
+          <div class="alert__content">
+            O PDF enviado será exibido na página do cardápio como um <strong>livro interativo</strong> com efeito de virada de página, usando <strong>PDF.js</strong> e <strong>StPageFlip</strong>. Qualquer visitante poderá ver e baixar o PDF diretamente no site.
+            <br><br>
+            <strong>Pré-requisito:</strong> o bucket <code>menu-pdf</code> deve estar criado no Supabase Storage com <strong>leitura pública</strong>.
+          </div>
+        </div>
+
+      </section>

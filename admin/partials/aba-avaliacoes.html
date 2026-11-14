@@ -1,0 +1,128 @@
+      <!-- ── AVALIAÇÕES DE CLIENTES (CAF-000042) ────────────────────── -->
+      <section class="page" id="page-avaliacoes">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Avaliações dos Clientes</div>
+            <div class="page-header__sub">Notas de produtos, atendimento, ranking por item e comentários</div>
+          </div>
+          <div class="adm-s-111">
+            <select class="filter-select" id="aval-filtro-periodo">
+              <option value="7">Últimos 7 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="todos">Todo o período</option>
+            </select>
+            <select class="filter-select" id="aval-filtro-origem">
+              <option value="todas">Todas as origens</option>
+              <option value="cupom">Cupom Impresso</option>
+              <option value="qr_mesa">QR na Mesa</option>
+              <option value="online">Pedido Online</option>
+              <option value="totem">Totem</option>
+            </select>
+            <button type="button" class="btn btn--ghost" id="btn-atualizar-avaliacoes">🔄 Atualizar</button>
+          </div>
+        </div>
+
+        <!-- Alerta de Avaliações Baixas Hoje -->
+        <div class="adm-s-250" id="aval-alerta-hoje" style="display:none;">
+          <div class="adm-s-002">
+            <span class="adm-s-003">🚨</span>
+            <span id="aval-alerta-hoje-texto">Alerta de hoje: avaliações ≤ 2 estrelas recebidas.</span>
+          </div>
+          <button type="button" class="btn btn--danger btn-sm adm-s-004" id="btn-filtrar-baixas-hoje">Filtrar ≤ 2★</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="stats-grid adm-s-251">
+          <div class="stat-card">
+            <div class="stat-card__icon">🍽️</div>
+            <div class="stat-card__value" id="aval-kpi-produto">—</div>
+            <div class="stat-card__label">Média de Produtos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🤝</div>
+            <div class="stat-card__value" id="aval-kpi-atendimento">—</div>
+            <div class="stat-card__label">Média de Atendimento</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">⭐</div>
+            <div class="stat-card__value" id="aval-kpi-total">0</div>
+            <div class="stat-card__label">Total de Avaliações</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">💚</div>
+            <div class="stat-card__value" id="aval-kpi-satisfacao">0%</div>
+            <div class="stat-card__label">Clientes Satisfeitos (≥ 4★)</div>
+          </div>
+        </div>
+
+        <!-- Distribuição de Notas & Ranking de Produtos -->
+        <div class="adm-s-252">
+          <!-- Distribuição -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">📊 Distribuição das Notas</span>
+            </div>
+            <div class="adm-s-253" id="aval-distribuicao-bars">
+              <!-- Gerado via JS -->
+            </div>
+          </div>
+
+          <!-- Ranking de Produtos -->
+          <div class="section-card">
+            <div class="section-card__header">
+              <span class="section-card__title">🏆 Ranking de Produtos Avaliados</span>
+            </div>
+            <div class="table-scroll adm-s-254">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Avaliações</th>
+                    <th>Nota Média</th>
+                  </tr>
+                </thead>
+                <tbody id="aval-ranking-produtos-tbody">
+                  <tr><td class="adm-s-255" colspan="3">Nenhuma avaliação por item no período.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Comentários e Avaliações -->
+        <div class="section-card">
+          <div class="section-card__header adm-s-256">
+            <span class="section-card__title">💬 Avaliações e Comentários</span>
+            <div class="adm-s-111">
+              <select class="filter-select" id="aval-filtro-nota">
+                <option value="todas">Todas as notas</option>
+                <option value="baixas">Críticas (≤ 2 estrelas)</option>
+                <option value="neutras">Neutras (3 estrelas)</option>
+                <option value="altas">Elogios (≥ 4 estrelas)</option>
+              </select>
+              <select class="filter-select" id="aval-ordem">
+                <option value="baixas_primeiro">Priorizar ≤ 2★ primeiro</option>
+                <option value="recentes">Mais recentes primeiro</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-scroll adm-s-006">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Pedido</th>
+                  <th>Origem</th>
+                  <th>Nota Produto</th>
+                  <th>Nota Atend.</th>
+                  <th>Comentário & Contato</th>
+                </tr>
+              </thead>
+              <tbody id="aval-lista-tbody">
+                <tr><td class="adm-s-257" colspan="6">Carregando avaliações...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

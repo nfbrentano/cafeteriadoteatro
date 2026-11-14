@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000018 — Tolerância a queda de internet (Idempotência e Fila Local)
  */
 describe('CAF-000018 — Tolerância a queda de internet', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01: gera client_id único (UUID) para idempotência de pedidos enviados', () => {
     expect(pedidosJs).toMatch(/client_id|crypto\.randomUUID|uuid/i);

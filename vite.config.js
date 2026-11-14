@@ -2,6 +2,19 @@ import { resolve, basename } from 'path';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { generatePrecache } from './scripts/sw-precache-generator.js';
+import { expandHtmlPartials } from './scripts/html-partials.mjs';
+
+function htmlPartialsPlugin() {
+  return {
+    name: 'html-partials-plugin',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        return expandHtmlPartials(html, import.meta.dirname);
+      }
+    }
+  };
+}
 
 function swPrecachePlugin() {
   return {
@@ -41,6 +54,27 @@ function inlineCssPlugin() {
           }
         }
       }
+
+      // Reposiciona bundles <script type="module" ... src="/assets/..."> que o Vite
+      // move para o <head>, colocando-os no final do <body> apos scripts defer clasicos
+      // (supabase-client.js, db.js, pix-brcode.js) e antes do sw-register.js.
+      const moduleBundleTags = [];
+      const moduleScriptRegex = /[ \t]*<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/?assets\/[^"']+["'])[^>]*><\/script>\r?\n?/gi;
+      resultHtml = resultHtml.replace(moduleScriptRegex, (tag) => {
+        moduleBundleTags.push(tag.trim());
+        return '';
+      });
+
+      if (moduleBundleTags.length > 0) {
+        const block = moduleBundleTags.join('\n') + '\n';
+        const swRegisterRegex = /([ \t]*<script\b[^>]*\bsrc=["']js\/sw-register\.js["'][^>]*><\/script>)/i;
+        if (swRegisterRegex.test(resultHtml)) {
+          resultHtml = resultHtml.replace(swRegisterRegex, `${block}$1`);
+        } else {
+          resultHtml = resultHtml.replace(/<\/body>/i, `${block}</body>`);
+        }
+      }
+
       return resultHtml;
     }
   };
@@ -64,6 +98,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    htmlPartialsPlugin(),
     inlineCssPlugin(),
     viteStaticCopy({
       targets: [
@@ -72,7 +107,7 @@ export default defineConfig({
         { src: 'manifest.json', dest: '' },
         { src: 'robots.txt', dest: '' },
         { src: 'sitemap.xml', dest: '' },
-        { src: 'assets', dest: '' },
+        { src: ['assets/audio', 'assets/icons', 'assets/images'], dest: '' },
         { src: 'css', dest: '' },
         { src: 'js', dest: '' }
       ]

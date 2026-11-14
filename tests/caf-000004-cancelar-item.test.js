@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000004 — Cancelar item individual
  */
 describe('CAF-000004 — Cancelar item individual', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
   const cozinhaJs = fs.readFileSync('js/cozinha.js', 'utf8');
 
   it('CA01: invoca RPC cancelar_item com p_item_id e p_motivo', () => {

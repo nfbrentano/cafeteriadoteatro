@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { createPageHarness } from './helpers/page-harness.js';
+import { createPageHarness, listarArquivosFontePDV } from './helpers/page-harness.js';
 import { createSupabaseMock } from './helpers/supabase-mock.js';
 import { setupPedidosPage } from './helpers/pedidos-page.js';
 
@@ -19,7 +19,7 @@ describe('CAF-000103: Layout e Hierarquia de Botões Mobile-First', () => {
       'pedidos.html',
       'cozinha.html',
       'totem.html',
-      'js/pedidos.js',
+      ...listarArquivosFontePDV(),
       'js/cozinha.js',
       'js/totem.js'
     ];

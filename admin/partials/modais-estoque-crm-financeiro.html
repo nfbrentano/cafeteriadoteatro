@@ -1,0 +1,1082 @@
+<!-- ═══════════════════════════════════════════════════════════
+     MODAIS DE ESTOQUE (CAF-000031)
+════════════════════════════════════════════════════════════ -->
+
+<!-- MODAL ITEM DE ESTOQUE -->
+<div class="modal-overlay" id="modal-estoque-item-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-estoque-item-title">
+  <div class="modal" id="modal-estoque-item">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-estoque-item-title">Novo Item de Estoque</h3>
+      <button class="modal__close" id="modal-estoque-item-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-estoque-item" class="form-grid">
+        <input type="hidden" id="estoque-item-id" />
+        
+        <div class="field adm-s-291">
+          <label class="field__label" for="estoque-item-nome">Nome do Item / Insumo *</label>
+          <input class="field__input" type="text" id="estoque-item-nome" placeholder="Ex: Água Mineral com Gás 500ml" required />
+        </div>
+
+        <div class="field adm-s-292">
+          <label class="field__label" for="estoque-item-unidade">Unidade de Medida *</label>
+          <select class="field__select" id="estoque-item-unidade" required>
+            <option value="un">Unidade (un)</option>
+            <option value="g">Gramas (g)</option>
+            <option value="kg">Quilos (kg)</option>
+            <option value="ml">Mililitros (ml)</option>
+            <option value="l">Litros (l)</option>
+          </select>
+        </div>
+
+        <div class="field adm-s-292">
+          <label class="field__label" for="estoque-item-minimo">Estoque Mínimo de Alerta *</label>
+          <input class="field__input" type="number" id="estoque-item-minimo" step="0.001" min="0" placeholder="Ex: 10" required />
+        </div>
+
+        <div class="field adm-s-291">
+          <label class="field__label" for="estoque-item-fornecedor">Fornecedor Padrão (Reposição)</label>
+          <select class="field__select" id="estoque-item-fornecedor">
+            <option value="">Nenhum fornecedor vinculado</option>
+          </select>
+          <small class="field__hint">Utilizado para agrupar na Lista de Compras automática e envio de pedidos.</small>
+        </div>
+
+        <div class="field adm-s-291">
+          <label class="field__label" for="estoque-item-codigo-barras">Código de Barras (EAN / UPC)</label>
+          <div class="adm-s-342">
+            <input class="field__input adm-s-330" type="text" id="estoque-item-codigo-barras" placeholder="Ex: 7891234567890" />
+            <button type="button" class="btn btn--secondary" id="btn-scan-item-barcode" title="Ler com a câmera">📷 Escanear</button>
+          </div>
+        </div>
+
+        <div class="field adm-s-292">
+          <div class="toggle-wrap adm-s-288">
+            <label class="toggle" for="estoque-item-validade">
+              <input type="checkbox" id="estoque-item-validade" />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Controla Data de Validade</span>
+          </div>
+        </div>
+
+        <div class="field adm-s-292">
+          <div class="toggle-wrap adm-s-288">
+            <label class="toggle" for="estoque-item-ativo">
+              <input type="checkbox" id="estoque-item-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Ativo</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-estoque-item-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-estoque-item">Salvar Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOVIMENTAÇÃO DE ESTOQUE -->
+<div class="modal-overlay" id="modal-estoque-movimento-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-estoque-movimento-title">
+  <div class="modal" id="modal-estoque-movimento">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-estoque-movimento-title">Registrar Movimentação</h3>
+      <button class="modal__close" id="modal-estoque-movimento-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-estoque-movimento" class="form-grid">
+        <div class="field adm-s-291">
+          <label class="field__label" for="mov-estoque-item-id">Item de Estoque *</label>
+          <select class="field__select" id="mov-estoque-item-id" required>
+            <option value="">Selecione um item...</option>
+          </select>
+        </div>
+
+        <div class="field adm-s-292">
+          <label class="field__label" for="mov-estoque-tipo">Tipo de Movimentação *</label>
+          <select class="field__select" id="mov-estoque-tipo" required>
+            <option value="entrada">📥 Entrada (Compra / Reposição)</option>
+            <option value="ajuste">⚖️ Ajuste de Inventário (Balanço Físico)</option>
+            <option value="perda">🗑️ Registrar Perda (Avaria / Vencido)</option>
+          </select>
+        </div>
+
+        <div class="field adm-s-292">
+          <label class="field__label" for="mov-estoque-quantidade" id="lbl-mov-quantidade">Quantidade *</label>
+          <input class="field__input" type="number" id="mov-estoque-quantidade" step="0.001" placeholder="Ex: 12" required />
+          <small class="field__hint" id="hint-mov-quantidade">Informe a quantidade a ser movimentada.</small>
+        </div>
+
+        <!-- Campos específicos para ENTRADA -->
+        <div class="adm-s-343" id="box-mov-entrada">
+          <div class="field">
+            <label class="field__label" for="mov-estoque-custo-total">Custo Total da Compra (R$)</label>
+            <input class="field__input" type="number" id="mov-estoque-custo-total" step="0.01" min="0" placeholder="Ex: 650.00" />
+            <small class="field__hint">Calcula o custo unitário automaticamente.</small>
+          </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-custo">Custo Unitário (R$)</label>
+            <input class="field__input" type="number" id="mov-estoque-custo" step="0.0001" min="0" placeholder="Ex: 65.00" />
+            <small class="field__hint">Atualiza o custo médio do insumo.</small>
+          </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-fornecedor">Fornecedor da Compra</label>
+            <select class="field__select" id="mov-estoque-fornecedor">
+              <option value="">Selecione um fornecedor...</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-validade">Data de Validade do Lote</label>
+            <input class="field__input" type="date" id="mov-estoque-validade" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="mov-estoque-lote-codigo">Código / Identificador do Lote (opcional)</label>
+            <input class="field__input" type="text" id="mov-estoque-lote-codigo" placeholder="Ex: L-2026-A" />
+          </div>
+
+          <!-- Integração com Contas a Pagar (CAF-000068) -->
+          <div class="field adm-s-344">
+            <label class="adm-s-345">
+              <input class="adm-s-100" type="checkbox" id="mov-estoque-gerar-financeiro" />
+              <span>💳 Lançar despesa automaticamente em Contas a Pagar</span>
+            </label>
+            <div class="adm-s-346" id="box-mov-financeiro-detalhes" style="display:none;">
+              <div class="field adm-s-098">
+                <label class="field__label" for="mov-estoque-vencimento">Data de Vencimento *</label>
+                <input class="field__input" type="date" id="mov-estoque-vencimento" />
+              </div>
+              <div class="field adm-s-347">
+                <label class="adm-s-348">
+                  <input class="adm-s-349" type="checkbox" id="mov-estoque-pago-hoje" />
+                  <span>Já Pago Hoje (Liquidar despesa)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos específicos para AJUSTE -->
+        <div class="adm-s-291" id="box-mov-ajuste" style="display:none;">
+          <div class="adm-s-350">
+            ℹ️ O saldo atual é <strong id="lbl-saldo-atual-ajuste">0 un</strong>. Digite o novo saldo real apurado na contagem física, e o sistema registrará a diferença automaticamente.
+          </div>
+        </div>
+
+        <!-- Campos específicos para PERDA / MOTIVO -->
+        <div class="adm-s-291" id="box-mov-perda" style="display:none;">
+          <div class="field adm-s-351">
+            <label class="field__label" for="mov-estoque-motivo-rapido">Motivo da Perda *</label>
+            <select class="field__select" id="mov-estoque-motivo-rapido">
+              <option value="Produto Vencido">Produto Vencido / Fora da Validade</option>
+              <option value="Quebra / Avaria">Quebra / Garrafa Quebrada / Avaria</option>
+              <option value="Divergência de Contagem">Divergência de Inventário</option>
+              <option value="Consumo Interno / Teste">Consumo Interno / Treinamento / Teste</option>
+              <option value="Outro">Outro (especificar abaixo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field adm-s-291">
+          <label class="field__label" for="mov-estoque-observacao">Observações / Detalhes</label>
+          <input class="field__input" type="text" id="mov-estoque-observacao" placeholder="Ex: Nota Fiscal 1234 / Lote 08" />
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-estoque-movimento-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-estoque-movimento">Confirmar Movimentação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE COMPRAS POR FORNECEDOR (CAF-000068 / CAF-000111) -->
+<div class="modal-overlay" id="modal-lista-compras-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-lista-compras-title">
+  <div class="modal modal--lg adm-s-352" id="modal-lista-compras">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="modal-lista-compras-title">📋 Lista de Compras & Sugestão Inteligente</h3>
+        <p class="modal__subtitle adm-s-353">
+          Sugestão baseada no consumo real dos últimos 30 dias (CMD), autonomia em dias e cobertura desejada.
+        </p>
+      </div>
+      <button class="modal__close" id="modal-lista-compras-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="adm-s-354">
+      <div class="adm-s-002">
+        <label class="adm-s-355" for="compras-dias-cobertura">Cobertura Desejada:</label>
+        <select id="compras-dias-cobertura" class="field__select adm-s-356">
+          <option value="7">7 dias (1 semana)</option>
+          <option value="14" selected>14 dias (2 semanas)</option>
+          <option value="30">30 dias (1 mês)</option>
+        </select>
+      </div>
+      <label class="adm-s-357">
+        <input class="adm-s-358" type="checkbox" id="compras-modo-espetaculo" />
+        <span>🎭 Semana com Espetáculo (+30% demanda)</span>
+      </label>
+    </div>
+    <div class="modal__body adm-s-359" id="modal-lista-compras-body">
+      <!-- Preenchido via JavaScript -->
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-lista-compras-fechar">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EXTRATO / HISTÓRICO DE ESTOQUE -->
+<div class="modal-overlay" id="modal-estoque-extrato-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-estoque-extrato-title">
+  <div class="modal modal--lg adm-s-352" id="modal-estoque-extrato">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="modal-estoque-extrato-title">Histórico de Movimentações</h3>
+        <span class="modal__subtitle adm-s-360" id="modal-estoque-extrato-sub">Extrato de estoque</span>
+      </div>
+      <button class="modal__close" id="modal-estoque-extrato-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="table-toolbar adm-s-057">
+        <div class="table-filters">
+          <select class="filter-select" id="filter-extrato-tipo">
+            <option value="">Todos os tipos</option>
+            <option value="entrada">📥 Entrada</option>
+            <option value="saida_venda">🛒 Venda (Saída)</option>
+            <option value="estorno">↩️ Estorno</option>
+            <option value="ajuste">⚖️ Ajuste</option>
+            <option value="perda">🗑️ Perda</option>
+          </select>
+          <select class="filter-select" id="filter-extrato-periodo">
+            <option value="7">Últimos 7 dias</option>
+            <option value="30" selected>Últimos 30 dias</option>
+            <option value="90">Últimos 90 dias</option>
+            <option value="todos">Todo o histórico</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap adm-s-361">
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Tipo</th>
+              <th>Quantidade</th>
+              <th>Custo Unit.</th>
+              <th>Validade</th>
+              <th>Motivo / Origem</th>
+            </tr>
+          </thead>
+          <tbody id="estoque-extrato-table-body">
+            <tr><td class="adm-s-050" colspan="6">Carregando histórico...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--primary" id="btn-fechar-extrato">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SCANNER DE CÓDIGO DE BARRAS PELA CÂMERA -->
+<div class="modal-overlay" id="modal-barcode-scanner-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-scanner-title">
+  <div class="modal adm-s-362" id="modal-barcode-scanner">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-scanner-title">📷 Leitor de Código de Barras</h3>
+      <button class="modal__close" id="modal-scanner-close" aria-label="Fechar scanner">✕</button>
+    </div>
+    <div class="modal__body adm-s-363">
+      <p class="adm-s-364">
+        Aponte a câmera para o código de barras (EAN-13, CODE-128) do produto.
+      </p>
+      <div class="barcode-camera-container adm-s-365">
+        <video class="adm-s-366" id="barcode-scanner-video" playsinline></video>
+        <div class="barcode-aim-box adm-s-367"></div>
+      </div>
+      <div class="adm-s-368" id="barcode-scanner-status">Inicializando câmera...</div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-scanner-cancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
+  <div class="confirm-box">
+    <span class="confirm-box__icon" id="confirm-icon">⚠️</span>
+    <div class="confirm-box__title" id="confirm-title">Confirmar ação</div>
+    <div class="confirm-box__msg" id="confirm-msg">Tem certeza que deseja continuar?</div>
+    <div class="confirm-box__actions">
+      <button class="btn btn--ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn--danger" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: NOVO / EDITAR CLIENTE (CAF-000033)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-cliente-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-cliente-title">
+  <div class="modal adm-s-369" id="modal-cliente">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-cliente-title">Novo Cliente</span>
+      <button class="modal__close" id="modal-cliente-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-cliente" novalidate>
+        <input type="hidden" id="form-cliente-id" />
+
+        <div class="field">
+          <label class="field__label" for="form-cliente-nome">Nome completo *</label>
+          <input class="field__input" type="text" id="form-cliente-nome" placeholder="Ex: Ana Souza" required maxlength="80" />
+        </div>
+
+        <div class="field-row adm-s-047">
+          <div class="field adm-s-330">
+            <label class="field__label" for="form-cliente-telefone">Telefone / WhatsApp *</label>
+            <input class="field__input" type="tel" id="form-cliente-telefone" placeholder="(51) 99999-9999" required maxlength="16" />
+          </div>
+          <div class="field adm-s-330">
+            <label class="field__label" for="form-cliente-nascimento">Data de Nascimento</label>
+            <input class="field__input" type="date" id="form-cliente-nascimento" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-cliente-email">E-mail (opcional)</label>
+          <input class="field__input" type="email" id="form-cliente-email" placeholder="cliente@exemplo.com" maxlength="100" />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-cliente-obs">Observações / Preferências</label>
+          <textarea class="field__textarea" id="form-cliente-obs" rows="2" placeholder="Ex: Professor da Univates, prefere café sem açúcar..."></textarea>
+        </div>
+
+        <div class="field adm-s-370">
+          <label class="adm-s-371">
+            <input type="checkbox" id="form-cliente-conta-habilitada" />
+            <span>💳 Habilitar Conta Corrente (Fiado / Créditos Pré-pagos)</span>
+          </label>
+          <div class="adm-s-372" id="box-conta-config" style="display:none;">
+            <div class="field-row adm-s-047">
+              <div class="field adm-s-330">
+                <label class="field__label" for="form-cliente-limite-credito">Limite Pós-pago / Fiado (R$)</label>
+                <input class="field__input" type="number" step="0.01" min="0" id="form-cliente-limite-credito" placeholder="0,00" value="0.00" />
+                <span class="adm-s-373">0,00 = apenas créditos pré-pagos</span>
+              </div>
+              <div class="field adm-s-330">
+                <label class="field__label" for="form-cliente-dia-vencimento">Dia Vencimento (1 a 31)</label>
+                <input class="field__input" type="number" min="1" max="31" id="form-cliente-dia-vencimento" placeholder="Ex: 10" />
+                <span class="adm-s-373">Dia do mês para acerto</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field adm-s-374">
+          <label class="adm-s-375">
+            <input class="adm-s-376" type="checkbox" id="form-cliente-aceita-contato" />
+            <span><strong>Consentimento LGPD:</strong> O cliente autoriza o envio de mensagens e comunicados via WhatsApp sobre pedidos, novidades e eventos.</span>
+          </label>
+        </div>
+
+        <div class="field adm-s-002">
+          <input type="checkbox" id="form-cliente-ativo" checked />
+          <label class="field__label adm-s-286" for="form-cliente-ativo">Cadastro Ativo</label>
+        </div>
+
+        <div class="modal__footer adm-s-377">
+          <button type="button" class="btn btn--ghost" id="btn-cancelar-cliente">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="btn-salvar-cliente">Salvar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: FICHA 360 DO CLIENTE (CAF-000033)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-ficha-cliente-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-ficha-cliente-nome">
+  <div class="modal adm-s-378" id="modal-ficha-cliente">
+    <div class="modal__header adm-s-379">
+      <div>
+        <div class="adm-s-002">
+          <span class="modal__title" id="modal-ficha-cliente-nome">Ficha do Cliente</span>
+          <span id="modal-ficha-badge-whatsapp"></span>
+        </div>
+        <div class="adm-s-380" id="modal-ficha-cliente-contato">Telefone: -- | Email: --</div>
+      </div>
+      <div class="adm-s-142">
+        <a id="modal-ficha-btn-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="btn btn--secondary adm-s-381" style="display:none;">
+          💬 WhatsApp
+        </a>
+        <button class="modal__close" id="modal-ficha-cliente-close" aria-label="Fechar ficha">✕</button>
+      </div>
+    </div>
+    <div class="modal__body adm-s-310">
+      <!-- Indicadores de Consumo -->
+      <div class="adm-s-382">
+        <div class="adm-s-383">
+          <div class="adm-s-384">Total Gasto</div>
+          <div class="adm-s-385" id="ficha-total-gasto">R$ 0,00</div>
+        </div>
+        <div class="adm-s-383">
+          <div class="adm-s-384">Pedidos / Visitas</div>
+          <div class="adm-s-386" id="ficha-total-visitas">0</div>
+        </div>
+        <div class="adm-s-383">
+          <div class="adm-s-384">Ticket Médio</div>
+          <div class="adm-s-387" id="ficha-ticket-medio">R$ 0,00</div>
+        </div>
+        <div class="adm-s-383">
+          <div class="adm-s-384">Última Visita</div>
+          <div class="adm-s-388" id="ficha-ultima-visita">--</div>
+        </div>
+      </div>
+
+      <!-- Observações -->
+      <div class="adm-s-389" id="ficha-box-obs" style="display:none;">
+        <strong>Observações / Preferências:</strong> <span id="ficha-texto-obs"></span>
+      </div>
+
+      <!-- Segmento RFV, Tags do Cliente e Opt-Out LGPD (CAF-000041) -->
+      <div class="adm-s-390">
+        <div class="adm-s-391">
+          <div class="adm-s-002">
+            <strong class="adm-s-392">🏷️ Segmento & Tags:</strong>
+            <span id="ficha-segmento-badge"></span>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm adm-s-393" id="btn-ficha-optout-lgpd">
+            🚫 Registrar "Não quero mais receber" (LGPD)
+          </button>
+        </div>
+        <div class="adm-s-394" id="ficha-tags-container"></div>
+        <div class="adm-s-036">
+          <select class="filter-select adm-s-139" id="ficha-select-nova-tag">
+            <option value="">+ Adicionar tag ao cliente...</option>
+          </select>
+          <button type="button" class="btn btn--secondary btn--sm adm-s-004" id="btn-ficha-add-tag">Vincular Tag</button>
+        </div>
+      </div>
+
+      <!-- Top 5 Produtos -->
+      <div class="adm-s-251">
+        <h4 class="adm-s-395">
+          ⭐ Top 5 Produtos Preferidos
+        </h4>
+        <div class="table-wrap adm-s-396">
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th class="adm-s-025">Qtd. Total</th>
+                <th class="adm-s-021">Valor Consumido</th>
+              </tr>
+            </thead>
+            <tbody id="ficha-tbody-top-produtos">
+              <tr><td class="adm-s-397" colspan="3">Nenhum produto consumido</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Histórico Recente de Pedidos -->
+      <div>
+        <h4 class="adm-s-395">
+          📜 Histórico Recente de Pedidos
+        </h4>
+        <div class="table-wrap adm-s-396">
+          <table>
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Data / Hora</th>
+                <th>Mesa / Local</th>
+                <th>Itens Consumidos</th>
+                <th class="adm-s-021">Total</th>
+                <th class="adm-s-025">Status</th>
+              </tr>
+            </thead>
+            <tbody id="ficha-tbody-pedidos">
+              <tr><td class="adm-s-397" colspan="6">Nenhum pedido encontrado</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal__footer adm-s-398">
+        <button type="button" class="btn btn--primary" id="btn-fechar-ficha-cliente">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: TAGS & LIMITES DE SEGMENTAÇÃO RFV (CAF-000041)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-crm-tags-overlay" role="dialog" aria-modal="true">
+  <div class="modal adm-s-399">
+    <div class="modal__header">
+      <span class="modal__title">🏷️ Tags de Clientes & Regras RFV</span>
+      <button class="modal__close" id="modal-crm-tags-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body adm-s-310">
+      <!-- Criar Nova Tag -->
+      <div class="adm-s-400">
+        <div class="adm-s-401">Criar Nova Tag Livre</div>
+        <form class="adm-s-402" id="form-criar-tag-crm">
+          <input type="text" class="field__input adm-s-308" id="crm-nova-tag-nome" placeholder="Ex: VIP, Funcionário Univates, Vegano..." required />
+          <input class="adm-s-403" type="color" id="crm-nova-tag-cor" value="#c9973a" title="Cor da Tag" />
+          <button type="submit" class="btn btn--primary btn--sm">+ Criar Tag</button>
+        </form>
+        <div class="adm-s-404" id="crm-lista-tags-existentes"></div>
+      </div>
+
+      <!-- Limites de Segmentação RFV -->
+      <div class="adm-s-315">
+        <div class="adm-s-405">⚙️ Limites de Classificação RFV e Anti-Spam</div>
+        <p class="adm-s-406">Ajuste os dias para reclassificar automaticamente os segmentos Novo, Ativo, Fiel, Em risco e Perdido.</p>
+        <div class="adm-s-407">
+          <div class="field">
+            <label class="field__label adm-s-272" for="cfg-crm-dias-ativo">Dias p/ Novo e Ativo (≤)</label>
+            <input type="number" class="field__input" id="cfg-crm-dias-ativo" min="1" max="365" value="30" />
+          </div>
+          <div class="field">
+            <label class="field__label adm-s-272" for="cfg-crm-dias-perdido">Dias p/ Perdido (>)</label>
+            <input type="number" class="field__input" id="cfg-crm-dias-perdido" min="15" max="730" value="90" />
+          </div>
+          <div class="field">
+            <label class="field__label adm-s-272" for="cfg-crm-pedidos-fiel">Pedidos em 90d p/ Fiel (≥)</label>
+            <input type="number" class="field__input" id="cfg-crm-pedidos-fiel" min="2" max="50" value="4" />
+          </div>
+          <div class="field">
+            <label class="field__label adm-s-272" for="cfg-crm-antispam">Anti-spam Campanhas (dias)</label>
+            <input type="number" class="field__input" id="cfg-crm-antispam" min="1" max="60" value="7" />
+          </div>
+        </div>
+        <div class="adm-s-408">
+          <button type="button" class="btn btn--primary btn--sm" id="btn-salvar-regras-rfv">💾 Salvar Limites RFV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CAMPANHAS WHATSAPP & CONVERSÃO (CAF-000041)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-crm-campanhas-overlay" role="dialog" aria-modal="true">
+  <div class="modal adm-s-409">
+    <div class="modal__header">
+      <span class="modal__title">📣 Campanhas Assistidas via WhatsApp & Relatório de Conversão</span>
+      <button class="modal__close" id="modal-crm-campanhas-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body adm-s-410">
+      <!-- Nova Campanha & Disparo -->
+      <div class="adm-s-411">
+        <div class="adm-s-412">1. Configurar Campanha e Filtrar Destinatários (Apenas com Consentimento LGPD)</div>
+        <div class="adm-s-413">
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Nome da Campanha *</label>
+            <input type="text" class="field__input" id="camp-nome" placeholder="Ex: Sentimos sua falta" />
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Segmento Alvo</label>
+            <select class="field__input" id="camp-segmento">
+              <option value="">Todos os segmentos</option>
+              <option value="Novo">🌱 Novo</option>
+              <option value="Fiel">👑 Fiel</option>
+              <option value="Ativo">✅ Ativo</option>
+              <option value="Em risco" selected>⚠️ Em risco</option>
+              <option value="Perdido">💤 Perdido</option>
+            </select>
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Tag (Opcional)</label>
+            <select class="field__input" id="camp-tag">
+              <option value="">Qualquer tag</option>
+            </select>
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Produto Já Comprado (Opcional)</label>
+            <select class="field__input" id="camp-produto">
+              <option value="">Qualquer produto</option>
+            </select>
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Cupom / Promoção (Opcional)</label>
+            <input type="text" class="field__input" id="camp-cupom" placeholder="Ex: VOLTEI10" />
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Tipo de Desconto</label>
+            <select class="field__input" id="camp-tipo-desconto">
+              <option value="percentual">Percentual (%)</option>
+              <option value="valor_fixo">Valor Fixo (R$)</option>
+            </select>
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Valor do Desconto</label>
+            <input type="number" class="field__input" id="camp-valor-desconto" placeholder="Ex: 10" min="0" step="0.01" />
+          </div>
+          <div class="field adm-s-098">
+            <label class="field__label adm-s-272">Pedido Mínimo (R$)</label>
+            <input type="number" class="field__input" id="camp-minimo-desconto" placeholder="Ex: 20" min="0" step="0.01" />
+          </div>
+        </div>
+
+        <div class="field adm-s-109">
+          <label class="field__label adm-s-414">
+            <span>Mensagem do WhatsApp *</span>
+            <span class="adm-s-415">Variáveis: <code>{primeiro_nome}</code>, <code>{produto_favorito}</code>, <code>{cupom}</code></span>
+          </label>
+          <textarea class="field__textarea" id="camp-mensagem" rows="3">Oi {primeiro_nome}, tudo bem? Sentimos sua falta aqui na Cafeteria do Teatro! ☕ Que tal passar hoje para saborear seu {produto_favorito}?</textarea>
+        </div>
+
+        <div class="adm-s-019">
+          <div class="adm-s-416" id="camp-resumo-elegiveis"></div>
+          <button type="button" class="btn btn--primary btn--sm" id="btn-salvar-criar-campanha">📋 Gerar Lista de Disparo desta Campanha</button>
+        </div>
+      </div>
+
+      <!-- Lista de Destinatários da Campanha Ativa -->
+      <div class="adm-s-417" id="camp-disparo-box" style="display:none;">
+        <div class="adm-s-418">
+          <strong class="adm-s-419" id="camp-disparo-titulo">Destinatários da Campanha</strong>
+          <span class="adm-s-169" id="camp-disparo-sub"></span>
+        </div>
+        <div class="table-wrap adm-s-420">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Segmento</th>
+                <th>Produto Favorito</th>
+                <th>Prévia da Mensagem</th>
+                <th class="adm-s-025">Disparo Assistido</th>
+              </tr>
+            </thead>
+            <tbody id="camp-destinatarios-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Relatório de Campanhas e Conversão em 7 dias -->
+      <div>
+        <h4 class="adm-s-421">📈 Histórico de Campanhas & Conversão (Compras em até 7 dias após envio)</h4>
+        <div class="table-wrap adm-s-422">
+          <table>
+            <thead>
+              <tr>
+                <th>Campanha</th>
+                <th>Data</th>
+                <th>Filtro</th>
+                <th class="adm-s-025">Enviados</th>
+                <th class="adm-s-025">Converteram (7d)</th>
+                <th class="adm-s-021">Faturamento Gerado (7d)</th>
+                <th class="adm-s-025">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="camp-historico-tbody">
+              <tr><td class="adm-s-423" colspan="7">Nenhuma campanha registrada ainda.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: MESCLAR CLIENTES DUPLICADOS (CAF-000033)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-mesclar-cliente-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-mesclar-cliente-title">
+  <div class="modal adm-s-424" id="modal-mesclar-cliente">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-mesclar-cliente-title">🔗 Mesclar Clientes Duplicados</span>
+      <button class="modal__close" id="modal-mesclar-cliente-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <p class="adm-s-327">
+        Todos os pedidos e consumos do <strong>cadastro de origem</strong> serão transferidos para o <strong>cadastro de destino</strong>. O cadastro de origem será inativado e arquivado.
+      </p>
+
+      <div class="field">
+        <label class="field__label">Cadastro de Origem (será inativado):</label>
+        <div class="adm-s-425" id="mesclar-origem-nome"></div>
+        <input type="hidden" id="mesclar-origem-id" />
+      </div>
+
+      <div class="field adm-s-020">
+        <label class="field__label" for="mesclar-destino-id">Selecione o Cliente Principal (que receberá o histórico):</label>
+        <select class="field__input" id="mesclar-destino-id" required>
+          <option value="">Selecione um cliente...</option>
+        </select>
+      </div>
+
+      <div class="modal__footer adm-s-377">
+        <button type="button" class="btn btn--ghost" id="btn-cancelar-mesclar">Cancelar</button>
+        <button type="button" class="btn btn--danger" id="btn-confirmar-mesclar">Confirmar Mesclagem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CONTA CORRENTE DO CLIENTE (CAF-000034)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-conta-cliente-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-conta-cliente-nome">
+  <div class="modal adm-s-426" id="modal-conta-cliente">
+    <div class="modal__header adm-s-379">
+      <div>
+        <div class="adm-s-002">
+          <span class="modal__title" id="modal-conta-cliente-nome">Conta Corrente</span>
+          <span id="modal-conta-badge-status"></span>
+        </div>
+        <div class="adm-s-380" id="modal-conta-cliente-sub">Telefone: --</div>
+      </div>
+      <button class="modal__close" id="modal-conta-cliente-close" aria-label="Fechar conta">✕</button>
+    </div>
+    <div class="modal__body adm-s-310">
+      <!-- Indicadores de Saldo e Limite -->
+      <div class="adm-s-427">
+        <div class="adm-s-428">
+          <div class="adm-s-384">Saldo Atual</div>
+          <div class="adm-s-429" id="conta-saldo-atual">R$ 0,00</div>
+          <div class="adm-s-373" id="conta-saldo-tipo">Sem débitos</div>
+        </div>
+        <div class="adm-s-428">
+          <div class="adm-s-384">Limite Fiado</div>
+          <div class="adm-s-430" id="conta-limite-total">R$ 0,00</div>
+          <div class="adm-s-373">Pós-pago autorizado</div>
+        </div>
+        <div class="adm-s-428">
+          <div class="adm-s-384">Limite Disponível</div>
+          <div class="adm-s-431" id="conta-limite-disponivel">R$ 0,00</div>
+          <div class="adm-s-373">Saldo + Limite</div>
+        </div>
+        <div class="adm-s-428">
+          <div class="adm-s-384">Vencimento</div>
+          <div class="adm-s-432" id="conta-dia-vencimento">Dia --</div>
+          <div class="adm-s-373">Dia do mês</div>
+        </div>
+      </div>
+
+      <!-- Barra de Ações Rápidas -->
+      <div class="adm-s-433">
+        <button type="button" class="btn btn--primary btn--small" id="btn-abrir-deposito">➕ Adicionar Créditos (Depósito)</button>
+        <button type="button" class="btn btn--secondary btn--small" id="btn-abrir-pagamento">💵 Receber Pagamento (Quitar Fiado)</button>
+        <button type="button" class="btn btn--ghost btn--small adm-s-173" id="btn-whatsapp-extrato">💬 Enviar Extrato WhatsApp</button>
+        <button type="button" class="btn btn--ghost btn--small" id="btn-imprimir-extrato">🖨️ Imprimir Extrato</button>
+      </div>
+
+      <!-- Painel Colapsável de Lançamento (Depósito ou Pagamento) -->
+      <div class="adm-s-434" id="box-lancamento-conta" style="display:none;">
+        <div class="adm-s-435" id="lancamento-conta-title">Lançar Operação</div>
+        <form id="form-lancamento-conta">
+          <input type="hidden" id="lancamento-tipo" value="deposito" />
+          <div class="field-row adm-s-041">
+            <div class="field adm-s-436">
+              <label class="field__label" for="lancamento-valor">Valor (R$) *</label>
+              <input class="field__input" type="number" step="0.01" min="0.01" id="lancamento-valor" placeholder="0,00" required />
+            </div>
+            <div class="field adm-s-437">
+              <label class="field__label" for="lancamento-forma">Forma de Pagamento Real *</label>
+              <select class="field__select" id="lancamento-forma" required>
+                <option value="pix">Pix</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao_debito">Cartão de Débito</option>
+                <option value="cartao_credito">Cartão de Crédito</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+            <div class="field adm-s-438">
+              <label class="field__label" for="lancamento-motivo">Motivo / Descrição</label>
+              <input class="field__input" type="text" id="lancamento-motivo" placeholder="Ex: Recarga pré-paga para cafés" maxlength="100" />
+            </div>
+          </div>
+          <div class="adm-s-439">
+            <button type="button" class="btn btn--ghost btn--small" id="btn-cancelar-lancamento">Cancelar</button>
+            <button type="submit" class="btn btn--primary btn--small" id="btn-confirmar-lancamento">Confirmar Lançamento</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabela Extrato de Movimentações -->
+      <div class="adm-s-039">
+        <h4 class="adm-s-440">
+          <span>Extrato de Movimentações</span>
+          <span class="adm-s-169" id="conta-total-movimentos">0 registros</span>
+        </h4>
+        <div class="table-wrap adm-s-441">
+          <table class="adm-s-124">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Tipo</th>
+                <th class="adm-s-021">Valor</th>
+                <th>Forma / Ref</th>
+                <th>Motivo</th>
+                <th>Operador</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-extrato-conta">
+              <tr><td class="adm-s-442" colspan="6">Nenhuma movimentação registrada.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: NOVA / EDITAR DESPESA (CAF-000035)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-despesa-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-despesa-title">
+  <div class="modal adm-s-443" id="modal-despesa">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-despesa-title">Nova Despesa / Conta a Pagar</h3>
+      <button class="modal__close" id="modal-despesa-close" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-despesa">
+        <input type="hidden" id="form-despesa-id" />
+
+        <div class="field">
+          <label class="field__label" for="form-despesa-descricao">Descrição da Despesa *</label>
+          <input class="field__input" type="text" id="form-despesa-descricao" required placeholder="Ex: Grãos de Café Especial, Aluguel do Mês, Conta de Luz..." />
+        </div>
+
+        <div class="field-row adm-s-307">
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-despesa-valor">Valor (R$) *</label>
+            <input class="field__input" type="number" step="0.01" min="0.01" id="form-despesa-valor" required placeholder="0,00" />
+          </div>
+
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-despesa-vencimento">Data de Vencimento *</label>
+            <input class="field__input" type="date" id="form-despesa-vencimento" required />
+          </div>
+        </div>
+
+        <div class="field-row adm-s-307">
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-despesa-categoria">Categoria *</label>
+            <select class="field__select" id="form-despesa-categoria" required>
+              <option value="">Selecione uma categoria...</option>
+            </select>
+          </div>
+
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-despesa-fornecedor">Fornecedor (opcional)</label>
+            <select class="field__select" id="form-despesa-fornecedor">
+              <option value="">Sem fornecedor vinculado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row adm-s-307">
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-despesa-tipo">Tipo de Custo *</label>
+            <select class="field__select" id="form-despesa-tipo" required>
+              <option value="variavel">Variável (Insumos, Embalagens, Revenda)</option>
+              <option value="fixa">Fixo (Aluguel, Luz, Água, Internet, Folha)</option>
+            </select>
+          </div>
+
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-despesa-recorrencia">Recorrência *</label>
+            <select class="field__select" id="form-despesa-recorrencia" required>
+              <option value="nenhuma">Única (Não repete)</option>
+              <option value="mensal">Mensal (Gera próximo mês na baixa)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-despesa-doc">Nº Documento / Nota Fiscal / Boleto</label>
+          <input class="field__input" type="text" id="form-despesa-doc" placeholder="Ex: NF 1452, Cód. Barras Boleto..." />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-despesa-obs">Observações</label>
+          <textarea class="field__textarea" id="form-despesa-obs" rows="2" placeholder="Detalhes, especificações ou link do boleto..."></textarea>
+        </div>
+
+        <!-- Opção de já marcar como paga no cadastro -->
+        <div class="adm-s-444" id="box-despesa-paga-criacao">
+          <label class="adm-s-445">
+            <input type="checkbox" id="form-despesa-ja-paga" />
+            <span>Já foi paga hoje? (Dar baixa imediata)</span>
+          </label>
+          <div class="adm-s-372" id="box-despesa-pagamento-detalhes" style="display:none;">
+            <div class="field-row adm-s-047">
+              <div class="field adm-s-330">
+                <label class="field__label" for="form-despesa-forma-pagamento">Forma de Pagamento</label>
+                <select class="field__select" id="form-despesa-forma-pagamento">
+                  <option value="pix">PIX</option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="debito">Cartão de Débito</option>
+                  <option value="credito">Cartão de Crédito</option>
+                  <option value="boleto">Boleto Bancário</option>
+                  <option value="transferencia">Transferência / TED</option>
+                </select>
+              </div>
+              <div class="field adm-s-330">
+                <label class="field__label" for="form-despesa-data-pagamento">Data do Pagamento</label>
+                <input class="field__input" type="date" id="form-despesa-data-pagamento" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__footer adm-s-377">
+          <button type="button" class="btn btn--ghost" id="btn-cancelar-despesa">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="btn-salvar-despesa">Salvar Despesa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: BAIXAR PAGAMENTO DE DESPESA (CAF-000035)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-baixar-despesa-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-baixar-title">
+  <div class="modal adm-s-446" id="modal-baixar-despesa">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-baixar-title">Baixar Pagamento</h3>
+      <button class="modal__close" id="modal-baixar-close" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-baixar-despesa">
+        <input type="hidden" id="form-baixar-id" />
+
+        <div class="adm-s-447">
+          <div class="adm-s-448" id="baixar-info-descricao">Conta</div>
+          <div class="adm-s-449">
+            Vencimento: <strong id="baixar-info-vencimento">--/--/----</strong> | 
+            Valor Original: <strong id="baixar-info-valor-original">R$ 0,00</strong>
+          </div>
+        </div>
+
+        <div class="field-row adm-s-307">
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-baixar-valor">Valor Efetivamente Pago (R$) *</label>
+            <input class="field__input" type="number" step="0.01" min="0.01" id="form-baixar-valor" required />
+          </div>
+
+          <div class="field adm-s-308">
+            <label class="field__label" for="form-baixar-data">Data do Pagamento *</label>
+            <input class="field__input" type="date" id="form-baixar-data" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-baixar-forma">Forma de Pagamento *</label>
+          <select class="field__select" id="form-baixar-forma" required>
+            <option value="pix">PIX</option>
+            <option value="dinheiro">Dinheiro (Caixa)</option>
+            <option value="debito">Cartão de Débito</option>
+            <option value="credito">Cartão de Crédito</option>
+            <option value="boleto">Boleto Bancário</option>
+            <option value="transferencia">Transferência / TED</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-baixar-comprovante">Nº Comprovante / Autenticação (opcional)</label>
+          <input class="field__input" type="text" id="form-baixar-comprovante" placeholder="Ex: Autenticação bancária 98471298..." />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="form-baixar-obs">Observação da Baixa (opcional)</label>
+          <textarea class="field__textarea" id="form-baixar-obs" rows="2" placeholder="Ex: Pago com desconto pontualidade de R$ 5,00..."></textarea>
+        </div>
+
+        <div class="adm-s-450" id="baixar-box-recorrencia" style="display:none;">
+          🔁 <strong>Conta Recorrente Mensal:</strong> Ao confirmar o pagamento, o sistema gerará automaticamente a despesa do próximo mês com base na data de vencimento!
+        </div>
+
+        <div class="modal__footer adm-s-377">
+          <button type="button" class="btn btn--ghost" id="btn-cancelar-baixar">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="btn-confirmar-baixar">Confirmar Pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: GESTÃO DE FORNECEDORES (CAF-000035)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-fornecedores-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-fornecedores-title">
+  <div class="modal adm-s-451" id="modal-fornecedores">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-fornecedores-title">🏢 Fornecedores Cadastrados</h3>
+      <button class="modal__close" id="modal-fornecedores-close" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__body">
+      <!-- Formulário rápido para cadastrar novo fornecedor -->
+      <form class="adm-s-452" id="form-novo-fornecedor">
+        <div class="adm-s-453">+ Cadastrar Novo Fornecedor</div>
+        <div class="field-row adm-s-041">
+          <div class="field adm-s-454">
+            <label class="field__label adm-s-272" for="form-fornecedor-nome">Razão Social / Nome *</label>
+            <input class="field__input" type="text" id="form-fornecedor-nome" required placeholder="Ex: Torrefação Bella Vista" />
+          </div>
+          <div class="field adm-s-455">
+            <label class="field__label adm-s-272" for="form-fornecedor-telefone">Telefone / WhatsApp</label>
+            <input class="field__input" type="text" id="form-fornecedor-telefone" placeholder="(51) 99999-9999" />
+          </div>
+        </div>
+        <div class="field-row adm-s-041">
+          <div class="field adm-s-455">
+            <label class="field__label adm-s-272" for="form-fornecedor-cnpj">CNPJ / CPF</label>
+            <input class="field__input" type="text" id="form-fornecedor-cnpj" placeholder="00.000.000/0001-00" />
+          </div>
+          <div class="field adm-s-455">
+            <label class="field__label adm-s-272" for="form-fornecedor-pix">Chave PIX</label>
+            <input class="field__input" type="text" id="form-fornecedor-pix" placeholder="E-mail, CNPJ ou telefone..." />
+          </div>
+          <div class="field adm-s-455">
+            <label class="field__label adm-s-272" for="form-fornecedor-categoria">Categoria Principal</label>
+            <input class="field__input" type="text" id="form-fornecedor-categoria" placeholder="Ex: Grãos, Leite..." />
+          </div>
+        </div>
+        <div class="adm-s-456">
+          <button type="submit" class="btn btn--primary adm-s-457" id="btn-salvar-fornecedor">+ Adicionar Fornecedor</button>
+        </div>
+      </form>
+
+      <!-- Lista de fornecedores -->
+      <div class="table-wrap adm-s-458">
+        <table class="table adm-s-459">
+          <thead>
+            <tr class="adm-s-460">
+              <th class="adm-s-461">Fornecedor</th>
+              <th class="adm-s-461">Contato</th>
+              <th class="adm-s-461">CNPJ / PIX</th>
+              <th class="adm-s-462">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-fornecedores">
+            <tr><td class="adm-s-463" colspan="4">Nenhum fornecedor cadastrado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal__footer adm-s-464">
+        <button type="button" class="btn btn--ghost" id="btn-concluir-fornecedores">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÁREA PARA IMPRESSÃO DE QR CODES (A4) - CAF-000037 -->
+<div class="adm-hidden" id="area-impressao-todos-qr"></div>

@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { registerCouponUsage } from '../js/utils/coupon-validator.js';
 import { createSupabaseMock } from './helpers/supabase-mock.js';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 describe('CAF-000077: Cupons: uso único por pedido e rastreio no fechamento', () => {
   const migrationPath = path.resolve(__dirname, '../supabase/migration_caf_000077_cupons_uso_unico.sql');
@@ -11,8 +12,7 @@ describe('CAF-000077: Cupons: uso único por pedido e rastreio no fechamento', (
   const couponValidatorJsPath = path.resolve(__dirname, '../js/utils/coupon-validator.js');
   const couponValidatorJs = fs.readFileSync(couponValidatorJsPath, 'utf8');
 
-  const pedidosJsPath = path.resolve(__dirname, '../js/pedidos.js');
-  const pedidosJs = fs.readFileSync(pedidosJsPath, 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   describe('CA01 / RF01 / RNF03: Assinatura da RPC e estrutura da tabela campanha_usos', () => {
     it('remove a assinatura antiga registrar_uso_cupom(BIGINT, NUMERIC)', () => {

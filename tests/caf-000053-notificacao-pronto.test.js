@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'fs';
+import { lerCodigoFontePDV } from './helpers/page-harness.js';
 
 /**
  * CAF-000053 — Notificações de pedido pronto (Áudio, vibração e Web Notifications)
  */
 describe('CAF-000053 — Notificação de Pedido Pronto', () => {
-  const pedidosJs = fs.readFileSync('js/pedidos.js', 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
 
   it('CA01 / CA11: executa vibração móvel e toca áudio ao receber evento de pedido pronto', () => {
     expect(pedidosJs).toMatch(/vibrate|ding\.wav|audioPronto/i);

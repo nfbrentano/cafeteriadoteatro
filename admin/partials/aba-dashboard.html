@@ -1,0 +1,70 @@
+      <!-- ── DASHBOARD ────────────────────────────────────── -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Dashboard</div>
+            <div class="page-header__sub">Visão geral do cardápio</div>
+          </div>
+        </div>
+
+        <!-- Alerta Financeiro de Contas a Vencer no Dashboard (CAF-000035) -->
+        <div class="adm-s-001" id="dash-alerta-financeiro" style="display:none;">
+          <div class="adm-s-002">
+            <span class="adm-s-003" id="dash-alerta-financeiro-icon">⚠️</span>
+            <span id="dash-alerta-financeiro-texto"><strong>Atenção:</strong> 0 contas a pagar vencem esta semana.</span>
+          </div>
+          <button type="button" class="btn btn--primary btn-sm adm-s-004" id="btn-dash-ir-financeiro">Ver Contas a Pagar</button>
+        </div>
+
+        <!-- Alerta de Avaliações Baixas no Dia (CAF-000042) -->
+        <div class="adm-s-005" id="dash-alerta-avaliacoes" style="display:none;">
+          <div class="adm-s-002">
+            <span class="adm-s-003">🚨</span>
+            <span id="dash-alerta-avaliacoes-texto"><strong>Atenção:</strong> Avaliação ≤ 2 estrelas recebida hoje!</span>
+          </div>
+          <button type="button" class="btn btn--danger btn-sm adm-s-004" id="btn-dash-ir-avaliacoes">Ver Avaliações</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card__icon">🍽️</div>
+            <div class="stat-card__value" id="stat-total-produtos">0</div>
+            <div class="stat-card__label">Total de Produtos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">✅</div>
+            <div class="stat-card__value" id="stat-ativos">0</div>
+            <div class="stat-card__label">Produtos Ativos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🏷️</div>
+            <div class="stat-card__value" id="stat-categorias">0</div>
+            <div class="stat-card__label">Categorias</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icon">🔥</div>
+            <div class="stat-card__value" id="stat-populares">0</div>
+            <div class="stat-card__label">Mais Pedidos</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card__header">
+            <span class="section-card__title">Produtos por Categoria</span>
+          </div>
+          <div class="table-scroll adm-s-006">
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoria</th>
+                  <th>Ícone</th>
+                  <th>Produtos</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dash-cat-table">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

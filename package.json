@@ -2,6 +2,9 @@
   "name": "cafeteriadoteatro",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "description": "Website Cafeteria do Teatro",
   "main": "index.html",
   "scripts": {
@@ -10,14 +13,18 @@
     "preview": "vite preview",
     "deploy": "vite build",
     "lint": "eslint js/",
+    "lint:e2e": "eslint e2e/ playwright.config.js scripts/e2e-db.mjs scripts/e2e-server.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:db": "node scripts/test-db-runner.js",
+    "test:e2e": "playwright test",
     "db:migrate": "node scripts/db-migrate.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
     "@vitest/coverage-v8": "^5.1.0",
     "acorn": "^8.19.0",
     "acorn-walk": "^8.3.5",

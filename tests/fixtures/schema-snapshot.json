@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-11T17:46:08.698Z",
+  "gerado_em": "2026-11-14T15:05:38.605Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -118,6 +118,51 @@
     "consolidar_contador_dia_anterior": {
       "parameters": []
     },
+    "validar_cupom": {
+      "parameters": [
+        "p_cupom_codigo",
+        "p_subtotal"
+      ]
+    },
+    "registrar_evento_cardapio": {
+      "parameters": [
+        "p_canal",
+        "p_tipo_evento",
+        "p_produto_id",
+        "p_data"
+      ]
+    },
+    "handle_new_user": {
+      "parameters": []
+    },
+    "admin_create_user": {
+      "parameters": [
+        "email",
+        "password",
+        "nome",
+        "role_param",
+        "pode_dar_desconto_param"
+      ]
+    },
+    "validar_cortesia": {
+      "parameters": []
+    },
+    "cancelar_itens_por_pedido": {
+      "parameters": []
+    },
+    "cancelar_cortesia_em_cascata": {
+      "parameters": []
+    },
+    "promocoes_do_dia": {
+      "parameters": [
+        "p_data"
+      ]
+    },
+    "aplicar_promocoes_pedido": {
+      "parameters": [
+        "p_pedido_id"
+      ]
+    },
     "recalcular_total_pedido": {
       "parameters": [
         "p_pedido_id"
@@ -141,18 +186,6 @@
     "fn_audit_pedido_itens": {
       "parameters": []
     },
-    "handle_new_user": {
-      "parameters": []
-    },
-    "admin_create_user": {
-      "parameters": [
-        "email",
-        "password",
-        "nome",
-        "role_param",
-        "pode_dar_desconto_param"
-      ]
-    },
     "get_admin_reports": {
       "parameters": [
         "p_inicio",
@@ -171,7 +204,7 @@
     "fechar_caixa": {
       "parameters": [
         "p_caixa_id",
-        "p_valores_informados",
+        "p_contagem",
         "p_observacoes"
       ]
     },
@@ -419,20 +452,6 @@
         "p_limite"
       ]
     },
-    "validar_cupom": {
-      "parameters": [
-        "p_cupom_codigo",
-        "p_subtotal"
-      ]
-    },
-    "registrar_evento_cardapio": {
-      "parameters": [
-        "p_canal",
-        "p_tipo_evento",
-        "p_produto_id",
-        "p_data"
-      ]
-    },
     "fn_validar_adicionais_item": {
       "parameters": [
         "p_produto_id",
@@ -549,25 +568,6 @@
     "limpar_erros_antigos": {
       "parameters": [
         "p_dias"
-      ]
-    },
-    "validar_cortesia": {
-      "parameters": []
-    },
-    "cancelar_itens_por_pedido": {
-      "parameters": []
-    },
-    "cancelar_cortesia_em_cascata": {
-      "parameters": []
-    },
-    "promocoes_do_dia": {
-      "parameters": [
-        "p_data"
-      ]
-    },
-    "aplicar_promocoes_pedido": {
-      "parameters": [
-        "p_pedido_id"
       ]
     }
   },
@@ -891,22 +891,172 @@
         "updated_at"
       ]
     },
-    "business_hours": {
+    "configuracoes_sistema": {
       "columns": [
-        "aviso_especial",
-        "id",
-        "seg_qui_abre",
-        "seg_qui_fecha",
-        "sex_abre",
-        "sex_fecha",
-        "sab_dom_ativo",
-        "sab_dom_abre",
-        "sab_dom_fecha",
+        "chave",
+        "valor",
+        "descricao",
         "updated_at",
-        "dia_semana",
-        "abertura",
-        "fechamento",
+        "key",
+        "value"
+      ]
+    },
+    "fornecedores": {
+      "columns": [
+        "id",
+        "nome",
+        "documento",
+        "telefone",
+        "email",
+        "observacoes",
+        "ativo",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "despesa_categorias": {
+      "columns": [
+        "id",
+        "nome",
+        "tipo",
+        "created_at"
+      ]
+    },
+    "cliente_conta_movimentos": {
+      "columns": [
+        "id",
+        "cliente_id",
+        "tipo",
+        "valor",
+        "pedido_id",
+        "fechamento_id",
+        "forma_pagamento",
+        "motivo",
+        "criado_por",
+        "criado_por_nome",
+        "created_at"
+      ]
+    },
+    "cardapio_eventos_diarios": {
+      "columns": [
+        "id",
+        "data",
+        "canal",
+        "tipo_evento",
+        "produto_id",
+        "total_eventos",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "mesas": {
+      "columns": [
+        "id",
+        "codigo",
+        "descricao",
+        "ativo",
+        "created_at",
+        "qr_token",
+        "status",
+        "capacidade"
+      ]
+    },
+    "adicionais": {
+      "columns": [
+        "id",
+        "nome",
+        "preco",
+        "ativo",
+        "ordem",
+        "estoque_item_id",
+        "created_at"
+      ]
+    },
+    "adicional_vinculos": {
+      "columns": [
+        "id",
+        "adicional_id",
+        "categoria_id",
+        "produto_id",
+        "created_at"
+      ]
+    },
+    "pedido_item_adicionais": {
+      "columns": [
+        "id",
+        "pedido_item_id",
+        "adicional_id",
+        "nome",
+        "preco",
+        "custo"
+      ]
+    },
+    "cortesia_regras": {
+      "columns": [
+        "id",
+        "produto_cortesia_id",
+        "categoria_liberadora_id",
+        "produto_liberador_id",
+        "qtd_por_unidade",
         "ativo"
+      ]
+    },
+    "pedido_item_sabores": {
+      "columns": [
+        "id",
+        "pedido_item_id",
+        "lado",
+        "produto_id",
+        "nome",
+        "preco"
+      ]
+    },
+    "promocoes": {
+      "columns": [
+        "id",
+        "nome",
+        "descricao",
+        "tipo",
+        "percentual",
+        "qtd_compra",
+        "qtd_leva",
+        "dias_semana",
+        "vigencia_inicio",
+        "vigencia_fim",
+        "imagem_url",
+        "ativo",
+        "ordem",
+        "created_at"
+      ]
+    },
+    "promocao_itens": {
+      "columns": [
+        "id",
+        "promocao_id",
+        "produto_id",
+        "categoria_id"
+      ]
+    },
+    "produtos": {
+      "columns": [
+        "tipo_montagem",
+        "disponivel",
+        "permite_adicionais",
+        "tempo_alvo_min",
+        "estoque_item_id",
+        "esgotado_automatico",
+        "preco_custo_manual",
+        "antecedencia_min_horas",
+        "apenas_encomenda",
+        "fornecedor_padrao_id",
+        "id",
+        "nome",
+        "descricao",
+        "preco",
+        "categoria_id",
+        "ativo",
+        "ordem",
+        "created_at"
       ]
     },
     "fechamento_pagamentos": {
@@ -925,28 +1075,6 @@
       "columns": [
         "fechamento_id",
         "pedido_id"
-      ]
-    },
-    "produtos": {
-      "columns": [
-        "disponivel",
-        "permite_adicionais",
-        "tempo_alvo_min",
-        "estoque_item_id",
-        "esgotado_automatico",
-        "preco_custo_manual",
-        "antecedencia_min_horas",
-        "apenas_encomenda",
-        "fornecedor_padrao_id",
-        "tipo_montagem",
-        "id",
-        "nome",
-        "descricao",
-        "preco",
-        "categoria_id",
-        "ativo",
-        "ordem",
-        "created_at"
       ]
     },
     "categorias": {
@@ -1029,63 +1157,6 @@
         "created_at"
       ]
     },
-    "adicionais": {
-      "columns": [
-        "estoque_item_id",
-        "id",
-        "nome",
-        "preco",
-        "ativo",
-        "ordem",
-        "created_at"
-      ]
-    },
-    "pedido_item_adicionais": {
-      "columns": [
-        "custo",
-        "id",
-        "pedido_item_id",
-        "adicional_id",
-        "nome",
-        "preco"
-      ]
-    },
-    "cliente_conta_movimentos": {
-      "columns": [
-        "id",
-        "cliente_id",
-        "tipo",
-        "valor",
-        "pedido_id",
-        "fechamento_id",
-        "forma_pagamento",
-        "motivo",
-        "criado_por",
-        "criado_por_nome",
-        "created_at"
-      ]
-    },
-    "fornecedores": {
-      "columns": [
-        "id",
-        "nome",
-        "documento",
-        "telefone",
-        "email",
-        "observacoes",
-        "ativo",
-        "created_at",
-        "updated_at"
-      ]
-    },
-    "despesa_categorias": {
-      "columns": [
-        "id",
-        "nome",
-        "tipo",
-        "created_at"
-      ]
-    },
     "cargos": {
       "columns": [
         "id",
@@ -1124,28 +1195,6 @@
         "created_at",
         "atendido_em",
         "atendido_por"
-      ]
-    },
-    "configuracoes_sistema": {
-      "columns": [
-        "chave",
-        "valor",
-        "updated_at",
-        "descricao",
-        "key",
-        "value"
-      ]
-    },
-    "mesas": {
-      "columns": [
-        "qr_token",
-        "id",
-        "codigo",
-        "descricao",
-        "ativo",
-        "created_at",
-        "status",
-        "capacidade"
       ]
     },
     "configuracoes_auditoria_log": {
@@ -1248,16 +1297,22 @@
         "created_at"
       ]
     },
-    "cardapio_eventos_diarios": {
+    "business_hours": {
       "columns": [
+        "aviso_especial",
         "id",
-        "data",
-        "canal",
-        "tipo_evento",
-        "produto_id",
-        "total_eventos",
-        "created_at",
-        "updated_at"
+        "seg_qui_abre",
+        "seg_qui_fecha",
+        "sex_abre",
+        "sex_fecha",
+        "sab_dom_ativo",
+        "sab_dom_abre",
+        "sab_dom_fecha",
+        "updated_at",
+        "dia_semana",
+        "abertura",
+        "fechamento",
+        "ativo"
       ]
     },
     "app_migrations": {
@@ -1266,15 +1321,6 @@
         "arquivo",
         "aplicada_em",
         "aplicada_por"
-      ]
-    },
-    "adicional_vinculos": {
-      "columns": [
-        "id",
-        "adicional_id",
-        "produto_id",
-        "categoria_id",
-        "created_at"
       ]
     },
     "campanha_usos": {
@@ -1364,52 +1410,6 @@
         "usuario_email",
         "metadados",
         "criado_em"
-      ]
-    },
-    "cortesia_regras": {
-      "columns": [
-        "id",
-        "produto_cortesia_id",
-        "categoria_liberadora_id",
-        "produto_liberador_id",
-        "qtd_por_unidade",
-        "ativo"
-      ]
-    },
-    "pedido_item_sabores": {
-      "columns": [
-        "id",
-        "pedido_item_id",
-        "lado",
-        "produto_id",
-        "nome",
-        "preco"
-      ]
-    },
-    "promocoes": {
-      "columns": [
-        "id",
-        "nome",
-        "descricao",
-        "tipo",
-        "percentual",
-        "qtd_compra",
-        "qtd_leva",
-        "dias_semana",
-        "vigencia_inicio",
-        "vigencia_fim",
-        "imagem_url",
-        "ativo",
-        "ordem",
-        "created_at"
-      ]
-    },
-    "promocao_itens": {
-      "columns": [
-        "id",
-        "promocao_id",
-        "produto_id",
-        "categoria_id"
       ]
     },
     "site_settings": {

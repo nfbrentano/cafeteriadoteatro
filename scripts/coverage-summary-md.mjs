@@ -81,6 +81,7 @@ export function gerarMarkdownResumoCobertura(summary) {
   const total = summary.total || {};
   const grupos = {
     'js/utils/**': [],
+    'js/pdv/**': [],
     'js/admin/**': [],
     'js/*.js (telas/núcleo)': []
   };
@@ -92,6 +93,8 @@ export function gerarMarkdownResumoCobertura(summary) {
 
     if (rel.startsWith('js/utils/')) {
       grupos['js/utils/**'].push(metrics);
+    } else if (rel.startsWith('js/pdv/')) {
+      grupos['js/pdv/**'].push(metrics);
     } else if (rel.startsWith('js/admin/')) {
       grupos['js/admin/**'].push(metrics);
     } else if (!rel.slice(3).includes('/')) {

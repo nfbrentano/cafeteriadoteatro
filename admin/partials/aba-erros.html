@@ -1,0 +1,84 @@
+      <!-- ── SAÚDE & OBSERVABILIDADE (CAF-000115) ────────────────────── -->
+      <section class="page" id="page-erros">
+        <div class="page-header">
+          <div>
+            <div class="page-header__title">Saúde & Observabilidade</div>
+            <div class="page-header__sub">Erros do front-end e falhas de RPC capturados em produção</div>
+          </div>
+          <div class="adm-s-111">
+            <select class="filter-select adm-s-227" id="erros-filtro-periodo">
+              <option value="24" selected>Últimas 24 horas</option>
+              <option value="48">Últimas 48 horas</option>
+              <option value="168">Últimos 7 dias</option>
+              <option value="720">Últimos 30 dias</option>
+            </select>
+            <select class="filter-select adm-s-227" id="erros-filtro-tela">
+              <option value="todas" selected>Todas as Telas</option>
+              <option value="pedidos">PDV (pedidos)</option>
+              <option value="cozinha">KDS (cozinha)</option>
+              <option value="totem">Totem</option>
+              <option value="cardapio">Cardápio</option>
+              <option value="admin">Admin</option>
+              <option value="retirada">Retirada</option>
+            </select>
+            <button type="button" class="btn btn--outline btn--sm adm-s-112" id="btn-limpar-erros-antigos">
+              🧹 Limpar &gt; 30d
+            </button>
+            <button type="button" class="btn btn--primary btn--sm adm-s-112" id="btn-atualizar-erros">
+              🔄 Atualizar
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs Resumo -->
+        <div class="stats-grid adm-s-228">
+          <div class="stat-card adm-s-229">
+            <div class="adm-s-031">Total de Ocorrências</div>
+            <div class="adm-s-230" id="kpi-erros-total">0</div>
+            <div class="adm-s-231">No período selecionado</div>
+          </div>
+          <div class="stat-card adm-s-229">
+            <div class="adm-s-031">Telas Afetadas</div>
+            <div class="adm-s-232" id="kpi-erros-telas">0</div>
+            <div class="adm-s-231">Origens distintas de erro</div>
+          </div>
+          <div class="stat-card adm-s-229">
+            <div class="adm-s-031">Falhas de RPC / Banco</div>
+            <div class="adm-s-233" id="kpi-erros-rpcs">0</div>
+            <div class="adm-s-231">Erros em chamadas do Supabase</div>
+          </div>
+        </div>
+
+        <!-- Tabela de Erros Agrupados -->
+        <div class="card adm-s-234">
+          <div class="adm-s-235">
+            <h3 class="adm-s-236">Ocorrências Agrupadas por Mensagem</h3>
+          </div>
+
+          <div class="adm-s-237" id="erros-loading" style="display:none;">
+            Carregando registros de observabilidade...
+          </div>
+
+          <div class="adm-s-238" id="erros-empty" style="display:none;">
+            <div class="adm-s-239">✅</div>
+            <div class="adm-s-240">Nenhum erro registrado no período!</div>
+            <div class="adm-s-241">O sistema está operando de forma estável.</div>
+          </div>
+
+          <div class="adm-s-242">
+            <table class="adm-s-243">
+              <thead class="adm-s-244">
+                <tr>
+                  <th class="adm-s-245">Qtd</th>
+                  <th class="adm-s-246">Tela / Versão</th>
+                  <th class="adm-s-247">Tipo</th>
+                  <th class="adm-s-248">Mensagem &amp; Stack</th>
+                  <th class="adm-s-249">Ocorrência</th>
+                </tr>
+              </thead>
+              <tbody id="erros-tabela-body">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

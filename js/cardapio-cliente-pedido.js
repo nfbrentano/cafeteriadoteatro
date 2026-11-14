@@ -21,7 +21,7 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   const mesaCodigoParam = urlParams.get('mesa');
-  const qrTokenParam = urlParams.get('t');
+  const qrTokenParam = urlParams.get('t') || urlParams.get('token');
   const pedidoTokenUrl = urlParams.get('pedido') || urlParams.get('pedido_token');
 
   const isModoMesa = Boolean(mesaCodigoParam && qrTokenParam);

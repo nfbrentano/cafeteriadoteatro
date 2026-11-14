@@ -8,6 +8,7 @@ import path from 'path';
 export function buildSchemaSnapshot(csvContent = null) {
   const rpcs = {};
   const tables = {};
+  const csvRpcs = new Set();
 
   // 1. Extração prioritária do CSV de produção real
   if (csvContent) {
@@ -27,6 +28,7 @@ export function buildSchemaSnapshot(csvContent = null) {
             .map(a => a.trim().split(/\s+/)[0])
             .filter(Boolean);
           rpcs[item] = { parameters: params };
+          csvRpcs.add(item);
         } else if (secao === '3_coluna') {
           const cols = detalhe.split(',').map(c => c.trim().split(':')[0]).filter(Boolean);
           tables[item] = { columns: cols };
@@ -37,10 +39,18 @@ export function buildSchemaSnapshot(csvContent = null) {
     }
   }
 
-  // 2. Complementa com o catálogo de migrations para tabelas e colunas adicionais
-  const sqlFiles = fs.readdirSync('supabase')
-    .filter(f => f.endsWith('.sql'))
-    .sort();
+  // 2. Complementa com o catálogo de migrations na ordem canônica (manifest)
+  const existingSql = new Set(fs.readdirSync('supabase').filter(f => f.endsWith('.sql')));
+  const baseOrder = ['pedidos_schema.sql', 'migration_fase2.sql', 'migration_fase3_final.sql'];
+  let manifestFiles = [];
+  const manifestPath = path.resolve('supabase/migrations.manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    manifestFiles = (manifest.migrations || []).map(m => m.arquivo).filter(Boolean);
+  }
+  const canonicalSet = new Set([...baseOrder, ...manifestFiles]);
+  const extraFiles = [...existingSql].filter(f => !canonicalSet.has(f)).sort();
+  const sqlFiles = [...new Set([...extraFiles, ...baseOrder, ...manifestFiles])].filter(f => existingSql.has(f));
 
   for (const file of sqlFiles) {
     const content = fs.readFileSync(path.join('supabase', file), 'utf-8');
@@ -100,8 +110,8 @@ export function buildSchemaSnapshot(csvContent = null) {
           return clean && clean.startsWith('p_') ? clean : clean;
         })
         .filter(Boolean);
-      // Se não veio do CSV real, registra
-      if (!rpcs[fnName]) {
+      // Se não veio do CSV real, registra ou atualiza pela migration mais recente
+      if (!csvRpcs.has(fnName)) {
         rpcs[fnName] = { parameters: params };
       }
     }

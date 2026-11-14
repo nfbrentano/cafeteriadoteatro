@@ -3,10 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SmartSearch } from '../js/utils/smart-search.js';
 import * as theaterMode from '../js/utils/theater-mode.js';
+import { lerCodigoFontePDV, lerAdminHtmlCompleto } from './helpers/page-harness.js';
 
 describe('CAF-000084: Pendências de UX, KDS e cardápio', () => {
   const rootDir = process.cwd();
-  const pedidosJsPath = path.join(rootDir, 'js/pedidos.js');
   const cardapioHtmlPath = path.join(rootDir, 'cardapio.html');
   const cardapioDynamicJsPath = path.join(rootDir, 'js/cardapio-dynamic.js');
   const totemHtmlPath = path.join(rootDir, 'totem.html');
@@ -14,11 +14,10 @@ describe('CAF-000084: Pendências de UX, KDS e cardápio', () => {
   const cozinhaJsPath = path.join(rootDir, 'js/cozinha.js');
   const pedidoPrintJsPath = path.join(rootDir, 'js/pedido-print.js');
   const pedidosAdminJsPath = path.join(rootDir, 'js/admin/pedidos-admin.js');
-  const adminHtmlPath = path.join(rootDir, 'admin.html');
   const homeCssPath = path.join(rootDir, 'css/home.css');
   const mapaWebpPath = path.join(rootDir, 'assets/images/mapa-estatico.webp');
 
-  const pedidosJs = fs.readFileSync(pedidosJsPath, 'utf8');
+  const pedidosJs = lerCodigoFontePDV();
   const cardapioHtml = fs.readFileSync(cardapioHtmlPath, 'utf8');
   const cardapioDynamicJs = fs.readFileSync(cardapioDynamicJsPath, 'utf8');
   const totemHtml = fs.readFileSync(totemHtmlPath, 'utf8');
@@ -26,7 +25,7 @@ describe('CAF-000084: Pendências de UX, KDS e cardápio', () => {
   const cozinhaJs = fs.readFileSync(cozinhaJsPath, 'utf8');
   const pedidoPrintJs = fs.readFileSync(pedidoPrintJsPath, 'utf8');
   const pedidosAdminJs = fs.readFileSync(pedidosAdminJsPath, 'utf8');
-  const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
+  const adminHtml = lerAdminHtmlCompleto();
   const homeCss = fs.readFileSync(homeCssPath, 'utf8');
 
   describe('CA01 / RF01: Eliminação de alert/confirm em js/pedidos.js', () => {

@@ -1,0 +1,1122 @@
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: PRODUTO
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-produto-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-produto-title">
+  <div class="modal" id="modal-produto">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-produto-title">Novo Produto</span>
+      <button class="modal__close" id="modal-produto-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-produto" novalidate>
+        <input type="hidden" id="produto-id" />
+
+        <div class="field">
+          <label class="field__label" for="produto-nome">Nome do Produto *</label>
+          <input class="field__input" type="text" id="produto-nome"
+                 placeholder="Ex: Cappuccino" required />
+          <div class="field__error-msg" id="err-produto-nome">Nome é obrigatório.</div>
+        </div>
+
+        <div class="adm-s-258">
+          <div class="field">
+            <label class="field__label" for="produto-categoria">Categoria *</label>
+            <select class="field__select" id="produto-categoria" required>
+              <option value="">Selecione...</option>
+            </select>
+            <div class="field__error-msg" id="err-produto-categoria">Selecione uma categoria.</div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="produto-preco">Preço de Venda *</label>
+            <div class="field__price-wrap">
+              <span class="field__price-prefix">R$</span>
+              <input class="field__price-input" type="number" id="produto-preco"
+                     placeholder="0,00" min="0" step="0.01" required />
+            </div>
+            <div class="field__error-msg" id="err-produto-preco">Informe um preço válido.</div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="produto-custo-manual">Custo Manual (R$)</label>
+            <div class="field__price-wrap">
+              <span class="field__price-prefix">R$</span>
+              <input class="field__price-input" type="number" id="produto-custo-manual"
+                     placeholder="0,00" min="0" step="0.01" />
+            </div>
+            <div class="hint adm-s-259">Sem ficha técnica</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="produto-tipo-montagem">Tipo de Produto / Montagem</label>
+          <select class="field__select" id="produto-tipo-montagem">
+            <option value="padrao">Padrão (Produto Individual)</option>
+            <option value="meio_a_meio">Meio a Meio (Sabores Combinados)</option>
+            <option value="combo">Combo / Kit Promocional (Etapas Guiadas)</option>
+          </select>
+          <div class="hint">Combos permitem configurar grupos de opções com escolha guiada (ex: Bebida + Salgado + Sobremesa).</div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="produto-tempo-alvo">Tempo Alvo de Preparo (minutos) <span class="adm-s-260">(Opcional)</span></label>
+          <input class="field__input" type="number" id="produto-tempo-alvo" min="1" max="180" step="1" placeholder="Herda da categoria" />
+          <p class="hint adm-s-068" id="hint-produto-tempo-alvo">Se vazio, herdará o tempo alvo padrão da categoria selecionada.</p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="produto-descricao">Descrição</label>
+          <textarea class="field__textarea" id="produto-descricao"
+                    placeholder="Descreva o produto de forma apetitosa..." rows="3"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field__label">Imagem do Produto</div>
+
+          <!-- Upload zone -->
+          <div class="upload-zone" id="upload-zone" tabindex="0" role="button"
+               aria-label="Clique ou arraste uma imagem aqui">
+            <div class="upload-zone__idle" id="upload-idle">
+              <div class="upload-zone__icon">🖼️</div>
+              <div class="upload-zone__title">Arraste uma imagem ou clique para selecionar</div>
+              <div class="upload-zone__sub">PNG, JPG, WEBP, GIF &middot; Convertida para WebP</div>
+            </div>
+            <div class="upload-zone__preview hidden" id="upload-preview-wrap">
+              <img id="upload-preview-img" alt="preview" width="400" height="400" />
+              <div class="upload-zone__overlay">
+                <button type="button" class="upload-zone__change" id="btn-change-img">&#x1F504; Trocar</button>
+                <button type="button" class="upload-zone__remove" id="btn-remove-img">&#x1F5D1;&#xFE0F;</button>
+              </div>
+            </div>
+            <input class="adm-hidden" type="file" id="produto-imagem-file" accept="image/*" aria-hidden="true" />
+          </div>
+
+          <!-- Info bar -->
+          <div class="upload-info" id="upload-info" style="display:none;">
+            <span class="upload-info__badge">WebP</span>
+            <span id="upload-info-dims" class="upload-info__text"></span>
+            <span id="upload-info-size" class="upload-info__text"></span>
+            <span id="upload-info-saving" class="upload-info__saving"></span>
+          </div>
+
+          <!-- Or URL -->
+          <div class="upload-or"><span>ou cole uma URL</span></div>
+          <input class="field__input" type="text" id="produto-imagem"
+                 placeholder="https://... ou assets/images/produto-cafe.jpg" />
+
+          <!-- hidden: base64 ou URL final -->
+          <input type="hidden" id="produto-imagem-data" />
+        </div>
+
+
+        <div class="field">
+          <div class="field__label">Badges</div>
+          <div class="badges-wrap">
+            <label class="badge-check" for="badge-popular">
+              <input type="checkbox" id="badge-popular" name="badges" value="popular" />
+              🔥 Mais Pedido
+            </label>
+            <label class="badge-check" for="badge-novo">
+              <input type="checkbox" id="badge-novo" name="badges" value="novo" />
+              🆕 Novidade
+            </label>
+            <label class="badge-check" for="badge-promo">
+              <input type="checkbox" id="badge-promo" name="badges" value="promo" />
+              🏷️ Promoção
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="produto-ativo">
+              <input type="checkbox" id="produto-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Produto ativo no cardápio</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="produto-ativo-adicionais">
+              <input type="checkbox" id="produto-ativo-adicionais" />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Permite Adicionais</span>
+          </div>
+        </div>
+
+        <div class="field" id="field-produto-vinculos-adicionais" style="display:none;">
+          <label class="field__label">Vínculos de Adicionais</label>
+          <div class="adm-s-261">Adicionais herdados da categoria aparecem marcados e desabilitados.</div>
+          <div class="badges-wrap adm-s-262" id="produto-adicionais-wrap">
+            <!-- Carregado via JS -->
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="produto-estoque-item-id">Vínculo com Estoque (Revenda Direta)</label>
+          <select class="field__select" id="produto-estoque-item-id">
+            <option value="">-- Sem controle de revenda direta --</option>
+          </select>
+          <div class="hint">Usado para produtos prontos de revenda (ex: lata de refri, água). Se o produto tiver Ficha Técnica abaixo, os insumos da ficha terão prioridade na baixa.</div>
+        </div>
+
+        <!-- FICHA TÉCNICA / RECEITA DO PRODUTO (CAF-000032) -->
+        <div class="field adm-s-263" id="field-produto-ficha-tecnica">
+          <div class="adm-s-264">
+            <div>
+              <label class="field__label adm-s-265">📋 Ficha Técnica (Insumos da Receita)</label>
+              <div class="hint adm-s-098">Insumos debitados automaticamente do estoque a cada venda deste produto.</div>
+            </div>
+            <!-- Resumo ao vivo de Custo e Margem -->
+            <div class="adm-s-266">
+              <div class="adm-s-267">
+                Custo: <strong class="adm-s-268" id="ficha-resumo-custo">R$ 0,00</strong>
+              </div>
+              <div class="adm-s-267">
+                Margem: <span id="ficha-resumo-margem" class="badge-estoque badge-estoque--ok">0%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="adm-s-269" id="ficha-alerta-margem" style="display:none;">
+            ⚠️ Atenção: A margem de lucro estimada está abaixo da meta mínima de 50%!
+          </div>
+
+          <!-- Linha para adicionar insumo -->
+          <div class="adm-s-270">
+            <div class="adm-s-271">
+              <label class="field__label adm-s-272" for="ficha-insumo-select">Insumo de Estoque</label>
+              <select class="field__select adm-s-273" id="ficha-insumo-select">
+                <option value="">Selecione um insumo...</option>
+              </select>
+            </div>
+            <div class="adm-s-274">
+              <label class="field__label adm-s-272" for="ficha-insumo-qtd">Qtd por Unidade</label>
+              <input class="field__input adm-s-273" type="number" id="ficha-insumo-qtd" step="0.001" min="0.001" placeholder="Ex: 0.150" />
+            </div>
+            <div>
+              <button type="button" class="btn btn--secondary btn--sm adm-s-273" id="btn-add-ficha-insumo">+ Adicionar</button>
+            </div>
+          </div>
+
+          <!-- Tabela de Insumos da Ficha -->
+          <div class="table-wrap adm-s-275">
+            <table class="adm-s-276">
+              <thead>
+                <tr class="adm-s-277">
+                  <th class="adm-s-278">Insumo</th>
+                  <th class="adm-s-278">Qtd</th>
+                  <th class="adm-s-278">Custo Unit.</th>
+                  <th class="adm-s-278">Subtotal</th>
+                  <th class="adm-s-279"></th>
+                </tr>
+              </thead>
+              <tbody id="ficha-insumos-body">
+                <tr><td class="adm-s-280" colspan="5">Nenhum insumo na ficha técnica.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COMBOS E KITS PROMOCIONAIS (CAF-000110) -->
+        <div class="field adm-s-281" id="field-produto-combo-grupos" style="display:none;">
+          <div class="adm-s-282">
+            <div>
+              <label class="field__label adm-s-265">🎁 Configuração de Grupos do Combo</label>
+              <div class="hint adm-s-098">Configure as etapas que o cliente ou barista deve escolher ao pedir este combo.</div>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-add-combo-grupo">+ Adicionar Grupo</button>
+          </div>
+          <div class="adm-s-283" id="combo-grupos-container">
+            <!-- Renderizado dinamicamente pelo JS -->
+          </div>
+        </div>
+
+        <!-- ENCOMENDAS / PEDIDO ONLINE (CAF-000038) -->
+        <div class="field adm-s-284">
+          <div>
+            <label class="field__label" for="produto-antecedencia-horas">Antecedência mínima p/ encomenda (horas)</label>
+            <input class="field__input" type="number" id="produto-antecedencia-horas" min="0" max="168" step="1" value="0" placeholder="0 = imediato" />
+            <div class="hint">Ex: 24 para bolos inteiros ou kits sob encomenda.</div>
+          </div>
+          <div>
+            <div class="toggle-wrap adm-s-080">
+              <label class="toggle" for="produto-apenas-encomenda">
+                <input type="checkbox" id="produto-apenas-encomenda" />
+                <span class="toggle__slider"></span>
+              </label>
+              <span class="toggle-wrap__label">Só por encomenda (ocultar no PDV do dia)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="produto-disponivel">
+              <input type="checkbox" id="produto-disponivel" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Disponível hoje (Desmarque se esgotou)</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-produto-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-produto">
+        Salvar Produto
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CATEGORIA
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-cat-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-cat-title">
+  <div class="modal" id="modal-cat">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-cat-title">Nova Categoria</span>
+      <button class="modal__close" id="modal-cat-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-categoria" novalidate>
+        <input type="hidden" id="cat-id" />
+
+        <!-- Preview + Nome -->
+        <div class="adm-s-285">
+          <div class="field adm-s-286">
+            <div class="field__label">Ícone</div>
+            <div class="adm-s-287" id="cat-icone-preview">☕</div>
+            <!-- hidden field que guarda o valor -->
+            <input type="hidden" id="cat-icone" value="☕" />
+            <div class="field__error-msg" id="err-cat-icone">Escolha um ícone.</div>
+          </div>
+          <div class="field adm-s-286">
+            <label class="field__label" for="cat-nome">Nome *</label>
+            <input class="field__input" type="text" id="cat-nome"
+                   placeholder="Ex: Cafés" required />
+            <div class="field__error-msg" id="err-cat-nome">Nome é obrigatório.</div>
+          </div>
+        </div>
+
+        <!-- Emoji picker -->
+        <div class="field adm-s-039">
+          <div class="field__label">Escolha um ícone</div>
+
+          <div class="emoji-picker">
+            <div class="emoji-picker__group-label">☕ Bebidas</div>
+            <div class="emoji-picker__grid" id="emoji-grid">
+              <button type="button" class="emoji-btn" data-emoji="☕">☕</button>
+              <button type="button" class="emoji-btn" data-emoji="🧋">🧋</button>
+              <button type="button" class="emoji-btn" data-emoji="🍵">🍵</button>
+              <button type="button" class="emoji-btn" data-emoji="🥤">🥤</button>
+              <button type="button" class="emoji-btn" data-emoji="🧃">🧃</button>
+              <button type="button" class="emoji-btn" data-emoji="🍺">🍺</button>
+              <button type="button" class="emoji-btn" data-emoji="🍷">🍷</button>
+              <button type="button" class="emoji-btn" data-emoji="🥛">🥛</button>
+              <button type="button" class="emoji-btn" data-emoji="🧊">🧊</button>
+              <button type="button" class="emoji-btn" data-emoji="💧">💧</button>
+              <button type="button" class="emoji-btn" data-emoji="🫖">🫖</button>
+              <button type="button" class="emoji-btn" data-emoji="🍶">🍶</button>
+            </div>
+
+            <div class="emoji-picker__group-label adm-s-288">🍰 Doces &amp; Sobremesas</div>
+            <div class="emoji-picker__grid">
+              <button type="button" class="emoji-btn" data-emoji="🍰">🍰</button>
+              <button type="button" class="emoji-btn" data-emoji="🎂">🎂</button>
+              <button type="button" class="emoji-btn" data-emoji="🍫">🍫</button>
+              <button type="button" class="emoji-btn" data-emoji="🍬">🍬</button>
+              <button type="button" class="emoji-btn" data-emoji="🍭">🍭</button>
+              <button type="button" class="emoji-btn" data-emoji="🍩">🍩</button>
+              <button type="button" class="emoji-btn" data-emoji="🧁">🧁</button>
+              <button type="button" class="emoji-btn" data-emoji="🍪">🍪</button>
+              <button type="button" class="emoji-btn" data-emoji="🍮">🍮</button>
+              <button type="button" class="emoji-btn" data-emoji="🍦">🍦</button>
+              <button type="button" class="emoji-btn" data-emoji="🍧">🍧</button>
+              <button type="button" class="emoji-btn" data-emoji="🥐">🥐</button>
+            </div>
+
+            <div class="emoji-picker__group-label adm-s-288">🥗 Lanches &amp; Refeições</div>
+            <div class="emoji-picker__grid">
+              <button type="button" class="emoji-btn" data-emoji="🥗">🥗</button>
+              <button type="button" class="emoji-btn" data-emoji="🥪">🥪</button>
+              <button type="button" class="emoji-btn" data-emoji="🌯">🌯</button>
+              <button type="button" class="emoji-btn" data-emoji="🧀">🧀</button>
+              <button type="button" class="emoji-btn" data-emoji="🥚">🥚</button>
+              <button type="button" class="emoji-btn" data-emoji="🍳">🍳</button>
+              <button type="button" class="emoji-btn" data-emoji="🥞">🥞</button>
+              <button type="button" class="emoji-btn" data-emoji="🍞">🍞</button>
+              <button type="button" class="emoji-btn" data-emoji="🥨">🥨</button>
+              <button type="button" class="emoji-btn" data-emoji="🧆">🧆</button>
+              <button type="button" class="emoji-btn" data-emoji="🫔">🫔</button>
+              <button type="button" class="emoji-btn" data-emoji="🥓">🥓</button>
+            </div>
+
+            <div class="emoji-picker__group-label adm-s-288">🎁 Especiais &amp; Extras</div>
+            <div class="emoji-picker__grid">
+              <button type="button" class="emoji-btn" data-emoji="🎁">🎁</button>
+              <button type="button" class="emoji-btn" data-emoji="✨">✨</button>
+              <button type="button" class="emoji-btn" data-emoji="⭐">⭐</button>
+              <button type="button" class="emoji-btn" data-emoji="🌟">🌟</button>
+              <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
+              <button type="button" class="emoji-btn" data-emoji="💎">💎</button>
+              <button type="button" class="emoji-btn" data-emoji="🎭">🎭</button>
+              <button type="button" class="emoji-btn" data-emoji="🎶">🎶</button>
+              <button type="button" class="emoji-btn" data-emoji="📚">📚</button>
+              <button type="button" class="emoji-btn" data-emoji="🌿">🌿</button>
+              <button type="button" class="emoji-btn" data-emoji="🌸">🌸</button>
+              <button type="button" class="emoji-btn" data-emoji="🍃">🍃</button>
+            </div>
+          </div>
+
+          <p class="hint adm-s-066">Ou digite um emoji diretamente no campo acima.</p>
+          <input class="field__input adm-s-289" type="text" id="cat-icone-custom"
+                 placeholder="Digite outro emoji..." maxlength="4" />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cat-descricao">Descrição</label>
+          <input class="field__input" type="text" id="cat-descricao"
+                 placeholder="Breve descrição da categoria..." />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cat-estacao">Estação (Onde é preparado?)</label>
+          <select class="field__input" id="cat-estacao">
+            <option value="cozinha">Cozinha (Padrão)</option>
+            <option value="bar">Bar (Bebidas)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cat-tempo-alvo">Tempo Alvo Padrão (minutos) *</label>
+          <input class="field__input" type="number" id="cat-tempo-alvo" min="1" max="180" step="1" placeholder="Ex: 10" value="15" required />
+          <p class="hint adm-s-068">Tempo estimado para sinalização no painel da cozinha (semáforo verde/amarelo/vermelho).</p>
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="cat-ativo">
+              <input type="checkbox" id="cat-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Categoria ativa no cardápio</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-cat-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-categoria">
+        Salvar Categoria
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CAMPANHA / PROMOÇÃO
+     ════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-promo-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-promo-title">
+  <div class="modal" id="modal-promo">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-promo-title">Nova Campanha</span>
+      <button class="modal__close" id="modal-promo-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-campanha" novalidate>
+        <input type="hidden" id="promo-id" />
+
+        <div class="field">
+          <label class="field__label" for="promo-titulo">Título da Campanha *</label>
+          <input class="field__input" type="text" id="promo-titulo"
+                 placeholder="Ex: Festival de Inverno" required />
+          <div class="field__error-msg" id="err-promo-titulo">Título é obrigatório.</div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="promo-desc">Descrição Curta *</label>
+          <textarea class="field__textarea" id="promo-desc"
+                    placeholder="Ex: Aproveite nossos cafés especiais com 20% OFF." rows="2" required></textarea>
+          <div class="field__error-msg" id="err-promo-desc">Descrição é obrigatória.</div>
+        </div>
+
+        <div class="adm-s-290">
+          <div class="field">
+            <label class="field__label" for="promo-badge">Selo / Badge (Opcional)</label>
+            <input class="field__input" type="text" id="promo-badge"
+                   placeholder="Ex: Oferta, Sazonal, Novo" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="promo-link">Link Destino (Opcional)</label>
+            <input class="field__input" type="text" id="promo-link"
+                   placeholder="https://... ou #secao" />
+          </div>
+        </div>
+
+        <div class="adm-s-290">
+          <div class="field">
+            <label class="field__label" for="promo-inicio">Data Início *</label>
+            <input class="field__input" type="date" id="promo-inicio" required />
+          </div>
+          <div class="field">
+            <label class="field__label" for="promo-fim">Data Fim *</label>
+            <input class="field__input" type="date" id="promo-fim" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field__label">Imagem / Banner (Opcional)</div>
+          <div class="upload-zone" id="promo-upload-zone" tabindex="0">
+            <div class="upload-zone__idle" id="promo-upload-idle">
+              <div class="upload-zone__icon">🖼️</div>
+              <div class="upload-zone__title">Arraste ou clique para o banner</div>
+              <div class="upload-zone__sub">Recomendado: 1200x400px</div>
+            </div>
+            <div class="upload-zone__preview hidden" id="promo-upload-preview-wrap">
+              <img id="promo-upload-preview-img" alt="preview" width="1200" height="400" />
+              <div class="upload-zone__overlay">
+                <button type="button" class="upload-zone__change" id="btn-promo-change-img">Trocar</button>
+                <button type="button" class="upload-zone__remove" id="btn-promo-remove-img">✕</button>
+              </div>
+            </div>
+            <input class="adm-hidden" type="file" id="promo-image-file" accept="image/*" />
+          </div>
+          <!-- Info bar for stats -->
+          <div class="upload-info adm-s-066" id="promo-upload-info" style="display:none;">
+            <span class="upload-info__badge">Otimizada</span>
+            <span class="upload-info__text" id="promo-info-dims">1200 × 400px</span>
+            <span class="upload-info__text" id="promo-info-size">60 KB</span>
+            <span class="upload-info__saving" id="promo-info-saving">↓ 85%</span>
+          </div>
+          <input type="hidden" id="promo-image-data" />
+        </div>
+
+        <div class="field">
+          <div class="toggle-wrap">
+            <label class="toggle" for="promo-ativo">
+              <input type="checkbox" id="promo-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Campanha ativa e visível no site</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-promo-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-promo">
+        Salvar Campanha
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE ADICIONAIS
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-adicional-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-adicional-title">
+  <div class="modal" id="modal-adicional">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modal-adicional-title">Novo Adicional</h3>
+      <button class="modal__close" id="modal-adicional-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-adicional" class="form-grid">
+        <input type="hidden" id="adicional-id" />
+        
+        <div class="field adm-s-291">
+          <label class="field__label" for="adicional-nome">Nome do Adicional</label>
+          <input class="field__input" type="text" id="adicional-nome" placeholder="Ex: Leite Vegetal" required />
+        </div>
+        
+        <div class="field adm-s-292">
+          <label class="field__label" for="adicional-preco">Preço (R$)</label>
+          <input class="field__input" type="number" id="adicional-preco" step="0.01" min="0" placeholder="Ex: 1.50" required />
+        </div>
+
+        <div class="field adm-s-291">
+          <label class="field__label">Vincular a Categorias</label>
+          <div class="badges-wrap adm-s-293" id="adicional-categorias-wrap">
+            <!-- Carregado via JS -->
+          </div>
+        </div>
+
+        <div class="field adm-s-291">
+          <label class="field__label">Vincular a Produtos Específicos</label>
+          <div class="badges-wrap adm-s-293" id="adicional-produtos-wrap">
+            <!-- Carregado via JS -->
+          </div>
+        </div>
+
+        <div class="field adm-s-291">
+          <div class="toggle-wrap">
+            <label class="toggle" for="adicional-ativo">
+              <input type="checkbox" id="adicional-ativo" checked />
+              <span class="toggle__slider"></span>
+            </label>
+            <span class="toggle-wrap__label">Ativo</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-adicional-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-adicional">
+        Salvar Adicional
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE MESAS
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-mesa-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-mesa-title">
+  <div class="modal" id="modal-mesa">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-mesa-title">Nova Mesa</span>
+      <button class="modal__close" id="modal-mesa-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-mesa">
+        <input type="hidden" id="mesa-id" />
+        
+        <div class="form-group">
+          <label for="mesa-codigo">Código da Mesa (Ex: 01, BALCAO)</label>
+          <input type="text" id="mesa-codigo" class="form-control" required maxlength="20" />
+        </div>
+        
+        <div class="form-group">
+          <label for="mesa-descricao">Descrição (Opcional)</label>
+          <input type="text" id="mesa-descricao" class="form-control" />
+        </div>
+
+        <div class="form-group adm-s-039">
+          <label class="toggle-switch">
+            <input type="checkbox" id="mesa-ativo" checked />
+            <span class="slider round"></span>
+            <span class="adm-s-294">Mesa Ativa</span>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-mesa-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-mesa">Salvar Mesa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL QR CODE DA MESA (CAF-000037)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay adm-s-295" id="modal-qr-mesa-overlay" role="dialog" aria-modal="true" style="display:none;">
+  <div class="modal adm-s-296" id="modal-qr-mesa">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-qr-mesa-title">🔳 QR Code da Mesa</span>
+      <button class="modal__close" id="modal-qr-mesa-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body adm-s-297">
+      <div class="adm-s-298" id="qr-code-display">
+        <!-- Imagem do QR Code gerada dinamicamente -->
+      </div>
+      <p class="adm-s-299" id="qr-code-mesa-info"></p>
+      <p class="adm-s-300">
+        Aponte a câmera para abrir o cardápio com a mesa já selecionada e enviar pedidos direto ao PDV.
+      </p>
+
+      <div class="adm-s-301">
+        <input type="text" id="qr-code-link-input" class="form-control adm-s-302" readonly />
+        <button type="button" class="btn btn--outline-dark adm-s-086" id="btn-copiar-qr-link" title="Copiar Link">📋 Copiar</button>
+      </div>
+
+      <div class="adm-s-303">
+        <button type="button" class="btn btn--primary adm-s-225" id="btn-baixar-qr-png">
+          📥 Baixar Imagem (PNG)
+        </button>
+        <button type="button" class="btn btn--ghost adm-s-304" id="btn-regenerar-qr-token">
+          🔄 Gerar Novo Token (invalida o QR code anterior)
+        </button>
+      </div>
+    </div>
+    <div class="modal__footer adm-s-305">
+      <button class="btn btn--ghost" id="modal-qr-mesa-cancel">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DETALHES DO PEDIDO
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-pedido-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pedido-title">
+  <div class="modal adm-s-306" id="modal-pedido">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-pedido-title">Detalhes do Pedido</span>
+      <button class="modal__close" id="modal-pedido-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body" id="modal-pedido-body">
+      <!-- Injetado via JS -->
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-pedido-cancel">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE USUÁRIOS
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-usuario-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-usuario-title">
+  <div class="modal" id="modal-usuario">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-usuario-title">Novo Usuário</span>
+      <button class="modal__close" id="modal-usuario-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-usuario" novalidate>
+        <div class="field">
+          <label class="field__label" for="usuario-nome">Nome *</label>
+          <input class="field__input" type="text" id="usuario-nome" placeholder="Nome do colaborador" required />
+          <div class="field__error-msg" id="err-usuario-nome">Nome é obrigatório.</div>
+        </div>
+        
+        <div class="field">
+          <label class="field__label" for="usuario-email">E-mail *</label>
+          <input class="field__input" type="email" id="usuario-email" placeholder="email@exemplo.com" required />
+          <div class="field__error-msg" id="err-usuario-email">E-mail inválido.</div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="usuario-senha">Senha *</label>
+          <input class="field__input" type="password" id="usuario-senha" placeholder="Mínimo 6 caracteres" required minlength="6" />
+          <div class="field__error-msg" id="err-usuario-senha">Senha muito curta.</div>
+        </div>
+
+        <div class="field-row adm-s-307">
+          <div class="field adm-s-308">
+            <label class="field__label" for="usuario-cargo">Cargo *</label>
+            <select class="field__select" id="usuario-cargo" required>
+              <option value="">Carregando cargos...</option>
+            </select>
+            <div class="field__error-msg" id="err-usuario-cargo">Selecione um cargo.</div>
+          </div>
+
+          <div class="field adm-s-308">
+            <label class="field__label" for="usuario-pin">PIN de Supervisor (4 a 8 dígitos)</label>
+            <input class="field__input" type="password" id="usuario-pin" placeholder="Ex: 1234 (opcional)" maxlength="8" pattern="[0-9]*" inputmode="numeric" />
+            <div class="hint">Usado para autorizar cancelamentos/descontos no PDV.</div>
+          </div>
+        </div>
+
+        <!-- Campo hidden para compatibilidade de role legada -->
+        <input type="hidden" id="usuario-role" value="barista" />
+
+        <div class="field" id="usuario-desconto-container" style="display:none;">
+          <label class="switch-field adm-s-067">
+            <input type="checkbox" id="usuario-pode-dar-desconto" class="switch-field__input" />
+            <span class="switch-field__label">Permitir aplicar descontos manuais no PDV</span>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-usuario-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-usuario">Salvar Usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE CARGOS & PERMISSÕES (CAF-000036)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-cargo-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-cargo-title">
+  <div class="modal adm-s-309" id="modal-cargo">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-cargo-title">Novo Cargo</span>
+      <button class="modal__close" id="modal-cargo-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body adm-s-310">
+      <form id="form-cargo" novalidate>
+        <input type="hidden" id="form-cargo-id" />
+
+        <div class="field-row adm-s-307">
+          <div class="field adm-s-311">
+            <label class="field__label" for="form-cargo-nome">Nome do Cargo *</label>
+            <input class="field__input" type="text" id="form-cargo-nome" placeholder="Ex: Subgerente, Caixa Líder..." required />
+          </div>
+          <div class="field adm-s-312">
+            <label class="field__label" for="form-cargo-desc">Descrição / Atribuições</label>
+            <input class="field__input" type="text" id="form-cargo-desc" placeholder="Breve resumo da função..." />
+          </div>
+        </div>
+
+        <div class="adm-s-313">
+          Permissões Granulares
+        </div>
+
+        <div class="adm-s-314">
+          <!-- Bloco PDV -->
+          <div class="adm-s-315">
+            <div class="adm-s-316">
+              🛍️ PDV / Salão de Mesas
+            </div>
+            <div class="adm-s-317">
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.vender" />
+                <span><strong>Lançar Pedidos</strong> (pdv.vender)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.transferir_mesa" />
+                <span><strong>Transferir Mesas</strong> (pdv.transferir_mesa)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.fechar_conta" />
+                <span><strong>Fechar Contas / Receber</strong> (pdv.fechar_conta)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.desconto" />
+                <span><strong>Conceder Desconto</strong> (pdv.desconto)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.cortesia" />
+                <span><strong>Liberar Cortesia</strong> (pdv.cortesia)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.cancelar_item" />
+                <span><strong>Cancelar Item</strong> (pdv.cancelar_item)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="pdv.cancelar_pedido" />
+                <span><strong>Cancelar Pedido Inteiro</strong> (pdv.cancelar_pedido)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bloco Caixa & KDS -->
+          <div class="adm-s-315">
+            <div class="adm-s-319">
+              💵 Caixa & Cozinha (KDS)
+            </div>
+            <div class="adm-s-317">
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="caixa.abrir_fechar" />
+                <span><strong>Abrir / Fechar Caixa</strong> (caixa.abrir_fechar)</span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="caixa.sangria" />
+                <span><strong>Sangria & Suprimento</strong> (caixa.sangria)</span>
+              </label>
+              <label class="adm-s-320">
+                <input type="checkbox" class="cargo-perm-chk" value="kds.operar" />
+                <span><strong>Operar Monitor de Cozinha</strong> (kds.operar)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bloco Admin Operacional -->
+          <div class="adm-s-321">
+            <div class="adm-s-322">
+              ⚙️ Módulos do Painel Administrativo
+            </div>
+            <div class="adm-s-323">
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.cardapio" />
+                <span><strong>Cardápio & Preços</strong></span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.relatorios" />
+                <span><strong>Relatórios & Métricas</strong></span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.financeiro" />
+                <span><strong>Contas a Pagar & DRE</strong></span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.estoque" />
+                <span><strong>Estoque & Fichas</strong></span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.clientes" />
+                <span><strong>Clientes & Fiado</strong></span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" id="chk-perm-admin-usuarios" value="admin.usuarios" />
+                <span><strong>Usuários & Cargos</strong></span>
+              </label>
+              <label class="adm-s-318">
+                <input type="checkbox" class="cargo-perm-chk" value="admin.configuracoes" />
+                <span><strong>Configurações da Loja</strong></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-s-324" id="cargo-sistema-aviso" style="display:none;">
+          🔒 <strong>Cargo do Sistema:</strong> O nome deste cargo é protegido e a permissão <code>admin.usuarios</code> não pode ser removida do Admin.
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer adm-s-325">
+      <button class="btn btn--ghost" id="modal-cargo-cancel" type="button">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-cargo" type="button">Salvar Cargo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL PARA DEFINIR PIN DE SUPERVISOR (CAF-000036)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-pin-usuario-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-pin-usuario-title">
+  <div class="modal adm-s-326" id="modal-pin-usuario">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-pin-usuario-title">Definir PIN de Supervisor</span>
+      <button class="modal__close" id="modal-pin-usuario-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-pin-usuario" novalidate>
+        <input type="hidden" id="form-pin-user-id" />
+        <p class="adm-s-327">
+          Colaborador: <strong class="adm-s-328" id="form-pin-user-nome">--</strong>
+        </p>
+
+        <div class="field">
+          <label class="field__label" for="form-pin-novo">Novo PIN Numérico (4 a 8 dígitos)</label>
+          <input class="field__input" type="password" id="form-pin-novo" placeholder="Digite de 4 a 8 dígitos..." maxlength="8" pattern="[0-9]*" inputmode="numeric" required />
+          <div class="hint">Deixe em branco se desejar remover o PIN existente.</div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer adm-s-329">
+      <button class="btn btn--ghost" id="modal-pin-usuario-cancel" type="button">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-pin-usuario" type="button">Salvar PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE PROMOÇÕES
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-promocao-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-promocao-title">
+  <div class="modal" id="modal-promocao">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-promocao-title">Nova Promoção</span>
+      <button class="modal__close" id="modal-promocao-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-promocao" novalidate>
+        <input type="hidden" id="promo-id" />
+        <div class="field">
+          <label class="field__label" for="promo-nome">Nome da Promoção *</label>
+          <input class="field__input" type="text" id="promo-nome" required />
+        </div>
+        <div class="field">
+          <label class="field__label" for="promo-descricao">Descrição</label>
+          <textarea class="field__textarea" id="promo-descricao" rows="2"></textarea>
+        </div>
+        
+        <div class="field-row">
+          <div class="field adm-s-330">
+            <label class="field__label" for="promo-tipo">Tipo de Promoção *</label>
+            <select class="field__select" id="promo-tipo" required>
+              <option value="percentual">Percentual (X% off)</option>
+              <option value="compre_leve">Compre X, Leve Y</option>
+              <option value="segunda_unidade">2ª Unidade X% off</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row" id="promo-percentual-wrap">
+          <div class="field">
+            <label class="field__label" for="promo-percentual">Percentual (%) *</label>
+            <input class="field__input" type="number" step="0.01" id="promo-percentual" />
+          </div>
+        </div>
+
+        <div class="field-row hidden" id="promo-leve-wrap">
+          <div class="field">
+            <label class="field__label" for="promo-qtd-compra">Qtd Compra (Compre X) *</label>
+            <input class="field__input" type="number" id="promo-qtd-compra" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="promo-qtd-leva">Qtd Leva (Leve Y) *</label>
+            <input class="field__input" type="number" id="promo-qtd-leva" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Aplicar a *</label>
+          <div class="adm-s-047">
+            <select class="field__select adm-s-331" id="promo-aplicar-tipo">
+              <option value="produto">Produto</option>
+              <option value="categoria">Categoria</option>
+            </select>
+            <select class="field__select adm-s-330" id="promo-aplicar-alvo" required>
+              <!-- Loaded via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Dias da Semana *</label>
+          <div class="adm-s-332">
+            <label><input type="checkbox" class="promo-dia" value="0"> Dom</label>
+            <label><input type="checkbox" class="promo-dia" value="1"> Seg</label>
+            <label><input type="checkbox" class="promo-dia" value="2"> Ter</label>
+            <label><input type="checkbox" class="promo-dia" value="3"> Qua</label>
+            <label><input type="checkbox" class="promo-dia" value="4"> Qui</label>
+            <label><input type="checkbox" class="promo-dia" value="5"> Sex</label>
+            <label><input type="checkbox" class="promo-dia" value="6"> Sáb</label>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label" for="promo-inicio">Vigência Início</label>
+            <input class="field__input" type="date" id="promo-inicio" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="promo-fim">Vigência Fim</label>
+            <input class="field__input" type="date" id="promo-fim" />
+          </div>
+        </div>
+
+        <div class="field adm-s-036">
+          <input type="checkbox" id="promo-ativo" checked />
+          <label class="adm-s-333" for="promo-ativo">Promoção Ativa</label>
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-promocao-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-promocao">Salvar Promoção</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE MOVIMENTO DE CAIXA (SANGRIA/SUPRIMENTO)
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-movimento-caixa-overlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal-movimento-caixa">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-movimento-caixa-title">Novo Movimento</span>
+      <button class="modal__close" id="modal-movimento-caixa-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="form-movimento-caixa" novalidate>
+        <input type="hidden" id="movimento-tipo" />
+        <div class="field">
+          <label class="field__label" for="movimento-valor">Valor (R$) *</label>
+          <input class="field__input" type="number" id="movimento-valor" step="0.01" min="0.01" required />
+        </div>
+        <div class="field">
+          <label class="field__label" for="movimento-motivo">Motivo (Opcional)</label>
+          <input class="field__input" type="text" id="movimento-motivo" placeholder="Motivo da retirada/entrada" />
+        </div>
+      </form>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="modal-movimento-caixa-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-salvar-movimento">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL DE FECHAMENTO DE CAIXA
+════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-fechar-caixa-overlay" role="dialog" aria-modal="true">
+  <div class="modal adm-s-306" id="modal-fechar-caixa">
+    <div class="modal__header">
+      <span class="modal__title" id="modal-fechar-caixa-title">Fechamento de Caixa</span>
+      <button class="modal__close" id="modal-fechar-caixa-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="alerta-mesas-abertas" class="alert alert--warn adm-s-010" style="display:none;">
+        <div class="alert__icon">⚠️</div>
+        <div class="alert__content adm-s-225">
+          <strong>Atenção:</strong> Existem <span id="qtd-mesas-abertas">0</span> mesas/pedidos em aberto:
+          <div id="lista-mesas-abertas-detalhes"></div>
+        </div>
+      </div>
+
+      <!-- Etapa 1: Formulário de Contagem -->
+      <div id="fechar-caixa-step-contagem">
+        <div class="adm-s-334" id="fechar-caixa-aviso-cego">
+          🔒 <strong>Conferência Cega:</strong> Informe o valor efetivamente contado em gaveta e nos comprovantes de cada forma de pagamento. O comparativo com o sistema será exibido após confirmar.
+        </div>
+
+        <!-- Calculadora de Cédulas e Moedas para Dinheiro -->
+        <details class="adm-s-335" id="detalhes-contagem-cedulas">
+          <summary class="adm-s-336">
+            <span>💵 Contar Dinheiro por Cédulas e Moedas (Opcional)</span>
+            <span class="adm-s-337" id="cedulas-soma-badge">Total: R$ 0,00</span>
+          </summary>
+          <div class="adm-s-338" id="cedulas-grid">
+            <!-- Gerado via JS -->
+          </div>
+          <div class="adm-s-339">
+            <button type="button" class="btn btn--ghost adm-s-004" id="btn-limpar-cedulas">Limpar cédulas</button>
+          </div>
+        </details>
+
+        <form id="form-fechar-caixa" novalidate>
+          <div class="table-wrap">
+            <table class="adm-s-010">
+              <thead id="fechar-caixa-thead">
+                <tr>
+                  <th>Forma de Pagamento</th>
+                  <th class="col-sistema-fechamento">Esperado (Sistema)</th>
+                  <th>Valor Contado (R$)</th>
+                  <th class="col-diferenca-fechamento">Diferença</th>
+                </tr>
+              </thead>
+              <tbody id="fechar-caixa-tbody">
+                <!-- Gerado via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div class="field">
+            <label class="field__label" for="fechar-caixa-observacoes" id="label-fechar-caixa-obs">Observações / Justificativa de Diferença</label>
+            <textarea class="field__textarea" id="fechar-caixa-observacoes" rows="2" placeholder="Obrigatório caso haja diferença acima do limite configurado"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Etapa 2: Resultado da Conferência após confirmação -->
+      <div id="fechar-caixa-step-resultado" style="display:none;">
+        <div class="adm-s-340" id="fechar-caixa-resultado-banner"></div>
+        <div class="table-wrap">
+          <table class="adm-s-010">
+            <thead>
+              <tr>
+                <th>Forma de Pagamento</th>
+                <th>Esperado (Sistema)</th>
+                <th>Contado (Informado)</th>
+                <th>Diferença</th>
+              </tr>
+            </thead>
+            <tbody id="fechar-caixa-resultado-tbody"></tbody>
+          </table>
+        </div>
+        <div class="adm-s-341" id="fechar-caixa-resultado-obs"></div>
+      </div>
+    </div>
+    <div class="modal__footer" id="fechar-caixa-footer-contagem">
+      <button class="btn btn--ghost" id="modal-fechar-caixa-cancel">Cancelar</button>
+      <button class="btn btn--primary" id="btn-confirmar-fechar-caixa">Confirmar Fechamento</button>
+    </div>
+    <div class="modal__footer" id="fechar-caixa-footer-resultado" style="display:none;">
+      <button class="btn btn--outline-dark" id="btn-imprimir-resumo-caixa">🖨️ Imprimir Resumo</button>
+      <button class="btn btn--primary" id="btn-concluir-fechar-caixa">Concluir</button>
+    </div>
+  </div>
+</div>

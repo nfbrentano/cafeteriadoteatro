@@ -1,7 +1,7 @@
 # Plano de evolução (CAF-000115 a CAF-000125)
 
 > Origem: leitura do repositório em 2026-11-10 (código, migrations, testes, CI e SDDs 001–114).
-> **CAF-000115 a CAF-000119** estão **Concluídas** (em `SDD/CONCLUIDAS/`). As demais SDDs (`CAF-000120` a `CAF-000125`) permanecem em **Rascunho**, aguardando revisão.
+> **CAF-000115 a CAF-000122** estão **Concluídas** (em `SDD/CONCLUIDAS/`). As demais SDDs (`CAF-000123` a `CAF-000125`) permanecem em **Rascunho**, aguardando revisão.
 
 ## Leitura geral
 
@@ -15,10 +15,10 @@ O produto está funcionalmente maduro: PDV, KDS, Totem, pedido do cliente, estoq
 | 2 | [CAF-000115](CONCLUIDAS/CAF-000115-observabilidade-erros-front-em-producao.md) | Concluída | CHORE | Captura de erros do front e painel no Admin | Nenhum `onerror`/`unhandledrejection`; defeito de RPC só visto em produção (`94d6b99`) | P | — |
 | 3 | [CAF-000117](CONCLUIDAS/CAF-000117-seguranca-front-csp-sri-versoes-cdn-dependabot.md) | Concluída | FIX | CSP, SRI e versões fixas de CDN, Dependabot | `supabase-js@2` e `chart.js` sem versão fixa, 0 `integrity`, 0 CSP | M | — |
 | 4 | [CAF-000118](CONCLUIDAS/CAF-000118-pwa-service-worker-precache-e-versionamento.md) | Concluída | FIX | Service worker gerado no build | Precache manual sem Totem, Retirada, Admin e `js/utils/`; versão `v15` manual | P | — |
-| 5 | [CAF-000122](CAF-000122-higiene-do-repositorio-ci-e-readme.md) | Rascunho | CHORE | Higiene do repositório, Node do CI, README | 54 MB de `images_backup` publicados; `supabase/.temp` versionado; CI em Node 20 | P | — |
+| 5 | [CAF-000122](CONCLUIDAS/CAF-000122-higiene-do-repositorio-ci-e-readme.md) | Concluída | CHORE | Higiene do repositório, Node do CI, README | 54 MB de `images_backup` publicados; `supabase/.temp` versionado; CI em Node 20 | P | — |
 | 6 | [CAF-000119](CONCLUIDAS/CAF-000119-qualidade-eslint-e-cobertura-real-no-ci.md) | Concluída | CHORE | ESLint e cobertura real com piso no CI | Sem lint; relatório de cobertura com 20% e 23 arquivos em 0% | M | — |
-| 7 | [CAF-000120](CAF-000120-testes-e2e-fluxos-criticos-navegador-real.md) | Rascunho | CHORE | E2E em navegador real com banco local | Front testado com mock e banco isolado; nada testa os dois juntos | M | 116 |
-| 8 | [CAF-000121](CAF-000121-modularizacao-pdv-e-admin.md) | Rascunho | REFACTOR | Modularizar `pedidos.js` (6.381 linhas) e `admin.html` (5.087) | Toda feature recente toca os mesmos dois arquivos | G | 119, 120 |
+| 7 | [CAF-000120](CONCLUIDAS/CAF-000120-testes-e2e-fluxos-criticos-navegador-real.md) | Concluída | CHORE | E2E em navegador real com banco local | Front testado com mock e banco isolado; nada testa os dois juntos | M | 116 |
+| 8 | [CAF-000121](CONCLUIDAS/CAF-000121-modularizacao-pdv-e-admin.md) | Concluída | REFACTOR | Modularizar `pedidos.js` (6.381 linhas) e `admin.html` (5.087) | Toda feature recente toca os mesmos dois arquivos | G | 119, 120 |
 
 ## O que seria importante ter
 
