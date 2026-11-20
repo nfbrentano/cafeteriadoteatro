@@ -50,7 +50,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000039** | [PDV] [Financeiro] Pix com QR Code no fechamento e taxas por forma de pagamento | Concluída com ressalvas | `migration_caf_000039_pix_taxas.sql` | — | CAF-000079 |
 | **CAF-000040** | [Salão] [Cardápio] Totem / tablet de autoatendimento no balcão | Concluída | `migration_caf_000040_totem.sql` | — | — |
 | **CAF-000041** | [Admin] [Marketing] CRM: segmentação automática de clientes, tags e listas para campanha | Concluída com ressalvas | `migration_caf_000041_crm_campanhas.sql` | — | CAF-000081, CAF-000082 |
-| **CAF-000042** | [Cardápio] [Admin] Avaliação do pedido e do atendimento pelo cliente | Concluída | `migration_caf_000042_avaliacoes.sql` | — | — |
+| **CAF-000042** | [Cardápio] [Admin] Avaliação do pedido e do atendimento pelo cliente | Concluída com ressalvas | `migration_caf_000042_avaliacoes.sql` | — | CAF-000130 |
 | **CAF-000043** | [Cozinha] [Impressão] Etiqueta por item para copo e embalagem (nome do cliente e personalização) | Concluída | `migration_caf_000043_etiquetas.sql` | — | — |
 | **CAF-000044** | [Bug] [Caixa] Fechamento de caixa cego e correção do contrato entre tela e banco | Concluída com ressalvas | `migration_caf_000044_caixa_fix.sql` | — | CAF-000079, CAF-000083 |
 | **CAF-000045** | Exportação Completa de Produtos para Planilha (Excel e CSV) | Concluída | — | — | — |
@@ -69,7 +69,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000058** | [PDV] [Mobile] Lançamento rápido: favoritos, contador direto no card e repetir rodada | Concluída | — | — | — |
 | **CAF-000059** | [PDV] [Mobile] Operação ágil de salão: filtro Meus Pedidos, troco rápido e envio otimista | Concluída | — | — | — |
 | **CAF-000060** | Seleção Automática de "Sem Mesa" e Liberação de Envio ao Marcar "Para Viagem / Balcão" | Concluída | — | — | — |
-| **CAF-000061** | Validação e Aplicação de Cupons de Desconto no Autoatendimento e PDV | Concluída com ressalvas | `migration_caf_000061_cupons_desconto.sql` | `caf-000061-cupons.test.js` | CAF-000077 |
+| **CAF-000061** | Validação e Aplicação de Cupons de Desconto no Autoatendimento e PDV | Concluída com ressalvas | `migration_caf_000061_cupons_desconto.sql` | `caf-000061-cupons.test.js` | CAF-000077, CAF-000131 |
 | **CAF-000062** | Modo "Dia de Espetáculo" e Reserva Antecipada para o Intervalo | Concluída | `migration_caf_000062_dia_de_espetaculo.sql` | `caf-000062-espetaculo.test.js` | — |
 | **CAF-000063** | Programa de Fidelidade e Cashback Automático na Carteira do Cliente | Concluída com ressalvas | `migration_caf_000063_cashback_fidelidade.sql` | `caf-000063-cashback.test.js` | CAF-000076 |
 | **CAF-000064** | Tela Sempre Ligada (`Screen Wake Lock API`) nas Telas de Operação | Concluída | — | `caf-000064-wake-lock.test.js` | — |
@@ -88,11 +88,11 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000077** | Cupons: uso único por pedido, RPC protegida e rastreio do cupom no fechamento do PDV | Concluída | `migration_caf_000077_cupons_uso_unico.sql` | `caf-000077-cupons-uso-por-pedido.test.js` | — |
 | **CAF-000078** | Financeiro: alinhar cadastro, baixa e listagem de despesas ao schema real | Concluída | `migration_caf_000078_financeiro_despesas.sql` | `caf-000078-financeiro-despesas.test.js` | — |
 | **CAF-000079** | Pix no admin (salvar/testar) e taxas por forma de pagamento no fechamento de caixa | Concluída | `migration_caf_000079_pix_admin_taxas_caixa.sql` | `caf-000079-pix-admin-e-taxas-caixa.test.js` | — |
-| **CAF-000080** | Fuso horário consistente (America/Sao_Paulo) e corte do dia operacional | Concluída | `migration_caf_000080_fuso_horario.sql` | `caf-000080-fuso-horario.test.js` | — |
-| **CAF-000081** | Segurança: PIN com bloqueio, permissões por cargo efetivas no banco e RLS das operações do PDV/KDS | Concluída | `migration_caf_000081_seguranca_pin_rls.sql` | `caf-000081-seguranca-pin-permissoes.test.js` | — |
-| **CAF-000082** | Segurança: RPCs, policies e views expostas a anônimos e a qualquer autenticado | Concluída | `migration_caf_000082_seguranca.sql` | `caf-000082-seguranca.test.js` | — |
-| **CAF-000083** | Pendências funcionais de operação e caixa (conta do cliente, reabertura de caixa, intervalo, etiquetas, totem e tempo-alvo) | Concluída | `migration_caf_000083_pendencias_operacao.sql` | `caf-000083-pendencias-operacao.test.js` | — |
-| **CAF-000084** | Pendências de UX, KDS e cardápio (diálogos nativos, busca, banner do espetáculo, destaque de adicionais, desfazer e mapa) | Concluída | — | `caf-000084-pendencias-ux.test.js` | — |
+| **CAF-000080** | Fuso horário consistente (America/Sao_Paulo) e corte do dia operacional | Concluída com ressalvas | `migration_caf_000080_fuso_horario.sql` | `caf-000080-fuso-horario.test.js` | CAF-000130 |
+| **CAF-000081** | Segurança: PIN com bloqueio, permissões por cargo efetivas no banco e RLS das operações do PDV/KDS | Concluída com ressalvas | `migration_caf_000081_seguranca_pin_rls.sql` | `caf-000081-seguranca-pin-permissoes.test.js` | CAF-000126, CAF-000127 |
+| **CAF-000082** | Segurança: RPCs, policies e views expostas a anônimos e a qualquer autenticado | Concluída com ressalvas | `migration_caf_000082_seguranca.sql` | `caf-000082-seguranca.test.js` | CAF-000126, CAF-000131 |
+| **CAF-000083** | Pendências funcionais de operação e caixa (conta do cliente, reabertura de caixa, intervalo, etiquetas, totem e tempo-alvo) | Concluída com ressalvas | `migration_caf_000083_pendencias_operacao.sql` | `caf-000083-pendencias-operacao.test.js` | CAF-000135 |
+| **CAF-000084** | Pendências de UX, KDS e cardápio (diálogos nativos, busca, banner do espetáculo, destaque de adicionais, desfazer e mapa) | Concluída com ressalvas | — | `caf-000084-pendencias-ux.test.js` | CAF-000135 |
 | **CAF-000085** | Saneamento da documentação das SDDs (status, critérios de aceitação, IDs e rastreabilidade) | Concluída | — | `caf-000085-sdd-docs.test.js` | — |
 | **CAF-000086** | Infraestrutura de Testes, Cobertura e Teste de Contrato Front ↔ Schema | Concluída | — | `schema-contract.test.js` | — |
 | **CAF-000087** | Cobertura de Testes: PDV, Mesas e Fechamento de Conta (SDDs 001–005, 010–013, 016, 018, 019) | Concluída | — | — | — |
@@ -107,7 +107,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000096** | Cobertura de Testes: KDS da Cozinha, Bar e Impressão Térmica (`cozinha.js` e `pedido-print.js`) | Concluída | — | `caf-000096-kds-impressao.test.js` | — |
 | **CAF-000097** | Cobertura de Testes: Gestão de Clientes, Fiado e Produtos (`clientes-admin.js` e `products.js`) | Concluída | — | `caf-000097-clientes-produtos.test.js` | — |
 | **CAF-000098** | Rodar as migrations 072–083 em produção (correções prévias, ensaio, roteiro e verificação) | Concluída | `migration_caf_000072_baseline_producao.sql` a `migration_caf_000083_pendencias_operacao.sql` | `caf-000098-migracoes-producao.test.js` | — |
-| **CAF-000099** | Tornar a suíte de testes efetiva: executar o código real das páginas, contrato com colunas e parâmetros, pgTAP rodando de verdade | Concluída | — | `caf-000099-execucao-real-harness.test.js`, `schema-contract.test.js` | — |
+| **CAF-000099** | Tornar a suíte de testes efetiva: executar o código real das páginas, contrato com colunas e parâmetros, pgTAP rodando de verdade | Concluída com ressalvas | — | `caf-000099-execucao-real-harness.test.js`, `schema-contract.test.js` | CAF-000138 |
 | **CAF-000100** | Resolução de Vulnerabilidades de Segurança CodeQL e Dependabot (DOM XSS, Sanitização e happy-dom) | Concluída | — | `caf-000100-seguranca-codeql.test.js` | — |
 | **CAF-000101** | Resolução dos Alertas CodeQL #14 e #19 de DOM XSS em observações do PDV (`pedidos.js`) | Concluída | — | `caf-000101-xss-pedidos-obs.test.js` | — |
 | **CAF-000102** | Suíte de Testes Funcionais Combinatórios da Tela de Pedidos (PDV — `pedidos.html`) | Concluída | — | `caf-000102-*.test.js` | — |
@@ -116,15 +116,15 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000105** | [TEST] Suíte de Testes Automatizados de Fluxo Completo de Pedidos com Variações Aleatórias | Concluída | — | `caf-000105-pedidos-fluxo-completo-aleatorio.test.js` | — |
 | **CAF-000106** | [FIX] Resolução de Vulnerabilidade Crítica Supabase: Habilitar Row-Level Security (RLS) e Policies em Todas as Tabelas Públicas (rls_disabled_in_public) | Concluída | `migration_caf_000106_habilitar_rls_todas_tabelas.sql` | `caf-000106-seguranca-rls-tabelas-publicas.test.js` | — |
 | **CAF-000107** | [FIX] Hardening Completo do Supabase Security & Performance Advisors: Policies com Escopo Admin Real, Search Path Imutável em Funções e Security Invoker em Views | Concluída | `migration_caf_000107_hardening_supabase_advisors.sql` | `caf-000107-hardening-supabase-advisors.test.js` | — |
-| **CAF-000108** | [FIX] Correção de Integridade Operacional: Transferência de Pedidos Já Entregues na Mesa, Débito Atômico da Conta do Cliente no Fechamento e Corte de Pagamento no Caixa | Concluída | `migration_caf_000108_integridade_transferencia_fechamento_caixa.sql` | `caf-000108-integridade-operacional-mesa-caixa.test.js` | — |
+| **CAF-000108** | [FIX] Correção de Integridade Operacional: Transferência de Pedidos Já Entregues na Mesa, Débito Atômico da Conta do Cliente no Fechamento e Corte de Pagamento no Caixa | Concluída com ressalvas | `migration_caf_000108_integridade_transferencia_fechamento_caixa.sql` | `caf-000108-integridade-operacional-mesa-caixa.test.js` | CAF-000129 |
 | **CAF-000109** | [FIX] Eliminação de Diálogos Nativos Bloqueantes (`alert`/`confirm`/`prompt`) e Modal de Recebimento de Pedidos do Totem no PDV | Concluída | — | `caf-000109-eliminacao-dialogos-nativos.test.js` | — |
-| **CAF-000110** | [FEAT] Combos e Kits Configuráveis no Cardápio Digital, Totem e PDV com Separação Automática por Estação no KDS | Concluída | `migration_caf_000110_combos_kits.sql` | `caf-000110-combos-kits.test.js` | — |
+| **CAF-000110** | [FEAT] Combos e Kits Configuráveis no Cardápio Digital, Totem e PDV com Separação Automática por Estação no KDS | Concluída com ressalvas | `migration_caf_000110_combos_kits.sql` | `caf-000110-combos-kits.test.js` | CAF-000136 |
 | **CAF-000111** | [FEAT] Controle de Validade de Lotes (PEPS) e Sugestão Inteligente de Compras Baseada no Consumo dos Últimos 30 Dias | Concluída | `migration_caf_000111_lotes_validade_peps_sugestao_compras.sql` | `caf-000111-lotes-validade-peps-sugestao-compras.test.js` | — |
-| **CAF-000112** | [FEAT] Fechamento Parcial de Conta da Mesa: Pagamento por Item Selecionado ou Abatimento Parcial no PDV | Concluída | `migration_caf_000112_fechamento_parcial_mesa.sql` | `caf-000112-fechamento-parcial-mesa.test.js` | — |
+| **CAF-000112** | [FEAT] Fechamento Parcial de Conta da Mesa: Pagamento por Item Selecionado ou Abatimento Parcial no PDV | Concluída com ressalvas | `migration_caf_000112_fechamento_parcial_mesa.sql` | `caf-000112-fechamento-parcial-mesa.test.js` | CAF-000129 |
 | **CAF-000113** | [FEAT] DRE Gerencial Automático, Conciliação de Recebíveis de Cartão/Pix e Meta de Vendas por Turno/Espetáculo | Concluída | `migration_caf_000113_dre_gerencial_recebiveis_metas.sql` | `caf-000113-dre-gerencial-recebiveis-metas.test.js` | — |
 | **CAF-000114** | [CHORE] Atualização de Dependências de Desenvolvimento (vite, vitest, @vitest/coverage-v8 e fake-indexeddb) | Concluída | — | `caf-000114-atualizacao-dependencias.test.js` | — |
 | **CAF-000115** | [CHORE] Observabilidade: captura de erros do front em produção e painel de saúde no Admin | Concluída | `migration_caf_000115_erros_cliente.sql` | `caf-000115-observabilidade-erros.test.js` | — |
-| **CAF-000116** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–115 | Concluída | `supabase/migrations.manifest.json` | `caf-000116-backup-migrations-runner.test.js` | — |
+| **CAF-000116** | [CHORE] Banco: backup com restauração testada, runner de migrations e rollbacks das migrations 103–115 | Concluída com ressalvas | `supabase/migrations.manifest.json` | `caf-000116-backup-migrations-runner.test.js` | CAF-000138 |
 | **CAF-000117** | [FIX] Segurança do front: Content Security Policy, bibliotecas de CDN com versão fixa e SRI, e Dependabot | Concluída | — | `caf-000117-seguranca-front-csp-sri.test.js` | — |
 | **CAF-000118** | [FIX] PWA: service worker com precache gerado no build, versão automática e cobertura do Totem, Retirada e Admin | Concluída | — | `caf-000118-pwa-service-worker-precache.test.js` | — |
 | **CAF-000119** | [CHORE] Qualidade contínua: ESLint, cobertura medida sobre o código real das telas e limites mínimos no CI | Concluída | — | `caf-000119-qualidade-eslint-cobertura.test.js` | — |
@@ -134,6 +134,38 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000123** | [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV | Rascunho | — | — | — |
 | **CAF-000124** | [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal | Rascunho | — | — | — |
 | **CAF-000125** | [UI] Acessibilidade do Totem e do cardápio com pedido do cliente (WCAG 2.1 AA) | Rascunho | — | — | — |
+| **CAF-000126** | [FIX] Autorização NULL-safe e revogação de `anon` nas RPCs SECURITY DEFINER | Rascunho | — | — | — |
+| **CAF-000127** | [FIX] Dados sensíveis legíveis: `pin_hash` com bcrypt e policies `USING (true)` de financeiro, caixa e estoque | Rascunho | — | — | — |
+| **CAF-000128** | [FIX] Integridade monetária no servidor: sinais e limites de valores, permissão de desconto por cargo e PIN de supervisor | Rascunho | — | — | — |
+| **CAF-000129** | [FIX] Saldo da mesa com fonte única e débitos/créditos do cliente (fiado e cashback) atômicos e idempotentes | Rascunho | — | — | — |
+| **CAF-000130** | [FIX] Regressões em produção: avaliação pós-pedido quebrada, anti-spam do QR e fuso horário | Rascunho | — | — | — |
+| **CAF-000131** | [FIX] Pedidos públicos: cupom aplicado no servidor, horário de funcionamento e proteção contra abuso | Rascunho | — | — | — |
+| **CAF-000132** | [FIX] LGPD e exportações: consentimento, Consent Mode do GA, política de privacidade, canal do titular e injeção em CSV | Rascunho | — | — | — |
+| **CAF-000133** | [FIX] PDV: envio de pedido sem perda, recebimento do totem, cancelamento por RPC, observações, toasts e fila offline | Rascunho | — | — | — |
+| **CAF-000134** | [FIX] KDS e impressão: fila de impressão, trava por estação, ressincronização no reconnect, SLA de agendados e voz | Rascunho | — | — | — |
+| **CAF-000135** | [FIX] Pedido do intervalo e "adicionar itens" descartados pelo servidor; repetir rodada; promoção por categoria | Rascunho | — | — | — |
+| **CAF-000136** | [FIX] Estoque: trigger de combos quebrado, PEPS no estorno e saldo incremental com lock | Rascunho | — | — | — |
+| **CAF-000137** | [REFACTOR] PDV/KDS usando os módulos de js/utils (centavos), fim das cópias e cliente Supabase único | Rascunho | — | — | — |
+| **CAF-000138** | [CHORE] Banco reconstruível pelo manifesto, E2E fiel à produção, pgTAP que roda de verdade e checagem de migrations no deploy | Rascunho | — | — | — |
+| **CAF-000139** | [FIX] Desempenho: realtime filtrado no admin e no site, paginação do admin e KPIs no fuso de SP | Rascunho | — | — | — |
+| **CAF-000140** | [FIX] Web: precache do SW por perfil, manifests separados, LCP e SEO do cardápio | Rascunho | — | — | — |
+| **CAF-000141** | [CHORE] Retenção e telemetria: expurgo agendado, limites de payload, contador via service role e avisos de lint/build | Rascunho | — | — | — |
+| **CAF-000142** | [FIX] Segurança das páginas públicas: escape de HTML do catálogo, links, CSP do jsDelivr e tipo de chave Pix | Rascunho | — | — | — |
+| **CAF-000143** | [FEAT] Variações de bebida e grupos de opções obrigatórios (tamanho, leite, shots, temperatura) com ficha técnica e "minha favorita" | Rascunho | — | — | — |
+| **CAF-000144** | [FEAT] Taxa de serviço/gorjeta conforme Lei 13.419/2017: rateio entre a equipe e relatório para a folha | Rascunho | — | — | — |
+| **CAF-000145** | [FEAT] Display do cliente no caixa (tela voltada ao cliente) | Rascunho | — | — | — |
+| **CAF-000146** | [FEAT] Capacidade por janela do intervalo e tempo estimado de retirada dinâmico | Rascunho | — | — | — |
+| **CAF-000147** | [FEAT] Aviso de "pedido pronto" por Web Push (PWA) no aparelho do cliente | Rascunho | — | — | — |
+| **CAF-000148** | [FEAT] Vale-presente digital sobre a carteira de créditos | Rascunho | — | — | — |
+| **CAF-000149** | [FEAT] Fidelidade com níveis sobre o cashback | Rascunho | — | — | — |
+| **CAF-000150** | [FEAT] Sugestão de itens (upsell) no QR, pedido online e PDV | Rascunho | — | — | — |
+| **CAF-000151** | [FEAT] Cardápio e preço por horário (dayparting) e cardápio expresso do intervalo | Rascunho | — | — | — |
+| **CAF-000152** | [FEAT] Alergênicos e restrições alimentares no cardápio, totem, PDV e KDS | Rascunho | — | — | — |
+| **CAF-000153** | [FEAT] Voucher "ingresso + consumo" com a bilheteria do teatro | Rascunho | — | — | — |
+| **CAF-000154** | [FEAT] Escala da equipe por turno/espetáculo | Rascunho | — | — | — |
+| **CAF-000155** | [FEAT] Entrada de estoque por XML da NF-e de compra | Rascunho | — | — | — |
+| **CAF-000156** | [FEAT] Assinatura / clube do café com Pix Automático | Rascunho | — | — | — |
+| **CAF-000157** | [FEAT] Maquininha integrada ao PDV (TEF / Smart POS) | Rascunho | — | — | — |
 
 ---
 
