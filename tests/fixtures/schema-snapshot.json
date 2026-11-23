@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-14T15:05:38.605Z",
+  "gerado_em": "2026-11-23T19:10:11.137Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -48,7 +48,8 @@
         "p_desconto_motivo",
         "p_idempotency_key",
         "p_cupom_codigo",
-        "p_campanha_id"
+        "p_campanha_id",
+        "2)"
       ]
     },
     "fn_calcular_custo_adicional": {
@@ -91,7 +92,8 @@
     "registrar_uso_cupom": {
       "parameters": [
         "p_campanha_id",
-        "p_pedido_id"
+        "p_pedido_id",
+        "p_valor_pedido"
       ]
     },
     "tem_permissao": {
@@ -204,8 +206,9 @@
     "fechar_caixa": {
       "parameters": [
         "p_caixa_id",
-        "p_contagem",
-        "p_observacoes"
+        "p_valores_informados",
+        "p_observacoes",
+        "p_contagem"
       ]
     },
     "fn_checar_conclusao_pedido": {
@@ -541,7 +544,8 @@
     "obter_previsao_recebiveis": {
       "parameters": [
         "p_data_inicio",
-        "now("
+        "now()))::DATE",
+        "p_dias_futuros"
       ]
     },
     "obter_meta_progresso_dia": {
@@ -568,6 +572,100 @@
     "limpar_erros_antigos": {
       "parameters": [
         "p_dias"
+      ]
+    },
+    "fn_deve_exigir_pix_kds": {
+      "parameters": []
+    },
+    "criar_cobranca_pix": {
+      "parameters": [
+        "p_pedido_id",
+        "p_mesa_codigo",
+        "p_valor",
+        "p_canal",
+        "p_txid",
+        "p_brcode",
+        "p_provedor",
+        "p_expiracao_min",
+        "p_parte_nome",
+        "p_fechamento_payload",
+        "p_psp_transacao_id",
+        "p_qr_code_base64"
+      ]
+    },
+    "processar_webhook_pix": {
+      "parameters": [
+        "p_txid",
+        "p_psp_transacao_id",
+        "p_valor_pago",
+        "p_taxa_psp",
+        "p_provedor",
+        "p_payload"
+      ]
+    },
+    "expirar_cobrancas_pix_vencidas": {
+      "parameters": []
+    },
+    "listar_cobrancas_pix_conferencia": {
+      "parameters": [
+        "p_status"
+      ]
+    },
+    "resolver_cobranca_pix_conferencia": {
+      "parameters": [
+        "p_cobranca_id",
+        "p_acao",
+        "p_observacao"
+      ]
+    },
+    "fn_gerar_chave_acesso_nfce": {
+      "parameters": [
+        "p_uf",
+        "p_cnpj",
+        "p_serie",
+        "p_numero",
+        "p_tipo_emissao",
+        "p_codigo_numerico"
+      ]
+    },
+    "obter_dados_fiscais_fechamento": {
+      "parameters": [
+        "p_fechamento_id"
+      ]
+    },
+    "registrar_emissao_nfce": {
+      "parameters": [
+        "p_fechamento_id",
+        "p_consumidor_cpf_cnpj",
+        "p_consumidor_nome",
+        "p_itens",
+        "p_formas_pagamento",
+        "p_chave_acesso",
+        "p_numero",
+        "p_serie",
+        "p_status",
+        "p_protocolo",
+        "p_motivo_status",
+        "p_qr_code_url",
+        "p_danfe_url",
+        "p_xml_url",
+        "p_ambiente",
+        "p_provedor",
+        "p_payload_envio",
+        "p_resposta_provedor"
+      ]
+    },
+    "cancelar_nfce": {
+      "parameters": [
+        "p_nota_id",
+        "p_motivo",
+        "p_pin"
+      ]
+    },
+    "listar_notas_fiscais": {
+      "parameters": [
+        "p_ano_mes",
+        "p_status"
       ]
     }
   },
@@ -1049,6 +1147,11 @@
         "antecedencia_min_horas",
         "apenas_encomenda",
         "fornecedor_padrao_id",
+        "ncm",
+        "cfop",
+        "csosn",
+        "origem",
+        "unidade_tributavel",
         "id",
         "nome",
         "descricao",
@@ -1082,6 +1185,9 @@
         "estacao",
         "tempo_alvo_min",
         "imprimir_etiqueta",
+        "ncm_padrao",
+        "cfop_padrao",
+        "csosn_padrao",
         "id",
         "nome",
         "descricao",
@@ -1410,6 +1516,69 @@
         "usuario_email",
         "metadados",
         "criado_em"
+      ]
+    },
+    "pix_cobrancas": {
+      "columns": [
+        "id",
+        "pedido_id",
+        "mesa_codigo",
+        "parte_nome",
+        "canal",
+        "provedor",
+        "txid",
+        "psp_transacao_id",
+        "valor",
+        "valor_pago",
+        "taxa_psp_percentual",
+        "taxa_psp_fixa",
+        "taxa_psp_valor",
+        "valor_liquido",
+        "brcode",
+        "qr_code_base64",
+        "status",
+        "motivo_conferencia",
+        "expira_em",
+        "pago_em",
+        "fechamento_id",
+        "fechamento_payload",
+        "webhook_payload",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "notas_fiscais": {
+      "columns": [
+        "id",
+        "fechamento_id",
+        "pedido_id",
+        "mesa_codigo",
+        "numero",
+        "serie",
+        "chave_acesso",
+        "protocolo",
+        "status",
+        "motivo_status",
+        "consumidor_cpf_cnpj",
+        "consumidor_nome",
+        "valor_produtos",
+        "valor_desconto",
+        "valor_total",
+        "formas_pagamento",
+        "itens",
+        "qr_code_url",
+        "danfe_url",
+        "xml_url",
+        "ambiente",
+        "provedor",
+        "payload_envio",
+        "resposta_provedor",
+        "cancelada_em",
+        "cancelada_por",
+        "cancelada_por_nome",
+        "motivo_cancelamento",
+        "created_at",
+        "updated_at"
       ]
     },
     "site_settings": {

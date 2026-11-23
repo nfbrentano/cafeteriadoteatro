@@ -413,6 +413,16 @@ html, body.totem-body {
   color: #FFF;
 }
 
+.totem-btn--pix-copy {
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+
+.totem-btn--pix-regenerar {
+  min-height: 44px;
+  font-size: 0.95rem;
+}
+
 /* ── MODAIS FULL/LARGE ── */
 .totem-modal-backdrop {
   position: fixed;

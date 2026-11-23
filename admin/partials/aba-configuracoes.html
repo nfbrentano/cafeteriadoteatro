@@ -133,12 +133,73 @@
                 <span class="slider round"></span>
               </label>
             </div>
+            <div class="field adm-s-088">
+              <div>
+                <strong>Ativar Pix Dinâmico com Confirmação Automática (CAF-000123)</strong>
+                <p class="hint adm-s-089">Gera cobrança única por pedido/mesa e quita automaticamente via webhook.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="config-pix-dinamico-ativo" checked />
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-psp-provedor">Provedor PSP (Edge Functions)</label>
+              <select class="field__input" id="config-pix-psp-provedor">
+                <option value="mercadopago">Mercado Pago</option>
+                <option value="asaas">Asaas</option>
+                <option value="sandbox">Sandbox / Homologação Local</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-exigir-kds">Exigir Pix pago antes de enviar ao KDS (Totem / Online)</label>
+              <select class="field__input" id="config-pix-exigir-kds">
+                <option value="sempre">Sempre exigir pagamento confirmado</option>
+                <option value="espetaculo">Somente em Dia de Espetáculo ativo</option>
+                <option value="nunca">Não exigir (fluxo manual / aprovação)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-expiracao-totem">Validade Pix Totem / PDV (min)</label>
+              <input class="field__input" type="number" id="config-pix-expiracao-totem" value="10" min="1" max="120" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="config-pix-expiracao-online">Validade Pix Pedido Online (min)</label>
+              <input class="field__input" type="number" id="config-pix-expiracao-online" value="30" min="1" max="240" />
+            </div>
           </div>
           <div class="adm-s-090">
             <button type="button" class="btn btn--primary" id="btn-salvar-config-pix">💾 Salvar Dados do PIX</button>
             <button type="button" class="btn btn--ghost" id="btn-testar-qr-pix">📱 Testar QR Code (R$ 1,00)</button>
           </div>
           <div class="adm-s-091" id="config-pix-teste-preview" style="display:none;"></div>
+
+          <div class="adm-s-092">
+            <div class="adm-s-093">
+              <div>
+                <strong>Conferência de Cobranças Pix (Expiradas / Divergentes)</strong>
+                <p class="hint adm-s-089">Pagamentos expirados ou com diferença de valor ficam destacados aqui para conferência.</p>
+              </div>
+              <button type="button" class="btn btn--outline-dark" id="btn-atualizar-pix-conferencia">🔄 Atualizar Conferência</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>TXID</th>
+                    <th>Canal / Pedido</th>
+                    <th>Cobrado</th>
+                    <th>Pago</th>
+                    <th>Status / Motivo</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="config-pix-conferencia-tbody">
+                  <tr><td colspan="6" class="text-center">Nenhuma divergência pendente.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           <div class="adm-s-092">
             <div class="adm-s-093">
@@ -161,6 +222,141 @@
                 </thead>
                 <tbody id="config-taxas-pagamento-tbody">
                   <tr><td colspan="5" class="text-center">Carregando taxas...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Módulo Fiscal & NFC-e (CAF-000124) -->
+        <div class="config-section">
+          <div class="config-section__title">🧾 Módulo Fiscal & Emissão de NFC-e (Modelo 65)</div>
+          <div class="adm-s-084">
+            <div>
+              <strong>Habilitar Emissão de NFC-e no Fechamento da Conta</strong>
+              <p class="hint adm-s-083">
+                Permite autorizar e imprimir a Nota Fiscal de Consumidor Eletrônica diretamente pelo PDV via provedor fiscal credenciado.
+              </p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="config-nfce-ativa" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="form-grid adm-s-087">
+            <div class="field">
+              <label class="field__label" for="config-nfce-modo">Modo de Emissão no Fechamento</label>
+              <select class="field__input" id="config-nfce-modo">
+                <option value="sob_demanda">Sob Demanda (Checkbox no PDV - Padrão)</option>
+                <option value="sempre">Sempre Emitir (Pré-marcado em todas as vendas)</option>
+                <option value="desativado">Desativado</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-ambiente">Ambiente SEFAZ</label>
+              <select class="field__input" id="config-nfce-ambiente">
+                <option value="homologacao">Homologação (Testes - Sem Valor Fiscal)</option>
+                <option value="producao">Produção (SEFAZ Oficial)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-provedor">Provedor de Emissão</label>
+              <select class="field__input" id="config-nfce-provedor">
+                <option value="sandbox">Sandbox (Simulador Mock Integrado)</option>
+                <option value="focusnfe">Focus NFe v2</option>
+                <option value="plugnotas">PlugNotas (TecnoSpeed)</option>
+                <option value="nuvemfiscal">Nuvem Fiscal</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-serie">Série da NFC-e</label>
+              <input class="field__input" type="number" id="config-nfce-serie" value="1" min="1" max="999" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-proximo-numero">Próximo Número Fiscal</label>
+              <input class="field__input" type="number" id="config-nfce-proximo-numero" value="1" min="1" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-cnpj">CNPJ do Emitente</label>
+              <input class="field__input" type="text" id="config-nfce-cnpj" value="00.000.000/0001-91" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-razao-social">Razão Social</label>
+              <input class="field__input" type="text" id="config-nfce-razao-social" value="Cafeteria do Teatro Ltda" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="config-nfce-ie">Inscrição Estadual (IE)</label>
+              <input class="field__input" type="text" id="config-nfce-ie" value="123456789" />
+            </div>
+          </div>
+
+          <div class="adm-nfce-btn-row">
+            <button type="button" class="btn btn--primary" id="btn-salvar-config-nfce">💾 Salvar Configurações Fiscais</button>
+          </div>
+
+          <!-- Gestão e Relatório de Notas Emitidas (CA10) -->
+          <div class="adm-s-092 adm-nfce-section-divider">
+            <div class="adm-s-093">
+              <div>
+                <strong>Relatório e Gestão de Notas Fiscais (NFC-e)</strong>
+                <p class="hint adm-s-089">Consulte o status das notas, reenvie contingências/rejeições ou exporte os XMLs para a contabilidade.</p>
+              </div>
+              <div class="adm-nfce-filters">
+                <input type="month" id="config-nfce-filtro-mes" class="field__input adm-nfce-filter-input" />
+                <select id="config-nfce-filtro-status" class="field__input adm-nfce-filter-input">
+                  <option value="">Todos os status</option>
+                  <option value="autorizada">Autorizadas</option>
+                  <option value="cancelada">Canceladas</option>
+                  <option value="rejeitada">Rejeitadas</option>
+                  <option value="contingencia">Contingência</option>
+                </select>
+                <button type="button" class="btn btn--outline-dark" id="btn-atualizar-nfce-lista">🔄 Atualizar</button>
+              </div>
+            </div>
+
+            <div id="config-nfce-resumo-cards" class="adm-nfce-resumo-cards">
+              <div class="kpi-mini adm-nfce-kpi-card adm-nfce-kpi-card--aut">
+                <span class="adm-nfce-kpi-title--aut">Autorizadas</span>
+                <div class="adm-nfce-kpi-val--aut" id="nfce-resumo-autorizadas">0</div>
+                <div class="adm-nfce-kpi-sub--aut" id="nfce-resumo-valor">R$ 0,00</div>
+              </div>
+              <div class="kpi-mini adm-nfce-kpi-card adm-nfce-kpi-card--canc">
+                <span class="adm-nfce-kpi-title--canc">Canceladas</span>
+                <div class="adm-nfce-kpi-val--canc" id="nfce-resumo-canceladas">0</div>
+              </div>
+              <div class="kpi-mini adm-nfce-kpi-card adm-nfce-kpi-card--rej">
+                <span class="adm-nfce-kpi-title--rej">Rejeitadas</span>
+                <div class="adm-nfce-kpi-val--rej" id="nfce-resumo-rejeitadas">0</div>
+              </div>
+              <div class="kpi-mini adm-nfce-kpi-card adm-nfce-kpi-card--cont">
+                <span class="adm-nfce-kpi-title--cont">Contingência</span>
+                <div class="adm-nfce-kpi-val--cont" id="nfce-resumo-contingencia">0</div>
+              </div>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nº / Série</th>
+                    <th>Emissão</th>
+                    <th>Mesa / Fechamento</th>
+                    <th>Consumidor</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="config-nfce-tbody">
+                  <tr><td colspan="7" class="text-center">Carregando notas fiscais...</td></tr>
                 </tbody>
               </table>
             </div>

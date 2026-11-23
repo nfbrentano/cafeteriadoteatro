@@ -535,17 +535,92 @@
         }
       });
 
-      // --- CAF-000039: PIX QR CODE (BR CODE EMV) E TAXAS DE PAGAMENTO ---
+      // --- CAF-000039 / CAF-000123: PIX QR CODE (BR CODE EMV) E TAXAS DE PAGAMENTO ---
+      const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       const inputPixChave = document.getElementById('config-pix-chave');
       const inputPixRecebedor = document.getElementById('config-pix-recebedor');
       const inputPixCidade = document.getElementById('config-pix-cidade');
       const togglePixImprimir = document.getElementById('config-pix-imprimir-conta');
+      const inputPixDinamicoAtivo = document.getElementById('config-pix-dinamico-ativo');
+      const selectPixPspProvedor = document.getElementById('config-pix-psp-provedor');
+      const selectPixExigirKds = document.getElementById('config-pix-exigir-kds');
+      const inputPixExpiracaoTotem = document.getElementById('config-pix-expiracao-totem');
+      const inputPixExpiracaoOnline = document.getElementById('config-pix-expiracao-online');
       const btnSalvarPix = document.getElementById('btn-salvar-config-pix');
       const btnTestarPix = document.getElementById('btn-testar-qr-pix');
       const previewPixBox = document.getElementById('config-pix-teste-preview');
 
+      const btnAtualizarPixConferencia = document.getElementById('btn-atualizar-pix-conferencia');
+      const tbodyPixConferencia = document.getElementById('config-pix-conferencia-tbody');
+
       const tbodyTaxas = document.getElementById('config-taxas-pagamento-tbody');
       const btnSalvarTaxas = document.getElementById('btn-salvar-taxas-pagamento');
+
+      async function carregarCobrancasPixConferencia() {
+        if (!tbodyPixConferencia || !window.cafeteriaSupabase) return;
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('listar_cobrancas_pix_conferencia');
+          if (error) throw error;
+          if (!data || data.length === 0) {
+            tbodyPixConferencia.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma divergência ou pendência de conferência.</td></tr>';
+            return;
+          }
+          tbodyPixConferencia.innerHTML = data.map((c) => {
+            const isExpirado = c.status === 'expirada';
+            const badgeClass = isExpirado ? 'adm-pix-badge-exp' : 'adm-pix-badge-div';
+            const statusDesc = isExpirado ? 'Expirada' : (c.motivo_divergencia || 'Divergente');
+            const cobradoFmt = Number(c.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const pagoFmt = c.valor_pago ? Number(c.valor_pago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-';
+            const refPedido = c.numero_pedido ? `#${c.numero_pedido}` : (c.mesa_codigo ? `Mesa ${c.mesa_codigo}` : '-');
+
+            return `
+              <tr>
+                <td><code>${escHtml(c.txid || '-')}</code></td>
+                <td><strong>${escHtml(c.canal || '-')}</strong> (${escHtml(refPedido)})</td>
+                <td>${cobradoFmt}</td>
+                <td>${pagoFmt}</td>
+                <td><span class="${badgeClass}">${escHtml(statusDesc)}</span></td>
+                <td>
+                  <button type="button" class="btn btn--secondary btn--sm btn-resolver-pix" data-id="${c.id}">
+                    Resolver / Baixar
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } catch (err) {
+          console.warn('Erro ao listar cobranças para conferência:', err);
+          tbodyPixConferencia.innerHTML = '<tr><td colspan="6" class="text-center" style="color:#dc2626;">Erro ao carregar lista de conferência.</td></tr>';
+        }
+      }
+
+      btnAtualizarPixConferencia?.addEventListener('click', carregarCobrancasPixConferencia);
+
+      tbodyPixConferencia?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-resolver-pix');
+        if (!btn) return;
+        const cobrancaId = btn.dataset.id;
+        if (!cobrancaId) return;
+
+        const obs = prompt('Observação da conferência manual (ex: Comprovante verificado no app bancário):', 'Conferido no extrato bancário');
+        if (obs === null) return;
+
+        btn.disabled = true;
+        try {
+          const { error } = await window.cafeteriaSupabase.rpc('resolver_cobranca_pix_conferencia', {
+            p_cobranca_id: cobrancaId,
+            p_acao: 'aprovar',
+            p_observacao: obs
+          });
+          if (error) throw error;
+          admin.toast('Sucesso', 'Cobrança Pix resolvida com sucesso!', 'success');
+          carregarCobrancasPixConferencia();
+        } catch (err) {
+          console.error('Erro ao resolver cobrança Pix:', err);
+          admin.toast('Erro', 'Não foi possível resolver cobrança: ' + (err.message || ''), 'error');
+          btn.disabled = false;
+        }
+      });
 
       async function carregarConfigPixETaxas() {
         if (!window.cafeteriaSupabase) return;
@@ -553,20 +628,41 @@
           const { data: pixRows } = await window.cafeteriaSupabase
             .from('configuracoes_sistema')
             .select('chave, valor')
-            .in('chave', ['pix_chave', 'pix_nome_recebedor', 'pix_cidade', 'pix_imprimir_na_conta']);
+            .in('chave', [
+              'pix_chave', 'pix_nome_recebedor', 'pix_cidade', 'pix_imprimir_na_conta',
+              'pix_dinamico_ativo', 'pix_psp_provedor', 'pix_exigir_pagamento_kds',
+              'pix_expiracao_totem_min', 'pix_expiracao_online_min'
+            ]);
 
           (pixRows || []).forEach((r) => {
             const valStr = typeof r.valor === 'string' ? r.valor : (r.valor !== null && r.valor !== undefined ? String(r.valor).replace(/^"|"$/g, '') : '');
             if (r.chave === 'pix_chave' && inputPixChave) inputPixChave.value = valStr;
             if (r.chave === 'pix_nome_recebedor' && inputPixRecebedor) inputPixRecebedor.value = valStr || 'CAFETERIA DO TEATRO';
-            if (r.chave === 'pix_cidade' && inputPixCidade) inputPixCidade.value = valStr || 'FORTALEZA';
+            if (r.chave === 'pix_cidade' && inputPixCidade) inputPixCidade.value = valStr || 'LAJEADO';
             if (r.chave === 'pix_imprimir_na_conta' && togglePixImprimir) {
               togglePixImprimir.checked = r.valor === true || r.valor === 'true';
+            }
+            if (r.chave === 'pix_dinamico_ativo' && inputPixDinamicoAtivo) {
+              inputPixDinamicoAtivo.checked = r.valor === true || r.valor === 'true';
+            }
+            if (r.chave === 'pix_psp_provedor' && selectPixPspProvedor) {
+              selectPixPspProvedor.value = valStr || 'sandbox';
+            }
+            if (r.chave === 'pix_exigir_pagamento_kds' && selectPixExigirKds) {
+              selectPixExigirKds.value = valStr || 'sempre';
+            }
+            if (r.chave === 'pix_expiracao_totem_min' && inputPixExpiracaoTotem) {
+              inputPixExpiracaoTotem.value = valStr || '10';
+            }
+            if (r.chave === 'pix_expiracao_online_min' && inputPixExpiracaoOnline) {
+              inputPixExpiracaoOnline.value = valStr || '30';
             }
           });
         } catch (err) {
           console.warn('Erro ao carregar configurações Pix:', err);
         }
+
+        carregarCobrancasPixConferencia();
 
         if (tbodyTaxas) {
           try {
@@ -613,8 +709,13 @@
       btnSalvarPix?.addEventListener('click', async () => {
         const chave = (inputPixChave?.value || '').trim();
         const recebedor = (inputPixRecebedor?.value || 'CAFETERIA DO TEATRO').trim().slice(0, 25);
-        const cidade = (inputPixCidade?.value || 'FORTALEZA').trim().slice(0, 15);
+        const cidade = (inputPixCidade?.value || 'LAJEADO').trim().slice(0, 15);
         const imprimir = Boolean(togglePixImprimir?.checked);
+        const dinamicoAtivo = Boolean(inputPixDinamicoAtivo?.checked);
+        const pspProvedor = selectPixPspProvedor?.value || 'sandbox';
+        const exigirKds = selectPixExigirKds?.value || 'sempre';
+        const expTotem = parseInt(inputPixExpiracaoTotem?.value || '10', 10);
+        const expOnline = parseInt(inputPixExpiracaoOnline?.value || '30', 10);
 
         btnSalvarPix.disabled = true;
         try {
@@ -622,7 +723,12 @@
             { chave: 'pix_chave', valor: chave, updated_at: new Date().toISOString() },
             { chave: 'pix_nome_recebedor', valor: recebedor, updated_at: new Date().toISOString() },
             { chave: 'pix_cidade', valor: cidade, updated_at: new Date().toISOString() },
-            { chave: 'pix_imprimir_na_conta', valor: imprimir, updated_at: new Date().toISOString() }
+            { chave: 'pix_imprimir_na_conta', valor: imprimir, updated_at: new Date().toISOString() },
+            { chave: 'pix_dinamico_ativo', valor: dinamicoAtivo, updated_at: new Date().toISOString() },
+            { chave: 'pix_psp_provedor', valor: pspProvedor, updated_at: new Date().toISOString() },
+            { chave: 'pix_exigir_pagamento_kds', valor: exigirKds, updated_at: new Date().toISOString() },
+            { chave: 'pix_expiracao_totem_min', valor: expTotem, updated_at: new Date().toISOString() },
+            { chave: 'pix_expiracao_online_min', valor: expOnline, updated_at: new Date().toISOString() }
           ];
           const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
           if (error) throw error;
@@ -723,6 +829,216 @@
           btnSalvarTaxas.disabled = false;
         }
       });
+
+      // --- CAF-000124: MÓDULO FISCAL & NFC-E ---
+      const inputNfceAtiva = document.getElementById('config-nfce-ativa');
+      const selectNfceModo = document.getElementById('config-nfce-modo');
+      const selectNfceAmbiente = document.getElementById('config-nfce-ambiente');
+      const selectNfceProvedor = document.getElementById('config-nfce-provedor');
+      const inputNfceSerie = document.getElementById('config-nfce-serie');
+      const inputNfceProximoNumero = document.getElementById('config-nfce-proximo-numero');
+      const inputNfceCnpj = document.getElementById('config-nfce-cnpj');
+      const inputNfceRazaoSocial = document.getElementById('config-nfce-razao-social');
+      const inputNfceIe = document.getElementById('config-nfce-ie');
+      const btnSalvarNfce = document.getElementById('btn-salvar-config-nfce');
+
+      const inputNfceFiltroMes = document.getElementById('config-nfce-filtro-mes');
+      const selectNfceFiltroStatus = document.getElementById('config-nfce-filtro-status');
+      const btnAtualizarNfceLista = document.getElementById('btn-atualizar-nfce-lista');
+      const tbodyNfce = document.getElementById('config-nfce-tbody');
+
+      const lblResumoAutorizadas = document.getElementById('nfce-resumo-autorizadas');
+      const lblResumoValor = document.getElementById('nfce-resumo-valor');
+      const lblResumoCanceladas = document.getElementById('nfce-resumo-canceladas');
+      const lblResumoRejeitadas = document.getElementById('nfce-resumo-rejeitadas');
+      const lblResumoContingencia = document.getElementById('nfce-resumo-contingencia');
+
+      async function carregarConfigNfce() {
+        if (!window.cafeteriaSupabase) return;
+        try {
+          const { data: rows } = await window.cafeteriaSupabase
+            .from('configuracoes_sistema')
+            .select('chave, valor')
+            .in('chave', [
+              'nfce_ativa', 'nfce_modo_emissao', 'nfce_ambiente', 'nfce_provedor',
+              'nfce_serie', 'nfce_proximo_numero', 'nfce_emitente_cnpj',
+              'nfce_emitente_razao_social', 'nfce_emitente_ie'
+            ]);
+
+          (rows || []).forEach(r => {
+            const valStr = typeof r.valor === 'string' ? r.valor : (r.valor !== null && r.valor !== undefined ? String(r.valor).replace(/^"|"$/g, '') : '');
+            if (r.chave === 'nfce_ativa' && inputNfceAtiva) inputNfceAtiva.checked = r.valor === true || r.valor === 'true';
+            if (r.chave === 'nfce_modo_emissao' && selectNfceModo) selectNfceModo.value = valStr || 'sob_demanda';
+            if (r.chave === 'nfce_ambiente' && selectNfceAmbiente) selectNfceAmbiente.value = valStr || 'homologacao';
+            if (r.chave === 'nfce_provedor' && selectNfceProvedor) selectNfceProvedor.value = valStr || 'sandbox';
+            if (r.chave === 'nfce_serie' && inputNfceSerie) inputNfceSerie.value = valStr || '1';
+            if (r.chave === 'nfce_proximo_numero' && inputNfceProximoNumero) inputNfceProximoNumero.value = valStr || '1';
+            if (r.chave === 'nfce_emitente_cnpj' && inputNfceCnpj) inputNfceCnpj.value = valStr || '00.000.000/0001-91';
+            if (r.chave === 'nfce_emitente_razao_social' && inputNfceRazaoSocial) inputNfceRazaoSocial.value = valStr || 'Cafeteria do Teatro Ltda';
+            if (r.chave === 'nfce_emitente_ie' && inputNfceIe) inputNfceIe.value = valStr || '123456789';
+          });
+        } catch (err) {
+          console.warn('Erro ao carregar configurações fiscais:', err);
+        }
+      }
+
+      async function carregarListaNotasFiscais() {
+        if (!tbodyNfce || !window.cafeteriaDB?.nfce) return;
+        const mesAtual = inputNfceFiltroMes?.value || new Date().toISOString().slice(0, 7);
+        const statusFiltro = selectNfceFiltroStatus?.value || null;
+
+        try {
+          tbodyNfce.innerHTML = '<tr><td colspan="7" class="text-center">Carregando notas fiscais...</td></tr>';
+          const { notas = [], resumo = {} } = await window.cafeteriaDB.nfce.listarNotas({
+            anoMes: mesAtual,
+            status: statusFiltro
+          });
+
+          if (lblResumoAutorizadas) lblResumoAutorizadas.textContent = resumo.total_autorizadas || 0;
+          if (lblResumoValor) {
+            lblResumoValor.textContent = Number(resumo.valor_total_autorizado || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          }
+          if (lblResumoCanceladas) lblResumoCanceladas.textContent = resumo.total_canceladas || 0;
+          if (lblResumoRejeitadas) lblResumoRejeitadas.textContent = resumo.total_rejeitadas || 0;
+          if (lblResumoContingencia) lblResumoContingencia.textContent = resumo.total_contingencia || 0;
+
+          if (!notas.length) {
+            tbodyNfce.innerHTML = '<tr><td colspan="7" class="text-center">Nenhuma nota fiscal emitida no período.</td></tr>';
+            return;
+          }
+
+          tbodyNfce.innerHTML = notas.map(n => {
+            const numSerie = `${n.numero} / ${n.serie}`;
+            const dataFmt = new Date(n.created_at).toLocaleString('pt-BR');
+            const totalFmt = Number(n.valor_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const docConsumidor = n.consumidor_cpf_cnpj || 'Não informado';
+            const statusBadge = n.status === 'autorizada'
+              ? '<span class="status-badge status-badge--success">Autorizada</span>'
+              : n.status === 'cancelada'
+              ? '<span class="status-badge status-badge--danger">Cancelada</span>'
+              : n.status === 'rejeitada'
+              ? '<span class="status-badge status-badge--warning">Rejeitada</span>'
+              : '<span class="status-badge status-badge--neutral">Contingência</span>';
+
+            const canCancel = n.status === 'autorizada';
+            const canRetry = n.status === 'rejeitada' || n.status === 'contingencia';
+
+            return `
+              <tr data-nota-id="${n.id}">
+                <td><strong>${escHtml(numSerie)}</strong></td>
+                <td><small>${escHtml(dataFmt)}</small></td>
+                <td>Mesa ${escHtml(n.mesa_codigo || '-')}</td>
+                <td><small>${escHtml(docConsumidor)}</small></td>
+                <td><strong>${totalFmt}</strong></td>
+                <td>${statusBadge}</td>
+                <td style="white-space: nowrap;">
+                  <button type="button" class="btn btn--secondary btn--sm btn-imprimir-danfe" data-id="${n.id}" title="Imprimir DANFE NFC-e">🖨️ DANFE</button>
+                  ${canCancel ? `<button type="button" class="btn btn--ghost btn--sm btn-cancelar-nota text-danger" data-id="${n.id}" title="Cancelar Nota">🚫 Cancelar</button>` : ''}
+                  ${canRetry ? `<button type="button" class="btn btn--outline-dark btn--sm btn-reenviar-nota" data-fechamento="${n.fechamento_id || ''}" title="Reenviar Nota">🔄 Reenviar</button>` : ''}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } catch (err) {
+          console.error('Erro ao listar notas fiscais:', err);
+          tbodyNfce.innerHTML = '<tr><td colspan="7" class="text-center" style="color:#dc2626;">Erro ao carregar relatório fiscal.</td></tr>';
+        }
+      }
+
+      btnSalvarNfce?.addEventListener('click', async () => {
+        btnSalvarNfce.disabled = true;
+        try {
+          const payload = [
+            { chave: 'nfce_ativa', valor: inputNfceAtiva?.checked ?? true, updated_at: new Date().toISOString() },
+            { chave: 'nfce_modo_emissao', valor: selectNfceModo?.value || 'sob_demanda', updated_at: new Date().toISOString() },
+            { chave: 'nfce_ambiente', valor: selectNfceAmbiente?.value || 'homologacao', updated_at: new Date().toISOString() },
+            { chave: 'nfce_provedor', valor: selectNfceProvedor?.value || 'sandbox', updated_at: new Date().toISOString() },
+            { chave: 'nfce_serie', valor: parseInt(inputNfceSerie?.value, 10) || 1, updated_at: new Date().toISOString() },
+            { chave: 'nfce_proximo_numero', valor: parseInt(inputNfceProximoNumero?.value, 10) || 1, updated_at: new Date().toISOString() },
+            { chave: 'nfce_emitente_cnpj', valor: (inputNfceCnpj?.value || '').trim(), updated_at: new Date().toISOString() },
+            { chave: 'nfce_emitente_razao_social', valor: (inputNfceRazaoSocial?.value || '').trim(), updated_at: new Date().toISOString() },
+            { chave: 'nfce_emitente_ie', valor: (inputNfceIe?.value || '').trim(), updated_at: new Date().toISOString() }
+          ];
+
+          const { error } = await window.cafeteriaSupabase.from('configuracoes_sistema').upsert(payload);
+          if (error) throw error;
+          admin.toast('Sucesso', 'Configurações fiscais salvas com sucesso!', 'success');
+        } catch (err) {
+          console.error('Erro ao salvar configurações fiscais:', err);
+          admin.toast('Erro', 'Não foi possível salvar configurações fiscais: ' + (err.message || ''), 'error');
+        } finally {
+          btnSalvarNfce.disabled = false;
+        }
+      });
+
+      btnAtualizarNfceLista?.addEventListener('click', carregarListaNotasFiscais);
+      selectNfceFiltroStatus?.addEventListener('change', carregarListaNotasFiscais);
+      inputNfceFiltroMes?.addEventListener('change', carregarListaNotasFiscais);
+
+      tbodyNfce?.addEventListener('click', async (e) => {
+        const btnPrint = e.target.closest('.btn-imprimir-danfe');
+        if (btnPrint) {
+          const notaId = btnPrint.dataset.id;
+          const { notas = [] } = await window.cafeteriaDB.nfce.listarNotas({
+            anoMes: inputNfceFiltroMes?.value || new Date().toISOString().slice(0, 7)
+          });
+          const nota = notas.find(n => n.id === notaId);
+          if (nota && window.cafeteriaPrint?.printDanfeNfce) {
+            window.cafeteriaPrint.printDanfeNfce(nota, {
+              razao_social: inputNfceRazaoSocial?.value,
+              cnpj: inputNfceCnpj?.value,
+              ie: inputNfceIe?.value
+            });
+          }
+          return;
+        }
+
+        const btnCancel = e.target.closest('.btn-cancelar-nota');
+        if (btnCancel) {
+          const notaId = btnCancel.dataset.id;
+          const motivo = prompt('Informe a justificativa do cancelamento da NFC-e (mínimo 15 caracteres):');
+          if (!motivo) return;
+          if (motivo.trim().length < 15) {
+            alert('A justificativa deve conter no mínimo 15 caracteres conforme exigência fiscal.');
+            return;
+          }
+          const pin = prompt('Informe o PIN de supervisor/gerente:') || null;
+          try {
+            await window.cafeteriaDB.nfce.cancelarNfce({ notaId, motivo: motivo.trim(), pin });
+            admin.toast('Sucesso', 'NFC-e cancelada com sucesso!', 'success');
+            carregarListaNotasFiscais();
+          } catch (cancelErr) {
+            alert('Falha ao cancelar: ' + (cancelErr.message || 'Erro desconhecido'));
+          }
+          return;
+        }
+
+        const btnRetry = e.target.closest('.btn-reenviar-nota');
+        if (btnRetry) {
+          const fechamentoId = btnRetry.dataset.fechamento;
+          if (!fechamentoId) return;
+          btnRetry.disabled = true;
+          try {
+            const res = await window.cafeteriaDB.nfce.emitirNfce({ fechamentoId });
+            if (res?.sucesso) {
+              admin.toast('Sucesso', 'NFC-e autorizada com sucesso!', 'success');
+              carregarListaNotasFiscais();
+            } else {
+              alert('Erro na reemissão: ' + (res?.motivo || res?.erro || 'Tente novamente'));
+            }
+          } catch (retryErr) {
+            alert('Erro ao reenviar: ' + retryErr.message);
+          } finally {
+            btnRetry.disabled = false;
+          }
+        }
+      });
+
+      if (inputNfceFiltroMes && !inputNfceFiltroMes.value) {
+        inputNfceFiltroMes.value = new Date().toISOString().slice(0, 7);
+      }
+      carregarConfigNfce();
+      carregarListaNotasFiscais();
 
       // --- CAF-000038: PEDIDO ONLINE PARA RETIRADA & ENCOMENDAS ---
       const toggleOnlineAtivo = document.getElementById('config-pedido-online-ativo');

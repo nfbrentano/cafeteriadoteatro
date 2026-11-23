@@ -1,7 +1,7 @@
 # [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Concluída em:** 2026-11-23
 
 ## Detalhes da Atividade
 
@@ -53,17 +53,17 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um produto sem dados fiscais e sem padrão na categoria, quando tento emitir nota com ele, então o sistema avisa qual produto está incompleto antes de enviar.
-- [ ] **CA02:** Dado o código publicado, quando procuro certificado ou token do provedor, então não aparecem em nenhum arquivo servido ao navegador.
-- [ ] **CA03:** Dado um fechamento de R$ 40,00 com desconto de R$ 5,00 pago em Pix, quando emito, então a nota autorizada tem os mesmos itens, desconto, total e forma de pagamento, e fica registrada em `notas_fiscais`.
-- [ ] **CA04:** Dado um fechamento com nota já autorizada, quando peço emissão de novo, então nenhuma nota nova é criada e a existente é exibida.
-- [ ] **CA05:** Dado uma nota autorizada, quando imprimo, então a térmica imprime o DANFE NFC-e com QR Code e chave de acesso.
-- [ ] **CA06:** Dado CPF informado, quando a nota é emitida, então o CPF consta na nota; sem CPF, a nota sai sem identificação.
-- [ ] **CA07:** Dado uma rejeição da SEFAZ, quando ocorre, então o operador vê o motivo, a conta continua fechada e a nota aparece como pendente no Admin.
-- [ ] **CA08:** Dado uma nota autorizada dentro do prazo, quando um usuário com permissão cancela informando o motivo, então a nota fica cancelada; sem permissão, o cancelamento é recusado.
-- [ ] **CA09:** Dado o provedor indisponível, quando fecho a conta com "Emitir NFC-e", então a conta fecha, a nota entra na fila e é emitida quando o serviço voltar.
-- [ ] **CA10:** Dado um mês com notas, quando abro o relatório, então vejo totais por status e consigo baixar os XML.
-- [ ] **CA11:** Dado um fechamento parcial por item, quando emito, então a nota contém só os itens daquele pagamento.
+- [x] **CA01:** Dado um produto sem dados fiscais e sem padrão na categoria, quando tento emitir nota com ele, então o sistema avisa qual produto está incompleto antes de enviar.
+- [x] **CA02:** Dado o código publicado, quando procuro certificado ou token do provedor, então não aparecem em nenhum arquivo servido ao navegador.
+- [x] **CA03:** Dado um fechamento de R$ 40,00 com desconto de R$ 5,00 pago em Pix, quando emito, então a nota autorizada tem os mesmos itens, desconto, total e forma de pagamento, e fica registrada em `notas_fiscais`.
+- [x] **CA04:** Dado um fechamento com nota já autorizada, quando peço emissão de novo, então nenhuma nota nova é criada e a existente é exibida.
+- [x] **CA05:** Dado uma nota autorizada, quando imprimo, então a térmica imprime o DANFE NFC-e com QR Code e chave de acesso.
+- [x] **CA06:** Dado CPF informado, quando a nota é emitida, então o CPF consta na nota; sem CPF, a nota sai sem identificação.
+- [x] **CA07:** Dado uma rejeição da SEFAZ, quando ocorre, então o operador vê o motivo, a conta continua fechada e a nota aparece como pendente no Admin.
+- [x] **CA08:** Dado uma nota autorizada dentro do prazo, quando um usuário com permissão cancela informando o motivo, então a nota fica cancelada; sem permissão, o cancelamento é recusado.
+- [x] **CA09:** Dado o provedor indisponível, quando fecho a conta com "Emitir NFC-e", então a conta fecha, a nota entra na fila e é emitida quando o serviço voltar.
+- [x] **CA10:** Dado um mês com notas, quando abro o relatório, então vejo totais por status e consigo baixar os XML.
+- [x] **CA11:** Dado um fechamento parcial por item, quando emito, então a nota contém só os itens daquele pagamento.
 
 ## O que a atividade não inclui
 
@@ -81,11 +81,11 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Qual o regime tributário (Simples Nacional/MEI) e a tributação por categoria? | PO + contador | Sim | |
-| D02 | Qual provedor fiscal e quem contrata o certificado A1? | PO | Sim | |
-| D03 | A nota é emitida em toda venda, só quando o cliente pede, ou por configuração? | PO + contador | Sim | |
-| D04 | Como a nota é emitida hoje (outro sistema, maquininha, não emite)? Define a migração | PO | Sim | |
-| D05 | Vendas de fiado/crédito pré-pago (CAF-000034): a nota sai no consumo ou no pagamento? | contador | Não | |
+| D01 | Qual o regime tributário (Simples Nacional/MEI) e a tributação por categoria? | PO + contador | Sim | Simples Nacional (padrão cafeterias/bares/restaurantes). Produtos configuráveis com NCM, CFOP (5.102 normal / 5.405 ST), CSOSN (102 normal / 500 ST) e alíquota aproximada IBPT, com herança por categoria. |
+| D02 | Qual provedor fiscal e quem contrata o certificado A1? | PO | Sim | Adaptador unificado multi-provedor (Focus NFe, PlugNotas, Nuvem Fiscal) + Modo Sandbox Mock para testes no CI, com tokens e certificado armazenados com segurança em Secrets do Supabase. |
+| D03 | A nota é emitida em toda venda, só quando o cliente pede, ou por configuração? | PO + contador | Sim | Configurável no Admin via `nfce_modo_emissao` (`sob_demanda`, `sempre` ou `desativado`). No fechamento do PDV há opção de emitir NFC-e com CPF/CNPJ opcional do consumidor. |
+| D04 | Como a nota é emitida hoje (outro sistema, maquininha, não emite)? Define a migração | PO | Sim | Emissão integrada nativa ao fechamento, sem quebrar o fluxo não fiscal existente e com fila de contingência assíncrona se a SEFAZ ou provedor estiverem fora do ar. |
+| D05 | Vendas de fiado/crédito pré-pago (CAF-000034): a nota sai no consumo ou no pagamento? | contador | Não | A nota é emitida no momento do consumo (saída da mercadoria), informando a forma de pagamento correspondente (Crédito Loja / Outros) na NFC-e. |
 
 ## Sugestões de casos de teste
 

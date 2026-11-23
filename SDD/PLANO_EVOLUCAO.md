@@ -88,7 +88,7 @@ Detalhes, matriz por concorrente e notas regulatórias em [ANALISE_MERCADO_CAFET
 # Plano de evolução (CAF-000115 a CAF-000125)
 
 > Origem: leitura do repositório em 2026-11-10 (código, migrations, testes, CI e SDDs 001–114).
-> **CAF-000115 a CAF-000122** estão **Concluídas** (em `SDD/CONCLUIDAS/`). As demais SDDs (`CAF-000123` a `CAF-000125`) permanecem em **Rascunho**, aguardando revisão.
+> **CAF-000115 a CAF-000123** estão **Concluídas** (em `SDD/CONCLUIDAS/`). As demais SDDs (`CAF-000124` e `CAF-000125`) permanecem em **Rascunho**, aguardando revisão.
 
 ## Leitura geral
 
@@ -111,7 +111,7 @@ O produto está funcionalmente maduro: PDV, KDS, Totem, pedido do cliente, estoq
 
 | Ordem | SDD | Tipo | Tema | Por que | Esforço | Depende de |
 |-------|-----|------|------|---------|---------|------------|
-| 9 | [CAF-000123](CAF-000123-pix-dinamico-com-confirmacao-automatica.md) | FEAT | Pix dinâmico com confirmação automática | Hoje o barista confere o Pix no app do banco; o totem não se sustenta sozinho | G | 115; decisão de PSP |
+| 9 | [CAF-000123](CONCLUIDAS/CAF-000123-pix-dinamico-com-confirmacao-automatica.md) | Concluída | FEAT | Pix dinâmico com confirmação automática | Hoje o barista confere o Pix no app do banco; o totem não se sustenta sozinho | G | 115; decisão de PSP |
 | 10 | [CAF-000124](CAF-000124-emissao-de-nfce-no-fechamento.md) | FEAT | NFC-e no fechamento da conta | Cupom atual é não fiscal; nota exige outro sistema | G | 116; contador, provedor e certificado |
 | 11 | [CAF-000125](CAF-000125-acessibilidade-totem-e-cardapio-do-cliente.md) | UI | Acessibilidade do Totem e do cardápio do cliente | Telas públicas com pouca semântica; público do teatro inclui idosos e baixa visão | M | — |
 

@@ -2799,7 +2799,7 @@
         return;
       }
 
-      if (pedidoData.status === 'cancelado' || pedidoData.status === 'aguardando_aprovacao') {
+      if (pedidoData.status === 'cancelado' || pedidoData.status === 'aguardando_aprovacao' || pedidoData.status === 'aguardando_pagamento') {
         removerPedidoLocal(pedidoId);
         return;
       }
@@ -2963,8 +2963,8 @@
     window.cafeteriaSupabase.channel('pedidos-cozinha-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, async payload => {
         if (payload.eventType === 'INSERT') {
-          if (payload.new && payload.new.status === 'aguardando_aprovacao') {
-            // Pedido via cliente QR ainda aguardando aprovação no PDV: não notificar cozinha ainda
+          if (payload.new && (payload.new.status === 'aguardando_aprovacao' || payload.new.status === 'aguardando_pagamento')) {
+            // Pedido via cliente QR/online/totem ainda aguardando aprovação/pagamento: não notificar cozinha ainda
             return;
           }
           playAlert();
@@ -2982,8 +2982,10 @@
           }
           scheduleIncrementalFetch(payload.new.id);
         } else if (payload.eventType === 'UPDATE') {
-          // Se acabou de ser aprovado vindo de aguardando_aprovacao
-          const recemAprovado = payload.old && payload.old.status === 'aguardando_aprovacao' && payload.new && payload.new.status === 'pendente';
+          // Se acabou de ser aprovado/pago vindo de aguardando_aprovacao ou aguardando_pagamento
+          const recemAprovado = payload.old
+            && (payload.old.status === 'aguardando_aprovacao' || payload.old.status === 'aguardando_pagamento')
+            && payload.new && payload.new.status === 'pendente';
           if (recemAprovado) {
             playAlert();
             const { data: approvedPedido } = await window.cafeteriaSupabase

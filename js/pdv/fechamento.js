@@ -59,6 +59,8 @@ export function registrarFechamentoPDV() {
     fecharContaPainelPagamento,
     tituloPagamentoParte,
     fecharContaImprimirCupom,
+    fecharContaEmitirNfce,
+    fecharContaNfceCpf,
     fecharContaDivParcialItens,
     fecharContaListaItensParcial,
     fecharContaDivParcialValor,
@@ -66,6 +68,7 @@ export function registrarFechamentoPDV() {
   } = estadoPDV.refs;
 
   const showToast = (...args) => (window.showToast || estadoPDV.fn.showToast)?.(...args);
+  let pixFechamentoMonitor = null;
 
   function updateFecharContaFooterSummary() {
     if (!fecharContaFooterLabel || !fecharContaFooterVal) return;
@@ -694,6 +697,10 @@ export function registrarFechamentoPDV() {
   }
 
   function fecharModalFecharConta() {
+    if (pixFechamentoMonitor) {
+      pixFechamentoMonitor.stop();
+      pixFechamentoMonitor = null;
+    }
     modalFecharConta?.classList.add('hidden');
     if (estadoPDV.currentSelectedMesaParaConta) {
       estadoPDV.fn.abrirModalMesa?.(
@@ -901,6 +908,108 @@ export function registrarFechamentoPDV() {
     });
   });
 
+  async function iniciarPixDinamicoPDV() {
+    if (!estadoPDV.parteAtivaId) {
+      showToast('Selecione uma parte da conta primeiro.', 'warn');
+      return;
+    }
+    const pt = estadoPDV.currentPartes.find(x => x.id === estadoPDV.parteAtivaId);
+    if (!pt) return;
+    const pago = pt.pagamentos.reduce((s, p) => s + p.valor, 0);
+    const valorRestante = Number((pt.valor_devido - pago).toFixed(2));
+    if (valorRestante <= 0) {
+      showToast('Esta parte já está totalmente paga.', 'info');
+      return;
+    }
+
+    const boxDinamico = document.getElementById('fechar-pix-dinamico-box');
+    const statusLbl = document.getElementById('fechar-pix-dinamico-status');
+    const timerLbl = document.getElementById('fechar-pix-dinamico-timer');
+    const fallbackAviso = document.getElementById('fechar-pix-fallback-aviso');
+    const btnRegenerar = document.getElementById('btn-fechar-pix-regenerar');
+    const qrContainer = document.getElementById('fechar-conta-pix-qr');
+
+    if (pixFechamentoMonitor) {
+      pixFechamentoMonitor.stop();
+      pixFechamentoMonitor = null;
+    }
+
+    boxDinamico?.classList.remove('hidden');
+    fallbackAviso?.classList.add('hidden');
+    btnRegenerar?.classList.add('hidden');
+    if (statusLbl) statusLbl.textContent = '⏳ Gerando Pix Dinâmico...';
+    if (timerLbl) timerLbl.textContent = '--:--';
+
+    try {
+      const mesaCod = estadoPDV.currentSelectedMesaParaConta?.mesaCodigo || estadoPDV.currentFechamento.mesaCodigo || 'MESA';
+      const cobranca = await window.cafeteriaPix.criarCobrancaDinamica({
+        mesaCodigo: mesaCod,
+        parteNome: pt.nome,
+        valor: valorRestante,
+        canal: 'pdv',
+        descricao: `PDV ${mesaCod} - ${pt.nome}`,
+        expiracaoMin: 10,
+        timeoutMs: 4500
+      });
+
+      if (!cobranca.ok) {
+        showToast('Não foi possível gerar Pix: ' + (cobranca.erro || 'Verifique configurações'), 'error');
+        boxDinamico?.classList.add('hidden');
+        return;
+      }
+
+      estadoPDV.ultimoPixFechamentoState.payload = cobranca.payload;
+      estadoPDV.ultimoPixFechamentoState.txid = cobranca.txid;
+      estadoPDV.ultimoPixFechamentoState.valor = cobranca.valor;
+
+      if (qrContainer) {
+        qrContainer.innerHTML = window.cafeteriaPix.gerarQrSvg(cobranca.payload, 3, 1);
+      }
+
+      if (cobranca.fallback && fallbackAviso) {
+        fallbackAviso.classList.remove('hidden');
+      }
+
+      if (cobranca.modo === 'dinamico') {
+        if (statusLbl) statusLbl.textContent = '⏳ Aguardando pagamento Pix...';
+        pixFechamentoMonitor = window.cafeteriaPix.monitorarCobrancaPix({
+          txid: cobranca.txid,
+          expiraEm: cobranca.expiraEm,
+          onTick: ({ restanteSegundos }) => {
+            if (timerLbl) {
+              timerLbl.textContent = window.cafeteriaPix.formatarContagemRegressiva(restanteSegundos);
+            }
+          },
+          onPago: (row) => {
+            if (statusLbl) statusLbl.textContent = '✅ Pix Confirmado com Sucesso!';
+            if (timerLbl) timerLbl.textContent = '00:00';
+            pt.pagamentos.push({
+              id: Date.now(),
+              forma: 'pix',
+              valor: Number(row.valor || valorRestante),
+              pix_cobranca_id: row.id,
+              pix_txid: row.txid
+            });
+            if (fecharContaValor) fecharContaValor.value = '';
+            renderPartes();
+            showToast('Pagamento Pix confirmado automaticamente! ✅', 'success');
+          },
+          onExpirada: () => {
+            if (statusLbl) statusLbl.textContent = '⚠️ Cobrança Pix Expirada';
+            btnRegenerar?.classList.remove('hidden');
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Erro ao gerar cobrança dinâmica no PDV:', err);
+      showToast('Erro ao iniciar cobrança Pix.', 'error');
+      boxDinamico?.classList.add('hidden');
+    }
+  }
+
+  document.getElementById('btn-fechar-pix-dinamico')?.addEventListener('click', iniciarPixDinamicoPDV);
+  document.getElementById('btn-fechar-pix-regenerar')?.addEventListener('click', iniciarPixDinamicoPDV);
+
   if (fecharContaValor) {
     fecharContaValor.addEventListener('input', () => {
       if (fecharContaForma?.value === 'pix' && estadoPDV.parteAtivaId) {
@@ -1069,6 +1178,31 @@ export function registrarFechamentoPDV() {
             );
           }
 
+          if (fecharContaEmitirNfce?.checked && data?.fechamento_id && window.cafeteriaDB?.nfce) {
+            try {
+              const nfceRes = await window.cafeteriaDB.nfce.emitirNfce({
+                fechamentoId: data.fechamento_id,
+                consumidorCpfCnpj: fecharContaNfceCpf?.value || null
+              });
+
+              if (nfceRes?.sucesso && nfceRes?.nota) {
+                showToast(`NFC-e parcial nº ${nfceRes.nota.numero} autorizada!`, 'success');
+                if (fecharContaImprimirCupom?.checked && window.cafeteriaPrint?.printDanfeNfce) {
+                  window.cafeteriaPrint.printDanfeNfce(nfceRes.nota);
+                }
+              } else if (nfceRes?.status === 'rejeitada') {
+                showToast(`Venda salva, mas NFC-e rejeitada: ${nfceRes.motivo || 'Verifique no Admin'}`, 'warning');
+              } else if (nfceRes?.contingencia || nfceRes?.status === 'contingencia') {
+                showToast('SEFAZ indisponível. NFC-e parcial salva em contingência.', 'warning');
+              } else if (nfceRes?.erro) {
+                showToast(`Aviso NFC-e: ${nfceRes.erro}`, 'warning');
+              }
+            } catch (nfceErr) {
+              console.warn('[Fechamento Parcial] Falha na emissão NFC-e:', nfceErr);
+              showToast('Pagamento registrado. Falha na emissão da NFC-e.', 'warning');
+            }
+          }
+
           showToast('Pagamento parcial registrado com sucesso!', 'success');
           modalFecharConta?.classList.add('hidden');
           await estadoPDV.fn.loadActivePedidos?.();
@@ -1228,6 +1362,31 @@ export function registrarFechamentoPDV() {
           );
         }
 
+        if (fecharContaEmitirNfce?.checked && data?.fechamento_id && window.cafeteriaDB?.nfce) {
+          try {
+            const nfceRes = await window.cafeteriaDB.nfce.emitirNfce({
+              fechamentoId: data.fechamento_id,
+              consumidorCpfCnpj: fecharContaNfceCpf?.value || null
+            });
+
+            if (nfceRes?.sucesso && nfceRes?.nota) {
+              showToast(`NFC-e nº ${nfceRes.nota.numero} autorizada!`, 'success');
+              if (fecharContaImprimirCupom?.checked && window.cafeteriaPrint?.printDanfeNfce) {
+                window.cafeteriaPrint.printDanfeNfce(nfceRes.nota);
+              }
+            } else if (nfceRes?.status === 'rejeitada') {
+              showToast(`Venda salva, mas NFC-e rejeitada: ${nfceRes.motivo || 'Verifique no Admin'}`, 'warning');
+            } else if (nfceRes?.contingencia || nfceRes?.status === 'contingencia') {
+              showToast('SEFAZ indisponível. NFC-e salva em contingência.', 'warning');
+            } else if (nfceRes?.erro) {
+              showToast(`Aviso NFC-e: ${nfceRes.erro}`, 'warning');
+            }
+          } catch (nfceErr) {
+            console.warn('[Fechamento] Falha na emissão NFC-e:', nfceErr);
+            showToast('Conta fechada. Falha na emissão da NFC-e.', 'warning');
+          }
+        }
+
         estadoPDV.currentSelectedMesaParaConta = null;
         modalFecharConta?.classList.add('hidden');
         estadoPDV.fn.loadActivePedidos?.();
@@ -1259,6 +1418,19 @@ export function registrarFechamentoPDV() {
       if (step) setFecharContaStep(step);
     });
   });
+
+  if (fecharContaEmitirNfce) {
+    fecharContaEmitirNfce.addEventListener('change', () => {
+      if (fecharContaNfceCpf) {
+        if (fecharContaEmitirNfce.checked) {
+          fecharContaNfceCpf.classList.remove('hidden');
+          fecharContaNfceCpf.focus();
+        } else {
+          fecharContaNfceCpf.classList.add('hidden');
+        }
+      }
+    });
+  }
 
   // Globals (Allowlist)
   definirGlobalPDV('baristaAbrirModalFecharConta', abrirModalFecharConta);

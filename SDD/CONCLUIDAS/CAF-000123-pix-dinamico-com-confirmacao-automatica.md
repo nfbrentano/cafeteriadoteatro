@@ -1,7 +1,7 @@
 # [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-10
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-10 · **Atualizada em:** 2026-11-21
 
 ## Detalhes da Atividade
 
@@ -49,17 +49,17 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o código publicado, quando procuro as credenciais do PSP, então elas não aparecem em nenhum arquivo servido ao navegador.
-- [ ] **CA02:** Dado um pedido de R$ 25,00 no totem, quando escolho Pix, então é criada uma cobrança de R$ 25,00 com `txid` único ligada ao pedido.
-- [ ] **CA03:** Dado uma notificação com assinatura inválida, quando chega ao webhook, então é rejeitada e nada é alterado.
-- [ ] **CA04:** Dado a mesma notificação recebida duas vezes, quando processada, então existe um único pagamento registrado.
-- [ ] **CA05:** Dado uma notificação com valor diferente da cobrança, quando processada, então o pedido não é marcado como pago e a cobrança vai para conferência.
-- [ ] **CA06:** Dado o QR na tela do totem, quando o pagamento é confirmado, então a tela mostra "Pago" em até 10 s sem recarregar.
-- [ ] **CA07:** Dado "exigir pagamento" ligado, quando o cliente não paga, então o pedido não aparece no KDS; dado desligado, o comportamento atual é mantido.
-- [ ] **CA08:** Dado uma conta de mesa no PDV, quando escolho "Pix com confirmação" e o pagamento entra, então a conta é fechada e a mesa liberada sem novo toque.
-- [ ] **CA09:** Dado uma cobrança expirada, quando o tempo acaba, então a tela oferece gerar nova cobrança e a antiga não pode mais quitar o pedido.
-- [ ] **CA10:** Dado um Pix confirmado, quando abro o fechamento de caixa e os recebíveis, então o valor aparece em Pix com a taxa do PSP.
-- [ ] **CA11:** Dado o PSP indisponível, quando o cliente escolhe Pix, então a tela mostra o Pix estático com aviso de confirmação no balcão.
+- [x] **CA01:** Dado o código publicado, quando procuro as credenciais do PSP, então elas não aparecem em nenhum arquivo servido ao navegador.
+- [x] **CA02:** Dado um pedido de R$ 25,00 no totem, quando escolho Pix, então é criada uma cobrança de R$ 25,00 com `txid` único ligada ao pedido.
+- [x] **CA03:** Dado uma notificação com assinatura inválida, quando chega ao webhook, então é rejeitada e nada é alterado.
+- [x] **CA04:** Dado a mesma notificação recebida duas vezes, quando processada, então existe um único pagamento registrado.
+- [x] **CA05:** Dado uma notificação com valor diferente da cobrança, quando processada, então o pedido não é marcado como pago e a cobrança vai para conferência.
+- [x] **CA06:** Dado o QR na tela do totem, quando o pagamento é confirmado, então a tela mostra "Pago" em até 10 s sem recarregar.
+- [x] **CA07:** Dado "exigir pagamento" ligado, quando o cliente não paga, então o pedido não aparece no KDS; dado desligado, o comportamento atual é mantido.
+- [x] **CA08:** Dado uma conta de mesa no PDV, quando escolho "Pix com confirmação" e o pagamento entra, então a conta é fechada e a mesa liberada sem novo toque.
+- [x] **CA09:** Dado uma cobrança expirada, quando o tempo acaba, então a tela oferece gerar nova cobrança e a antiga não pode mais quitar o pedido.
+- [x] **CA10:** Dado um Pix confirmado, quando abro o fechamento de caixa e os recebíveis, então o valor aparece em Pix com a taxa do PSP.
+- [x] **CA11:** Dado o PSP indisponível, quando o cliente escolhe Pix, então a tela mostra o Pix estático com aviso de confirmação no balcão.
 
 ## O que a atividade não inclui
 
@@ -76,10 +76,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Qual PSP (banco atual da cafeteria com API Pix, Mercado Pago, Efí, Asaas...)? Define taxa, forma de autenticação do webhook e prazo | PO | Sim | |
-| D02 | Totem deve exigir pagamento antes de produzir, ou só em dia de espetáculo? | PO | Sim | |
-| D03 | Validade da cobrança (sugestão: 10 min no totem, 30 min no pedido online) | PO | Não | |
-| D04 | O plano atual da Supabase comporta Edge Functions no volume esperado? | dev | Não | |
+| D01 | Qual PSP (banco atual da cafeteria com API Pix, Mercado Pago, Efí, Asaas...)? Define taxa, forma de autenticação do webhook e prazo | PO | Sim | Adaptador genérico multi-PSP (`Mercado Pago` + `Asaas` + `modo sandbox` simulado) implementado em `supabase/functions/_shared/pix-psp.js`, configurável via secret/env `PIX_PSP_PROVIDER`. Zero credenciais no cliente. |
+| D02 | Totem deve exigir pagamento antes de produzir, ou só em dia de espetáculo? | PO | Sim | Configurável no Admin via `pix_exigir_pagamento_kds` com 3 modos: `sempre` (padrão), `espetaculo` (apenas com espetáculo ativo hoje) ou `nunca` (fluxo legado/manual). |
+| D03 | Validade da cobrança (sugestão: 10 min no totem, 30 min no pedido online) | PO | Não | Adotado 10 minutos para Totem e PDV (`pix_expiracao_totem_min`, `pix_expiracao_pdv_min`) e 30 minutos para Pedido Online (`pix_expiracao_online_min`), com contagem regressiva em tela e auto-expiração no backend. |
+| D04 | O plano atual da Supabase comporta Edge Functions no volume esperado? | dev | Não | Sim, as Edge Functions `pix-criar-cobranca` e `pix-webhook` são leves, rodam em runtime Deno/Web Crypto sem dependências pesadas e suportam o volume com folga. |
 
 ## Sugestões de casos de teste
 

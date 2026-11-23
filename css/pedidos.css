@@ -3475,6 +3475,9 @@ body {
   background: #059669;
   color: #fff;
 }
+.btn--pix-regenerar {
+  margin-top: 6px;
+}
 .btn--remover-item {
   color: var(--vermelho-danger, #ef4444);
   padding: 4px 8px;

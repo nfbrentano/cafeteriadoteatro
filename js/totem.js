@@ -1168,6 +1168,8 @@
       if (totemCupomFeedback) totemCupomFeedback.style.display = 'none';
 
       ultimoPedidoGerado = {
+        pedido_id: data.pedido_id,
+        status: data.status,
         numero_pedido: data.numero_pedido || data.pedido_id,
         total: Number(data.total || calcularTotalCarrinho()),
         cliente_nome: nome,
@@ -1243,7 +1245,102 @@
   }
   window.totemExibirModalErro = exibirModalErroTotem;
 
-  // ── 10. TELA FINAL DE SENHA (15s AUTO-RESET) ──
+  // ── 10. TELA FINAL DE SENHA (15s AUTO-RESET OU AGUARDANDO PIX) ──
+  let totemPixMonitor = null;
+  let ultimoTotemPixPayload = null;
+
+  async function iniciarFluxoPixTotem(pedido) {
+    if (!window.cafeteriaPix || !successPixBox || !successPixQr) return;
+    if (totemPixMonitor) {
+      totemPixMonitor.stop();
+      totemPixMonitor = null;
+    }
+
+    const badgeEl = document.getElementById('totem-pix-status-badge');
+    const timerEl = document.getElementById('totem-pix-timer');
+    const fallbackEl = document.getElementById('totem-pix-fallback-aviso');
+    const expiradoBox = document.getElementById('totem-pix-expirado-box');
+    const pagoBox = document.getElementById('totem-pix-pago-box');
+
+    if (badgeEl) {
+      badgeEl.textContent = 'Aguardando Pagamento';
+      badgeEl.className = 'totem-pix-badge totem-pix-badge--pendente';
+    }
+    if (timerEl) timerEl.textContent = '--:--';
+    if (fallbackEl) fallbackEl.classList.add('hidden');
+    if (expiradoBox) expiradoBox.classList.add('hidden');
+    if (pagoBox) pagoBox.classList.add('hidden');
+    successPixBox.classList.remove('hidden');
+
+    try {
+      const cobranca = await window.cafeteriaPix.criarCobrancaDinamica({
+        pedidoId: pedido.pedido_id,
+        valor: pedido.total,
+        canal: 'totem',
+        descricao: `Totem #${pedido.numero_pedido}`,
+        timeoutMs: 4500
+      });
+
+      if (!cobranca.ok) {
+        successPixBox.classList.add('hidden');
+        return;
+      }
+
+      ultimoTotemPixPayload = cobranca.payload;
+      successPixQr.innerHTML = window.cafeteriaPix.gerarQrSvg(cobranca.payload, 3, 1);
+
+      if (cobranca.fallback && fallbackEl) {
+        fallbackEl.classList.remove('hidden');
+      }
+
+      if (cobranca.modo === 'dinamico') {
+        totemPixMonitor = window.cafeteriaPix.monitorarCobrancaPix({
+          txid: cobranca.txid,
+          pedidoId: pedido.pedido_id,
+          expiraEm: cobranca.expiraEm,
+          onTick: ({ restanteSegundos }) => {
+            if (timerEl) {
+              timerEl.textContent = window.cafeteriaPix.formatarContagemRegressiva(restanteSegundos);
+            }
+          },
+          onPago: () => {
+            if (badgeEl) {
+              badgeEl.textContent = 'Pago com Sucesso! ✅';
+              badgeEl.className = 'totem-pix-badge totem-pix-badge--pago';
+            }
+            if (pagoBox) pagoBox.classList.remove('hidden');
+            if (timerEl) timerEl.textContent = '00:00';
+            if (successTotalLbl) {
+              successTotalLbl.textContent = `Pagamento Pix Confirmado: ${fmtMoeda(pedido.total)}`;
+            }
+          },
+          onExpirada: () => {
+            if (badgeEl) {
+              badgeEl.textContent = 'Pix Expirado ⚠️';
+              badgeEl.className = 'totem-pix-badge totem-pix-badge--expirado';
+            }
+            if (expiradoBox) expiradoBox.classList.remove('hidden');
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Erro ao gerar Pix no Totem:', e);
+      successPixBox.classList.add('hidden');
+    }
+  }
+
+  document.getElementById('btn-totem-copiar-pix')?.addEventListener('click', function () {
+    if (ultimoTotemPixPayload && window.cafeteriaPix) {
+      window.cafeteriaPix.copiarCodigoPix(ultimoTotemPixPayload, this);
+    }
+  });
+
+  document.getElementById('btn-totem-regenerar-pix')?.addEventListener('click', () => {
+    if (ultimoPedidoGerado) {
+      iniciarFluxoPixTotem(ultimoPedidoGerado);
+    }
+  });
+
   async function exibirTelaSenhaFinal(pedido) {
     if (successClienteLbl) {
       successClienteLbl.textContent = `${pedido.cliente_nome}, seu pedido foi enviado! (${pedido.para_viagem ? 'Para Viagem' : 'Comer Aqui'})`;
@@ -1255,27 +1352,13 @@
       successTotalLbl.textContent = `Total a pagar no caixa: ${fmtMoeda(pedido.total)}`;
     }
 
-    // Se escolheu PIX e houver chave configurada, exibe o QR Code PIX
     if (pedido.forma_pagamento === 'pix' && window.cafeteriaPix) {
-      try {
-        const cfg = await window.cafeteriaPix.obterConfigPix();
-        const res = window.cafeteriaPix.gerarPayloadPix({
-          chave: cfg.chave,
-          recebedor: cfg.recebedor,
-          cidade: cfg.cidade,
-          valor: pedido.total,
-          txid: `TOTEM${pedido.numero_pedido}`
-        });
-        if (res.ok && successPixBox && successPixQr) {
-          successPixQr.innerHTML = window.cafeteriaPix.gerarQrSvg(res.payload, 3, 1);
-          successPixBox.classList.remove('hidden');
-        } else {
-          successPixBox?.classList.add('hidden');
-        }
-      } catch (e) {
-        successPixBox?.classList.add('hidden');
-      }
+      await iniciarFluxoPixTotem(pedido);
     } else {
+      if (totemPixMonitor) {
+        totemPixMonitor.stop();
+        totemPixMonitor = null;
+      }
       successPixBox?.classList.add('hidden');
     }
 
@@ -1299,6 +1382,10 @@
       if (successCountdownLbl) successCountdownLbl.textContent = String(Math.max(0, segundos));
       if (segundos <= 0) {
         clearInterval(successCountdownInterval);
+        if (totemPixMonitor) {
+          totemPixMonitor.stop();
+          totemPixMonitor = null;
+        }
         limparAnimacaoFundo(successBg);
         successScreen.classList.add('hidden');
         mostrarTelaDescanso();
@@ -1308,6 +1395,10 @@
 
   btnNovoPedido?.addEventListener('click', () => {
     clearInterval(successCountdownInterval);
+    if (totemPixMonitor) {
+      totemPixMonitor.stop();
+      totemPixMonitor = null;
+    }
     const successBg = document.getElementById('totem-success-bg-layer');
     limparAnimacaoFundo(successBg);
     successScreen.classList.add('hidden');

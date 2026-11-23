@@ -99,7 +99,7 @@ export function buildSchemaSnapshot(csvContent = null) {
     }
 
     // Extract functions
-    const fnMatches = content.matchAll(/CREATE\s+OR\s+REPLACE\s+FUNCTION\s+(?:public\.)?([a-zA-Z0-9_]+)\s*\(([\s\S]*?)\)/gi);
+    const fnMatches = content.matchAll(/CREATE\s+OR\s+REPLACE\s+FUNCTION\s+(?:public\.)?([a-zA-Z0-9_]+)\s*\(([\s\S]*?)\)\s*RETURNS/gi);
     for (const fm of fnMatches) {
       const fnName = fm[1];
       const paramsRaw = fm[2];
@@ -110,9 +110,13 @@ export function buildSchemaSnapshot(csvContent = null) {
           return clean && clean.startsWith('p_') ? clean : clean;
         })
         .filter(Boolean);
-      // Se não veio do CSV real, registra ou atualiza pela migration mais recente
-      if (!csvRpcs.has(fnName)) {
+
+      if (!rpcs[fnName]) {
         rpcs[fnName] = { parameters: params };
+      } else if (params.length > 0) {
+        // Preserva e mescla parâmetros em caso de sobrecarga
+        const set = new Set([...(rpcs[fnName].parameters || []), ...params]);
+        rpcs[fnName] = { parameters: [...set] };
       }
     }
   }

@@ -2900,3 +2900,31 @@ tbody tr:hover { background: var(--admin-hover); }
 .adm-s-468[class] { font-size: 12px; display: flex; align-items: center; gap: 6px; }
 .adm-s-469[class] { width: 8px; height: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block; }
 .adm-s-470[class] { color: #666; }
+.adm-pix-badge-div[class] { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; display: inline-block; }
+.adm-pix-badge-exp[class] { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; display: inline-block; }
+
+/* CAF-000124: NFC-e e Dados Fiscais */
+.adm-nfce-btn-row[class] { margin-top: 14px; }
+.adm-nfce-section-divider[class] { margin-top: 24px; }
+.adm-nfce-filters[class] { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.adm-nfce-filter-input[class] { width: auto; padding: 4px 8px; }
+.adm-nfce-resumo-cards[class] { display: flex; gap: 12px; margin: 12px 0; flex-wrap: wrap; }
+.adm-nfce-kpi-card[class] { padding: 8px 12px; border-radius: 6px; flex: 1; min-width: 140px; }
+.adm-nfce-kpi-card--aut[class] { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.adm-nfce-kpi-card--canc[class] { background: #fef2f2; border: 1px solid #fecaca; }
+.adm-nfce-kpi-card--rej[class] { background: #fffbeb; border: 1px solid #fde68a; }
+.adm-nfce-kpi-card--cont[class] { background: #f8fafc; border: 1px solid #cbd5e1; }
+.adm-nfce-kpi-title--aut[class] { font-size: 11px; color: #166534; font-weight: bold; }
+.adm-nfce-kpi-title--canc[class] { font-size: 11px; color: #991b1b; font-weight: bold; }
+.adm-nfce-kpi-title--rej[class] { font-size: 11px; color: #92400e; font-weight: bold; }
+.adm-nfce-kpi-title--cont[class] { font-size: 11px; color: #475569; font-weight: bold; }
+.adm-nfce-kpi-val--aut[class] { font-size: 18px; font-weight: bold; color: #15803d; }
+.adm-nfce-kpi-val--canc[class] { font-size: 18px; font-weight: bold; color: #b91c1c; }
+.adm-nfce-kpi-val--rej[class] { font-size: 18px; font-weight: bold; color: #b45309; }
+.adm-nfce-kpi-val--cont[class] { font-size: 18px; font-weight: bold; color: #334155; }
+.adm-nfce-kpi-sub--aut[class] { font-size: 11px; color: #166534; }
+.adm-prod-fiscal-field[class] { border-top: 1px dashed var(--cinza-borda); padding-top: 12px; margin-top: 12px; }
+.adm-prod-fiscal-title[class] { font-weight: bold; margin-bottom: 6px; }
+.adm-prod-fiscal-grid[class] { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.adm-prod-fiscal-label[class] { font-size: 11px; }
+.adm-prod-fiscal-hint[class] { font-size: 11px; margin-top: 4px; }

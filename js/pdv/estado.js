@@ -307,6 +307,8 @@ export function atualizarReferenciasDOM() {
     fecharContaPainelPagamento: byId('fechar-conta-painel-pagamento'),
     tituloPagamentoParte: byId('titulo-pagamento-parte'),
     fecharContaImprimirCupom: byId('fechar-conta-imprimir-cupom'),
+    fecharContaEmitirNfce: byId('fechar-conta-emitir-nfce'),
+    fecharContaNfceCpf: byId('fechar-conta-nfce-cpf'),
     fecharContaDivParcialItens: byId('fechar-conta-div-parcial-itens'),
     fecharContaListaItensParcial: byId('fechar-conta-lista-itens-parcial'),
     fecharContaDivParcialValor: byId('fechar-conta-div-parcial-valor'),

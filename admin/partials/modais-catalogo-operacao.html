@@ -254,6 +254,26 @@
           </div>
         </div>
 
+        <!-- DADOS FISCAIS / NFC-E (CAF-000124) -->
+        <div class="field adm-prod-fiscal-field">
+          <div class="field__label adm-prod-fiscal-title">🧾 Dados Fiscais (NFC-e)</div>
+          <div class="adm-prod-fiscal-grid">
+            <div>
+              <label class="field__label adm-prod-fiscal-label" for="produto-ncm">NCM (8 dígitos)</label>
+              <input class="field__input" type="text" id="produto-ncm" placeholder="21011110" maxlength="8" />
+            </div>
+            <div>
+              <label class="field__label adm-prod-fiscal-label" for="produto-cfop">CFOP</label>
+              <input class="field__input" type="text" id="produto-cfop" placeholder="5102" maxlength="4" />
+            </div>
+            <div>
+              <label class="field__label adm-prod-fiscal-label" for="produto-csosn">CSOSN</label>
+              <input class="field__input" type="text" id="produto-csosn" placeholder="102" maxlength="4" />
+            </div>
+          </div>
+          <p class="hint adm-prod-fiscal-hint">Se não preenchido, herda os padrões fiscais definidos na categoria.</p>
+        </div>
+
         <div class="field">
           <div class="toggle-wrap">
             <label class="toggle" for="produto-disponivel">

@@ -505,6 +505,20 @@
                     </select>
                   </div>
                 </div>
+
+                <div style="margin-top:10px; margin-bottom:12px;">
+                  <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px;">Forma de Pagamento</label>
+                  <div style="display:flex; gap:10px;">
+                    <label style="flex:1; display:flex; align-items:center; gap:6px; padding:10px; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-size:13px; background:#f8fafc;">
+                      <input type="radio" name="forma-pagamento-online" value="pix" checked />
+                      <span>⚡ Pix Online</span>
+                    </label>
+                    <label style="flex:1; display:flex; align-items:center; gap:6px; padding:10px; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-size:13px; background:#f8fafc;">
+                      <input type="radio" name="forma-pagamento-online" value="balcao" />
+                      <span>🏬 Pagar no Balcão</span>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <label style="display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#475569; margin-bottom:12px; cursor:pointer;">
@@ -637,6 +651,21 @@
             <div id="tracking-itens-lista" style="font-size:13px; color:#334155; border-top:1px dashed #cbd5e1; padding-top:8px;"></div>
           </div>
 
+          <!-- CAF-000123: Pagamento Pix Online com Confirmação Automática -->
+          <div id="tracking-pix-box" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; color:#166534; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+              <span>⚡ Pagamento Pix Online</span>
+              <span id="tracking-pix-timer" style="font-family:monospace; font-weight:700; color:#b45309;">--:--</span>
+            </div>
+            <div id="tracking-pix-qr" style="display:flex; justify-content:center; margin:8px 0; min-height:160px; align-items:center;"></div>
+            <div id="tracking-pix-status" style="font-size:12px; font-weight:600; color:#15803d; margin-bottom:6px;">Aguardando pagamento...</div>
+            <div id="tracking-pix-fallback-aviso" style="display:none; font-size:11px; color:#b45309; background:#fffbeb; padding:4px 8px; border-radius:4px; margin-bottom:6px;">Pix Chave Padrão (conferência no balcão).</div>
+            <div style="display:flex; gap:6px; justify-content:center;">
+              <button type="button" id="btn-tracking-copiar-pix" class="btn btn--outline-dark" style="font-size:12px; padding:6px 12px;">📋 Copiar Pix</button>
+              <button type="button" id="btn-tracking-regenerar-pix" class="btn btn--outline-dark" style="display:none; font-size:12px; padding:6px 12px;">🔄 Gerar Novo</button>
+            </div>
+          </div>
+
           <!-- CAF-000042: Botão de Avaliação quando concluído/entregue -->
           <div id="tracking-avaliacao-cta" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:12px; text-align:center; margin-bottom:12px;">
             <div style="font-weight:700; color:#92400e; margin-bottom:6px;">⭐ O que achou do seu pedido?</div>
@@ -656,9 +685,25 @@
       </div>
     `;
     document.body.appendChild(modalTracking);
-    document.getElementById('modal-tracking-close')?.addEventListener('click', () => modalTracking.classList.add('hidden'));
-    document.getElementById('btn-fechar-tracking')?.addEventListener('click', () => modalTracking.classList.add('hidden'));
+    document.getElementById('modal-tracking-close')?.addEventListener('click', () => {
+      if (onlinePixMonitor) {
+        onlinePixMonitor.stop();
+        onlinePixMonitor = null;
+      }
+      modalTracking.classList.add('hidden');
+    });
+    document.getElementById('btn-fechar-tracking')?.addEventListener('click', () => {
+      if (onlinePixMonitor) {
+        onlinePixMonitor.stop();
+        onlinePixMonitor = null;
+      }
+      modalTracking.classList.add('hidden');
+    });
     document.getElementById('btn-novo-pedido-tracking')?.addEventListener('click', () => {
+      if (onlinePixMonitor) {
+        onlinePixMonitor.stop();
+        onlinePixMonitor = null;
+      }
       modalTracking.classList.add('hidden');
     });
 
@@ -1267,6 +1312,7 @@
 
       try {
         const subtotalOnline = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
+        const formaPagamentoOnline = document.querySelector('input[name="forma-pagamento-online"]:checked')?.value || 'pix';
         const res = await window.cafeteriaDB.clientePedido.criarOnline({
           cliente_nome: clienteNome,
           cliente_telefone: telVal,
@@ -1280,6 +1326,7 @@
           cupom_codigo: cupomAplicado?.cupom_codigo || null,
           campanha_id: cupomAplicado?.campanha_id || null,
           desconto_cupom: cupomAplicado?.desconto_calculado || 0,
+          forma_pagamento: formaPagamentoOnline,
           itens: itensPayload
         }, idempotencyKey);
 
@@ -1312,6 +1359,14 @@
           fecharModalCarrinho();
           iniciarTrackingPedido(activePedidoToken);
           abrirModalTracking();
+
+          if (formaPagamentoOnline === 'pix' || res.exigir_pagamento || res.status === 'aguardando_pagamento') {
+            iniciarFluxoPixOnline({
+              pedidoId: res.pedido_id,
+              numeroPedido: res.numero_pedido || res.pedido_id,
+              total: Number(res.total || subtotalOnline)
+            });
+          }
         } else {
           cardapioShowToast('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), 'error');
         }
@@ -1384,6 +1439,99 @@
     }
   }
 
+  let onlinePixMonitor = null;
+  let onlinePixPedidoId = null;
+  let ultimoOnlinePixPayload = null;
+
+  async function iniciarFluxoPixOnline({ pedidoId, numeroPedido, total }) {
+    if (!window.cafeteriaPix) return;
+    const pixBox = document.getElementById('tracking-pix-box');
+    const pixQr = document.getElementById('tracking-pix-qr');
+    const timerEl = document.getElementById('tracking-pix-timer');
+    const statusEl = document.getElementById('tracking-pix-status');
+    const fallbackEl = document.getElementById('tracking-pix-fallback-aviso');
+    const btnRegenerar = document.getElementById('btn-tracking-regenerar-pix');
+
+    if (!pixBox || !pixQr) return;
+    if (onlinePixMonitor) {
+      onlinePixMonitor.stop();
+      onlinePixMonitor = null;
+    }
+    onlinePixPedidoId = pedidoId;
+    pixBox.style.display = 'block';
+    if (statusEl) statusEl.textContent = 'Aguardando pagamento...';
+    if (timerEl) timerEl.textContent = '--:--';
+    if (fallbackEl) fallbackEl.style.display = 'none';
+    if (btnRegenerar) btnRegenerar.style.display = 'none';
+
+    try {
+      const cobranca = await window.cafeteriaPix.criarCobrancaDinamica({
+        pedidoId,
+        valor: total,
+        canal: 'online',
+        descricao: `Pedido Online #${numeroPedido}`,
+        expiracaoMin: 30,
+        timeoutMs: 4500
+      });
+
+      if (!cobranca.ok) {
+        pixBox.style.display = 'none';
+        return;
+      }
+
+      ultimoOnlinePixPayload = cobranca.payload;
+      pixQr.innerHTML = window.cafeteriaPix.gerarQrSvg(cobranca.payload, 3, 1);
+
+      if (cobranca.fallback && fallbackEl) {
+        fallbackEl.style.display = 'block';
+      }
+
+      if (cobranca.modo === 'dinamico') {
+        onlinePixMonitor = window.cafeteriaPix.monitorarCobrancaPix({
+          txid: cobranca.txid,
+          pedidoId,
+          expiraEm: cobranca.expiraEm,
+          onTick: ({ restanteSegundos }) => {
+            if (timerEl) {
+              timerEl.textContent = window.cafeteriaPix.formatarContagemRegressiva(restanteSegundos);
+            }
+          },
+          onPago: () => {
+            if (statusEl) statusEl.textContent = 'Pagamento Pix Confirmado com Sucesso! ✅';
+            if (timerEl) timerEl.textContent = '00:00';
+            setTimeout(() => {
+              if (activePedidoToken) consultarStatusAtual(activePedidoToken);
+            }, 1000);
+          },
+          onExpirada: () => {
+            if (statusEl) statusEl.textContent = 'Cobrança Pix Expirada ⚠️';
+            if (btnRegenerar) btnRegenerar.style.display = 'inline-block';
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Erro ao gerar Pix no Pedido Online:', e);
+      pixBox.style.display = 'none';
+    }
+  }
+
+  document.getElementById('btn-tracking-copiar-pix')?.addEventListener('click', function () {
+    if (ultimoOnlinePixPayload && window.cafeteriaPix) {
+      window.cafeteriaPix.copiarCodigoPix(ultimoOnlinePixPayload, this);
+    }
+  });
+
+  document.getElementById('btn-tracking-regenerar-pix')?.addEventListener('click', () => {
+    if (onlinePixPedidoId) {
+      const totalNum = parseFloat((document.getElementById('tracking-total-lbl')?.textContent || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+      iniciarFluxoPixOnline({
+        pedidoId: onlinePixPedidoId,
+        numeroPedido: onlinePixPedidoId,
+        total: totalNum
+      });
+    }
+  });
+
   function iniciarTrackingPedido(token) {
     const btnVer = document.getElementById('btn-ver-tracking-topo');
     if (btnVer) btnVer.classList.remove('hidden');
@@ -1452,7 +1600,18 @@
     badge.className = 'status-badge-live';
     const isRetirada = info.origem === 'online' || info.para_viagem || info.mesa_codigo === 'RETIRADA';
 
-    if (info.status === 'aguardando_aprovacao') {
+    if (info.status === 'aguardando_pagamento') {
+      badge.classList.add('aguardando');
+      txt.textContent = 'Aguardando Pagamento Pix...';
+      desc.textContent = 'Realize o pagamento via Pix pelo QR Code ou Copia e Cola para liberação imediata na cozinha.';
+      if (info.forma_pagamento === 'pix' && (!onlinePixMonitor || onlinePixPedidoId !== info.id)) {
+        iniciarFluxoPixOnline({
+          pedidoId: info.id,
+          numeroPedido: info.numero_pedido || info.id,
+          total: Number(info.total || 0)
+        });
+      }
+    } else if (info.status === 'aguardando_aprovacao') {
       badge.classList.add('aguardando');
       txt.textContent = 'Aguardando confirmação do atendente...';
       desc.textContent = 'Seu pedido foi recebido no balcão e será confirmado em instantes.';
@@ -1482,6 +1641,15 @@
       txt.textContent = '❌ Pedido não pôde ser atendido';
       desc.textContent = info.motivo_cancelamento ? `Motivo: ${info.motivo_cancelamento}` : 'Por favor, consulte o atendente no balcão.';
       if (trackingInterval) clearInterval(trackingInterval);
+    }
+
+    if (onlinePixMonitor && (info.status_pagamento === 'pago' || (info.status && info.status !== 'aguardando_pagamento'))) {
+      onlinePixMonitor.stop();
+      onlinePixMonitor = null;
+      const pixBox = document.getElementById('tracking-pix-box');
+      const pixStatus = document.getElementById('tracking-pix-status');
+      if (pixStatus) pixStatus.textContent = 'Pagamento Pix Confirmado! ✅';
+      if (pixBox) setTimeout(() => { pixBox.style.display = 'none'; }, 2500);
     }
 
     // CAF-000042: Exibir botão de avaliação quando pronto ou entregue

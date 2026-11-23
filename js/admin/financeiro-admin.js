@@ -426,7 +426,10 @@
       const db = window.cafeteriaDB?.financeiro;
       if (!db) return;
       const mesYM = getMesAtualYM();
-      resumoAtual = await db.getResumo(mesYM);
+      const [anoStr, mesStr] = (mesYM || '').split('-');
+      const mesNum = parseInt(mesStr, 10);
+      const anoNum = parseInt(anoStr, 10);
+      resumoAtual = await db.getResumo(mesNum, anoNum);
 
       if (!resumoAtual) return;
 

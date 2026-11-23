@@ -1513,9 +1513,39 @@
       async getResumo(mes, ano) {
         if (!window.cafeteriaSupabase) return null;
         try {
+          let p_mes = mes;
+          let p_ano = ano;
+
+          if (typeof mes === 'string' && mes.includes('-')) {
+            const [anoStr, mesStr] = mes.split('-');
+            p_ano = parseInt(anoStr, 10);
+            p_mes = parseInt(mesStr, 10);
+          }
+
+          if (!p_mes || !p_ano || isNaN(p_mes) || isNaN(p_ano)) {
+            const agora = new Date();
+            p_mes = p_mes && !isNaN(p_mes) ? Number(p_mes) : (agora.getMonth() + 1);
+            p_ano = p_ano && !isNaN(p_ano) ? Number(p_ano) : agora.getFullYear();
+          }
+
+          if (Number(p_mes) > 12 && Number(p_ano) <= 12) {
+            const tmp = p_mes;
+            p_mes = p_ano;
+            p_ano = tmp;
+          }
+
           const { data, error } = await window.cafeteriaSupabase
-            .rpc('get_resumo_financeiro', { p_mes: mes, p_ano: ano });
+            .rpc('get_resumo_financeiro', { p_mes: Number(p_mes), p_ano: Number(p_ano) });
           if (error) throw error;
+
+          if (data && typeof data === 'object') {
+            data.total_vencidas = data.total_vencidas ?? data.vencidas_total ?? 0;
+            data.qtd_vencidas = data.qtd_vencidas ?? data.vencidas_qtd ?? 0;
+            data.total_a_vencer_7d = data.total_a_vencer_7d ?? data.vence_7d_total ?? 0;
+            data.qtd_a_vencer_7d = data.qtd_a_vencer_7d ?? data.vence_7d_qtd ?? 0;
+            data.total_despesas_pagas = data.total_despesas_pagas ?? data.total_pago ?? 0;
+          }
+
           return data;
         } catch (err) {
           db.logger.error('financeiro.getResumo', err);
@@ -2079,6 +2109,91 @@
         } catch (err) {
           db.logger.error('erros.limparAntigos', err);
           return 0;
+        }
+      }
+    },
+
+    // --- Módulo NFC-e (CAF-000124) ---
+    nfce: {
+      async obterDadosFiscaisFechamento(fechamentoId) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_dados_fiscais_fechamento', { p_fechamento_id: fechamentoId });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('nfce.obterDadosFiscaisFechamento', err);
+          return null;
+        }
+      },
+
+      async emitirNfce({ fechamentoId, consumidorCpfCnpj = null, consumidorNome = null, contingencia = false, simularRejeicao = false, simularTimeout = false } = {}) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          if (window.cafeteriaSupabase.functions && typeof window.cafeteriaSupabase.functions.invoke === 'function') {
+            const response = await window.cafeteriaSupabase.functions.invoke('nfce-emitir', {
+              body: {
+                fechamento_id: fechamentoId,
+                consumidor_cpf_cnpj: consumidorCpfCnpj,
+                consumidor_nome: consumidorNome,
+                contingencia,
+                simular_rejeicao: simularRejeicao,
+                simular_timeout: simularTimeout
+              }
+            });
+            if (response.error) {
+              return {
+                sucesso: false,
+                erro: response.error.message || 'Falha ao conectar ao serviço de emissão fiscal',
+                contingencia: true
+              };
+            }
+            return response.data;
+          }
+
+          // Fallback caso Edge Functions não estejam disponíveis: registra diretamente via RPC
+          const { data, error } = await window.cafeteriaSupabase.rpc('registrar_emissao_nfce', {
+            p_fechamento_id: fechamentoId,
+            p_consumidor_cpf_cnpj: consumidorCpfCnpj,
+            p_consumidor_nome: consumidorNome
+          });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('nfce.emitirNfce', err);
+          return { sucesso: false, erro: err?.message || 'Erro ao emitir NFC-e' };
+        }
+      },
+
+      async cancelarNfce({ notaId, motivo, pin = null } = {}) {
+        if (!window.cafeteriaSupabase) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('cancelar_nfce', {
+            p_nota_id: notaId,
+            p_motivo: motivo,
+            p_pin: pin
+          });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('nfce.cancelarNfce', err);
+          throw err;
+        }
+      },
+
+      async listarNotas({ anoMes = null, status = null } = {}) {
+        if (!window.cafeteriaSupabase) return { notas: [], resumo: {} };
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('listar_notas_fiscais', {
+            p_ano_mes: anoMes,
+            p_status: status
+          });
+          if (error) throw error;
+          return data || { notas: [], resumo: {} };
+        } catch (err) {
+          db.logger.error('nfce.listarNotas', err);
+          return { notas: [], resumo: {} };
         }
       }
     },

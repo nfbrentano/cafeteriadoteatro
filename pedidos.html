@@ -691,7 +691,7 @@
               <button type="button" id="btn-add-pagamento" class="btn btn--primary btn--md">+ Lançar</button>
             </div>
 
-            <!-- Bloco de QR Code PIX no Fechamento (CAF-000039) -->
+            <!-- Bloco de QR Code PIX no Fechamento (CAF-000039 / CAF-000123) -->
             <div id="div-pix-fechamento" class="hidden" style="margin-top:10px; margin-bottom:10px; padding:12px; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; text-align:center;">
               <div style="font-size:13px; font-weight:700; color:#166534; margin-bottom:6px;">
                 💠 QR Code PIX da Parte (<span id="fechar-conta-pix-valor-lbl">R$ 0,00</span>)
@@ -701,11 +701,24 @@
                 ⚠️ Chave Pix não configurada. Cadastre em Admin → Configurações.
               </div>
               <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                <button type="button" id="btn-fechar-pix-dinamico" class="btn btn--primary btn--sm">⚡ Pix com confirmação automática</button>
                 <button type="button" id="btn-fechar-pix-copiar" class="btn btn--secondary btn--sm btn--pix-copy">📋 Copiar código</button>
-                <button type="button" id="btn-fechar-pix-fullscreen" class="btn btn--primary btn--sm btn--pix-fullscreen">📱 Mostrar ao cliente</button>
+                <button type="button" id="btn-fechar-pix-fullscreen" class="btn btn--ghost btn--sm btn--pix-fullscreen">📱 Mostrar ao cliente</button>
+              </div>
+              <div id="fechar-pix-dinamico-box" class="hidden" style="margin-top:8px; padding:8px 10px; background:#fff; border:1px solid #86efac; border-radius:6px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                  <strong id="fechar-pix-dinamico-status" style="color:#166534;">⏳ Aguardando pagamento Pix...</strong>
+                  <span id="fechar-pix-dinamico-timer" style="font-weight:700; color:#0f766e;">10:00</span>
+                </div>
+                <div id="fechar-pix-fallback-aviso" class="hidden" style="margin-top:6px; color:#92400e; background:#fef3c7; padding:6px; border-radius:4px; font-weight:600;">
+                  ⚠️ Confirmação automática indisponível. Use o Pix estático e clique em + Lançar.
+                </div>
+                <button type="button" id="btn-fechar-pix-regenerar" class="btn btn--secondary btn--sm btn--pix-regenerar hidden">
+                  🔄 Gerar Nova Cobrança Pix
+                </button>
               </div>
               <div style="font-size:11px; color:#15803d; margin-top:6px;">
-                Confirme o recebimento no app/comprovante e clique em <strong>+ Lançar</strong> (Recebi o Pix).
+                Alternativa manual: confira o comprovante no app e clique em <strong>+ Lançar</strong>.
               </div>
             </div>
 
@@ -744,6 +757,13 @@
             <input type="checkbox" id="fechar-conta-imprimir-cupom" checked>
             <span>Imprimir Cupom</span>
           </label>
+          <div class="fechar-conta-nfce-box" style="display: inline-flex; align-items: center; gap: 6px;">
+            <label class="fechar-conta-imprimir-label" title="Emitir Nota Fiscal de Consumidor Eletrônica">
+              <input type="checkbox" id="fechar-conta-emitir-nfce">
+              <span>🧾 NFC-e</span>
+            </label>
+            <input type="text" id="fechar-conta-nfce-cpf" class="input-padrao hidden" placeholder="CPF/CNPJ (opcional)" style="width: 140px; font-size: 12px; padding: 4px 8px;" maxlength="18">
+          </div>
           <button type="button" id="btn-fechar-conta-whatsapp" class="btn btn--secondary btn-whatsapp hidden" title="Enviar comprovante pelo WhatsApp">📲 WhatsApp</button>
           <button type="button" id="btn-fechar-conta-share" class="btn btn--ghost hidden" title="Compartilhar ou copiar comprovante">📤 Compartilhar</button>
           <button type="button" id="modal-fechar-conta-cancelar" class="btn btn--ghost">Cancelar</button>

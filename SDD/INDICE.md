@@ -131,8 +131,8 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000120** | [CHORE] Testes ponta a ponta em navegador real dos fluxos críticos (pedido → cozinha → fechamento → caixa) | Concluída | `00_bootstrap.sql` / `01_seed.sql` (`e2e/`) | `caf-000120-testes-e2e-navegador-real.test.js`, `e2e/fluxos-criticos.spec.js` | — |
 | **CAF-000121** | [REFACTOR] Modularização do PDV (`js/pedidos.js`) e do Admin (`admin.html`) sem mudança de comportamento | Concluída | — | `caf-000121-modularizacao-pdv-admin.test.js` | — |
 | **CAF-000122** | [CHORE] Higiene do repositório: arquivos pesados e temporários versionados, Node do CI e README | Concluída | — | `caf-000122-higiene-repositorio-ci-readme.test.js` | — |
-| **CAF-000123** | [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV | Rascunho | — | — | — |
-| **CAF-000124** | [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal | Rascunho | — | — | — |
+| **CAF-000123** | [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV | Concluída | `migration_caf_000123_pix_dinamico.sql` | `caf-000123-pix-dinamico.test.js`, `pix_dinamico.test.sql` | — |
+| **CAF-000124** | [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal | Concluída | `migration_caf_000124_nfce.sql` | `caf-000124-nfce.test.js` | — |
 | **CAF-000125** | [UI] Acessibilidade do Totem e do cardápio com pedido do cliente (WCAG 2.1 AA) | Rascunho | — | — | — |
 | **CAF-000126** | [FIX] Autorização NULL-safe e revogação de `anon` nas RPCs SECURITY DEFINER | Rascunho | — | — | — |
 | **CAF-000127** | [FIX] Dados sensíveis legíveis: `pin_hash` com bcrypt e policies `USING (true)` de financeiro, caixa e estoque | Rascunho | — | — | — |
@@ -166,6 +166,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000155** | [FEAT] Entrada de estoque por XML da NF-e de compra | Rascunho | — | — | — |
 | **CAF-000156** | [FEAT] Assinatura / clube do café com Pix Automático | Rascunho | — | — | — |
 | **CAF-000157** | [FEAT] Maquininha integrada ao PDV (TEF / Smart POS) | Rascunho | — | — | — |
+| **CAF-000158** | [FIX] Correção das RPCs get_resumo_financeiro (404 sem parâmetros) e admin_create_user (pgcrypto gen_salt) | Concluída | `migration_caf_000158_correcao_rpcs_pgcrypto_financeiro.sql` | `caf-000158-correcao-rpcs-get-resumo-financeiro-admin-create-user.test.js` | — |
 
 ---
 

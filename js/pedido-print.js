@@ -870,6 +870,182 @@
       `;
 
       executePrint(html);
+    },
+
+    printDanfeNfce: function (nota, configEmpresa = {}) {
+      if (!nota) return;
+      const empresa = {
+        razaoSocial: configEmpresa.razao_social || 'Cafeteria do Teatro Ltda',
+        nomeFantasia: configEmpresa.nome_fantasia || 'Cafeteria do Teatro',
+        cnpj: configEmpresa.cnpj || '00.000.000/0001-91',
+        ie: configEmpresa.ie || '123456789',
+        endereco: configEmpresa.endereco || 'Rua do Teatro, 123 - Centro - Lajeado/RS',
+        municipio: configEmpresa.municipio || 'Lajeado - RS'
+      };
+
+      const dataEmissao = new Date(nota.created_at || new Date()).toLocaleString('pt-BR');
+      const chaveFormatada = String(nota.chave_acesso || '').replace(/(\d{4})/g, '$1 ').trim();
+      const numFmt = String(nota.numero || 1).padStart(9, '0');
+      const serieFmt = String(nota.serie || 1).padStart(3, '0');
+      const protocolo = nota.protocolo || 'HOMOLOGAÇÃO';
+      const itens = Array.isArray(nota.itens) ? nota.itens : [];
+      const pagamentos = Array.isArray(nota.formas_pagamento) ? nota.formas_pagamento : [];
+
+      let itensHtml = '';
+      itens.forEach((it, idx) => {
+        const cod = String(it.produto_id || idx + 1).padStart(3, '0');
+        const desc = escapeHtml(it.nome || 'Item');
+        const qtd = it.quantidade || 1;
+        const un = escapeHtml(it.unidade || 'UN');
+        const vUnit = Number(it.valor_unitario || 0).toFixed(2).replace('.', ',');
+        const vTotal = Number(it.valor_total || (qtd * (it.valor_unitario || 0))).toFixed(2).replace('.', ',');
+
+        itensHtml += `
+          <tr>
+            <td colspan="4" style="padding-top: 3px; font-weight: bold;">${idx + 1} - ${cod} ${desc}</td>
+          </tr>
+          <tr>
+            <td style="padding-left: 8px;">${qtd} ${un} x R$ ${vUnit}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right; font-weight: bold;">R$ ${vTotal}</td>
+          </tr>
+        `;
+      });
+
+      let pagamentosHtml = '';
+      pagamentos.forEach(p => {
+        const formaNome = formatFormaPagamento(p.forma);
+        const valorFmt = Number(p.valor || 0).toFixed(2).replace('.', ',');
+        pagamentosHtml += `
+          <tr>
+            <td>${escapeHtml(formaNome)}</td>
+            <td style="text-align: right; font-weight: bold;">R$ ${valorFmt}</td>
+          </tr>
+        `;
+      });
+
+      let consumidorHtml = '<div class="center" style="margin: 4px 0; font-weight: bold;">CONSUMIDOR NÃO IDENTIFICADO</div>';
+      if (nota.consumidor_cpf_cnpj) {
+        const docLimpo = String(nota.consumidor_cpf_cnpj).replace(/[^0-9]/g, '');
+        const docFmt = docLimpo.length === 11
+          ? docLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+          : docLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        consumidorHtml = `
+          <div style="margin: 4px 0;">
+            <strong>CONSUMIDOR:</strong> CPF/CNPJ ${escapeHtml(docFmt)}
+            ${nota.consumidor_nome ? `<br><strong>NOME:</strong> ${escapeHtml(nota.consumidor_nome)}` : ''}
+          </div>
+        `;
+      }
+
+      let qrCodeHtml = '';
+      const qrData = nota.qr_code_url || `https://dfe-portal.svrs.rs.gov.br/nfce/qrCode?p=${nota.chave_acesso}|2|1|1|`;
+      if (typeof window !== 'undefined' && window.qrcode) {
+        try {
+          const qr = window.qrcode(0, 'M');
+          qr.addData(qrData);
+          qr.make();
+          qrCodeHtml = qr.createImgTag(3, 4);
+        } catch (e) {
+          qrCodeHtml = `<div class="center" style="font-size:10px;">[QR CODE: ${escapeHtml(qrData)}]</div>`;
+        }
+      } else {
+        qrCodeHtml = `<div class="center" style="font-size:10px;">[QR CODE: ${escapeHtml(qrData)}]</div>`;
+      }
+
+      const totalProd = Number(nota.valor_produtos || nota.valor_total || 0).toFixed(2).replace('.', ',');
+      const totalDesc = Number(nota.valor_desconto || 0).toFixed(2).replace('.', ',');
+      const totalPagar = Number(nota.valor_total || 0).toFixed(2).replace('.', ',');
+      const tributosAprox = (Number(nota.valor_total || 0) * 0.18).toFixed(2).replace('.', ','); // Est. IBPT 18%
+
+      const danfeHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>DANFE NFC-e - Nº ${numFmt}</title>
+          <style>${baseStyles}</style>
+        </head>
+        <body>
+          <div class="center bold" style="font-size: 14px;">${escapeHtml(empresa.nomeFantasia)}</div>
+          <div class="center" style="font-size: 11px;">${escapeHtml(empresa.razaoSocial)}</div>
+          <div class="center" style="font-size: 11px;">CNPJ: ${escapeHtml(empresa.cnpj)} - IE: ${escapeHtml(empresa.ie)}</div>
+          <div class="center" style="font-size: 10px;">${escapeHtml(empresa.endereco)}</div>
+          <div class="divider"></div>
+
+          <div class="center bold" style="font-size: 12px;">DANFE NFC-e</div>
+          <div class="center" style="font-size: 10px;">Documento Auxiliar da Nota Fiscal de Consumidor Eletrônica</div>
+          <div class="center" style="font-size: 9px; font-style: italic;">Não permite aproveitamento de crédito de ICMS</div>
+          <div class="divider"></div>
+
+          <table>
+            ${itensHtml}
+          </table>
+          <div class="divider"></div>
+
+          <table>
+            <tr>
+              <td>QTD. TOTAL DE ITENS:</td>
+              <td style="text-align: right; font-weight: bold;">${itens.length}</td>
+            </tr>
+            <tr>
+              <td>VALOR TOTAL PRODUTOS:</td>
+              <td style="text-align: right;">R$ ${totalProd}</td>
+            </tr>
+            ${Number(nota.valor_desconto || 0) > 0 ? `
+            <tr>
+              <td>DESCONTOS:</td>
+              <td style="text-align: right;">- R$ ${totalDesc}</td>
+            </tr>` : ''}
+            <tr>
+              <td class="bold" style="font-size: 14px;">VALOR A PAGAR:</td>
+              <td class="bold" style="font-size: 14px; text-align: right;">R$ ${totalPagar}</td>
+            </tr>
+          </table>
+          <div class="divider"></div>
+
+          <div class="bold" style="margin-bottom: 2px;">FORMA DE PAGAMENTO</div>
+          <table>
+            ${pagamentosHtml}
+          </table>
+          <div class="divider"></div>
+
+          <div style="font-size: 10px; margin: 4px 0;">
+            Informação dos Tributos Totais Incidentes (Lei Federal 12.741/2012): R$ ${tributosAprox} (Fonte: IBPT)
+          </div>
+          <div class="divider"></div>
+
+          <div class="center bold">
+            NFC-e nº ${numFmt} Série ${serieFmt} Emissão: ${dataEmissao}
+          </div>
+          <div class="center" style="font-size: 11px;">
+            Protocolo de autorização: ${escapeHtml(protocolo)}
+          </div>
+          <div class="divider"></div>
+
+          <div class="center bold" style="font-size: 11px; margin-bottom: 2px;">CHAVE DE ACESSO</div>
+          <div class="center" style="font-size: 10px; font-family: monospace; letter-spacing: 0.5px; word-break: break-all;">
+            ${escapeHtml(chaveFormatada)}
+          </div>
+          <div class="divider"></div>
+
+          ${consumidorHtml}
+          <div class="divider"></div>
+
+          <div class="center" style="margin: 6px 0;">
+            <div style="font-size: 10px; font-weight: bold; margin-bottom: 4px;">Consulta via leitor de QR Code</div>
+            ${qrCodeHtml}
+          </div>
+
+          <div class="center" style="font-size: 9px; margin-top: 6px;">
+            Ambiente: ${nota.ambiente === 'producao' ? 'PRODUÇÃO' : 'HOMOLOGAÇÃO - SEM VALOR FISCAL'}
+          </div>
+        </body>
+        </html>
+      `;
+
+      executePrint(danfeHtml);
     }
   };
 

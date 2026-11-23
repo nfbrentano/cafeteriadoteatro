@@ -562,6 +562,14 @@
       activeFichaItens = [];
     }
 
+    // Dados Fiscais (CAF-000124)
+    const inputNcm = document.getElementById('produto-ncm');
+    const inputCfop = document.getElementById('produto-cfop');
+    const inputCsosn = document.getElementById('produto-csosn');
+    if (inputNcm) inputNcm.value = (isEdit && p?.ncm) ? p.ncm : '';
+    if (inputCfop) inputCfop.value = (isEdit && p?.cfop) ? p.cfop : '';
+    if (inputCsosn) inputCsosn.value = (isEdit && p?.csosn) ? p.csosn : '';
+
     renderFichaTable();
 
     // Combos (CAF-000110)
@@ -622,6 +630,9 @@
 
     const tempoAlvoStr = document.getElementById('produto-tempo-alvo')?.value.trim();
     const tempo_alvo_min = tempoAlvoStr ? parseInt(tempoAlvoStr, 10) : null;
+    const ncm = (document.getElementById('produto-ncm')?.value || '').replace(/\D/g, '').slice(0, 8) || null;
+    const cfop = (document.getElementById('produto-cfop')?.value || '').replace(/\D/g, '').slice(0, 4) || null;
+    const csosn = (document.getElementById('produto-csosn')?.value || '').replace(/\D/g, '').slice(0, 4) || null;
     
     if (!nome || !categoria_id || isNaN(preco)) {
       return admin.toast('Erro', 'Preencha os campos obrigatórios (*)', 'error');
@@ -662,6 +673,9 @@
         tempo_alvo_min,
         antecedencia_min_horas,
         apenas_encomenda,
+        ncm,
+        cfop,
+        csosn,
         imagem_url: isNewImage ? null : dataUrl,
         updated_at: new Date().toISOString()
       }, imageBlob);

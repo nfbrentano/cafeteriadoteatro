@@ -324,10 +324,27 @@
       </div>
 
       <div id="totem-success-pix-box" class="hidden" style="background:#f0fdf4; border:2px solid #86efac; border-radius:18px; padding:14px; margin-bottom:14px;">
-        <div style="font-weight:800; color:#166534; font-size:0.95rem; margin-bottom:6px;">
-          💠 Escaneie o QR Code PIX abaixo e mostre o comprovante no caixa:
+        <div id="totem-pix-status-badge" style="font-weight:800; color:#166534; font-size:0.95rem; margin-bottom:6px;">
+          💠 Escaneie o QR Code PIX abaixo (<span id="totem-pix-timer">10:00</span>):
         </div>
         <div id="totem-success-pix-qr" style="display:inline-flex; background:#fff; padding:8px; border-radius:12px;"></div>
+        <div style="margin-top:8px;">
+          <button type="button" id="btn-totem-copiar-pix" class="totem-btn totem-btn--ghost totem-btn--pix-copy hidden">
+            📋 Copiar código Pix
+          </button>
+        </div>
+        <div id="totem-pix-fallback-aviso" class="hidden" style="margin-top:8px; padding:8px 12px; background:#fef3c7; border:1px solid #f59e0b; border-radius:10px; color:#92400e; font-size:0.9rem; font-weight:700;">
+          ⚠️ Confirmação automática indisponível — pague pelo QR Code e mostre o comprovante no caixa.
+        </div>
+        <div id="totem-pix-expirado-box" class="hidden" style="margin-top:10px; padding:10px; background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; color:#991b1b;">
+          <div style="font-weight:800; margin-bottom:6px;">⏱️ Cobrança Pix expirada</div>
+          <button type="button" id="btn-totem-regenerar-pix" class="totem-btn totem-btn--primary totem-btn--pix-regenerar">
+            🔄 Gerar Nova Cobrança Pix
+          </button>
+        </div>
+        <div id="totem-pix-pago-box" class="hidden" style="margin-top:10px; padding:10px 14px; background:#dcfce7; border:2px solid #22c55e; border-radius:12px; color:#166534; font-weight:900; font-size:1.05rem;">
+          ✅ Pagamento Pix Confirmado! Seu pedido já entrou na fila da cozinha.
+        </div>
       </div>
 
       <div style="background:var(--totem-surface-alt); border-radius:14px; padding:12px 16px; margin-bottom:18px; font-weight:700; color:var(--totem-text);">

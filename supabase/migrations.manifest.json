@@ -403,6 +403,24 @@
       "arquivo": "migration_caf_000115_erros_cliente.sql",
       "checksum": "df93cb33583e5a9fbde4d74ea528a8b1f6c7606378d583fee7d7394ea599c103",
       "rollback": "rollback_caf_000115.sql"
+    },
+    {
+      "versao": "123",
+      "arquivo": "migration_caf_000123_pix_dinamico.sql",
+      "checksum": "2c1fbfc91c58062e36fee3398e38e6a7f1a8a47e42ab1ed1a6fe6f7126e49ccb",
+      "rollback": "rollback_caf_000123.sql"
+    },
+    {
+      "versao": "124",
+      "arquivo": "migration_caf_000124_nfce.sql",
+      "checksum": "f28e72ad049f45f9a32da74bb3735e46608b85bf768651756c29b5e7bc525402",
+      "rollback": "rollback_caf_000124.sql"
+    },
+    {
+      "versao": "158",
+      "arquivo": "migration_caf_000158_correcao_rpcs_pgcrypto_financeiro.sql",
+      "checksum": "64f84f9f29250e21fdbae1bf0772bf221d84a3370255cfde252cbbd0c4856aac",
+      "rollback": "rollback_caf_000158.sql"
     }
   ]
 }

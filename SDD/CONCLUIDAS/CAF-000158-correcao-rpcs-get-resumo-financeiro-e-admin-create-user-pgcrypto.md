@@ -1,7 +1,7 @@
 # [FIX] Correção das RPCs get_resumo_financeiro (404 sem parâmetros) e admin_create_user (pgcrypto gen_salt)
 
-> **Status:** Em revisão
-> **Autor:** Antigravity · **Revisor:** Natanael Brentano · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Antigravity · **Revisor:** Natanael Brentano · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-21
 
 ## Detalhes da Atividade
 
@@ -62,12 +62,12 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado que o cliente chama `get_resumo_financeiro` sem parâmetros ou com parâmetros parciais, quando a RPC é executada no banco, então ela utiliza o mês e ano correntes como default e retorna os dados resumidos sem erro 404.
-- [ ] **CA02:** Dado que o cliente chama `window.cafeteriaDB.financeiro.getResumo()` sem argumentos em `js/admin/main.js`, quando a promessa resolve, então ela envia `{ p_mes, p_ano }` numéricos válidos e preenche o banner de alerta sem lançar erro no console.
-- [ ] **CA03:** Dado que `db.financeiro.getResumo("2026-11")` é chamado em `js/admin/financeiro-admin.js`, quando os argumentos são processados, então a chamada RPC recebe `{ p_mes: 11, p_ano: 2026 }`.
-- [ ] **CA04:** Dado que um administrador autenticado executa `admin_create_user`, quando a função gera a senha criptografada, então ela localiza `extensions.gen_salt` e `extensions.crypt` com sucesso e cria o usuário sem erro 42883.
-- [ ] **CA05:** Dado que um usuário anônimo (`anon`) tenta chamar `admin_create_user`, quando a requisição é recebida, então o acesso é negado (permissão revogada / erro 42501).
-- [ ] **CA06:** Dado que a suíte de testes `tests/caf-000158-correcao-rpcs-get-resumo-financeiro-admin-create-user.test.js` é executada, quando rodado `npm test`, então todos os testes passam com 100% de sucesso e o build (`npm run build`) conclui sem erros.
+- [x] **CA01:** Dado que o cliente chama `get_resumo_financeiro` sem parâmetros ou com parâmetros parciais, quando a RPC é executada no banco, então ela utiliza o mês e ano correntes como default e retorna os dados resumidos sem erro 404.
+- [x] **CA02:** Dado que o cliente chama `window.cafeteriaDB.financeiro.getResumo()` sem argumentos em `js/admin/main.js`, quando a promessa resolve, então ela envia `{ p_mes, p_ano }` numéricos válidos e preenche o banner de alerta sem lançar erro no console.
+- [x] **CA03:** Dado que `db.financeiro.getResumo("2026-11")` é chamado em `js/admin/financeiro-admin.js`, quando os argumentos são processados, então a chamada RPC recebe `{ p_mes: 11, p_ano: 2026 }`.
+- [x] **CA04:** Dado que um administrador autenticado executa `admin_create_user`, quando a função gera a senha criptografada, então ela localiza `extensions.gen_salt` e `extensions.crypt` com sucesso e cria o usuário sem erro 42883.
+- [x] **CA05:** Dado que um usuário anônimo (`anon`) tenta chamar `admin_create_user`, quando a requisição é recebida, então o acesso é negado (permissão revogada / erro 42501).
+- [x] **CA06:** Dado que a suíte de testes `tests/caf-000158-correcao-rpcs-get-resumo-financeiro-admin-create-user.test.js` é executada, quando rodado `npm test`, então todos os testes passam com 100% de sucesso e o build (`npm run build`) conclui sem erros.
 
 ## O que a atividade não inclui
 
