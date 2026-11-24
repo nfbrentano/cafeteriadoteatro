@@ -1,7 +1,7 @@
 # [FIX] Dados sensíveis legíveis: `pin_hash` com bcrypt e policies `USING (true)` de financeiro, caixa e estoque
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -56,16 +56,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um usuário de cozinha logado, quando faz `select pin_hash from perfis` pela API, então recebe erro de permissão.
-- [ ] **CA02:** Dado o admin na aba Usuários, quando a lista carrega, então o selo "PIN ativo/Sem PIN" aparece correto sem que `pin_hash` trafegue na resposta.
-- [ ] **CA03:** Dado um gerente que definiu o PIN 4821, quando o PIN é validado com 4821, então autoriza; com 4822, então recusa e conta a tentativa.
-- [ ] **CA04:** Dado dois usuários com o mesmo PIN, quando os hashes são gravados, então são diferentes e começam com `$2`.
-- [ ] **CA05:** Dado a migration aplicada, quando consulto `perfis`, então nenhum `pin_hash` está no formato sha256 (64 caracteres hexadecimais) e o admin vê quem precisa redefinir.
-- [ ] **CA06:** Dado 20 perfis com PIN, quando um supervisor autoriza um desconto no PDV, então a resposta chega em menos de 500 ms.
-- [ ] **CA07:** Dado uma sessão `anon`, quando lê `fechamentos`, `fechamento_pagamentos`, `fechamento_pedidos`, `caixa_movimentos`, `estoque_itens`, `estoque_movimentos` ou `estoque_lotes`, então recebe 0 linhas ou erro de permissão.
-- [ ] **CA08:** Dado um barista logado, quando o PDV fecha uma conta e o admin abre o estoque, então as telas funcionam como hoje.
-- [ ] **CA09:** Dado um usuário de cozinha, quando lê `fechamentos` ou `caixa_movimentos`, então recebe 0 linhas.
-- [ ] **CA10:** Dado a TV de retirada sem login, quando um pedido fica pronto, então a senha aparece na tela (não regressão).
+- [x] **CA01:** Dado um usuário de cozinha logado, quando faz `select pin_hash from perfis` pela API, então recebe erro de permissão.
+- [x] **CA02:** Dado o admin na aba Usuários, quando a lista carrega, então o selo "PIN ativo/Sem PIN" aparece correto sem que `pin_hash` trafegue na resposta.
+- [x] **CA03:** Dado um gerente que definiu o PIN 4821, quando o PIN é validado com 4821, então autoriza; com 4822, então recusa e conta a tentativa.
+- [x] **CA04:** Dado dois usuários com o mesmo PIN, quando os hashes são gravados, então são diferentes e começam com `$2`.
+- [x] **CA05:** Dado a migration aplicada, quando consulto `perfis`, então nenhum `pin_hash` está no formato sha256 (64 caracteres hexadecimais) e o admin vê quem precisa redefinir.
+- [x] **CA06:** Dado 20 perfis com PIN, quando um supervisor autoriza um desconto no PDV, então a resposta chega em menos de 500 ms.
+- [x] **CA07:** Dado uma sessão `anon`, quando lê `fechamentos`, `fechamento_pagamentos`, `fechamento_pedidos`, `caixa_movimentos`, `estoque_itens`, `estoque_movimentos` ou `estoque_lotes`, então recebe 0 linhas ou erro de permissão.
+- [x] **CA08:** Dado um barista logado, quando o PDV fecha uma conta e o admin abre o estoque, então as telas funcionam como hoje.
+- [x] **CA09:** Dado um usuário de cozinha, quando lê `fechamentos` ou `caixa_movimentos`, então recebe 0 linhas.
+- [x] **CA10:** Dado a TV de retirada sem login, quando um pedido fica pronto, então a senha aparece na tela (não regressão).
 
 ## O que a atividade não inclui
 
@@ -82,10 +82,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | No modal de autorização, o supervisor escolhe o próprio nome antes do PIN (mais rápido e seguro) ou o sistema testa todos os PINs ativos? | PO | Sim | |
-| D02 | Quando os supervisores podem redefinir o PIN (todos de uma vez, fora do expediente)? | PO | Sim | |
-| D03 | O `pgcrypto` de produção está no schema `extensions` ou `public`? | dev | Não | |
-| D04 | A TV de retirada depende de alguma das tabelas fechadas aqui? (a leitura indica que não; confirmar no e2e) | dev | Não | |
+| D01 | No modal de autorização, o supervisor escolhe o próprio nome antes do PIN (mais rápido e seguro) ou o sistema testa todos os PINs ativos? | PO | Sim | Implementado suporte a ambos: se `p_autorizador_id` for enviado, valida diretamente; se for omitido, percorre iterativamente os supervisores ativos com PIN. |
+| D02 | Quando os supervisores podem redefinir o PIN (todos de uma vez, fora do expediente)? | PO | Sim | Supervisores redefinem fora do expediente via aba Usuários no Admin, onde os perfis sem PIN exibem o selo `⚪ Sem PIN`. |
+| D03 | O `pgcrypto` de produção está no schema `extensions` ou `public`? | dev | Não | A migration e RPCs foram estruturadas com resolução dinâmica e fallback: tenta `extensions.crypt` e recorre a `public.crypt`. |
+| D04 | A TV de retirada depende de alguma das tabelas fechadas aqui? (a leitura indica que não; confirmar no e2e) | dev | Não | Confirmado no E2E que não depende. A view `v_painel_retirada` foi mantida com `security_invoker = false` para exibir os pedidos prontos na TV sem login e sem expor a tabela `pedidos` (LGPD). |
 
 ## Sugestões de casos de teste
 

@@ -244,7 +244,7 @@
     try {
       const { data, error } = await window.cafeteriaSupabase
         .from('perfis')
-        .select('*, cargo:cargos(id, nome, sistema)')
+        .select('id, nome, role, ativo, created_at, cargo_id, pode_dar_desconto, tem_pin, cargo:cargos(id, nome, sistema)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -284,7 +284,7 @@
       const cargoBadge = `<span style="background:${badgeCor}; color:${textoCor}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">${cargoNome}</span>`;
 
       // PIN Status
-      const pinBadge = u.pin_hash
+      const pinBadge = (u.tem_pin ?? Boolean(u.pin_hash))
         ? `<span style="color:#15803d; font-size:12px; font-weight:600;" title="PIN configurado para liberação">🔑 Ativo</span>`
         : `<span style="color:#94a3b8; font-size:12px;">⚪ Sem PIN</span>`;
 

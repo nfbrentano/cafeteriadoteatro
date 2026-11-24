@@ -108,7 +108,7 @@ export function createPageHarness(htmlFileName, options = {}) {
 
   // Inject globals & web mocks
   window.cafeteriaSupabase = mockSupabase;
-  window.supabaseClient = mockSupabase;
+  // window.supabaseClient não é mais injetado por padrão (CAF-000130 / RF02)
   if (!window.supabase) {
     window.supabase = {
       createClient: () => mockSupabase

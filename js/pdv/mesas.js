@@ -268,6 +268,16 @@ export function registrarMesasPDV() {
         }
         estadoPDV.activePedidos = data;
         localStorage.setItem('cafeteria_cache_pdv_active_pedidos', JSON.stringify(data));
+        try {
+          const { data: saldosData } = await window.cafeteriaSupabase
+            .from('v_saldo_mesa')
+            .select('*');
+          if (saldosData) {
+            estadoPDV.saldosMesas = new Map(saldosData.map(s => [s.mesa_codigo, s]));
+          }
+        } catch (saldoErr) {
+          console.warn('[PDV] Falha ao carregar saldos de mesas:', saldoErr);
+        }
         await loadCortesiasDisponiveis();
         renderMesasSection();
         renderPedidosCards();
@@ -308,9 +318,18 @@ export function registrarMesasPDV() {
 
     estadoPDV.mesas.forEach(mesa => {
       const pedidosMesa = estadoPDV.activePedidos.filter(p => p.mesa_codigo === mesa.codigo);
-      const pedidosAbertosMesa = pedidosMesa.filter(p => calcularSaldoPedidoMesa(p) > 0.001);
-      const ocupada = pedidosAbertosMesa.length > 0;
-      const totalMesa = pedidosAbertosMesa.reduce((acc, p) => acc + calcularSaldoPedidoMesa(p), 0);
+      const saldoInfo = estadoPDV.saldosMesas?.get(mesa.codigo);
+      let totalMesa = 0;
+      let ocupada = false;
+
+      if (saldoInfo) {
+        totalMesa = Number(saldoInfo.saldo_restante || 0);
+        ocupada = Number(saldoInfo.pedidos_count || 0) > 0 && totalMesa > 0.001;
+      } else {
+        const pedidosAbertosMesa = pedidosMesa.filter(p => calcularSaldoPedidoMesa(p) > 0.001);
+        ocupada = pedidosAbertosMesa.length > 0;
+        totalMesa = pedidosAbertosMesa.reduce((acc, p) => acc + calcularSaldoPedidoMesa(p), 0);
+      }
 
       const card = document.createElement('div');
       card.className = `mesa-card ${ocupada ? 'ocupada' : 'livre'}`;
@@ -591,12 +610,21 @@ export function registrarMesasPDV() {
       html += '</ul></div>';
     });
 
-    const saldoRestanteMesa = Math.max(0, total - jaPagoMesa);
+    const saldoInfo = estadoPDV.saldosMesas?.get(mesaCodigo);
+    let totalGeralExibicao = total;
+    let jaPagoExibicao = jaPagoMesa;
+    let saldoRestanteMesa = Math.max(0, total - jaPagoMesa);
+
+    if (saldoInfo) {
+      totalGeralExibicao = Number(saldoInfo.subtotal_geral || 0);
+      jaPagoExibicao = Number(saldoInfo.ja_pago || 0);
+      saldoRestanteMesa = Number(saldoInfo.saldo_restante || 0);
+    }
 
     html += `
       <div style="text-align:right; margin-top:10px;">
-        <div style="font-size:14px; color:#666;">SUBTOTAL GERAL: R$ ${total.toFixed(2).replace('.', ',')}</div>
-        ${jaPagoMesa > 0 ? `<div style="font-size:14px; color:#27ae60; font-weight:bold;">(-) JÁ AMORTIZADO: R$ ${jaPagoMesa.toFixed(2).replace('.', ',')}</div>` : ''}
+        <div style="font-size:14px; color:#666;">SUBTOTAL GERAL: R$ ${totalGeralExibicao.toFixed(2).replace('.', ',')}</div>
+        ${jaPagoExibicao > 0 ? `<div style="font-size:14px; color:#27ae60; font-weight:bold;">(-) JÁ AMORTIZADO: R$ ${jaPagoExibicao.toFixed(2).replace('.', ',')}</div>` : ''}
         <div style="font-size:18px; font-weight:bold; color:var(--marrom-escuro); margin-top:4px;">
           SALDO A PAGAR: R$ ${saldoRestanteMesa.toFixed(2).replace('.', ',')}
         </div>

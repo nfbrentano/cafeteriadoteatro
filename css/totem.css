@@ -22,7 +22,164 @@
 }
 
 body.totem-font-large {
-  --totem-font-scale: 1.18;
+  --totem-font-scale: 1.30; /* +30% de ampliação (CAF-000125 / CA08) */
+}
+
+/* ── TEMA ALTO CONTRASTE (WCAG 2.1 AA / CA06 / CA08) ── */
+body.totem-high-contrast {
+  --totem-bg: #000000;
+  --totem-surface: #121212;
+  --totem-surface-alt: #1e1e1e;
+  --totem-text: #FFFFFF;
+  --totem-text-sub: #F0F0F0;
+  --totem-border: #FFD700;
+  --totem-primary: #FFD700;
+  --totem-primary-hover: #FFE033;
+  --totem-accent: #FFFF00;
+  --totem-accent-light: #2A2A00;
+  --totem-success: #4ADE80;
+  --totem-success-bg: #064E3B;
+  --totem-danger: #F87171;
+}
+
+body.totem-high-contrast .totem-header {
+  background: #000000;
+  border-bottom: 3px solid #FFD700;
+}
+
+body.totem-high-contrast .totem-brand__title {
+  color: #FFD700;
+}
+
+body.totem-high-contrast .totem-brand__sub {
+  color: #FFFFFF;
+}
+
+body.totem-high-contrast .totem-cat-btn {
+  background: #181818;
+  color: #FFFFFF;
+  border: 2px solid #FFD700;
+}
+
+body.totem-high-contrast .totem-cat-btn.is-active {
+  background: #FFD700;
+  color: #000000;
+  font-weight: 900;
+}
+
+body.totem-high-contrast .totem-product-card {
+  background: #121212;
+  border: 3px solid #FFD700;
+  color: #FFFFFF;
+}
+
+body.totem-high-contrast .totem-product-card__title {
+  color: #FFFFFF;
+}
+
+body.totem-high-contrast .totem-product-card__desc {
+  color: #E2E8F0;
+}
+
+body.totem-high-contrast .totem-product-card__price {
+  color: #FFD700;
+  font-weight: 900;
+}
+
+body.totem-high-contrast .totem-btn-add {
+  background: #FFD700;
+  color: #000000;
+  font-weight: 900;
+  border: 2px solid #FFFFFF;
+}
+
+body.totem-high-contrast .totem-bottom-bar {
+  background: #000000;
+  border-top: 3px solid #FFD700;
+}
+
+body.totem-high-contrast .totem-cart-total-lbl {
+  color: #E2E8F0;
+}
+
+body.totem-high-contrast .totem-cart-total-val {
+  color: #FFD700;
+}
+
+body.totem-high-contrast .totem-modal {
+  background: #000000;
+  color: #FFFFFF;
+  border: 3px solid #FFD700;
+}
+
+body.totem-high-contrast .totem-modal__title {
+  color: #FFD700;
+}
+
+body.totem-high-contrast .totem-btn--primary {
+  background: #FFD700;
+  color: #000000;
+  font-weight: 900;
+}
+
+body.totem-high-contrast .totem-choice-btn {
+  background: #181818;
+  color: #FFFFFF;
+  border: 2px solid #FFD700;
+}
+
+body.totem-high-contrast .totem-choice-btn.is-selected {
+  background: #FFD700;
+  color: #000000;
+  font-weight: 900;
+}
+
+body.totem-high-contrast input[type="text"],
+body.totem-high-contrast input[type="search"] {
+  background: #121212;
+  color: #FFFFFF;
+  border: 2px solid #FFD700;
+}
+
+/* ── FOCO VISÍVEL PARA TECLADO (WCAG 2.1 AA / CA03) ── */
+:focus-visible {
+  outline: 3px solid #D97706 !important;
+  outline-offset: 3px !important;
+}
+
+body.totem-high-contrast :focus-visible {
+  outline: 4px solid #FFFF00 !important;
+  outline-offset: 3px !important;
+}
+
+/* ── LEITOR DE TELA (SCREEN READER ONLY) ── */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ── RESPEITO A PREFERS-REDUCED-MOTION (WCAG 2.1 AA / CA07) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .totem-bg-layer,
+  .totem-bg-media,
+  .totem-bg-overlay,
+  .totem-idle-screen {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 * {

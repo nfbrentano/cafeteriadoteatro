@@ -92,29 +92,30 @@ describe('CAF-000108: Integridade Operacional — Transferência de Mesa, Fecham
 
       // 1ª tentativa: fechar_conta_mesa falha
       await page.confirmarFechamento();
-      expect(chamadasDebito).toBe(1);
+      expect(chamadasDebito).toBe(0);
       expect(tentativaFechar).toBe(1);
 
-      // 2ª tentativa (retry do operador): fechar_conta_mesa sucede sem debitar novamente!
+      // 2ª tentativa (retry do operador): fechar_conta_mesa sucede com a mesma idempotency key e sem debitar no cliente!
       await page.confirmarFechamento();
       expect(tentativaFechar).toBe(2);
-      expect(chamadasDebito).toBe(1);
+      expect(chamadasDebito).toBe(0);
       expect(idempotencyKeysRecebidas[0]).toBeTruthy();
       expect(idempotencyKeysRecebidas[1]).toBe(idempotencyKeysRecebidas[0]);
     });
 
-    it('CA04: recusa o fechamento e não chama fechar_conta_mesa quando o cliente não possui saldo/limite suficiente', async () => {
+    it('CA04: recusa o fechamento quando o cliente não possui saldo/limite suficiente via erro do servidor', async () => {
       page = await setupPedidosPage();
 
-      window.cafeteriaDB.clientes.lancarMovimento = vi.fn(async () => ({
-        sucesso: false,
-        mensagem: 'Limite de crédito excedido.'
-      }));
+      let chamadasDebito = 0;
+      window.cafeteriaDB.clientes.lancarMovimento = vi.fn(async () => {
+        chamadasDebito += 1;
+        return { sucesso: false, mensagem: 'Limite de crédito excedido.' };
+      });
 
       let fechamentoChamado = false;
       page.mockRpc('fechar_conta_mesa', async () => {
         fechamentoChamado = true;
-        return { data: { fechamento_id: 902 }, error: null };
+        return { data: null, error: new Error('Limite de crédito excedido.') };
       });
 
       const pedidosMesa03 = [
@@ -137,10 +138,10 @@ describe('CAF-000108: Integridade Operacional — Transferência de Mesa, Fecham
 
       await page.confirmarFechamento();
 
-      expect(window.cafeteriaDB.clientes.lancarMovimento).toHaveBeenCalledTimes(1);
-      expect(fechamentoChamado).toBe(false);
+      expect(chamadasDebito).toBe(0);
+      expect(fechamentoChamado).toBe(true);
       const ultimoToast = page.obterUltimoToast();
-      expect(ultimoToast?.msg || '').toMatch(/Débito na conta recusado/i);
+      expect(ultimoToast?.msg || '').toMatch(/Débito na conta recusado: Limite de crédito excedido/i);
     });
   });
 

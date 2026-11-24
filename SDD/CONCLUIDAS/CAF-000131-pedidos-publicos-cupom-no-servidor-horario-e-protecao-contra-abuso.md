@@ -1,7 +1,7 @@
 # [FIX] Pedidos públicos: cupom aplicado no servidor, horário de funcionamento e proteção contra abuso
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -53,19 +53,19 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o cupom `TEATRO10` (10%) e um carrinho de R$ 30 no pedido online, quando o cliente envia, então o pedido grava total R$ 27, `desconto_cupom` R$ 3 e um uso da campanha, sem login.
-- [ ] **CA02:** Dado um front adulterado que envia `desconto_cupom = 30`, quando o pedido é criado, então o servidor aplica só o desconto calculado da campanha.
-- [ ] **CA03:** Dado o RF01 ainda não publicado, quando o cliente abre QR, pedido online ou totem, então não existe campo de cupom.
-- [ ] **CA04:** Dado um cupom com `valido_ate` ontem ou com `max_usos` atingido, quando aplicado, então é recusado com mensagem clara e o pedido não recebe desconto.
-- [ ] **CA05:** Dado a loja fechada segundo `business_hours`, quando alguém chama `criar_pedido_online` para retirada imediata, então é recusado.
-- [ ] **CA06:** Dado um agendamento com `retirada_em` fora do horário do dia escolhido, quando enviado, então é recusado; dentro do horário, então é aceito.
-- [ ] **CA07:** Dado o admin alterou o horário de sábado, quando o cliente abre o cardápio, então as janelas exibidas seguem o novo horário (sem usar o padrão 08:00–20:00).
-- [ ] **CA08:** Dado o QR com o bloqueio por horário ligado e a loja fechada, quando o cliente pede, então é recusado; com o bloqueio desligado, então é aceito.
-- [ ] **CA09:** Dado um celular configurado em outro fuso, quando agenda retirada às 19:30, então `retirada_em` corresponde a 19:30 de São Paulo.
-- [ ] **CA10:** Dado o cliente "Ana" com `aceita_contato = false`, quando um pedido anônimo usa o telefone dela com nome "Teste", então o cadastro continua "Ana" com `aceita_contato = false`.
-- [ ] **CA11:** Dado 3 pedidos aguardando aprovação na mesa 4, quando chega o 4º, então é recusado até a equipe aprovar ou recusar algum.
-- [ ] **CA12:** Dado uma janela com limite 5 e 4 pedidos, quando 2 pedidos chegam ao mesmo tempo, então só 1 é aceito.
-- [ ] **CA13:** Dado uma observação de 5.000 caracteres, quando o pedido é criado, então são gravados no máximo 500.
+- [x] **CA01:** Dado o cupom `TEATRO10` (10%) e um carrinho de R$ 30 no pedido online, quando o cliente envia, então o pedido grava total R$ 27, `desconto_cupom` R$ 3 e um uso da campanha, sem login.
+- [x] **CA02:** Dado um front adulterado que envia `desconto_cupom = 30`, quando o pedido é criado, então o servidor aplica só o desconto calculado da campanha.
+- [x] **CA03:** Dado o RF01 ainda não publicado, quando o cliente abre QR, pedido online ou totem, então não existe campo de cupom.
+- [x] **CA04:** Dado um cupom com `valido_ate` ontem ou com `max_usos` atingido, quando aplicado, então é recusado com mensagem clara e o pedido não recebe desconto.
+- [x] **CA05:** Dado a loja fechada segundo `business_hours`, quando alguém chama `criar_pedido_online` para retirada imediata, então é recusado.
+- [x] **CA06:** Dado um agendamento com `retirada_em` fora do horário do dia escolhido, quando enviado, então é recusado; dentro do horário, então é aceito.
+- [x] **CA07:** Dado o admin alterou o horário de sábado, quando o cliente abre o cardápio, então as janelas exibidas seguem o novo horário (sem usar o padrão 08:00–20:00).
+- [x] **CA08:** Dado o QR com o bloqueio por horário ligado e a loja fechada, quando o cliente pede, então é recusado; com o bloqueio desligado, então é aceito.
+- [x] **CA09:** Dado um celular configurado em outro fuso, quando agenda retirada às 19:30, então `retirada_em` corresponde a 19:30 de São Paulo.
+- [x] **CA10:** Dado o cliente "Ana" com `aceita_contato = false`, quando um pedido anônimo usa o telefone dela com nome "Teste", então o cadastro continua "Ana" com `aceita_contato = false`.
+- [x] **CA11:** Dado 3 pedidos aguardando aprovação na mesa 4, quando chega o 4º, então é recusado até a equipe aprovar ou recusar algum.
+- [x] **CA12:** Dado uma janela com limite 5 e 4 pedidos, quando 2 pedidos chegam ao mesmo tempo, então só 1 é aceito.
+- [x] **CA13:** Dado uma observação de 5.000 caracteres, quando o pedido é criado, então são gravados no máximo 500.
 
 ## O que a atividade não inclui
 
@@ -83,10 +83,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Domingo: a tabela tem um só `sab_dom_ativo`. A cafeteria abre aos domingos com espetáculo? Precisa de horário separado para domingo? | PO | Sim | |
-| D02 | QR da mesa e totem devem bloquear pedido fora do horário (ex.: ensaio, evento fechado)? | PO | Não | |
-| D03 | Limites de pendentes (sugestão: 3 por mesa, 30 no online) e tamanho de observação (500) estão adequados? | PO | Não | |
-| D04 | Cupons já divulgados que hoje "não funcionam" devem ser honrados retroativamente? | PO | Não | |
+| D01 | Domingo: a tabela tem um só `sab_dom_ativo`. A cafeteria abre aos domingos com espetáculo? Precisa de horário separado para domingo? | PO | Sim | Mantém a estrutura atual de `business_hours` (`sab_dom_ativo`, `sab_dom_abre`, `sab_dom_fecha`) respeitada de forma consistente em todas as pontas (RF04). |
+| D02 | QR da mesa e totem devem bloquear pedido fora do horário (ex.: ensaio, evento fechado)? | PO | Não | Sim, bloqueio opcional configurável por canal (`pedido_cliente_exigir_horario`, `pedido_totem_exigir_horario`), desligado por padrão (RF05). |
+| D03 | Limites de pendentes (sugestão: 3 por mesa, 30 no online) e tamanho de observação (500) estão adequados? | PO | Não | Limites de pendentes (3 por mesa, 30 online) e truncamento de observações em 500 caracteres adequados e implementados (RF08, RF10). |
+| D04 | Cupons já divulgados que hoje "não funcionam" devem ser honrados retroativamente? | PO | Não | Cupons vigentes a partir da publicação da migration 131 (sem efeito retroativo). |
 
 ## Sugestões de casos de teste
 

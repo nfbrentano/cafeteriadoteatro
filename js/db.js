@@ -1820,6 +1820,19 @@
         }
       },
 
+      async obterResumoContaMesa(mesaCodigo) {
+        if (!window.cafeteriaSupabase || !mesaCodigo) return null;
+        try {
+          const { data, error } = await window.cafeteriaSupabase
+            .rpc('obter_resumo_conta_mesa', { p_mesa_codigo: mesaCodigo });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('mesas.obterResumoContaMesa', err);
+          return null;
+        }
+      },
+
       async listarChamados(apenasPendentes = true) {
         if (!window.cafeteriaSupabase) return [];
         try {

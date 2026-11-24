@@ -421,6 +421,42 @@
       "arquivo": "migration_caf_000158_correcao_rpcs_pgcrypto_financeiro.sql",
       "checksum": "64f84f9f29250e21fdbae1bf0772bf221d84a3370255cfde252cbbd0c4856aac",
       "rollback": "rollback_caf_000158.sql"
+    },
+    {
+      "versao": "126",
+      "arquivo": "migration_caf_000126_autorizacao_null_safe_revogacao_anon.sql",
+      "checksum": "7b086dd430037b516079d7beabde78bcf1b6ff4c2d8de1b2c54578762764d1ce",
+      "rollback": "rollback_caf_000126.sql"
+    },
+    {
+      "versao": "127",
+      "arquivo": "migration_caf_000127_pin_bcrypt_policies_leitura.sql",
+      "checksum": "18af71a91d0158c5ef2efc9b86ae792efff077fec563be97e1f23854bba955cd",
+      "rollback": "rollback_caf_000127.sql"
+    },
+    {
+      "versao": "128",
+      "arquivo": "migration_caf_000128_integridade_monetaria_servidor.sql",
+      "checksum": "98573be56a60b4e1460d6502e1d2df4c3b8ae280047472e51b30862651e0152b",
+      "rollback": "rollback_caf_000128.sql"
+    },
+    {
+      "versao": "129",
+      "arquivo": "migration_caf_000129_saldo_mesa_debitos_cliente.sql",
+      "checksum": "8c9f228967c2f9d1cba8443262368d52c6471e38f6ec872c144784e7ab480b3c",
+      "rollback": "rollback_caf_000129.sql"
+    },
+    {
+      "versao": "130",
+      "arquivo": "migration_caf_000130_regressoes_fuso_avaliacao_qr.sql",
+      "checksum": "42e822d51b90e65f3b3ddd24c9513cbdd99153a35e092bb7290182c493151904",
+      "rollback": "rollback_caf_000130.sql"
+    },
+    {
+      "versao": "131",
+      "arquivo": "migration_caf_000131_pedidos_publicos_cupom_horario.sql",
+      "checksum": "b546facbd1dbbaa2cf0f60e0996009fe1e3971396611de78bd0674863912d6e2",
+      "rollback": "rollback_caf_000131.sql"
     }
   ]
 }

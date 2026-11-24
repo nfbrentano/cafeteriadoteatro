@@ -18,11 +18,15 @@
 </head>
 <body class="totem-body">
 
+  <!-- ── ANUNCIADORES ACESSÍVEIS (WCAG 2.1 AA / CA05) ── -->
+  <div id="totem-live-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="totem-live-alert" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
   <!-- ── AVISO SEM INTERNET (CAF-000040 RNF) ── -->
-  <div id="totem-offline-overlay" class="totem-modal-backdrop hidden" style="z-index:500;">
+  <div id="totem-offline-overlay" class="totem-modal-backdrop hidden" style="z-index:500;" role="alertdialog" aria-modal="true" aria-labelledby="totem-offline-title">
     <div class="totem-modal" style="text-align:center; padding:36px 28px;">
-      <div style="font-size:4rem; margin-bottom:12px;">📡</div>
-      <h2 style="margin:0 0 10px; font-size:1.8rem;">Faça seu pedido no caixa</h2>
+      <div style="font-size:4rem; margin-bottom:12px;" aria-hidden="true">📡</div>
+      <h2 id="totem-offline-title" style="margin:0 0 10px; font-size:1.8rem;">Faça seu pedido no caixa</h2>
       <p style="font-size:1.15rem; color:var(--totem-text-sub); margin:0;">
         Estamos temporariamente sem conexão de rede neste terminal. Nosso barista terá prazer em atendê-lo diretamente no balcão!
       </p>
@@ -30,9 +34,9 @@
   </div>
 
   <!-- ── TELA DE PAREAMENTO / TOTEM REVOGADO ── -->
-  <div id="totem-pairing-screen" class="totem-modal-backdrop hidden" style="z-index:400; background:#231309;">
+  <div id="totem-pairing-screen" class="totem-modal-backdrop hidden" style="z-index:400; background:#231309;" role="dialog" aria-modal="true" aria-labelledby="totem-pairing-title">
     <div class="totem-modal" style="max-width:520px; text-align:center; padding:32px 26px;">
-      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Logo" style="width:72px; height:72px; border-radius:18px; margin-bottom:12px;" />
+      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Logo Cafeteria do Teatro" style="width:72px; height:72px; border-radius:18px; margin-bottom:12px;" />
       <h2 id="totem-pairing-title" style="margin:0 0 8px; font-size:1.6rem;">Ativar Totem de Balcão</h2>
       <p id="totem-pairing-desc" style="color:var(--totem-text-sub); margin:0 0 20px; font-size:1rem;">
         No painel Admin (Configurações → Totem), clique em <strong>+ Parear Novo Tablet</strong> e digite o código de 6 dígitos abaixo:
@@ -43,9 +47,11 @@
         inputmode="numeric"
         maxlength="8"
         placeholder="000000"
+        aria-labelledby="totem-pairing-title"
+        aria-describedby="totem-pairing-desc"
         style="width:100%; height:72px; text-align:center; font-size:2rem; font-weight:800; letter-spacing:6px; border:3px solid var(--totem-border); border-radius:16px; margin-bottom:16px;"
       />
-      <div id="totem-pairing-error" class="hidden" style="color:var(--totem-danger); font-weight:700; margin-bottom:14px;"></div>
+      <div id="totem-pairing-error" class="hidden" style="color:var(--totem-danger); font-weight:700; margin-bottom:14px;" role="alert"></div>
       <button type="button" id="btn-totem-pair-submit" class="totem-btn totem-btn--primary btn--full">
         🔗 Parear Dispositivo
       </button>
@@ -53,7 +59,7 @@
   </div>
 
   <!-- ── TELA DE DESCANSO (IDLE SCREEN - 60s) ── -->
-  <div id="totem-idle-screen" class="totem-idle-screen hidden has-single-action">
+  <div id="totem-idle-screen" class="totem-idle-screen hidden has-single-action" role="region" aria-label="Tela de descanso">
     <div id="totem-idle-bg-layer" class="totem-bg-layer">
       <div class="totem-bg-overlay"></div>
     </div>
@@ -88,15 +94,15 @@
   <!-- ── CABEÇALHO DO TOTEM ── -->
   <header class="totem-header">
     <div class="totem-brand">
-      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Logo" class="totem-brand__logo" />
+      <img src="assets/images/logo-cafeteria-do-teatro.webp" alt="Logo Cafeteria do Teatro" class="totem-brand__logo" />
       <div>
         <h1 class="totem-brand__title">Cafeteria do Teatro</h1>
         <p class="totem-brand__sub" id="totem-device-label">Faça seu pedido aqui e pague no caixa</p>
       </div>
     </div>
     <div class="totem-header__actions">
-      <button type="button" class="totem-btn-a11y" id="btn-totem-font-toggle" title="Aumentar tamanho das letras">
-        🔠 Fonte Grande
+      <button type="button" class="totem-btn-a11y" id="btn-totem-font-toggle" title="Aumentar tamanho das letras e alto contraste" aria-pressed="false">
+        🔠 Texto maior / Alto contraste
       </button>
       <button type="button" class="totem-btn-a11y" id="btn-totem-fullscreen" title="Tela Cheia">
         ⛶
@@ -155,7 +161,7 @@
 
   <!-- ── BARRA INFERIOR DO CARRINHO ── -->
   <footer class="totem-bottom-bar">
-    <div class="totem-cart-summary" id="btn-totem-ver-sacola" style="cursor:pointer;">
+    <button type="button" class="totem-cart-summary" id="btn-totem-ver-sacola" aria-label="Ver sacola de pedidos, 0 itens, total R$ 0,00">
       <div class="totem-cart-badge">
         <span id="totem-cart-count" style="font-size:1.3rem;">0</span>
         <small style="font-size:0.72rem;">itens</small>
@@ -164,7 +170,7 @@
         <span class="totem-cart-total-lbl">Total do seu pedido</span>
         <span class="totem-cart-total-val" id="totem-cart-total">R$ 0,00</span>
       </div>
-    </div>
+    </button>
 
     <div class="totem-bottom-actions">
       <!-- CAF-000103 (RF12): Barra inferior fica só com resumo e Finalizar Pedido -->
@@ -175,11 +181,11 @@
   </footer>
 
   <!-- ── MODAL 1: PERSONALIZAÇÃO DO ITEM (ADICIONAIS / MEIO A MEIO / OBS) ── -->
-  <div id="totem-modal-item" class="totem-modal-backdrop hidden">
+  <div id="totem-modal-item" class="totem-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="totem-item-modal-title">
     <div class="totem-modal">
       <div class="totem-modal__header">
         <h3 class="totem-modal__title" id="totem-item-modal-title">Personalizar Item</h3>
-        <button type="button" class="totem-modal__close" id="btn-close-item-modal">✕</button>
+        <button type="button" class="totem-modal__close" id="btn-close-item-modal" aria-label="Fechar janela de personalização">✕</button>
       </div>
       <div class="totem-modal__body" id="totem-item-modal-body">
         <!-- Conteúdo dinâmico -->
@@ -194,11 +200,11 @@
   </div>
 
   <!-- ── MODAL 2: SUGESTÕES DE COMPLEMENTO (ATÉ 3 POR PEDIDO) ── -->
-  <div id="totem-modal-sugestoes" class="totem-modal-backdrop hidden">
+  <div id="totem-modal-sugestoes" class="totem-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="totem-sugestoes-title">
     <div class="totem-modal">
       <div class="totem-modal__header">
-        <h3 class="totem-modal__title">🥐 Que tal acompanhar seu pedido?</h3>
-        <button type="button" class="totem-modal__close" id="btn-close-sugestoes-modal">✕</button>
+        <h3 class="totem-modal__title" id="totem-sugestoes-title">🥐 Que tal acompanhar seu pedido?</h3>
+        <button type="button" class="totem-modal__close" id="btn-close-sugestoes-modal" aria-label="Fechar sugestões">✕</button>
       </div>
       <div class="totem-modal__body">
         <p id="totem-sugestoes-frase" style="margin:0 0 16px; font-size:1.08rem; color:var(--totem-text-sub); font-weight:600;">
@@ -217,22 +223,22 @@
   </div>
 
   <!-- ── MODAL 3: REVISÃO E CHECKOUT (NOME + COMER AQUI / VIAGEM) ── -->
-  <div id="totem-modal-checkout" class="totem-modal-backdrop hidden">
+  <div id="totem-modal-checkout" class="totem-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="totem-checkout-title">
     <div class="totem-modal">
       <div class="totem-modal__header">
-        <h3 class="totem-modal__title">Conferir e Finalizar Pedido</h3>
-        <button type="button" class="totem-modal__close" id="btn-close-checkout-modal">✕</button>
+        <h3 class="totem-modal__title" id="totem-checkout-title">Conferir e Finalizar Pedido</h3>
+        <button type="button" class="totem-modal__close" id="btn-close-checkout-modal" aria-label="Fechar finalização">✕</button>
       </div>
       <div class="totem-modal__body">
         <div style="margin-bottom:20px;">
           <label style="display:block; font-weight:800; margin-bottom:10px; font-size:1.1rem;">1. Onde você vai consumir?</label>
-          <div class="totem-choice-grid">
-            <button type="button" class="totem-choice-btn is-selected" id="btn-totem-comer-aqui" data-viagem="false">
-              <span style="font-size:1.9rem;">🍽️</span>
+          <div class="totem-choice-grid" role="radiogroup" aria-label="Onde você vai consumir?">
+            <button type="button" class="totem-choice-btn is-selected" id="btn-totem-comer-aqui" data-viagem="false" role="radio" aria-checked="true">
+              <span style="font-size:1.9rem;" aria-hidden="true">🍽️</span>
               <span>Comer Aqui</span>
             </button>
-            <button type="button" class="totem-choice-btn" id="btn-totem-para-viagem" data-viagem="true">
-              <span style="font-size:1.9rem;">🥡</span>
+            <button type="button" class="totem-choice-btn" id="btn-totem-para-viagem" data-viagem="true" role="radio" aria-checked="false">
+              <span style="font-size:1.9rem;" aria-hidden="true">🥡</span>
               <span>Para Viagem</span>
             </button>
           </div>
@@ -254,20 +260,20 @@
 
         <div style="margin-bottom:20px;">
           <label style="display:block; font-weight:800; margin-bottom:10px; font-size:1.1rem;">3. Como prefere pagar no caixa?</label>
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="totem-pagamento-choices">
-            <button type="button" class="totem-choice-btn is-selected" data-forma="pix">
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="totem-pagamento-choices" role="radiogroup" aria-label="Como prefere pagar no caixa?">
+            <button type="button" class="totem-choice-btn is-selected" data-forma="pix" role="radio" aria-checked="true">
               <span>💠 PIX</span>
             </button>
-            <button type="button" class="totem-choice-btn" data-forma="cartao_debito">
+            <button type="button" class="totem-choice-btn" data-forma="cartao_debito" role="radio" aria-checked="false">
               <span>💳 Cartão</span>
             </button>
-            <button type="button" class="totem-choice-btn" data-forma="dinheiro">
+            <button type="button" class="totem-choice-btn" data-forma="dinheiro" role="radio" aria-checked="false">
               <span>💵 Dinheiro</span>
             </button>
           </div>
         </div>
 
-        <div style="margin-bottom:20px; background:var(--totem-surface-alt); border-radius:16px; padding:14px; border:2px solid var(--totem-border);">
+        <div id="totem-cupom-container" style="margin-bottom:20px; background:var(--totem-surface-alt); border-radius:16px; padding:14px; border:2px solid var(--totem-border);">
           <label for="totem-input-cupom" style="display:block; font-weight:800; margin-bottom:8px; font-size:1.05rem;">
             🎟️ Possui cupom de desconto? (Opcional)
           </label>
@@ -282,7 +288,7 @@
               Aplicar
             </button>
           </div>
-          <div id="totem-cupom-feedback" style="font-size:1rem; margin-top:8px; font-weight:700; display:none;"></div>
+          <div id="totem-cupom-feedback" style="font-size:1rem; margin-top:8px; font-weight:700; display:none;" role="status" aria-live="polite"></div>
         </div>
 
         <div style="background:var(--totem-surface-alt); border-radius:16px; padding:16px; border:2px solid var(--totem-border);">
@@ -304,12 +310,12 @@
   </div>
 
   <!-- ── MODAL 4: TELA FINAL DE SENHA (VOLTA SOZINHA EM 15s) ── -->
-  <div id="totem-success-screen" class="totem-modal-backdrop hidden" style="z-index:300;">
+  <div id="totem-success-screen" class="totem-modal-backdrop hidden" style="z-index:300;" role="dialog" aria-modal="true" aria-labelledby="totem-success-title">
     <div id="totem-success-bg-layer" class="totem-bg-layer">
       <div class="totem-bg-overlay"></div>
     </div>
     <div class="totem-modal" style="position:relative; z-index:5; max-width:620px; text-align:center; padding:32px 26px;">
-      <div style="font-size:1.1rem; font-weight:800; color:var(--totem-success); text-transform:uppercase; letter-spacing:1px;">
+      <div id="totem-success-title" style="font-size:1.1rem; font-weight:800; color:var(--totem-success); text-transform:uppercase; letter-spacing:1px;">
         🎉 Pedido Registrado com Sucesso!
       </div>
       <h2 style="margin:6px 0 4px; font-size:1.6rem;" id="totem-success-cliente-lbl">Olá!</h2>

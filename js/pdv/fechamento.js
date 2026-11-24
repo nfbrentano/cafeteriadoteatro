@@ -6,65 +6,18 @@ import { estadoPDV, definirGlobalPDV } from './estado.js';
 
 export function registrarFechamentoPDV() {
   const {
-    modalMesa,
-    modalFecharConta,
-    fecharContaTitle,
-    fecharContaClose,
-    fecharContaCancelar,
-    fecharContaConfirmar,
-    btnFecharContaVoltar,
-    btnFecharContaVoltarFooter,
-    fecharContaStepSub,
-    btnFecharContaNext1,
-    btnFecharContaNext2,
-    fecharContaFooterLabel,
-    fecharContaFooterVal,
-    stepFecharConsumo,
-    stepFecharAjustes,
-    stepFecharPagamento,
-    fecharContaResumo,
-    fecharContaSubtotalLbl,
-    fecharContaDivDesconto,
-    fecharContaDescontoTipo,
-    fecharContaDescontoValor,
-    fecharContaDescontoMotivo,
-    btnSolicitarDescontoPin,
-    fecharContaCupomInput,
-    btnFecharContaAplicarCupom,
-    fecharContaCupomMsg,
-    fecharContaDivTaxa,
-    fecharContaTaxaCheck,
-    fecharContaTaxaPercLbl,
-    fecharContaTaxaValLbl,
-    fecharContaTotalLbl,
-    fecharContaJaPagoLbl,
-    fecharContaAPagarLbl,
-    fecharContaFaltaLbl,
-    fecharContaForma,
-    fecharContaValor,
-    btnAddPagamento,
-    divDinheiroRecebido,
-    inputDinheiroRecebido,
-    containerTrocoChips,
-    fecharContaTrocoLbl,
-    fecharContaLista,
-    fecharContaModo,
-    fecharContaDivPessoas,
-    fecharContaNumPessoas,
-    btnGerarPartesIgual,
-    fecharContaDivAddParte,
-    fecharContaNomeParte,
-    btnAddParteItem,
-    fecharContaListaPartes,
-    fecharContaPainelPagamento,
-    tituloPagamentoParte,
-    fecharContaImprimirCupom,
-    fecharContaEmitirNfce,
-    fecharContaNfceCpf,
-    fecharContaDivParcialItens,
-    fecharContaListaItensParcial,
-    fecharContaDivParcialValor,
-    fecharContaInputParcialValor
+    modalMesa, modalFecharConta, fecharContaTitle, fecharContaClose, fecharContaCancelar, fecharContaConfirmar,
+    btnFecharContaVoltar, btnFecharContaVoltarFooter, fecharContaStepSub, btnFecharContaNext1, btnFecharContaNext2,
+    fecharContaFooterLabel, fecharContaFooterVal, stepFecharConsumo, stepFecharAjustes, stepFecharPagamento,
+    fecharContaResumo, fecharContaSubtotalLbl, fecharContaDivDesconto, fecharContaDescontoTipo, fecharContaDescontoValor,
+    fecharContaDescontoMotivo, btnSolicitarDescontoPin, fecharContaCupomInput, btnFecharContaAplicarCupom, fecharContaCupomMsg,
+    fecharContaDivTaxa, fecharContaTaxaCheck, fecharContaTaxaPercLbl, fecharContaTaxaValLbl, fecharContaTotalLbl,
+    fecharContaJaPagoLbl, fecharContaAPagarLbl, fecharContaFaltaLbl, fecharContaForma, fecharContaValor, btnAddPagamento,
+    divDinheiroRecebido, inputDinheiroRecebido, containerTrocoChips, fecharContaTrocoLbl, fecharContaLista, fecharContaModo,
+    fecharContaDivPessoas, fecharContaNumPessoas, btnGerarPartesIgual, fecharContaDivAddParte, fecharContaNomeParte,
+    btnAddParteItem, fecharContaListaPartes, fecharContaPainelPagamento, tituloPagamentoParte, fecharContaImprimirCupom,
+    fecharContaEmitirNfce, fecharContaNfceCpf, fecharContaDivParcialItens, fecharContaListaItensParcial,
+    fecharContaDivParcialValor, fecharContaInputParcialValor
   } = estadoPDV.refs;
 
   const showToast = (...args) => (window.showToast || estadoPDV.fn.showToast)?.(...args);
@@ -625,23 +578,58 @@ export function registrarFechamentoPDV() {
     currentFechamento.totalConta = 0;
     currentFechamento.jaPago = 0;
     currentFechamento.aPagar = 0;
-    currentFechamento._idempotencyKey = null;
+    // RF05 / CA08: Chave de idempotência mantida por tentativa de fechamento da mesma mesa
+    if (currentFechamento._mesaCodigoIdempotente !== mesaCodigo) {
+      currentFechamento._idempotencyKey = null;
+      currentFechamento._mesaCodigoIdempotente = mesaCodigo;
+    }
     currentFechamento._contaClienteDebitada = false;
+    currentFechamento._supervisorDesconto = null;
+    currentFechamento._cupomCampanhaId = null;
+    currentFechamento._cupomCodigo = null;
+    currentFechamento.cupomCodigo = null;
 
-    pedidosMesa.forEach(p => {
-      const valorPedido = Number(p.total || 0);
-      currentFechamento.subtotal += valorPedido;
-      if (p.status_pagamento === 'pago') {
-        currentFechamento.jaPago += valorPedido;
-      } else {
-        p._atribuicoes = [];
-        (p.pedido_itens || []).forEach(it => {
-          if (!it.cancelado && Number(it.quantidade_paga || 0) > 0) {
-            currentFechamento.jaPago += (Number(it.quantidade_paga) * Number(it.preco_unitario || 0));
+    // RF02 / CA04: Usar saldo consolidado do servidor se disponível
+    const saldoCache = estadoPDV.saldosMesas?.get(mesaCodigo);
+    if (saldoCache) {
+      currentFechamento.subtotal = Number(saldoCache.subtotal_geral || 0);
+      currentFechamento.jaPago = Number(saldoCache.ja_pago || 0);
+    } else {
+      pedidosMesa.forEach(p => {
+        const valorPedido = Number(p.total || 0);
+        currentFechamento.subtotal += valorPedido;
+        if (p.status_pagamento === 'pago') {
+          currentFechamento.jaPago += valorPedido;
+        } else {
+          p._atribuicoes = [];
+          (p.pedido_itens || []).forEach(it => {
+            if (!it.cancelado && Number(it.quantidade_paga || 0) > 0) {
+              currentFechamento.jaPago += (Number(it.quantidade_paga) * Number(it.preco_unitario || 0));
+            }
+          });
+        }
+      });
+    }
+
+    // Sincronização em segundo plano com obter_resumo_conta_mesa
+    if (window.cafeteriaSupabase?.rpc) {
+      window.cafeteriaSupabase.rpc('obter_resumo_conta_mesa', { p_mesa_codigo: mesaCodigo })
+        .then(({ data, error }) => {
+          if (!error && data && currentFechamento.mesaCodigo === mesaCodigo) {
+            if (Number(data.subtotal_geral || 0) > 0) {
+              currentFechamento.subtotal = Number(data.subtotal_geral);
+            }
+            if (data.ja_pago != null && Number(data.ja_pago || 0) > 0) {
+              currentFechamento.jaPago = Number(data.ja_pago);
+            }
+            if (estadoPDV.saldosMesas) {
+              estadoPDV.saldosMesas.set(mesaCodigo, data);
+            }
+            recalcularTotaisFechamento();
           }
-        });
-      }
-    });
+        })
+        .catch(err => console.warn('[Fechamento] Erro ao sincronizar resumo:', err));
+    }
 
     if (currentFechamento.subtotal - currentFechamento.jaPago <= 0.001) {
       showToast('Esta mesa não tem pedidos pendentes de pagamento.', 'info');
@@ -780,10 +768,15 @@ export function registrarFechamentoPDV() {
 
   if (btnSolicitarDescontoPin) {
     btnSolicitarDescontoPin.addEventListener('click', async () => {
+      const descVal = Number(estadoPDV.currentFechamento?.descontoAplicado || fecharContaDescontoValor?.value || 0);
       const auth = await estadoPDV.fn.pedirAutorizacaoPin?.(
         'pdv.desconto',
         `Liberação de desconto para ${estadoPDV.currentFechamento ? estadoPDV.currentFechamento.mesaCodigo : 'a mesa'}`,
-        { mesa_codigo: estadoPDV.currentFechamento ? estadoPDV.currentFechamento.mesaCodigo : null }
+        {
+          mesa_codigo: estadoPDV.currentFechamento ? estadoPDV.currentFechamento.mesaCodigo : null,
+          desconto: descVal > 0 ? descVal : null,
+          valor: descVal > 0 ? descVal : null
+        }
       );
       if (auth) {
         estadoPDV.currentFechamento._supervisorDesconto = auth;
@@ -1204,6 +1197,8 @@ export function registrarFechamentoPDV() {
           }
 
           showToast('Pagamento parcial registrado com sucesso!', 'success');
+          currentFechamento._idempotencyKey = null;
+          currentFechamento._mesaCodigoIdempotente = null;
           modalFecharConta?.classList.add('hidden');
           await estadoPDV.fn.loadActivePedidos?.();
           return;
@@ -1226,11 +1221,16 @@ export function registrarFechamentoPDV() {
         }
       }
 
-      if (currentFechamento.descontoAplicado > 0 && !estadoPDV.fn.usuarioTemPermissao?.('pdv.desconto') && !currentFechamento._supervisorDesconto) {
+      const isCupom = Boolean(currentFechamento._cupomCampanhaId || currentFechamento._cupomCodigo || currentFechamento.cupomCodigo);
+      if (currentFechamento.descontoAplicado > 0 && !isCupom && !estadoPDV.fn.usuarioTemPermissao?.('pdv.desconto') && !currentFechamento._supervisorDesconto) {
         const auth = await estadoPDV.fn.pedirAutorizacaoPin?.(
           'pdv.desconto',
           `Aprovar desconto de R$ ${currentFechamento.descontoAplicado.toFixed(2)} no fechamento da mesa ${currentFechamento.mesaCodigo}`,
-          { mesa_codigo: currentFechamento.mesaCodigo, desconto: currentFechamento.descontoAplicado }
+          {
+            mesa_codigo: currentFechamento.mesaCodigo,
+            desconto: currentFechamento.descontoAplicado,
+            valor: currentFechamento.descontoAplicado
+          }
         );
         if (!auth) {
           showToast('Desconto não autorizado por supervisor.', { tipo: 'warning' });
@@ -1250,27 +1250,9 @@ export function registrarFechamentoPDV() {
         }
         const idempotencyKey = currentFechamento._idempotencyKey;
 
-        if (pagtoContaCliente && !currentFechamento._contaClienteDebitada) {
-          const clienteId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || currentFechamento.clienteId;
-          if (window.cafeteriaDB && window.cafeteriaDB.clientes && window.cafeteriaDB.clientes.lancarMovimento) {
-            const resDebito = await window.cafeteriaDB.clientes.lancarMovimento(
-              clienteId,
-              'consumo',
-              -Math.abs(pagtoContaCliente.valor),
-              currentFechamento.pedidos[0]?.id || null,
-              null,
-              'conta_cliente',
-              `Fechamento Mesa ${currentFechamento.mesaCodigo}`
-            );
-            if (resDebito && !resDebito.sucesso) {
-              showToast(`Débito na conta recusado: ${resDebito?.mensagem || 'Saldo/limite insuficiente.'}`, 'error');
-              fecharContaConfirmar.disabled = false;
-              fecharContaConfirmar.textContent = 'Confirmar Fechamento';
-              return;
-            }
-            currentFechamento._contaClienteDebitada = true;
-          }
-        }
+        // CAF-000129: window.cafeteriaDB.clientes.lancarMovimento foi removido do front;
+        // o débito e validação de limite ocorrem atomicamente no servidor via fechar_conta_mesa.
+        // RF03 / CA05: Débito de fiado é atômico no servidor dentro da RPC fechar_conta_mesa
         const pagamentosPayload = todosPagamentos.map(p => ({
           forma: p.forma,
           valor: p.valor
@@ -1284,7 +1266,8 @@ export function registrarFechamentoPDV() {
           p_desconto_motivo: currentFechamento.descontoMotivo || null,
           p_idempotency_key: idempotencyKey,
           p_cupom_codigo: currentFechamento.cupomCodigo || currentFechamento._cupomCodigo || null,
-          p_campanha_id: currentFechamento._cupomCampanhaId || null
+          p_campanha_id: currentFechamento._cupomCampanhaId || null,
+          p_autorizacao_id: currentFechamento._supervisorDesconto?.autorizacao_id || null
         });
 
         if (error) throw error;
@@ -1303,40 +1286,17 @@ export function registrarFechamentoPDV() {
           }
         }
 
-        if (window.cafeteriaCashback) {
-          try {
-            const sbClient = window.cafeteriaSupabase || window.supabaseClient;
-            const cbConfig = await (window.cafeteriaCashback.loadCashbackConfig
-              ? window.cafeteriaCashback.loadCashbackConfig(sbClient)
-              : Promise.resolve(null));
-
-            if (window.cafeteriaCashback.isCashbackActive(cbConfig)) {
-              const clienteComId = currentFechamento.pedidos.find(p => p.cliente_id)?.cliente_id || null;
-              if (clienteComId) {
-                const valorElegivel = window.cafeteriaCashback.calculateEligiblePaymentAmount(todosPagamentos);
-                if (valorElegivel > 0) {
-                  const cbResult = await window.cafeteriaCashback.processOrderCashback(
-                    sbClient,
-                    currentFechamento.pedidos[0]?.id || null,
-                    clienteComId,
-                    valorElegivel
-                  );
-                  if (cbResult && cbResult.creditado && cbResult.valor_cashback > 0) {
-                    const msg = window.cafeteriaCashback.formatCashbackNotification(
-                      cbResult.valor_cashback,
-                      cbResult.novo_saldo
-                    );
-                    showToast(msg || `🎁 Cashback de R$ ${Number(cbResult.valor_cashback).toFixed(2).replace('.', ',')} creditado!`, 'info');
-                  }
-                }
-              }
-            }
-          } catch (cbErr) {
-            console.warn('[Cashback] Erro ao processar:', cbErr);
-          }
+        // RF07 / CA12: Exibir aviso de cashback processado atomicamente pelo servidor
+        if (data?.cashback?.creditado && Number(data.cashback.valor_cashback || 0) > 0) {
+          const msg = window.cafeteriaCashback?.formatCashbackNotification
+            ? window.cafeteriaCashback.formatCashbackNotification(data.cashback.valor_cashback, data.cashback.novo_saldo)
+            : `🎁 Cashback de R$ ${Number(data.cashback.valor_cashback).toFixed(2).replace('.', ',')} creditado!`;
+          showToast(msg, 'info');
         }
 
         showToast(`Conta da mesa ${currentFechamento.mesaCodigo} fechada com sucesso!`, 'success');
+        currentFechamento._idempotencyKey = null;
+        currentFechamento._mesaCodigoIdempotente = null;
 
         if (fecharContaImprimirCupom?.checked && window.cafeteriaPrint && window.cafeteriaPrint.printFechamentoContaMultiPartes) {
           window.cafeteriaPrint.printFechamentoContaMultiPartes(
@@ -1392,7 +1352,12 @@ export function registrarFechamentoPDV() {
         estadoPDV.fn.loadActivePedidos?.();
       } catch (err) {
         console.error(err);
-        showToast('Erro ao fechar conta: ' + err.message, 'error');
+        const errMsg = err?.message || '';
+        if (/limite/i.test(errMsg) || /conta/i.test(errMsg)) {
+          showToast(`Débito na conta recusado: ${errMsg}`, 'error');
+        } else {
+          showToast('Erro ao fechar conta: ' + errMsg, 'error');
+        }
       } finally {
         fecharContaConfirmar.disabled = false;
         fecharContaConfirmar.textContent = 'Confirmar Fechamento';

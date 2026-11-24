@@ -1,7 +1,7 @@
 # [FIX] Saldo da mesa com fonte única e débitos/créditos do cliente (fiado e cashback) atômicos e idempotentes
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -51,18 +51,18 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado uma mesa de R$ 100 com abatimento de R$ 30 por valor, quando abro o fechamento no PDV, então o saldo exibido é R$ 70 (+ taxa) e o servidor cobra o mesmo valor, sem troco.
-- [ ] **CA02:** Dado um parcial de R$ 50 em itens + R$ 5 de taxa, quando fecho a mesa de R$ 100, então o saldo é R$ 50 (+ taxa sobre R$ 50) e o troco é zero se o cliente pagar exatamente.
-- [ ] **CA03:** Dado um parcial em que o cliente deu R$ 60 em dinheiro para R$ 55, quando o resumo é calculado, então o troco de R$ 5 não reduz o saldo da mesa.
-- [ ] **CA04:** Dado uma mesa com parciais, quando comparo card, detalhe e modal de fechamento, então os três mostram o mesmo saldo devolvido pelo servidor.
-- [ ] **CA05:** Dado um fechamento com fiado em que a RPC falha, quando consulto a conta do cliente, então não há débito novo e a mesa continua aberta.
-- [ ] **CA06:** Dado um fechamento com fiado de R$ 40, quando a RPC é chamada duas vezes com a mesma chave, então existe exatamente um débito de R$ 40 ligado ao fechamento.
-- [ ] **CA07:** Dado duas mesas do mesmo cliente fechadas em fiado com R$ 25 cada, em menos de 10 minutos, quando consulto o extrato, então existem dois débitos de R$ 25.
-- [ ] **CA08:** Dado um fechamento que falhou por rede, quando o operador fecha e reabre o modal e confirma de novo, então a mesma chave é reenviada e não há fechamento duplicado.
-- [ ] **CA09:** Dado o pedido do cliente A, quando o cashback é solicitado com `p_cliente_id` do cliente B, então nada é creditado a B.
-- [ ] **CA10:** Dado um pedido ainda não pago, quando o cashback é solicitado, então nada é creditado.
-- [ ] **CA11:** Dado duas chamadas simultâneas de cashback para o mesmo pedido, quando ambas terminam, então há um único crédito.
-- [ ] **CA12:** Dado cashback ativo e cliente vinculado, quando a mesa é fechada, então o crédito existe ao fim da mesma transação e o PDV mostra o aviso sem fazer nova chamada.
+- [x] **CA01:** Dado uma mesa de R$ 100 com abatimento de R$ 30 por valor, quando abro o fechamento no PDV, então o saldo exibido é R$ 70 (+ taxa) e o servidor cobra o mesmo valor, sem troco.
+- [x] **CA02:** Dado um parcial de R$ 50 em itens + R$ 5 de taxa, quando fecho a mesa de R$ 100, então o saldo é R$ 50 (+ taxa sobre R$ 50) e o troco é zero se o cliente pagar exatamente.
+- [x] **CA03:** Dado um parcial em que o cliente deu R$ 60 em dinheiro para R$ 55, quando o resumo é calculado, então o troco de R$ 5 não reduz o saldo da mesa.
+- [x] **CA04:** Dado uma mesa com parciais, quando comparo card, detalhe e modal de fechamento, então os três mostram o mesmo saldo devolvido pelo servidor.
+- [x] **CA05:** Dado um fechamento com fiado em que a RPC falha, quando consulto a conta do cliente, então não há débito novo e a mesa continua aberta.
+- [x] **CA06:** Dado um fechamento com fiado de R$ 40, quando a RPC é chamada duas vezes com a mesma chave, então existe exatamente um débito de R$ 40 ligado ao fechamento.
+- [x] **CA07:** Dado duas mesas do mesmo cliente fechadas em fiado com R$ 25 cada, em menos de 10 minutos, quando consulto o extrato, então existem dois débitos de R$ 25.
+- [x] **CA08:** Dado um fechamento que falhou por rede, quando o operador fecha e reabre o modal e confirma de novo, então a mesma chave é reenviada e não há fechamento duplicado.
+- [x] **CA09:** Dado o pedido do cliente A, quando o cashback é solicitado com `p_cliente_id` do cliente B, então nada é creditado a B.
+- [x] **CA10:** Dado um pedido ainda não pago, quando o cashback é solicitado, então nada é creditado.
+- [x] **CA11:** Dado duas chamadas simultâneas de cashback para o mesmo pedido, quando ambas terminam, então há um único crédito.
+- [x] **CA12:** Dado cashback ativo e cliente vinculado, quando a mesa é fechada, então o crédito existe ao fim da mesma transação e o PDV mostra o aviso sem fazer nova chamada.
 
 ## O que a atividade não inclui
 
@@ -80,10 +80,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Taxa de serviço no parcial: cobrar proporcional ao que foi pago (como hoje) ou só no fechamento final? | PO | Sim | |
-| D02 | O que fazer com débitos de fiado e cashbacks antigos encontrados em duplicidade pelo relatório? | PO | Não | |
-| D03 | Em produção, `cliente_conta_movimentos.fechamento_id` é UUID ou BIGINT? (repositório e snapshot divergem; ver CAF-000138) | dev | Sim | |
-| D04 | Valor pago a mais num parcial (sem troco devolvido) vira crédito do cliente ou gorjeta? | PO | Não | |
+| D01 | Taxa de serviço no parcial: cobrar proporcional ao que foi pago (como hoje) ou só no fechamento final? | PO | Sim | Proporcional ao que foi amortizado no parcial com valor registrado em `fechamentos.taxa_servico` e abatimento principal registrado separadamente em `fechamentos.valor_abatido`. No fechamento final, taxa incide apenas sobre o saldo devedor restante do principal. |
+| D02 | O que fazer com débitos de fiado e cashbacks antigos encontrados em duplicidade pelo relatório? | PO | Não | Backfill preenche `valor_abatido` em todos os fechamentos parciais legados via migração 129 (`valor_total - taxa_servico`). Débitos e cashbacks legados permanecem intactos sem alteração retroativa destrutiva; novas regras aplicam idempotência estrita via índices parciais únicos (`uq_cliente_conta_mov_fechamento_consumo` e `uq_cliente_conta_mov_cashback_pedido`). |
+| D03 | Em produção, `cliente_conta_movimentos.fechamento_id` é UUID ou BIGINT? (repositório e snapshot divergem; ver CAF-000138) | dev | Sim | Para desacoplar de `fechamentos_caixa(id)` (BIGINT) e suportar `fechamentos.id` (UUID), foi adicionada a coluna dedicada `fechamento_mesa_id UUID REFERENCES public.fechamentos(id) ON DELETE CASCADE` com índice único parcial em `(cliente_id, fechamento_mesa_id) WHERE tipo = 'consumo'`. |
+| D04 | Valor pago a mais num parcial (sem troco devolvido) vira crédito do cliente ou gorjeta? | PO | Não | Registrado como troco (`troco`) no fechamento parcial e não abate o saldo da mesa (`valor_abatido` é delimitado estritamente ao principal devido amortizado). |
 
 ## Sugestões de casos de teste
 

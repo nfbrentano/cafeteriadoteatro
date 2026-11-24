@@ -166,7 +166,21 @@ export async function setupPedidosPage(options = {}) {
     criar_pedido: (args) => ({ data: { id: 'ped_novo_123', ...args?.p_payload }, error: null }),
     fechar_conta_mesa: (args) => ({ data: { success: true }, error: null }),
     registrar_pagamento_parcial_mesa: (args) => ({ data: { success: true, total_pago: 10, saldo_restante: 0 }, error: null }),
-    obter_resumo_conta_mesa: (args) => ({ data: { mesa_codigo: args?.p_mesa_codigo, subtotal_geral: 0, ja_pago: 0, saldo_restante: 0, itens: [] }, error: null }),
+    obter_resumo_conta_mesa: (args) => {
+      const pMesa = (mockData.pedidos || []).filter(p => p.mesa_codigo === args?.p_mesa_codigo && p.status !== 'cancelado' && p.status_pagamento !== 'pago');
+      const subtotal = pMesa.reduce((acc, p) => acc + Number(p.total || 0), 0);
+      return {
+        data: {
+          mesa_codigo: args?.p_mesa_codigo,
+          pedidos_count: pMesa.length,
+          subtotal_geral: subtotal,
+          ja_pago: 0,
+          saldo_restante: subtotal,
+          itens: []
+        },
+        error: null
+      };
+    },
     transferir_mesa: (args) => ({ data: { success: true }, error: null }),
     ...(options.rpcHandlers || {})
   };

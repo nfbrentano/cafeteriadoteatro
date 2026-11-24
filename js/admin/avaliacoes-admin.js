@@ -31,7 +31,7 @@
   }
 
   async function carregarDadosAvaliacoes() {
-    const sb = window.supabaseClient;
+    const sb = window.cafeteriaSupabase || window.supabaseClient;
     if (!sb) return;
 
     const periodoVal = document.getElementById('aval-filtro-periodo')?.value || '30';
@@ -39,7 +39,7 @@
 
     let query = sb
       .from('avaliacoes')
-      .select('*, pedidos(id, numero_pedido, mesa_codigo, cliente_nome, valor_total, created_at)')
+      .select('*, pedidos(id, numero_pedido, mesa_codigo, cliente_nome, total, created_at)')
       .order('created_at', { ascending: false });
 
     if (periodoVal !== 'todos') {
@@ -77,7 +77,7 @@
   }
 
   async function verificarAlertaAvaliacoesHoje() {
-    const sb = window.supabaseClient;
+    const sb = window.cafeteriaSupabase || window.supabaseClient;
     if (!sb) return;
 
     try {

@@ -210,7 +210,8 @@ export async function rodarMigrations(options = {}) {
   if (isDryRun) {
     console.log('\n--- Migrations que seriam aplicadas (--dry-run) ---');
     pendentes.forEach((p, idx) => {
-      console.log(` [${idx + 1}/${pendentes.length}] Versão ${p.versao}: ${p.arquivo} (${p.checksum.slice(0, 12)}...)`);
+      const chk = p.checksum || p.sha256 || '';
+      console.log(` [${idx + 1}/${pendentes.length}] Versão ${p.versao}: ${p.arquivo} (${chk.slice(0, 12)}...)`);
     });
     console.log('\n[Dry-Run] Nenhuma alteração foi realizada no banco.');
     return { executadas: 0, dryRun: true, pendentes };

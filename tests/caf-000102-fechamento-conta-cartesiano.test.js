@@ -225,17 +225,13 @@ describe('CAF-000102: Matriz M2 e Complementos — Fechamento de Conta de Mesas'
       expect(toastCliente.message || toastCliente.msg).toMatch(/vincular um cliente cadastrado|sem cliente vinculado/i);
     });
 
-    it('Bloqueia quando lancarMovimento recusa débito de conta_cliente por limite insuficiente', async () => {
+    it('Bloqueia quando servidor recusa débito de conta_cliente por limite insuficiente', async () => {
       page = await setupPedidosPage();
 
-      // Mocka recusa em cafeteriaDB.clientes.lancarMovimento
-      if (!window.cafeteriaDB) window.cafeteriaDB = {};
-      window.cafeteriaDB.clientes = {
-        lancarMovimento: vi.fn().mockResolvedValue({
-          sucesso: false,
-          mensagem: 'Limite de crédito insuficiente.'
-        })
-      };
+      page.mockRpc('fechar_conta_mesa', async () => ({
+        data: null,
+        error: new Error('Limite de crédito insuficiente.')
+      }));
 
       await page.abrirModalFechamentoMesa('M01', [
         { id: 205, mesa_codigo: 'M01', total: 50.00, status_pagamento: 'pendente', cliente_id: 'cli-bloq', itens: [] }
@@ -247,7 +243,7 @@ describe('CAF-000102: Matriz M2 e Complementos — Fechamento de Conta de Mesas'
 
       await page.confirmarFechamento();
 
-      expect(page.obterChamadasRpc('fechar_conta_mesa').length).toBe(0);
+      expect(page.obterChamadasRpc('fechar_conta_mesa').length).toBe(1);
       const toast = page.toasts.find(t => /recusado|insuficiente/i.test(t.message || t.msg));
       expect(toast).toBeTruthy();
       expect(toast.msg || toast.message).toContain('Débito na conta recusado');

@@ -133,13 +133,13 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000122** | [CHORE] Higiene do repositório: arquivos pesados e temporários versionados, Node do CI e README | Concluída | — | `caf-000122-higiene-repositorio-ci-readme.test.js` | — |
 | **CAF-000123** | [FEAT] Pix dinâmico com confirmação automática de pagamento no Totem, pedido online e PDV | Concluída | `migration_caf_000123_pix_dinamico.sql` | `caf-000123-pix-dinamico.test.js`, `pix_dinamico.test.sql` | — |
 | **CAF-000124** | [FEAT] Emissão de NFC-e no fechamento da conta via provedor fiscal | Concluída | `migration_caf_000124_nfce.sql` | `caf-000124-nfce.test.js` | — |
-| **CAF-000125** | [UI] Acessibilidade do Totem e do cardápio com pedido do cliente (WCAG 2.1 AA) | Rascunho | — | — | — |
-| **CAF-000126** | [FIX] Autorização NULL-safe e revogação de `anon` nas RPCs SECURITY DEFINER | Rascunho | — | — | — |
-| **CAF-000127** | [FIX] Dados sensíveis legíveis: `pin_hash` com bcrypt e policies `USING (true)` de financeiro, caixa e estoque | Rascunho | — | — | — |
-| **CAF-000128** | [FIX] Integridade monetária no servidor: sinais e limites de valores, permissão de desconto por cargo e PIN de supervisor | Rascunho | — | — | — |
-| **CAF-000129** | [FIX] Saldo da mesa com fonte única e débitos/créditos do cliente (fiado e cashback) atômicos e idempotentes | Rascunho | — | — | — |
-| **CAF-000130** | [FIX] Regressões em produção: avaliação pós-pedido quebrada, anti-spam do QR e fuso horário | Rascunho | — | — | — |
-| **CAF-000131** | [FIX] Pedidos públicos: cupom aplicado no servidor, horário de funcionamento e proteção contra abuso | Rascunho | — | — | — |
+| **CAF-000125** | [UI] Acessibilidade do Totem e do cardápio com pedido do cliente (WCAG 2.1 AA) | Concluída | — | `caf-000125-acessibilidade-totem-cardapio.test.js` | — |
+| **CAF-000126** | [FIX] Autorização NULL-safe e revogação de `anon` nas RPCs SECURITY DEFINER | Concluída | `migration_caf_000126_autorizacao_null_safe_revogacao_anon.sql` | `caf-000126-autorizacao-null-safe-revogacao-anon.test.js` | — |
+| **CAF-000127** | [FIX] Dados sensíveis legíveis: `pin_hash` com bcrypt e policies `USING (true)` de financeiro, caixa e estoque | Concluída | `migration_caf_000127_pin_bcrypt_policies_leitura.sql` | `caf-000127-pin-bcrypt-policies-leitura.test.js` | — |
+| **CAF-000128** | [FIX] Integridade monetária no servidor: sinais e limites de valores, permissão de desconto por cargo e PIN de supervisor | Concluída | `migration_caf_000128_integridade_monetaria_servidor.sql` | `caf-000128-integridade-monetaria.test.js` | — |
+| **CAF-000129** | [FIX] Saldo da mesa com fonte única e débitos/créditos do cliente (fiado e cashback) atômicos e idempotentes | Concluída | `migration_caf_000129_saldo_mesa_debitos_cliente.sql` | `caf-000129-saldo-mesa-debitos-cliente.test.js` | — |
+| **CAF-000130** | [FIX] Regressões em produção: avaliação pós-pedido quebrada, anti-spam do QR e fuso horário | Concluída | `migration_caf_000130_regressoes_fuso_avaliacao_qr.sql` | `caf-000130-regressoes-avaliacao-fuso.test.js` | — |
+| **CAF-000131** | [FIX] Pedidos públicos: cupom aplicado no servidor, horário de funcionamento e proteção contra abuso | Concluída | `migration_caf_000131_pedidos_publicos_cupom_horario.sql` | `caf-000131-pedidos-publicos-cupom-horario.test.js` | — |
 | **CAF-000132** | [FIX] LGPD e exportações: consentimento, Consent Mode do GA, política de privacidade, canal do titular e injeção em CSV | Rascunho | — | — | — |
 | **CAF-000133** | [FIX] PDV: envio de pedido sem perda, recebimento do totem, cancelamento por RPC, observações, toasts e fila offline | Rascunho | — | — | — |
 | **CAF-000134** | [FIX] KDS e impressão: fila de impressão, trava por estação, ressincronização no reconnect, SLA de agendados e voz | Rascunho | — | — | — |

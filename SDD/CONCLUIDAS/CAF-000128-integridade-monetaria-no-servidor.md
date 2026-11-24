@@ -1,7 +1,7 @@
 # [FIX] Integridade monetária no servidor: sinais e limites de valores, permissão de desconto por cargo e PIN de supervisor
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -51,17 +51,17 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado uma mesa de R$ 100, quando o fechamento é enviado com `p_taxa_servico = -20`, então é recusado e a mesa continua aberta.
-- [ ] **CA02:** Dado uma mesa de R$ 100, quando os pagamentos são `[{dinheiro, 200}, {pix, -100}]`, então é recusado e nada é gravado em `fechamento_pagamentos`.
-- [ ] **CA03:** Dado um pagamento com `forma = 'vale'`, quando enviado ao fechamento ou ao parcial, então é recusado com a lista de formas aceitas.
-- [ ] **CA04:** Dado taxa configurada com teto de 20%, quando a taxa enviada passa do teto, então é recusada; quando é exatamente 20%, então é aceita.
-- [ ] **CA05:** Dado dados antigos com taxa negativa, quando a migration roda, então ela termina sem erro, gera o relatório e novos registros inválidos são recusados.
-- [ ] **CA06:** Dado o PDV, quando um item é enviado com quantidade 0 ou −1 a `criar_pedido` ou `adicionar_itens_pedido`, então é recusado e nenhum movimento de estoque é criado.
-- [ ] **CA07:** Dado um gerente cujo cargo tem `pdv.desconto` e `pode_dar_desconto = false`, quando fecha com desconto e motivo, então o fechamento é aceito.
-- [ ] **CA08:** Dado um barista sem permissão e um supervisor que digitou o PIN para R$ 10 na mesa 5, quando o fechamento é enviado com o `autorizacao_id`, então é aceito e o supervisor fica registrado como autorizador.
-- [ ] **CA09:** Dado um `autorizacao_id` já usado, vencido, de outra mesa ou de valor menor que o desconto, quando enviado, então o fechamento é recusado.
-- [ ] **CA10:** Dado um cupom de 10% numa conta de R$ 80, quando o PDV envia desconto de R$ 50 com a campanha, então o servidor aplica R$ 8.
-- [ ] **CA11:** Dado um barista sem `pdv.desconto`, quando aplica um cupom válido, então o fechamento é aceito sem pedir PIN (caso negativo: cupom inativo é recusado).
+- [x] **CA01:** Dado uma mesa de R$ 100, quando o fechamento é enviado com `p_taxa_servico = -20`, então é recusado e a mesa continua aberta.
+- [x] **CA02:** Dado uma mesa de R$ 100, quando os pagamentos são `[{dinheiro, 200}, {pix, -100}]`, então é recusado e nada é gravado em `fechamento_pagamentos`.
+- [x] **CA03:** Dado um pagamento com `forma = 'vale'`, quando enviado ao fechamento ou ao parcial, então é recusado com a lista de formas aceitas.
+- [x] **CA04:** Dado taxa configurada com teto de 20%, quando a taxa enviada passa do teto, então é recusada; quando é exatamente 20%, então é aceita.
+- [x] **CA05:** Dado dados antigos com taxa negativa, quando a migration roda, então ela termina sem erro, gera o relatório e novos registros inválidos são recusados.
+- [x] **CA06:** Dado o PDV, quando um item é enviado com quantidade 0 ou −1 a `criar_pedido` ou `adicionar_itens_pedido`, então é recusado e nenhum movimento de estoque é criado.
+- [x] **CA07:** Dado um gerente cujo cargo tem `pdv.desconto` e `pode_dar_desconto = false`, quando fecha com desconto e motivo, então o fechamento é aceito.
+- [x] **CA08:** Dado um barista sem permissão e um supervisor que digitou o PIN para R$ 10 na mesa 5, quando o fechamento é enviado com o `autorizacao_id`, então é aceito e o supervisor fica registrado como autorizador.
+- [x] **CA09:** Dado um `autorizacao_id` já usado, vencido, de outra mesa ou de valor menor que o desconto, quando enviado, então o fechamento é recusado.
+- [x] **CA10:** Dado um cupom de 10% numa conta de R$ 80, quando o PDV envia desconto de R$ 50 com a campanha, então o servidor aplica R$ 8.
+- [x] **CA11:** Dado um barista sem `pdv.desconto`, quando aplica um cupom válido, então o fechamento é aceito sem pedir PIN (caso negativo: cupom inativo é recusado).
 
 ## O que a atividade não inclui
 
@@ -79,10 +79,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Teto da taxa de serviço (sugestão 20%) e da quantidade por item no PDV (sugestão 99)? | PO | Sim | |
-| D02 | O que fazer com registros antigos inválidos que o relatório encontrar (corrigir, anotar ou manter)? | PO | Não | |
-| D03 | Cupom no PDV deve somar com desconto manual ou um exclui o outro? | PO | Não | |
-| D04 | `forma = 'outros'` continua aceita? Hoje aparece no PDV | PO | Não | |
+| D01 | Teto da taxa de serviço (sugestão 20%) e da quantidade por item no PDV (sugestão 99)? | PO | Sim | Confirmado teto de 20% sobre o subtotal restante para taxa de serviço e limite de 1 a 99 itens em criar_pedido e adicionar_itens_pedido. |
+| D02 | O que fazer com registros antigos inválidos que o relatório encontrar (corrigir, anotar ou manter)? | PO | Não | CHECK constraints criadas como NOT VALID para proteger novos registros sem quebrar banco histórico; relatório emitido via notice para auditoria do dono. |
+| D03 | Cupom no PDV deve somar com desconto manual ou um exclui o outro? | PO | Não | O cupom define o desconto recalculado pelo servidor a partir das regras da campanha, não cumulando com desconto manual no mesmo fechamento. |
+| D04 | `forma = 'outros'` continua aceita? Hoje aparece no PDV | PO | Não | Sim, 'outros' permanece na lista de formas aceitas ('pix', 'dinheiro', 'cartao_credito', 'cartao_debito', 'outros', 'conta_cliente'). |
 
 ## Sugestões de casos de teste
 

@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-23T19:10:11.137Z",
+  "gerado_em": "2026-11-24T14:49:02.239Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -49,7 +49,8 @@
         "p_idempotency_key",
         "p_cupom_codigo",
         "p_campanha_id",
-        "2)"
+        "2)",
+        "p_autorizacao_id"
       ]
     },
     "fn_calcular_custo_adicional": {
@@ -79,7 +80,8 @@
         "p_fechamento_id",
         "p_forma_pagamento",
         "p_motivo",
-        "p_bypass_limite"
+        "p_bypass_limite",
+        "p_fechamento_mesa_id"
       ]
     },
     "processar_cashback_pedido": {
@@ -123,7 +125,8 @@
     "validar_cupom": {
       "parameters": [
         "p_cupom_codigo",
-        "p_subtotal"
+        "p_subtotal",
+        "p_cliente_id"
       ]
     },
     "registrar_evento_cardapio": {
@@ -484,7 +487,9 @@
       "parameters": []
     },
     "loja_esta_aberta": {
-      "parameters": []
+      "parameters": [
+        "p_quando"
+      ]
     },
     "reabrir_caixa": {
       "parameters": [
@@ -667,6 +672,25 @@
         "p_ano_mes",
         "p_status"
       ]
+    },
+    "exigir_cargo": {
+      "parameters": [
+        "VARIADIC"
+      ]
+    },
+    "exigir_permissao": {
+      "parameters": [
+        "p_permissao"
+      ]
+    },
+    "exigir_cargo_ou_permissao": {
+      "parameters": [
+        "p_permissao",
+        "VARIADIC"
+      ]
+    },
+    "fn_relatorio_deslocamento_fuso": {
+      "parameters": []
     }
   },
   "tables": {
@@ -686,7 +710,11 @@
         "ativa",
         "usos_registrados",
         "receita_atribuida",
-        "descricao"
+        "descricao",
+        "valido_de",
+        "valido_ate",
+        "max_usos",
+        "max_usos_por_cliente"
       ]
     },
     "clientes": {
@@ -784,7 +812,8 @@
         "idempotency_key",
         "cupom_codigo",
         "campanha_id",
-        "parcial"
+        "parcial",
+        "valor_abatido"
       ]
     },
     "fichas_tecnicas": {
@@ -884,7 +913,8 @@
         "cargo_id",
         "pin_hash",
         "pin_tentativas_erradas",
-        "pin_bloqueado_ate"
+        "pin_bloqueado_ate",
+        "tem_pin"
       ]
     },
     "produto_adicionais_permitidos": {
@@ -1032,7 +1062,8 @@
         "motivo",
         "criado_por",
         "criado_por_nome",
-        "created_at"
+        "created_at",
+        "fechamento_mesa_id"
       ]
     },
     "cardapio_eventos_diarios": {
@@ -1435,7 +1466,8 @@
         "campanha_id",
         "pedido_id",
         "valor_receita",
-        "created_at"
+        "created_at",
+        "cliente_id"
       ]
     },
     "combo_grupos": {
@@ -1580,6 +1612,23 @@
         "created_at",
         "updated_at"
       ]
+    },
+    "autorizacoes_pin_tokens": {
+      "columns": [
+        "id",
+        "solicitante_id",
+        "autorizador_id",
+        "permissao",
+        "mesa_codigo",
+        "valor_limite",
+        "usado",
+        "usado_em",
+        "expira_em",
+        "created_at"
+      ]
+    },
+    "v_saldo_mesa": {
+      "columns": []
     },
     "site_settings": {
       "columns": [

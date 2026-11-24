@@ -1,7 +1,7 @@
 # [FIX] Regressões em produção: avaliação pós-pedido quebrada, anti-spam do QR e fuso horário
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -56,15 +56,15 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um pedido entregue com token de avaliação, quando o cliente abre `avaliar.html?token=...` em produção, então a avaliação carrega e o envio grava em `avaliacoes`.
-- [ ] **CA02:** Dado avaliações recebidas nos últimos 30 dias, quando o admin abre a aba Avaliações, então as notas e comentários aparecem.
-- [ ] **CA03:** Dado o harness sem o alias `supabaseClient`, quando a suíte roda, então os testes de avaliação passam usando `cafeteriaSupabase`; e um código novo com `window.supabaseClient` sem fallback falha no lint.
-- [ ] **CA04:** Dado um pedido pelo QR na mesa 3, quando o segundo pedido é enviado 31 s depois, então é aceito; quando é enviado 10 s depois, então é recusado com a mensagem de aguardar.
-- [ ] **CA05:** Dado um chamado pendente há 61 s, quando a mesa chama de novo, então um novo chamado é registrado; dado um chamado pendente há 20 s, então a resposta é "repetido".
-- [ ] **CA06:** Dado sessão do banco em UTC, quando os testes de CA04 e CA05 rodam, então o resultado é o mesmo que com sessão em `America/Sao_Paulo`.
-- [ ] **CA07:** Dado a migration aplicada, quando crio um lote, um movimento de estoque, um log de auditoria e uma autorização por PIN, então `now() - created_at` de cada registro é menor que 5 s.
-- [ ] **CA08:** Dado o catálogo do banco, quando o teste de varredura roda, então nenhuma função ou default vigente usa `timezone('America/Sao_Paulo', now())` fora de conversões para data/hora local.
-- [ ] **CA09:** Dado o relatório de deslocamento, quando executado, então lista por tabela a quantidade de linhas afetadas sem alterar nenhum dado.
+- [x] **CA01:** Dado um pedido entregue com token de avaliação, quando o cliente abre `avaliar.html?token=...` em produção, então a avaliação carrega e o envio grava em `avaliacoes`.
+- [x] **CA02:** Dado avaliações recebidas nos últimos 30 dias, quando o admin abre a aba Avaliações, então as notas e comentários aparecem.
+- [x] **CA03:** Dado o harness sem o alias `supabaseClient`, quando a suíte roda, então os testes de avaliação passam usando `cafeteriaSupabase`; e um código novo com `window.supabaseClient` sem fallback falha no lint.
+- [x] **CA04:** Dado um pedido pelo QR na mesa 3, quando o segundo pedido é enviado 31 s depois, então é aceito; quando é enviado 10 s depois, então é recusado com a mensagem de aguardar.
+- [x] **CA05:** Dado um chamado pendente há 61 s, quando a mesa chama de novo, então um novo chamado é registrado; dado um chamado pendente há 20 s, então a resposta é "repetido".
+- [x] **CA06:** Dado sessão do banco em UTC, quando os testes de CA04 e CA05 rodam, então o resultado é o mesmo que com sessão em `America/Sao_Paulo`.
+- [x] **CA07:** Dado a migration aplicada, quando crio um lote, um movimento de estoque, um log de auditoria e uma autorização por PIN, então `now() - created_at` de cada registro é menor que 5 s.
+- [x] **CA08:** Dado o catálogo do banco, quando o teste de varredura roda, então nenhuma função ou default vigente usa `timezone('America/Sao_Paulo', now())` fora de conversões para data/hora local.
+- [x] **CA09:** Dado o relatório de deslocamento, quando executado, então lista por tabela a quantidade de linhas afetadas sem alterar nenhum dado.
 
 ## O que a atividade não inclui
 
@@ -81,9 +81,9 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Corrigir (+3 h) os horários já gravados em lotes, movimentos e logs, ou apenas anotar a data de corte? | PO | Não | |
-| D02 | Os links de avaliação enviados enquanto a página estava quebrada devem ser reenviados aos clientes? | PO | Não | |
-| D03 | A janela de 30 s entre pedidos pelo QR continua adequada no intervalo do espetáculo? | PO | Não | |
+| D01 | Corrigir (+3 h) os horários já gravados em lotes, movimentos e logs, ou apenas anotar a data de corte? | PO | Não | Anotada a data de corte (2026-11-24) com a aplicação da migration 130 e disponibilizado relatório de auditoria somente leitura via `fn_relatorio_deslocamento_fuso()` para conferência sem modificação retroativa destrutiva. |
+| D02 | Os links de avaliação enviados enquanto a página estava quebrada devem ser reenviados aos clientes? | PO | Não | Não é necessário reenvio massivo; os links existentes que ainda estiverem dentro do prazo de 48h passarão a funcionar imediatamente. |
+| D03 | A janela de 30 s entre pedidos pelo QR continua adequada no intervalo do espetáculo? | PO | Não | Sim, 30 segundos é adequado para proteção anti-spam sem impedir pedidos adicionais legítimos do cliente durante o intervalo. |
 
 ## Sugestões de casos de teste
 

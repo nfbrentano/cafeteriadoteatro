@@ -475,10 +475,10 @@ test.describe('CAF-000120 — Testes E2E de Fluxos Críticos em Navegador Real',
       await pdvPage.locator('#btn-fechar-triagem-footer').click();
       await expect(pdvPage.locator('#modal-pedidos-cliente-triagem')).toBeHidden();
 
-      // Respeitar janela anti-spam de 30s da RPC criar_pedido_cliente na mesma mesa M-03
+      // Respeitar janela anti-spam de 30s da RPC criar_pedido_cliente na mesma mesa M-03 (CAF-000130 / RF05)
       await querySql(
         request,
-        "UPDATE public.pedidos SET created_at = created_at - interval '4 hours' WHERE mesa_codigo = 'M-03'"
+        "UPDATE public.pedidos SET created_at = created_at - interval '35 seconds' WHERE mesa_codigo = 'M-03'"
       );
 
       // 2. Segundo pedido QR na M-03 -> Recusa pelo barista
@@ -521,6 +521,62 @@ test.describe('CAF-000120 — Testes E2E de Fluxos Críticos em Navegador Real',
       await ctxCliente.close();
       await ctxBarista.close();
       await ctxCozinha.close();
+    }
+  });
+
+  test('Fluxo Crítico 6: Avaliação pós-pedido pelo cliente e conferência na aba Avaliações do Admin (CAF-000130 / RF03)', async ({
+    browser,
+    request
+  }) => {
+    // 1. Criar pedido entregue com pedido_token
+    const pedidoRows = await querySql(
+      request,
+      `INSERT INTO public.pedidos (numero_pedido, mesa_codigo, cliente_nome, status, status_pagamento, total, created_at, pedido_token)
+       VALUES (601, 'M-01', 'Cliente E2E Avaliacao', 'concluido', 'pago', 25.00, now(), 'a0000000-0000-0000-0000-000000000001'::uuid)
+       RETURNING id, pedido_token`
+    );
+    const token = pedidoRows[0].pedido_token;
+
+    const ctxCliente = await browser.newContext();
+    const ctxAdmin = await browser.newContext();
+    const guardCliente = await setupIsolatedContext(ctxCliente);
+    const guardAdmin = await setupIsolatedContext(ctxAdmin);
+
+    try {
+      const clientePage = await ctxCliente.newPage();
+      await clientePage.goto(`/avaliar.html?token=${token}`);
+
+      // Verifica carregamento sem "Serviço indisponível"
+      await expect(clientePage.locator('#eval-form')).toBeVisible({ timeout: 5000 });
+
+      // Seleciona 5 estrelas para produtos e 5 para atendimento
+      await clientePage.locator('#stars-produto button').nth(4).click();
+      await clientePage.locator('#stars-atendimento button').nth(4).click();
+
+      // Preenche comentário e envia
+      await clientePage.locator('#eval-comentario').fill('Atendimento impecável no E2E!');
+      await clientePage.locator('#btn-submit-eval').click();
+
+      // Sucesso na tela
+      await expect(clientePage.locator('#state-success')).toBeVisible({ timeout: 5000 });
+      await expect(clientePage.locator('#success-title')).toContainText('Muito obrigado!');
+
+      // 2. Admin confere na aba Avaliações
+      const adminPage = await ctxAdmin.newPage();
+      await loginAdmin(adminPage);
+
+      await adminPage.locator('#nav-avaliacoes').click();
+      await expect(adminPage.locator('#page-avaliacoes')).toBeVisible();
+
+      // Confere lista de comentários
+      await expect(adminPage.locator('#aval-lista-tbody')).toContainText('Atendimento impecável no E2E!');
+      await expect(adminPage.locator('#aval-lista-tbody')).toContainText('Cliente E2E Avaliacao');
+
+      expect(guardCliente.prodRequests).toEqual([]);
+      expect(guardAdmin.prodRequests).toEqual([]);
+    } finally {
+      await ctxCliente.close();
+      await ctxAdmin.close();
     }
   });
 });

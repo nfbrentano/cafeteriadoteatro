@@ -38,14 +38,14 @@
   let activePedidoToken = pedidoTokenUrl || localStorage.getItem('cafeteria_pedido_cliente_token');
   let trackingInterval = null;
 
-  // Configurações online (CAF-000038)
+  // Configurações online (CAF-000038 / CAF-000131)
   let onlineConfig = {
     ativo: true,
     tempoEstimadoMin: 15,
     limiteJanela: 5,
-    businessHours: null
+    businessHours: null,
+    cupomAtivo: false
   };
-  let ocupacaoJanelasData = {};
 
   // Se acessou diretamente um link de acompanhamento (?pedido=TOKEN), adiciona noindex (SEO req CAF-000038)
   if (pedidoTokenUrl) {
@@ -119,13 +119,22 @@
           }
         });
 
-        const { data: bhRow } = await window.cafeteriaSupabase
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'business_hours')
-          .maybeSingle();
-        if (bhRow && bhRow.value) {
-          onlineConfig.businessHours = typeof bhRow.value === 'string' ? JSON.parse(bhRow.value) : bhRow.value;
+        let bhData = null;
+        if (window.cafeteriaDB?.hours?.get) {
+          try {
+            bhData = await window.cafeteriaDB.hours.get();
+          } catch (_) {}
+        }
+        if (!bhData && window.cafeteriaSupabase) {
+          const { data: bhRow } = await window.cafeteriaSupabase
+            .from('business_hours')
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+          bhData = bhRow;
+        }
+        if (bhData) {
+          onlineConfig.businessHours = bhData;
         }
       } catch (e) {
         console.warn('Erro ao carregar configurações de pedido online:', e);
@@ -135,6 +144,31 @@
         return; // Pedido online desativado: cardápio funciona apenas para consulta
       }
       isModoOnline = true;
+    }
+
+    // Validação da visibilidade de cupons nos pedidos públicos (CAF-000131 / RF02 / CA03)
+    if (typeof window !== 'undefined' && typeof window.CONFIG_CUPOM_PEDIDOS_PUBLICOS_ATIVO === 'boolean') {
+      onlineConfig.cupomAtivo = window.CONFIG_CUPOM_PEDIDOS_PUBLICOS_ATIVO;
+    } else if (window.cafeteriaSupabase) {
+      try {
+        const { data: cupomCfg } = await window.cafeteriaSupabase
+          .from('configuracoes_sistema')
+          .select('valor')
+          .eq('chave', 'cupom_pedidos_publicos_ativo')
+          .maybeSingle();
+        if (cupomCfg && cupomCfg.valor !== null && cupomCfg.valor !== undefined) {
+          onlineConfig.cupomAtivo = cupomCfg.valor === true || cupomCfg.valor === 'true' || cupomCfg.valor?.ativo === true;
+        } else {
+          const { data: cupomSetting } = await window.cafeteriaSupabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'cupom_pedidos_publicos_ativo')
+            .maybeSingle();
+          if (cupomSetting && cupomSetting.value !== null && cupomSetting.value !== undefined) {
+            onlineConfig.cupomAtivo = cupomSetting.value === true || cupomSetting.value === 'true';
+          }
+        }
+      } catch (_) {}
     }
 
     await carregarDadosApoio();
@@ -221,8 +255,88 @@
   }
   window.cardapioShowToast = cardapioShowToast;
 
+  function anunciarCardapioA11y(mensagem, assertivo = false) {
+    const el = document.getElementById(assertivo ? 'cardapio-live-alert' : 'cardapio-live-announcer');
+    if (!el) return;
+    el.textContent = '';
+    setTimeout(() => {
+      el.textContent = mensagem;
+    }, 50);
+  }
+  window.anunciarCardapioA11y = anunciarCardapioA11y;
+
+  let activeCardapioTrap = null;
+
+  function gerenciarAberturaModal(modalEl, triggerEl, onEscapeClose) {
+    if (!modalEl) return;
+    modalEl._triggerEl = triggerEl || document.activeElement;
+    modalEl.classList.remove('hidden');
+
+    if (activeCardapioTrap) {
+      activeCardapioTrap();
+      activeCardapioTrap = null;
+    }
+
+    const focusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (typeof onEscapeClose === 'function') {
+          onEscapeClose();
+        }
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const focusables = Array.from(modalEl.querySelectorAll(focusableSelector)).filter(el => el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0 || el.getAttribute('tabindex') !== '-1');
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !modalEl.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last || !modalEl.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    modalEl.addEventListener('keydown', handleKeyDown);
+    activeCardapioTrap = () => modalEl.removeEventListener('keydown', handleKeyDown);
+
+    setTimeout(() => {
+      const focusable = modalEl.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (focusable) focusable.focus();
+    }, 30);
+  }
+
+  function gerenciarFechamentoModal(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.add('hidden');
+    if (activeCardapioTrap) {
+      activeCardapioTrap();
+      activeCardapioTrap = null;
+    }
+    if (modalEl._triggerEl && typeof modalEl._triggerEl.focus === 'function') {
+      try {
+        modalEl._triggerEl.focus();
+      } catch (_) {}
+    }
+    modalEl._triggerEl = null;
+  }
+
   function cardapioConfirmSheet({ titulo = 'Confirmar', mensagem = '', textoConfirmar = 'Confirmar', textoCancelar = 'Cancelar' } = {}) {
     return new Promise((resolve) => {
+      const triggerEl = document.activeElement;
       let modal = document.getElementById('cardapio-modal-confirm');
       if (!modal) {
         modal = document.createElement('div');
@@ -230,6 +344,7 @@
         modal.className = 'modal-overlay hidden';
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'cardapio-confirm-title');
         modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:flex-end;justify-content:center;z-index:10001;padding:1rem;';
         modal.innerHTML = `
           <div class="modal-card" style="background:#fff;color:#2c1e16;border-radius:16px;max-width:440px;width:100%;padding:1.25rem;box-shadow:0 15px 35px rgba(0,0,0,0.3);">
@@ -243,6 +358,10 @@
         `;
         document.body.appendChild(modal);
       }
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-labelledby', 'cardapio-confirm-title');
+
       const titleEl = modal.querySelector('#cardapio-confirm-title');
       const msgEl = modal.querySelector('#cardapio-confirm-msg');
       const btnCancel = modal.querySelector('#cardapio-confirm-cancel');
@@ -254,8 +373,11 @@
       btnOk.textContent = textoConfirmar;
 
       const close = (val) => {
-        modal.classList.add('hidden');
+        gerenciarFechamentoModal(modal);
         modal.style.display = 'none';
+        if (triggerEl && typeof triggerEl.focus === 'function') {
+          try { triggerEl.focus(); } catch (_) {}
+        }
         resolve(val);
       };
 
@@ -265,8 +387,9 @@
         if (e.target === modal) close(false);
       };
 
-      modal.classList.remove('hidden');
+      gerenciarAberturaModal(modal, triggerEl, () => close(false));
       modal.style.display = 'flex';
+      setTimeout(() => { btnCancel.focus(); }, 40);
     });
   }
   window.cardapioConfirmSheet = cardapioConfirmSheet;
@@ -329,22 +452,53 @@
 
   function obterHorarioFuncionamentoDia(dateObj) {
     const bh = onlineConfig.businessHours;
-    const day = dateObj.getDay(); // 0=Dom, 1..4=Seg-Qui, 5=Sex, 6=Sab
+    const day = window.datasSP ? window.datasSP.diaSemanaSP(dateObj) : dateObj.getDay(); // 0=Dom, 1..4=Seg-Qui, 5=Sex, 6=Sab
     if (!bh) {
       if (day === 0) return { fechado: true };
       return { fechado: false, abertura: '08:00', fechamento: '20:00' };
     }
-    let cfg = null;
-    if (day === 0) cfg = bh.dom;
-    else if (day === 6) cfg = bh.sab;
-    else if (day === 5) cfg = bh.sex;
-    else cfg = bh.seg_qui;
 
-    if (!cfg || cfg.fechado) return { fechado: true };
+    // Suporte ao formato antigo com objetos aninhados (se houver)
+    if (bh.seg_qui && typeof bh.seg_qui === 'object') {
+      let cfg = null;
+      if (day === 0) cfg = bh.dom;
+      else if (day === 6) cfg = bh.sab;
+      else if (day === 5) cfg = bh.sex;
+      else cfg = bh.seg_qui;
+
+      if (!cfg || cfg.fechado) return { fechado: true };
+      return {
+        fechado: false,
+        abertura: cfg.abertura || '08:00',
+        fechamento: cfg.fechamento || '20:00'
+      };
+    }
+
+    // Formato canônico da tabela business_hours (CAF-000131 / RF04)
+    if (day === 0 || day === 6) {
+      if (!bh.sab_dom_ativo) {
+        return { fechado: true };
+      }
+      return {
+        fechado: false,
+        abertura: bh.sab_dom_abre || '08:00',
+        fechamento: bh.sab_dom_fecha || '20:00'
+      };
+    }
+
+    if (day === 5) {
+      return {
+        fechado: false,
+        abertura: bh.sex_abre || '08:00',
+        fechamento: bh.sex_fecha || '20:00'
+      };
+    }
+
+    // Segunda a Quinta (1, 2, 3, 4)
     return {
       fechado: false,
-      abertura: cfg.abertura || '08:00',
-      fechamento: cfg.fechamento || '20:00'
+      abertura: bh.seg_qui_abre || '08:00',
+      fechamento: bh.seg_qui_fecha || '20:00'
     };
   }
 
@@ -354,7 +508,14 @@
     if (hDia.fechado) return false;
     const [abH, abM] = hDia.abertura.split(':').map(Number);
     const [feH, feM] = hDia.fechamento.split(':').map(Number);
-    const minAtual = agora.getHours() * 60 + agora.getMinutes();
+    
+    let minAtual;
+    if (window.datasSP?.formatarHoraSP) {
+      const [hSP, mSP] = window.datasSP.formatarHoraSP(agora, false).split(':').map(Number);
+      minAtual = hSP * 60 + mSP;
+    } else {
+      minAtual = agora.getHours() * 60 + agora.getMinutes();
+    }
     const minAb = abH * 60 + abM;
     const minFe = feH * 60 + feM;
     return minAtual >= minAb && minAtual <= (minFe - 15);
@@ -424,18 +585,21 @@
     const modalCustomizar = document.createElement('div');
     modalCustomizar.className = 'modal-cliente-overlay hidden';
     modalCustomizar.id = 'modal-customizar-item';
+    modalCustomizar.setAttribute('role', 'dialog');
+    modalCustomizar.setAttribute('aria-modal', 'true');
+    modalCustomizar.setAttribute('aria-labelledby', 'modal-cust-titulo');
     modalCustomizar.innerHTML = `
       <div class="modal-cliente-card">
         <div class="modal-cliente-header">
           <h3 id="modal-cust-titulo">Adicionar Item</h3>
-          <button type="button" class="modal-cliente-close" id="modal-cust-close">✕</button>
+          <button type="button" class="modal-cliente-close" id="modal-cust-close" aria-label="Fechar personalização">✕</button>
         </div>
         <div class="modal-cliente-body" id="modal-cust-body"></div>
         <div class="modal-cliente-footer">
           <div class="qty-control">
-            <button type="button" id="btn-cust-qty-dec">−</button>
-            <span id="cust-qty-val">1</span>
-            <button type="button" id="btn-cust-qty-inc">+</button>
+            <button type="button" id="btn-cust-qty-dec" aria-label="Diminuir quantidade">−</button>
+            <span id="cust-qty-val" aria-live="polite">1</span>
+            <button type="button" id="btn-cust-qty-inc" aria-label="Aumentar quantidade">+</button>
           </div>
           <button type="button" class="btn btn--primary" id="btn-cust-adicionar" style="flex:1; height:44px; font-weight:700;">
             Adicionar ao Pedido
@@ -454,11 +618,14 @@
     const modalCarrinho = document.createElement('div');
     modalCarrinho.className = 'modal-cliente-overlay hidden';
     modalCarrinho.id = 'modal-carrinho-cliente';
+    modalCarrinho.setAttribute('role', 'dialog');
+    modalCarrinho.setAttribute('aria-modal', 'true');
+    modalCarrinho.setAttribute('aria-labelledby', 'modal-carrinho-titulo');
     modalCarrinho.innerHTML = `
       <div class="modal-cliente-card">
         <div class="modal-cliente-header">
-          <h3>${isModoMesa ? `Seu Pedido — Mesa ${mesaCodigoSafe}` : '🛍️ Pedido para Retirada no Balcão'}</h3>
-          <button type="button" class="modal-cliente-close" id="modal-carrinho-close">✕</button>
+          <h3 id="modal-carrinho-titulo">${isModoMesa ? `Seu Pedido — Mesa ${mesaCodigoSafe}` : '🛍️ Pedido para Retirada no Balcão'}</h3>
+          <button type="button" class="modal-cliente-close" id="modal-carrinho-close" aria-label="Fechar carrinho">✕</button>
         </div>
         <div class="modal-cliente-body">
           <div id="carrinho-itens-lista"></div>
@@ -533,7 +700,7 @@
             <input type="text" id="input-cliente-obs" class="form-control" placeholder="Ex: Guardanapos extras, adoçante..." style="width:100%; padding:10px; font-size:14px; border:1px solid #cbd5e1; border-radius:8px;" />
           </div>
 
-          <div style="margin-top:14px; padding:10px; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1;">
+          <div id="container-cupom-cliente" style="margin-top:14px; padding:10px; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1;">
             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">
               🎟️ Tem um cupom de desconto? (Opcional)
             </label>
@@ -563,6 +730,9 @@
       </div>
     `;
     document.body.appendChild(modalCarrinho);
+    if (!onlineConfig.cupomAtivo) {
+      document.getElementById('container-cupom-cliente')?.remove();
+    }
     document.getElementById('modal-carrinho-close')?.addEventListener('click', fecharModalCarrinho);
     document.getElementById('btn-enviar-pedido-cliente')?.addEventListener('click', enviarPedidoFinal);
 
@@ -618,11 +788,14 @@
     const modalTracking = document.createElement('div');
     modalTracking.className = 'modal-cliente-overlay hidden';
     modalTracking.id = 'modal-tracking-pedido';
+    modalTracking.setAttribute('role', 'dialog');
+    modalTracking.setAttribute('aria-modal', 'true');
+    modalTracking.setAttribute('aria-labelledby', 'modal-tracking-titulo');
     modalTracking.innerHTML = `
       <div class="modal-cliente-card">
         <div class="modal-cliente-header">
-          <h3>Acompanhamento do Pedido</h3>
-          <button type="button" class="modal-cliente-close" id="modal-tracking-close">✕</button>
+          <h3 id="modal-tracking-titulo">Acompanhamento do Pedido</h3>
+          <button type="button" class="modal-cliente-close" id="modal-tracking-close" aria-label="Fechar acompanhamento do pedido">✕</button>
         </div>
         <div class="modal-cliente-body" id="modal-tracking-body">
           <div class="status-tracker-box">
@@ -763,8 +936,7 @@
     const dataIso = dataInput.value;
     selectHora.innerHTML = '<option value="">Carregando horários...</option>';
 
-    const [ano, mes, dia] = dataIso.split('-').map(Number);
-    const dataRef = new Date(ano, mes - 1, dia, 12, 0, 0);
+    const dataRef = new Date(`${dataIso}T12:00:00-03:00`);
     const hDia = obterHorarioFuncionamentoDia(dataRef);
 
     if (hDia.fechado) {
@@ -798,8 +970,8 @@
       const hh = String(Math.floor(m / 60)).padStart(2, '0');
       const mm = String(m % 60).padStart(2, '0');
       const slotStr = `${hh}:${mm}`;
-      const slotDate = new Date(ano, mes - 1, dia, Math.floor(m / 60), m % 60, 0);
-      if (slotDate.getTime() < minTimestamp) continue;
+      const slotTimestamp = new Date(`${dataIso}T${slotStr}:00-03:00`).getTime();
+      if (slotTimestamp < minTimestamp) continue;
 
       const qtdOcupada = Number(ocupacao[slotStr] || 0);
       const lotado = qtdOcupada >= limite;
@@ -849,11 +1021,23 @@
         btn.className = 'btn-pedir-item';
         btn.innerHTML = isEsgotado ? 'Esgotado' : (produto.apenas_encomenda ? '📅 Encomendar' : '＋ Pedir');
         btn.disabled = isEsgotado;
+        const precoFmt = `R$ ${Number(produto.preco || 0).toFixed(2).replace('.', ',')}`;
+        btn.setAttribute('aria-label', isEsgotado ? `${produto.nome}, ${precoFmt}, esgotado` : `Pedir ${produto.nome}, ${precoFmt}`);
 
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          abrirModalCustomizar(produto);
+          abrirModalCustomizar(produto, btn);
         });
+
+        if (!card.dataset.keyboardBound) {
+          card.dataset.keyboardBound = 'true';
+          card.addEventListener('keydown', (e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && !isEsgotado) {
+              e.preventDefault();
+              abrirModalCustomizar(produto, card);
+            }
+          });
+        }
 
         const footer = card.querySelector('.produto-card__footer, .combo-card__footer, .produto-card__body');
         if (footer) {
@@ -876,7 +1060,7 @@
     observacoes: ''
   };
 
-  function abrirModalCustomizar(produto) {
+  function abrirModalCustomizar(produto, triggerEl) {
     itemSendoCustomizado = produto;
     customizacaoState = {
       quantidade: 1,
@@ -979,7 +1163,7 @@
     }
 
     recalcularPrecoBotaoCustomizar();
-    modal.classList.remove('hidden');
+    gerenciarAberturaModal(modal, triggerEl, () => fecharModalCustomizar());
   }
 
   function recalcularPrecoBotaoCustomizar() {
@@ -1092,11 +1276,13 @@
     }
 
     salvarCarrinhoCache();
+    anunciarCardapioA11y(`${itemSendoCustomizado.nome} adicionado ao pedido.`);
     fecharModalCustomizar();
   }
 
   function fecharModalCustomizar() {
-    document.getElementById('modal-customizar-item')?.classList.add('hidden');
+    const modal = document.getElementById('modal-customizar-item');
+    if (modal) gerenciarFechamentoModal(modal);
     itemSendoCustomizado = null;
   }
 
@@ -1104,6 +1290,7 @@
     const barra = document.getElementById('barra-carrinho-cliente');
     const countLbl = document.getElementById('carrinho-count-lbl');
     const totalLbl = document.getElementById('carrinho-total-lbl');
+    const btnAbrir = document.getElementById('btn-abrir-carrinho');
     if (!barra) return;
 
     const totalItens = carrinho.reduce((sum, it) => sum + it.quantidade, 0);
@@ -1112,6 +1299,9 @@
     if (totalItens > 0) {
       countLbl.textContent = `${totalItens} ${totalItens === 1 ? 'item' : 'itens'}`;
       totalLbl.textContent = `R$ ${totalValor.toFixed(2).replace('.', ',')}`;
+      if (btnAbrir) {
+        btnAbrir.setAttribute('aria-label', `${isModoMesa ? 'Ver Pedido' : 'Finalizar Retirada'}, ${totalItens} ${totalItens === 1 ? 'item' : 'itens'}, total R$ ${totalValor.toFixed(2).replace('.', ',')}`);
+      }
       barra.classList.remove('hidden');
     } else {
       barra.classList.add('hidden');
@@ -1154,7 +1344,7 @@
     }
   }
 
-  function abrirModalCarrinho() {
+  function abrirModalCarrinho(triggerEl) {
     const modal = document.getElementById('modal-carrinho-cliente');
     const lista = document.getElementById('carrinho-itens-lista');
     const totalLbl = document.getElementById('carrinho-modal-total-lbl');
@@ -1174,7 +1364,7 @@
       const descRow = document.getElementById('carrinho-desconto-row');
       if (descRow) descRow.style.display = 'none';
       cupomAplicado = null;
-      modal.classList.remove('hidden');
+      gerenciarAberturaModal(modal, triggerEl, () => fecharModalCarrinho());
       return;
     }
 
@@ -1233,6 +1423,7 @@
         const idx = Number(btn.dataset.idx);
         carrinho.splice(idx, 1);
         salvarCarrinhoCache();
+        anunciarCardapioA11y('Item removido do pedido.');
         abrirModalCarrinho();
       });
     });
@@ -1241,11 +1432,12 @@
       atualizarModoRetiradaUI();
     }
 
-    modal.classList.remove('hidden');
+    gerenciarAberturaModal(modal, triggerEl, () => fecharModalCarrinho());
   }
 
   function fecharModalCarrinho() {
-    document.getElementById('modal-carrinho-cliente')?.classList.add('hidden');
+    const modal = document.getElementById('modal-carrinho-cliente');
+    if (modal) gerenciarFechamentoModal(modal);
   }
 
   async function enviarPedidoFinal() {
@@ -1304,7 +1496,7 @@
           cardapioShowToast('Selecione a data e uma janela de horário disponível para o agendamento.', 'warning');
           return;
         }
-        retiradaEmIso = new Date(`${dataVal}T${horaVal}:00`).toISOString();
+        retiradaEmIso = new Date(`${dataVal}T${horaVal}:00-03:00`).toISOString();
       }
 
       btnEnviar.disabled = true;
@@ -1358,6 +1550,7 @@
           salvarCarrinhoCache();
           fecharModalCarrinho();
           iniciarTrackingPedido(activePedidoToken);
+          anunciarCardapioA11y('Pedido realizado com sucesso! Acompanhe o status nesta tela.', true);
           abrirModalTracking();
 
           if (formaPagamentoOnline === 'pix' || res.exigir_pagamento || res.status === 'aguardando_pagamento') {
@@ -1369,10 +1562,12 @@
           }
         } else {
           cardapioShowToast('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), 'error');
+          anunciarCardapioA11y('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), true);
         }
       } catch (err) {
         console.error('Erro ao enviar pedido online:', err);
         cardapioShowToast('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique os dados informados'), 'error');
+        anunciarCardapioA11y('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique os dados informados'), true);
       } finally {
         btnEnviar.disabled = false;
         btnEnviar.textContent = '🛍️ Confirmar Pedido para Retirada';
@@ -1426,13 +1621,16 @@
         salvarCarrinhoCache();
         fecharModalCarrinho();
         iniciarTrackingPedido(activePedidoToken);
+        anunciarCardapioA11y('Pedido enviado para a mesa com sucesso! Acompanhe o status nesta tela.', true);
         abrirModalTracking();
       } else {
         cardapioShowToast('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), 'error');
+        anunciarCardapioA11y('Erro ao enviar pedido: ' + (res?.mensagem || 'Tente novamente'), true);
       }
     } catch (err) {
       console.error('Erro ao enviar pedido:', err);
       cardapioShowToast('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique sua conexão'), 'error');
+      anunciarCardapioA11y('Não foi possível enviar seu pedido: ' + (err.message || 'Verifique sua conexão'), true);
     } finally {
       btnEnviar.disabled = false;
       btnEnviar.textContent = '🚀 Enviar Pedido para o Atendente';
@@ -1663,11 +1861,17 @@
     }
   }
 
-  function abrirModalTracking() {
+  function abrirModalTracking(triggerEl) {
     const modal = document.getElementById('modal-tracking-pedido');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) gerenciarAberturaModal(modal, triggerEl, () => fecharModalTracking());
     if (activePedidoToken) consultarStatusAtual(activePedidoToken);
   }
+
+  function fecharModalTracking() {
+    const modal = document.getElementById('modal-tracking-pedido');
+    if (modal) gerenciarFechamentoModal(modal);
+  }
+  document.getElementById('modal-tracking-close')?.addEventListener('click', fecharModalTracking);
 
   async function dispararChamado(tipo) {
     if (!currentMesa) return;
@@ -1696,4 +1900,11 @@
       cardapioShowToast('Não foi possível registrar o chamado: ' + (err.message || 'Verifique a conexão'), 'error');
     }
   }
+
+  // --- Exposição para Módulos e Testes ---
+  window.abrirModalCustomizar = abrirModalCustomizar;
+  window.fecharModalCustomizar = fecharModalCustomizar;
+  window.abrirModalCarrinho = abrirModalCarrinho;
+  window.fecharModalCarrinho = fecharModalCarrinho;
+  window.injetarUIAutoatendimento = injetarUIAutoatendimento;
 })();

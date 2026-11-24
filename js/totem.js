@@ -35,6 +35,11 @@
     const oldMedia = containerEl.querySelector('.totem-bg-media');
     if (oldMedia) oldMedia.remove();
 
+    // Respeito a preferência de movimento reduzido (CAF-000125 / CA07)
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     const config = totemInfo.animacaoFundo || { tipo: 'catalogo', id: 'nenhuma' };
     if (config.tipo === 'catalogo') {
       const id = config.id || 'nenhuma';
@@ -211,11 +216,108 @@
   window.addEventListener('online', atualizarStatusRede);
   window.addEventListener('offline', atualizarStatusRede);
 
-  // ── 2. ACESSIBILIDADE & TELA CHEIA ──
-  document.getElementById('btn-totem-font-toggle')?.addEventListener('click', function () {
-    document.body.classList.toggle('totem-font-large');
-    this.classList.toggle('is-active', document.body.classList.contains('totem-font-large'));
+  // ── 2. ACESSIBILIDADE & TELA CHEIA (WCAG 2.1 AA / CAF-000125) ──
+  function anunciarA11y(mensagem, assertivo = false) {
+    const el = document.getElementById(assertivo ? 'totem-live-alert' : 'totem-live-announcer');
+    if (!el) return;
+    el.textContent = '';
+    setTimeout(() => {
+      el.textContent = mensagem;
+    }, 50);
+  }
+  window.anunciarTotemA11y = anunciarA11y;
+
+  function resetarAcessibilidadeTotem() {
+    document.body.classList.remove('totem-font-large', 'totem-high-contrast');
+    const btn = document.getElementById('btn-totem-font-toggle');
+    if (btn) {
+      btn.classList.remove('is-active');
+      btn.setAttribute('aria-pressed', 'false');
+    }
+  }
+
+  const btnFontToggle = document.getElementById('btn-totem-font-toggle');
+  btnFontToggle?.addEventListener('click', function () {
+    const isLarge = document.body.classList.toggle('totem-font-large');
+    const isContrast = document.body.classList.toggle('totem-high-contrast');
+    const ativo = isLarge || isContrast;
+    this.classList.toggle('is-active', ativo);
+    this.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    anunciarA11y(ativo ? 'Modo texto maior e alto contraste ativado' : 'Modo texto maior e alto contraste desativado');
   });
+
+  let activeTotemTrapCleanup = null;
+
+  function exibirModalA11y(modalEl, triggerEl, onEscapeClose) {
+    if (!modalEl) return;
+    modalEl._triggerEl = triggerEl || document.activeElement;
+    modalEl.classList.remove('hidden');
+
+    if (activeTotemTrapCleanup) {
+      activeTotemTrapCleanup();
+      activeTotemTrapCleanup = null;
+    }
+
+    const focusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (typeof onEscapeClose === 'function') {
+          onEscapeClose();
+        }
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const focusables = Array.from(modalEl.querySelectorAll(focusableSelector)).filter(el => el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0 || el.getAttribute('tabindex') !== '-1');
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !modalEl.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last || !modalEl.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    modalEl.addEventListener('keydown', handleKeyDown);
+    activeTotemTrapCleanup = () => modalEl.removeEventListener('keydown', handleKeyDown);
+
+    setTimeout(() => {
+      const focusable = modalEl.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (focusable) {
+        focusable.focus();
+      } else {
+        modalEl.focus();
+      }
+    }, 30);
+  }
+
+  function ocultarModalA11y(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.add('hidden');
+    if (activeTotemTrapCleanup) {
+      activeTotemTrapCleanup();
+      activeTotemTrapCleanup = null;
+    }
+    if (modalEl._triggerEl && typeof modalEl._triggerEl.focus === 'function') {
+      try {
+        modalEl._triggerEl.focus();
+      } catch (_) {}
+    }
+    modalEl._triggerEl = null;
+  }
 
   document.getElementById('btn-totem-fullscreen')?.addEventListener('click', () => {
     if (!document.fullscreenElement) {
@@ -241,6 +343,7 @@
       if (carrinho.length > 0) {
         limparCarrinhoSilencioso();
       }
+      resetarAcessibilidadeTotem();
       fecharTodosModais();
       mostrarTelaDescanso();
     }, CLEAR_CART_TIMEOUT_MS);
@@ -517,10 +620,11 @@
     if (!categoriesBar) return;
     categoriesBar.innerHTML = categorias.map((c) => {
       const active = c.id === categoriaAtivaId ? 'is-active' : '';
+      const isSelected = c.id === categoriaAtivaId ? 'true' : 'false';
       const icone = c.icone || '☕';
       return `
-        <button type="button" class="totem-cat-btn ${active}" data-cat-id="${esc(c.id)}">
-          <span>${esc(icone)}</span>
+        <button type="button" class="totem-cat-btn ${active}" data-cat-id="${esc(c.id)}" role="tab" aria-selected="${isSelected}">
+          <span aria-hidden="true">${esc(icone)}</span>
           <span>${esc(c.nome)}</span>
         </button>
       `;
@@ -571,26 +675,33 @@
     productsGrid.innerHTML = lista.map((p) => {
       const img = p.imagem_data || p.imagem || 'assets/images/logo-cafeteria-do-teatro.webp';
       const promo = obterPromoProduto(p);
+      const isEsgotado = p.disponivel === false || p.esgotado;
       let promoBadge = '';
       if (promo) {
         if (promo.tipo === 'percentual') promoBadge = `<div class="totem-product-card__promo">-${promo.percentual}% OFF</div>`;
         else if (promo.tipo === 'compre_leve') promoBadge = `<div class="totem-product-card__promo">Leve ${promo.qtd_leva} Pague ${promo.qtd_compra}</div>`;
         else if (promo.tipo === 'segunda_unidade') promoBadge = `<div class="totem-product-card__promo">2ª un. -${promo.percentual}%</div>`;
       }
+      let esgotadoBadge = isEsgotado ? `<div class="totem-product-card__promo" style="background:#64748b; color:#fff;">Esgotado</div>` : '';
+      const precoFmt = fmtMoeda(p.preco);
+      const a11yLabel = isEsgotado
+        ? `${p.nome}, ${precoFmt}, esgotado`
+        : `Escolher ${p.nome}, ${precoFmt}`;
 
       return `
-        <article class="totem-product-card" data-prod-id="${esc(p.id)}">
+        <article class="totem-product-card ${isEsgotado ? 'is-esgotado' : ''}" data-prod-id="${esc(p.id)}" role="button" tabindex="0" aria-label="${esc(a11yLabel)}" ${isEsgotado ? 'aria-disabled="true"' : ''}>
           <div class="totem-product-card__img-wrap">
             ${promoBadge}
+            ${esgotadoBadge}
             <img src="${esc(img)}" alt="${esc(p.nome)}" class="totem-product-card__img" loading="lazy" />
           </div>
           <div class="totem-product-card__body">
             <h3 class="totem-product-card__title">${esc(p.nome)}</h3>
             <p class="totem-product-card__desc">${esc(p.descricao || '')}</p>
             <div class="totem-product-card__footer">
-              <span class="totem-product-card__price">${fmtMoeda(p.preco)}</span>
-              <button type="button" class="totem-btn-add">
-                + Escolher
+              <span class="totem-product-card__price">${precoFmt}</span>
+              <button type="button" class="totem-btn-add" ${isEsgotado ? 'disabled' : ''} aria-label="${esc(a11yLabel)}">
+                ${isEsgotado ? 'Esgotado' : '+ Escolher'}
               </button>
             </div>
           </div>
@@ -601,10 +712,20 @@
     applyTotemLogoFallback(productsGrid, 'img.totem-product-card__img');
 
     productsGrid.querySelectorAll('.totem-product-card').forEach((card) => {
-      card.addEventListener('click', () => {
-        const prodId = card.getAttribute('data-prod-id');
-        const prod = produtos.find((x) => x.id === prodId);
-        if (prod) abrirModalPersonalizarItem(prod);
+      const prodId = card.getAttribute('data-prod-id');
+      const prod = produtos.find((x) => x.id === prodId);
+      const isEsgotado = prod && (prod.disponivel === false || prod.esgotado);
+
+      const acionar = () => {
+        if (prod && !isEsgotado) abrirModalPersonalizarItem(prod, card);
+      };
+
+      card.addEventListener('click', acionar);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          acionar();
+        }
       });
     });
   }
@@ -618,7 +739,12 @@
     return adicionais.filter((a) => idsPermitidos.includes(a.id));
   }
 
-  function abrirModalPersonalizarItem(prod) {
+  function fecharModalItem() {
+    ocultarModalA11y(modalItem);
+    itemEmEdicao = null;
+  }
+
+  function abrirModalPersonalizarItem(prod, triggerEl) {
     if (window.cafeteriaMenuAnalytics && prod) {
       window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
         canal: 'totem',
@@ -666,7 +792,7 @@
           <label style="font-weight:800; display:block; margin-bottom:10px; font-size:1.08rem;">Deseja acrescentar algum adicional?</label>
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px;">
             ${adicsPermitidos.map((a) => `
-              <button type="button" class="totem-choice-btn totem-adic-toggle" data-adic-id="${esc(a.id)}">
+              <button type="button" class="totem-choice-btn totem-adic-toggle" data-adic-id="${esc(a.id)}" role="checkbox" aria-checked="false">
                 <span>${esc(a.nome)}</span>
                 <strong style="color:var(--totem-accent);">+ ${fmtMoeda(a.preco)}</strong>
               </button>
@@ -683,9 +809,9 @@
           <div style="font-size:0.92rem; color:var(--totem-text-sub);">${esc(prod.descricao || '')}</div>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-          <button type="button" id="totem-item-qty-minus" class="totem-btn totem-btn--ghost totem-qty-btn">−</button>
-          <span id="totem-item-qty-val" style="font-size:1.6rem; font-weight:900; min-width:36px; text-align:center;">1</span>
-          <button type="button" id="totem-item-qty-plus" class="totem-btn totem-btn--ghost totem-qty-btn">+</button>
+          <button type="button" id="totem-item-qty-minus" class="totem-btn totem-btn--ghost totem-qty-btn" aria-label="Diminuir quantidade de ${esc(prod.nome)}">−</button>
+          <span id="totem-item-qty-val" style="font-size:1.6rem; font-weight:900; min-width:36px; text-align:center;" aria-live="polite">1</span>
+          <button type="button" id="totem-item-qty-plus" class="totem-btn totem-btn--ghost totem-qty-btn" aria-label="Aumentar quantidade de ${esc(prod.nome)}">+</button>
         </div>
       </div>
       ${saboresHtml}
@@ -713,7 +839,8 @@
     itemModalBody.querySelectorAll('.totem-adic-toggle').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-adic-id');
-        btn.classList.toggle('is-selected');
+        const selected = btn.classList.toggle('is-selected');
+        btn.setAttribute('aria-checked', selected ? 'true' : 'false');
         if (itemEmEdicao.adicionaisIds.includes(id)) {
           itemEmEdicao.adicionaisIds = itemEmEdicao.adicionaisIds.filter((x) => x !== id);
         } else {
@@ -722,11 +849,11 @@
       });
     });
 
-    modalItem.classList.remove('hidden');
+    exibirModalA11y(modalItem, triggerEl, () => fecharModalItem());
   }
 
-  btnCloseItemModal?.addEventListener('click', () => modalItem.classList.add('hidden'));
-  btnCancelItemModal?.addEventListener('click', () => modalItem.classList.add('hidden'));
+  btnCloseItemModal?.addEventListener('click', fecharModalItem);
+  btnCancelItemModal?.addEventListener('click', fecharModalItem);
 
   btnConfirmItemModal?.addEventListener('click', () => {
     if (!itemEmEdicao) return;
@@ -776,9 +903,10 @@
       });
     }
 
-    modalItem.classList.add('hidden');
+    fecharModalItem();
     itemEmEdicao = null;
     atualizarBarraCarrinho();
+    anunciarA11y(`${prod.nome} adicionado ao pedido.`);
   });
 
   // ── 7. CARRINHO E CÁLCULO DE TOTAL ──
@@ -792,6 +920,10 @@
 
     if (cartCountEl) cartCountEl.textContent = String(qtdTotal);
     if (cartTotalEl) cartTotalEl.textContent = fmtMoeda(valorTotal);
+
+    if (btnVerSacola) {
+      btnVerSacola.setAttribute('aria-label', `Ver sacola, ${qtdTotal} ${qtdTotal === 1 ? 'item' : 'itens'}, total ${fmtMoeda(valorTotal)}`);
+    }
 
     const vazio = carrinho.length === 0;
     if (btnLimpar) btnLimpar.disabled = vazio;
@@ -852,24 +984,25 @@
     return { itens: sugeridos.slice(0, 3), frase: fraseCustom };
   }
 
-  function avancarFluxoPedido() {
+  function avancarFluxoPedido(e) {
     if (carrinho.length === 0) return;
+    const trigger = e?.currentTarget || btnAvancar || btnVerSacola;
 
     if (!jaMostrouSugestoesNoCiclo) {
       const { itens, frase } = obterSugestoesParaCarrinho();
       if (itens.length > 0) {
         jaMostrouSugestoesNoCiclo = true;
-        abrirModalSugestoes(itens, frase);
+        abrirModalSugestoes(itens, frase, trigger);
         return;
       }
     }
-    abrirModalCheckout();
+    abrirModalCheckout(trigger);
   }
 
   btnAvancar?.addEventListener('click', avancarFluxoPedido);
   btnVerSacola?.addEventListener('click', avancarFluxoPedido);
 
-  function abrirModalSugestoes(itensSugeridos, frase) {
+  function abrirModalSugestoes(itensSugeridos, frase, triggerEl = null) {
     if (sugestoesFrase) sugestoesFrase.textContent = frase;
     sugestoesList.innerHTML = itensSugeridos.map((p) => {
       const img = p.imagem_data || p.imagem || 'assets/images/logo-cafeteria-do-teatro.webp';
@@ -882,7 +1015,7 @@
               <div style="font-weight:800; color:var(--totem-primary); font-size:1.1rem;">+ ${fmtMoeda(p.preco)}</div>
             </div>
           </div>
-          <button type="button" class="totem-btn totem-btn--accent btn-add-sugestao-rapida" data-prod-id="${esc(p.id)}">
+          <button type="button" class="totem-btn totem-btn--accent btn-add-sugestao-rapida" data-prod-id="${esc(p.id)}" aria-label="Adicionar sugestão ${esc(p.nome)} por mais ${fmtMoeda(p.preco)}">
             + Adicionar
           </button>
         </div>
@@ -906,22 +1039,28 @@
           });
           atualizarBarraCarrinho();
           btn.textContent = '✓ Adicionado';
+          btn.setAttribute('aria-label', `${prod.nome} adicionado`);
           btn.disabled = true;
+          anunciarA11y(`${prod.nome} adicionado ao pedido.`);
         }
       });
     });
 
-    modalSugestoes.classList.remove('hidden');
+    exibirModalA11y(modalSugestoes, triggerEl, () => fecharModalSugestoes());
   }
 
-  btnCloseSugestoes?.addEventListener('click', () => modalSugestoes.classList.add('hidden'));
+  function fecharModalSugestoes() {
+    ocultarModalA11y(modalSugestoes);
+  }
+
+  btnCloseSugestoes?.addEventListener('click', fecharModalSugestoes);
   btnPularSugestoes?.addEventListener('click', () => {
-    modalSugestoes.classList.add('hidden');
+    fecharModalSugestoes();
     abrirModalCheckout();
   });
 
   // ── 9. CHECKOUT E ENVIO DO PEDIDO ──
-  function abrirModalCheckout() {
+  function abrirModalCheckout(triggerEl = null) {
     if (window.cafeteriaMenuAnalytics && carrinho.length > 0) {
       window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
         canal: 'totem',
@@ -958,14 +1097,18 @@
       } catch (_) {}
     }
 
-    modalCheckout.classList.remove('hidden');
+    exibirModalA11y(modalCheckout, triggerEl, () => fecharModalCheckout());
     setTimeout(() => inputNome?.focus(), 150);
+  }
+
+  function fecharModalCheckout() {
+    ocultarModalA11y(modalCheckout);
   }
 
   function renderizarListaCheckout() {
     if (!checkoutItemsList) return;
     if (carrinho.length === 0) {
-      modalCheckout.classList.add('hidden');
+      fecharModalCheckout();
       return;
     }
 
@@ -985,7 +1128,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <strong style="font-size:1.05rem;">${fmtMoeda(item.precoUnitario * item.quantidade)}</strong>
-            <button type="button" class="btn-rm-checkout-item" data-idx="${idx}">✕</button>
+            <button type="button" class="btn-rm-checkout-item" data-idx="${idx}" aria-label="Remover ${esc(item.produto.nome)} da sacola">✕</button>
           </div>
         </div>
       `;
@@ -994,9 +1137,13 @@
     checkoutItemsList.querySelectorAll('.btn-rm-checkout-item').forEach((btn) => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        const itemRemovido = carrinho[idx];
         carrinho.splice(idx, 1);
         atualizarBarraCarrinho();
         renderizarListaCheckout();
+        if (itemRemovido) {
+          anunciarA11y(`${itemRemovido.produto?.nome || 'Item'} removido do pedido.`);
+        }
       });
     });
 
@@ -1033,6 +1180,7 @@
         totemCupomFeedback.style.color = '#DC2626';
         totemCupomFeedback.style.display = 'block';
       }
+      anunciarA11y('Informe o código do cupom.', true);
       return;
     }
 
@@ -1054,13 +1202,16 @@
         totemCupomFeedback.style.color = '#15803D';
         totemCupomFeedback.style.display = 'block';
       }
+      anunciarA11y(`Cupom aplicado com sucesso: ${res.message}`);
     } else {
       totemCupomAplicado = null;
+      const msgErro = res ? res.message : 'Cupom inválido.';
       if (totemCupomFeedback) {
-        totemCupomFeedback.textContent = `❌ ${res ? res.message : 'Cupom inválido.'}`;
+        totemCupomFeedback.textContent = `❌ ${msgErro}`;
         totemCupomFeedback.style.color = '#DC2626';
         totemCupomFeedback.style.display = 'block';
       }
+      anunciarA11y(`Erro ao aplicar cupom: ${msgErro}`, true);
     }
     renderizarListaCheckout();
   });
@@ -1068,31 +1219,40 @@
   btnComerAqui?.addEventListener('click', () => {
     paraViagem = false;
     btnComerAqui.classList.add('is-selected');
+    btnComerAqui.setAttribute('aria-checked', 'true');
     btnParaViagem.classList.remove('is-selected');
+    btnParaViagem.setAttribute('aria-checked', 'false');
   });
 
   btnParaViagem?.addEventListener('click', () => {
     paraViagem = true;
     btnParaViagem.classList.add('is-selected');
+    btnParaViagem.setAttribute('aria-checked', 'true');
     btnComerAqui.classList.remove('is-selected');
+    btnComerAqui.setAttribute('aria-checked', 'false');
   });
 
   document.querySelectorAll('#totem-pagamento-choices .totem-choice-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('#totem-pagamento-choices .totem-choice-btn').forEach((b) => b.classList.remove('is-selected'));
+      document.querySelectorAll('#totem-pagamento-choices .totem-choice-btn').forEach((b) => {
+        b.classList.remove('is-selected');
+        b.setAttribute('aria-checked', 'false');
+      });
       btn.classList.add('is-selected');
+      btn.setAttribute('aria-checked', 'true');
       formaPagamentoEscolhida = btn.getAttribute('data-forma') || 'pix';
     });
   });
 
-  btnCloseCheckout?.addEventListener('click', () => modalCheckout.classList.add('hidden'));
-  btnBackCheckout?.addEventListener('click', () => modalCheckout.classList.add('hidden'));
+  btnCloseCheckout?.addEventListener('click', fecharModalCheckout);
+  btnBackCheckout?.addEventListener('click', fecharModalCheckout);
 
   btnEnviarPedido?.addEventListener('click', async () => {
     const nome = (inputNome?.value || '').trim();
     if (nome.length < 2) {
       inputNome?.focus();
       inputNome.style.borderColor = '#DC2626';
+      anunciarA11y('Por favor informe seu nome com pelo menos 2 letras.', true);
       return;
     }
     inputNome.style.borderColor = '';
@@ -1107,8 +1267,6 @@
     btnEnviarPedido.innerHTML = '⏳ Gerando sua senha...';
 
     try {
-      const subtotalPedido = calcularTotalCarrinho();
-
       let retiradaEmIso = null;
       const theaterHelper = window.TheaterMode || window.theaterMode;
       if (reservandoParaIntervaloTotem && espetaculoTotemConfig && theaterHelper?.calculateIntervalRetiradaEm) {
@@ -1178,7 +1336,7 @@
         itens: [...carrinho]
       };
 
-      modalCheckout.classList.add('hidden');
+      fecharModalCheckout();
 
       if (window.cafeteriaMenuAnalytics) {
         window.cafeteriaMenuAnalytics.trackMenuEvent(window.cafeteriaSupabase || window.supabaseClient, {
@@ -1195,7 +1353,7 @@
       if (msg.includes('TOTEM_REVOGADO')) {
         localStorage.removeItem(STORAGE_TOKEN_KEY);
         totemToken = '';
-        modalCheckout.classList.add('hidden');
+        fecharModalCheckout();
         exibirTelaPareamento(true);
       } else {
         exibirModalErroTotem('Não foi possível registrar o pedido: ' + msg);
@@ -1220,7 +1378,7 @@
           <div style="font-size:3rem;margin-bottom:0.75rem;">⚠️</div>
           <h3 style="margin:0 0 0.75rem;font-size:1.4rem;">Ops! Algo deu errado</h3>
           <p id="totem-modal-erro-msg" style="margin:0 0 1.5rem;font-size:1.1rem;line-height:1.45;color:#555;"></p>
-          <button type="button" id="totem-modal-erro-ok" class="btn-primary">Tentar Novamente</button>
+          <button type="button" id="totem-modal-erro-ok" class="btn-primary" aria-label="Tentar novamente e fechar aviso de erro">Tentar Novamente</button>
         </div>
       `;
       document.body.appendChild(modal);
@@ -1232,16 +1390,17 @@
       btnOk.style.width = '100%';
     }
     if (msgEl) msgEl.textContent = mensagem;
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
     const fechar = () => {
-      modal.classList.add('hidden');
+      ocultarModalA11y(modal);
       modal.style.display = 'none';
     };
     if (btnOk) btnOk.onclick = fechar;
     modal.onclick = (e) => {
       if (e.target === modal) fechar();
     };
+    modal.style.display = 'flex';
+    exibirModalA11y(modal, null, fechar);
+    anunciarA11y(`Erro: ${mensagem}`, true);
   }
   window.totemExibirModalErro = exibirModalErroTotem;
 
@@ -1362,7 +1521,8 @@
       successPixBox?.classList.add('hidden');
     }
 
-    successScreen.classList.remove('hidden');
+    exibirModalA11y(successScreen, null, () => {});
+    anunciarA11y(`Pedido registrado com sucesso! Sua senha é número #${pedido.numero_pedido}.`, true);
 
     const successBg = document.getElementById('totem-success-bg-layer');
     const printBtn = document.getElementById('btn-totem-print-senha');
@@ -1387,7 +1547,8 @@
           totemPixMonitor = null;
         }
         limparAnimacaoFundo(successBg);
-        successScreen.classList.add('hidden');
+        ocultarModalA11y(successScreen);
+        resetarAcessibilidadeTotem();
         mostrarTelaDescanso();
       }
     }, 1000);
@@ -1401,7 +1562,8 @@
     }
     const successBg = document.getElementById('totem-success-bg-layer');
     limparAnimacaoFundo(successBg);
-    successScreen.classList.add('hidden');
+    ocultarModalA11y(successScreen);
+    resetarAcessibilidadeTotem();
     registrarToqueAtividade();
   });
 
@@ -1438,14 +1600,52 @@
   });
 
   function fecharTodosModais() {
-    modalItem?.classList.add('hidden');
-    modalSugestoes?.classList.add('hidden');
-    modalCheckout?.classList.add('hidden');
+    ocultarModalA11y(modalItem);
+    ocultarModalA11y(modalSugestoes);
+    ocultarModalA11y(modalCheckout);
+    const errModal = document.getElementById('totem-modal-erro');
+    if (errModal) ocultarModalA11y(errModal);
   }
 
   // ── 11. INICIALIZAÇÃO ──
+  async function verificarVisibilidadeCupom() {
+    let cupomAtivo = false;
+    if (typeof window !== 'undefined' && typeof window.CONFIG_CUPOM_PEDIDOS_PUBLICOS_ATIVO === 'boolean') {
+      cupomAtivo = window.CONFIG_CUPOM_PEDIDOS_PUBLICOS_ATIVO;
+    } else {
+      const client = window.cafeteriaSupabase || window.supabaseClient;
+      if (client) {
+        try {
+          const { data: cfg } = await client
+            .from('configuracoes_sistema')
+            .select('valor')
+            .eq('chave', 'cupom_pedidos_publicos_ativo')
+            .maybeSingle();
+          if (cfg && cfg.valor !== null && cfg.valor !== undefined) {
+            cupomAtivo = cfg.valor === true || cfg.valor === 'true' || cfg.valor?.ativo === true;
+          } else {
+            const { data: st } = await client
+              .from('site_settings')
+              .select('value')
+              .eq('key', 'cupom_pedidos_publicos_ativo')
+              .maybeSingle();
+            if (st && st.value !== null && st.value !== undefined) {
+              cupomAtivo = st.value === true || st.value === 'true';
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
+    if (!cupomAtivo) {
+      const el = document.getElementById('totem-cupom-container');
+      if (el) el.remove();
+    }
+  }
+
   async function init() {
     atualizarStatusRede();
+    await verificarVisibilidadeCupom();
     const ok = await validarSessao();
     if (ok) {
       if (window.cafeteriaMenuAnalytics) {

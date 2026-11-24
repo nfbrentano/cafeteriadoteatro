@@ -337,9 +337,11 @@
     }
     
     const esgotadoClass = p.disponivel === false ? 'produto-esgotado' : '';
+    const statusA11y = p.disponivel === false ? ', esgotado' : '';
+    const a11yLabel = `${p.nome}, R$ ${price}${statusA11y}`;
 
     return `
-      <article class="produto-card fade-in ${esgotadoClass}" aria-label="${p.nome}">
+      <article class="produto-card fade-in ${esgotadoClass}" tabindex="0" role="region" aria-label="${a11yLabel}">
         <div class="produto-card__image-wrap">
           ${imgUrl 
             ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy" decoding="async">`
@@ -378,9 +380,11 @@
       tagsHTML = `<span class="combo-card__item-tag" style="background:#6c757d; color:#fff;">Indisponível hoje</span> ` + tagsHTML;
     }
     const esgotadoClass = p.disponivel === false ? 'produto-esgotado' : '';
+    const comboStatusA11y = p.disponivel === false ? ', esgotado' : '';
+    const comboA11yLabel = `${p.nome}, R$ ${price}${comboStatusA11y}`;
 
     return `
-      <article class="combo-card fade-in ${esgotadoClass}">
+      <article class="combo-card fade-in ${esgotadoClass}" tabindex="0" role="region" aria-label="${comboA11yLabel}">
         <div class="combo-card__icon">${p.combo_icon || '🎁'}</div>
         <div class="combo-card__content">
           <h3 class="combo-card__name">${p.nome}</h3>
@@ -425,10 +429,17 @@
     sections.forEach(sec => catObserver.observe(sec));
   }
 
+  // --- Exposição para Módulos e Testes ---
+  window.cardapioDynamic = {
+    renderProductCard,
+    renderComboCard,
+    loadAndRender
+  };
+
   // --- Realtime & Initial Load ---
   document.addEventListener('DOMContentLoaded', () => {
     loadAndRender();
-    window.cafeteriaDB.subscribeToChanges(() => loadAndRender());
+    window.cafeteriaDB?.subscribeToChanges?.(() => loadAndRender());
   });
 
 })();

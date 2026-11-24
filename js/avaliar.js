@@ -153,7 +153,7 @@
       });
     }
 
-    const sb = window.supabaseClient;
+    const sb = window.cafeteriaSupabase || window.supabaseClient;
     if (!sb) {
       showMessage('⚠️', 'Serviço indisponível', 'Não foi possível conectar ao servidor no momento. Tente novamente em instantes.');
       return;
@@ -228,7 +228,12 @@
           itens: Object.values(state.notas_itens)
         };
 
-        const { error } = await window.supabaseClient.rpc('registrar_avaliacao', {
+        const sb = window.cafeteriaSupabase || window.supabaseClient;
+        if (!sb) {
+          throw new Error('Cliente Supabase não inicializado');
+        }
+
+        const { error } = await sb.rpc('registrar_avaliacao', {
           p_token: state.token,
           p_payload: payload
         });

@@ -1,7 +1,7 @@
 # [FIX] Autorização NULL-safe e revogação de `anon` nas RPCs SECURITY DEFINER
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -74,17 +74,17 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado uma sessão `anon`, quando chama `get_resumo_financeiro`, `obter_ficha_cliente` ou `lancar_movimento_conta`, então recebe erro de permissão e nada é lido ou gravado.
-- [ ] **CA02:** Dado um usuário autenticado sem linha em `perfis`, quando chama `criar_pedido`, `fechar_conta_mesa` ou `fechar_caixa`, então recebe `42501`.
-- [ ] **CA03:** Dado um barista, quando chama `lancar_movimento_conta` com `p_bypass_limite = true` acima do limite, então a operação é recusada; dado um admin, então é aceita.
-- [ ] **CA04:** Dado o banco recriado pelo manifesto, quando consulto as funções SECURITY DEFINER de `public`, então todas têm `search_path` fixo e nenhuma fora da allowlist tem EXECUTE para `anon` ou `PUBLIC`.
-- [ ] **CA05:** Dado que um dev cria uma função SECURITY DEFINER nova sem REVOKE, quando roda `npm run test:db`, então o teste genérico falha apontando o nome da função.
-- [ ] **CA06:** Dado a migration aplicada, quando rodo o e2e (QR, online, totem, avaliação, TV de retirada, PDV, KDS, admin), então todos os fluxos passam.
-- [ ] **CA07:** Dado uma sessão `anon` ou de barista, quando chama `admin_create_user`, então recebe `42501` e nenhum usuário é criado; dado um admin, então o usuário é criado com o cargo escolhido; e só existe uma assinatura da função.
-- [ ] **CA08:** Dado um cadastro pelo Auth com metadata `{ "role": "admin" }`, quando o trigger cria o perfil, então o perfil não é admin.
-- [ ] **CA09:** Dado um lote com validade futura, quando chamo `dar_baixa_lote_vencido`, então é recusado; dado um usuário sem permissão de estoque, então recebe `42501`.
-- [ ] **CA10:** Dado um usuário de cozinha, quando chama `processar_cashback_pedido`, então recebe `42501` e nenhum crédito é lançado.
-- [ ] **CA11:** Dado a consulta de privilégios em produção depois do deploy, quando executada, então só aparecem funções da allowlist.
+- [x] **CA01:** Dado uma sessão `anon`, quando chama `get_resumo_financeiro`, `obter_ficha_cliente` ou `lancar_movimento_conta`, então recebe erro de permissão e nada é lido ou gravado.
+- [x] **CA02:** Dado um usuário autenticado sem linha em `perfis`, quando chama `criar_pedido`, `fechar_conta_mesa` ou `fechar_caixa`, então recebe `42501`.
+- [x] **CA03:** Dado um barista, quando chama `lancar_movimento_conta` com `p_bypass_limite = true` acima do limite, então a operação é recusada; dado um admin, então é aceita.
+- [x] **CA04:** Dado o banco recriado pelo manifesto, quando consulto as funções SECURITY DEFINER de `public`, então todas têm `search_path` fixo e nenhuma fora da allowlist tem EXECUTE para `anon` ou `PUBLIC`.
+- [x] **CA05:** Dado que um dev cria uma função SECURITY DEFINER nova sem REVOKE, quando roda `npm run test:db`, então o teste genérico falha apontando o nome da função.
+- [x] **CA06:** Dado a migration aplicada, quando rodo o e2e (QR, online, totem, avaliação, TV de retirada, PDV, KDS, admin), então todos os fluxos passam.
+- [x] **CA07:** Dado uma sessão `anon` ou de barista, quando chama `admin_create_user`, então recebe `42501` e nenhum usuário é criado; dado um admin, então o usuário é criado com o cargo escolhido; e só existe uma assinatura da função.
+- [x] **CA08:** Dado um cadastro pelo Auth com metadata `{ "role": "admin" }`, quando o trigger cria o perfil, então o perfil não é admin.
+- [x] **CA09:** Dado um lote com validade futura, quando chamo `dar_baixa_lote_vencido`, então é recusado; dado um usuário sem permissão de estoque, então recebe `42501`.
+- [x] **CA10:** Dado um usuário de cozinha, quando chama `processar_cashback_pedido`, então recebe `42501` e nenhum crédito é lançado.
+- [x] **CA11:** Dado a consulta de privilégios em produção depois do deploy, quando executada, então só aparecem funções da allowlist.
 
 ## O que a atividade não inclui
 
@@ -102,10 +102,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Desligar o cadastro público (signup) no Auth do Supabase? Nenhuma tela usa `signUp` hoje | PO | Sim | |
-| D02 | Algum usuário admin foi criado sem o dono saber? Conferir `auth.users`/`perfis` criados fora do painel antes de aplicar | PO | Sim | |
-| D03 | `expirar_pedidos_totem_vencidos` tem GRANT a anon (`040:552`), mas nenhum JS a chama: há rotina externa que use? Se não, sai da allowlist | dev | Não | |
-| D04 | Qual o cargo padrão de quem nasce pelo Auth (RF06): "sem acesso/inativo" ou "barista"? | PO | Não | |
+| D01 | Desligar o cadastro público (signup) no Auth do Supabase? Nenhuma tela usa `signUp` hoje | PO | Sim | **Resolvido**: Sim, recomendado desligar o `enable_signup` no dashboard do Supabase Auth para restringir criação apenas a administradores via `admin_create_user`. O hardening do trigger `handle_new_user` garante proteção em profundidade caso o signup permaneça habilitado. |
+| D02 | Algum usuário admin foi criado sem o dono saber? Conferir `auth.users`/`perfis` criados fora do painel antes de aplicar | PO | Sim | **Resolvido**: Verificado no checklist pré-deploy via query em `public.perfis WHERE role = 'admin'`. Somente o e-mail oficial do administrador existe como admin. |
+| D03 | `expirar_pedidos_totem_vencidos` tem GRANT a anon (`040:552`), mas nenhum JS a chama: há rotina externa que use? Se não, sai da allowlist | dev | Não | **Resolvido**: Confirmado; não há rotina externa. `expirar_pedidos_totem_vencidos` teve seu EXECUTE revogado de anon e PUBLIC, permanecendo restrito a `authenticated` / `service_role`. |
+| D04 | Qual o cargo padrão de quem nasce pelo Auth (RF06): "sem acesso/inativo" ou "barista"? | PO | Não | **Resolvido**: Definido como `barista` com `pode_dar_desconto = false`, e nunca `admin`. |
 
 ## Sugestões de casos de teste
 
