@@ -469,6 +469,12 @@
       "arquivo": "migration_caf_000133_pdv_envio_seguro_totem_cancelamento.sql",
       "checksum": "b874629214ab784bfcea8f10b153e331efbf2f1f9937ff142b6531f76ef0d5a2",
       "rollback": "rollback_caf_000133.sql"
+    },
+    {
+      "versao": "159",
+      "arquivo": "migration_caf_000159_correcao_criar_pedido_estacao.sql",
+      "checksum": "3f22e972ae5abe9b5efdc655486a5af514fdaed53538eb6114e2039d7f6d506d",
+      "rollback": "rollback_caf_000159.sql"
     }
   ]
 }
