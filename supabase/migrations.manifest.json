@@ -475,6 +475,12 @@
       "arquivo": "migration_caf_000159_correcao_criar_pedido_estacao.sql",
       "checksum": "3f22e972ae5abe9b5efdc655486a5af514fdaed53538eb6114e2039d7f6d506d",
       "rollback": "rollback_caf_000159.sql"
+    },
+    {
+      "versao": "160",
+      "arquivo": "migration_caf_000160_get_server_time.sql",
+      "checksum": "212a8a9464e375cbb84fd194beadef10bd4d99929693dc4ebbc641536a3f41f5",
+      "rollback": "rollback_caf_000160.sql"
     }
   ]
 }

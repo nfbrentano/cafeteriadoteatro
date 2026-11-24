@@ -136,20 +136,25 @@
   async function syncServerClock() {
     try {
       const t0 = Date.now();
-      const supabaseUrl = window.SUPABASE_URL || (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : '');
-      const res = supabaseUrl ? await fetch(`${supabaseUrl}/auth/v1/health`, { method: 'GET' }).catch(() => null) : null;
-      const dateHeader = res?.headers?.get('date');
-      if (dateHeader) {
-        const serverDate = new Date(dateHeader).getTime();
-        const roundTrip = Date.now() - t0;
-        serverClockSkewMs = (serverDate + roundTrip / 2) - Date.now();
-        console.log(`[KDS] Sincronização de relógio: skew = ${Math.round(serverClockSkewMs)}ms`);
+      if (window.cafeteriaSupabase && typeof window.cafeteriaSupabase.rpc === 'function') {
+        const { data: serverTimeIso, error } = await window.cafeteriaSupabase.rpc('get_server_time');
+        if (!error && serverTimeIso) {
+          const serverDate = new Date(serverTimeIso).getTime();
+          const roundTrip = Date.now() - t0;
+          serverClockSkewMs = (serverDate + roundTrip / 2) - Date.now();
+          console.log(`[KDS] Sincronização de relógio via RPC: skew = ${Math.round(serverClockSkewMs)}ms`);
+          return;
+        }
       }
+      serverClockSkewMs = 0;
     } catch (e) {
       console.warn('[KDS] Falha na sincronização de relógio com servidor:', e);
       serverClockSkewMs = 0;
     }
   }
+
+  window.syncServerClock = syncServerClock;
+  window.getServerClockSkewMs = () => serverClockSkewMs;
 
   function getNowAdjusted() {
     return new Date(Date.now() + serverClockSkewMs);

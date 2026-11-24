@@ -168,6 +168,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000157** | [FEAT] Maquininha integrada ao PDV (TEF / Smart POS) | Rascunho | — | — | — |
 | **CAF-000158** | [FIX] Correção das RPCs get_resumo_financeiro (404 sem parâmetros) e admin_create_user (pgcrypto gen_salt) | Concluída | `migration_caf_000158_correcao_rpcs_pgcrypto_financeiro.sql` | `caf-000158-correcao-rpcs-get-resumo-financeiro-admin-create-user.test.js` | — |
 | **CAF-000159** | [FIX] Correção da RPC criar_pedido (coluna p.estacao inexistente -> c.estacao) | Concluída | `migration_caf_000159_correcao_criar_pedido_estacao.sql` | `caf-000159-correcao-rpc-criar-pedido-estacao.test.js` | — |
+| **CAF-000160** | [FIX] Sincronização de Relógio no KDS sem Erro 401 em auth/v1/health (RPC get_server_time) | Concluída | `migration_caf_000160_get_server_time.sql` | `caf-000160-kds-sincronizacao-relogio-sem-401.test.js` | — |
 
 ---
 

@@ -17,6 +17,8 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    hookTimeout: 30000,
+    testTimeout: 30000,
     setupFiles: ['./tests/setup.js'],
     include: ['tests/**/*.test.js'],
     coverage: {

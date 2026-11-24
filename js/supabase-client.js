@@ -19,6 +19,7 @@ const _supabaseInstance = (e2eConfig && typeof e2eConfig.createClient === 'funct
 // Exportar para uso global
 window.cafeteriaSupabase = _supabaseInstance;
 window.SUPABASE_URL = SUPABASE_URL;
+window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 
 // Escape de HTML disponível em todas as páginas (pedidos/cozinha não carregam db.js)
 if (!window.escapeHtml) {

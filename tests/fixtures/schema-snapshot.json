@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-24T20:26:46.951Z",
+  "gerado_em": "2026-11-24T20:42:45.427Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -719,6 +719,9 @@
         "p_pedido_id",
         "p_motivo"
       ]
+    },
+    "get_server_time": {
+      "parameters": []
     }
   },
   "tables": {
