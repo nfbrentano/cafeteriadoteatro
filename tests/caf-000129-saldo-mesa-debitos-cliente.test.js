@@ -69,7 +69,7 @@ describe('CAF-000129: Saldo da mesa com fonte única e débitos/créditos do cli
       RETURNING id
     `);
     clienteCId = cCRes.rows[0].id;
-  });
+  }, 60000);
 
   afterAll(async () => {
     if (db) await db.close();

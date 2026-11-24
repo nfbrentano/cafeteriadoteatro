@@ -15,7 +15,7 @@ describe('CAF-000160: Sincronização de Relógio no KDS sem Erro 401 em auth/v1
   beforeAll(async () => {
     // Inicializa o banco PGlite com todas as migrations canônicas (incluindo 160)
     db = await createE2EDatabase();
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     if (db) {

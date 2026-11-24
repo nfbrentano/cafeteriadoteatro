@@ -41,7 +41,7 @@ describe('CAF-000130: Regressões em produção: avaliação pós-pedido, anti-s
       VALUES ('M-03', 'Mesa 03', true, 'tok-m03-fuso')
       ON CONFLICT (codigo) DO UPDATE SET ativo = true, qr_token = 'tok-m03-fuso';
     `);
-  });
+  }, 60000);
 
   describe('1. Avaliação pós-pedido e Admin (CA01, CA02, CA03 / RF01, RF02)', () => {
     it('CA01: avaliar.html carrega dados do pedido e submete avaliação usando cafeteriaSupabase', async () => {

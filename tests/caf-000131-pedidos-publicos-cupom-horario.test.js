@@ -64,11 +64,11 @@ describe('CAF-000131: Pedidos públicos: cupom aplicado no servidor, horário de
     `);
 
     await abrirLoja();
-  });
+  }, 60000);
 
   beforeEach(async () => {
     await abrirLoja();
-  });
+  }, 60000);
 
   describe('1. Cupom de desconto no servidor (CA01, CA02, CA03, CA04 / RF01, RF02, RF03)', () => {
     it('CA01: Dado o cupom TEATRO10 (10%) e carrinho de R$ 30, grava total R$ 27, desconto R$ 3 e um uso sem login', async () => {

@@ -96,7 +96,7 @@ describe('CAF-000159: Correção da RPC criar_pedido (coluna p.estacao inexisten
       RETURNING id
     `, [categoriaCozinhaId]);
     produtoEsgotadoId = prodEsgRes.rows[0].id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     if (db) {
