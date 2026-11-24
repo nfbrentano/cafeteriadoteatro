@@ -1100,12 +1100,31 @@
       ? allAdicionais.filter(a => permitidosIds.includes(a.id))
       : allAdicionais;
 
+    let alergHtml = '';
+    const isRevisado = window.AlergenicosUtils ? window.AlergenicosUtils.isProdutoRevisado(produto) : true;
+    if (!isRevisado) {
+      alergHtml = `
+        <div class="alerg-aviso-nao-revisado" role="status" style="margin-bottom:12px;">
+          <span aria-hidden="true">⚠️</span>
+          <span>Informação de alergênicos não disponível. Pergunte ao atendente.</span>
+        </div>
+      `;
+    } else if (window.AlergenicosUtils) {
+      const selos = window.AlergenicosUtils.renderSelosHtml(produto.alergenicos || []);
+      const aviso = window.AlergenicosUtils.renderAvisoContaminacaoHtml(produto.contaminacao_cruzada_aviso);
+      alergHtml = `
+        <div id="cust-modal-selos" style="margin-bottom:8px;">${selos}</div>
+        <div id="cust-modal-aviso" style="margin-bottom:12px;">${aviso}</div>
+      `;
+    }
+
     let html = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <span style="font-size:14px; color:#64748b;">Preço base:</span>
         <strong style="font-size:18px; color:#1c1008;">R$ ${Number(produto.preco || 0).toFixed(2).replace('.', ',')}</strong>
       </div>
-      <p style="font-size:13px; color:#475569; margin-bottom:16px;">${produto.descricao || ''}</p>
+      <p style="font-size:13px; color:#475569; margin-bottom:12px;">${produto.descricao || ''}</p>
+      ${alergHtml}
     `;
 
     if (produto.tipo_montagem === 'meio_a_meio') {
@@ -1195,6 +1214,20 @@
 
     const unitario = base + adicionaisTotal;
     const total = unitario * customizacaoState.quantidade;
+
+    // Recalcula alergênicos combinados se adicionais forem marcados (CAF-000152 CA07)
+    if (window.AlergenicosUtils && window.AlergenicosUtils.isProdutoRevisado(itemSendoCustomizado)) {
+      const checks = document.querySelectorAll('.cust-check-adic:checked');
+      const selecionados = Array.from(checks).map(chk => {
+        const adic = allAdicionais.find(a => String(a.id) === String(chk.value));
+        return adic || { id: chk.value };
+      });
+      const combinados = window.AlergenicosUtils.calcularAlergenicosCombinados(itemSendoCustomizado.alergenicos || [], selecionados);
+      const selosEl = document.getElementById('cust-modal-selos');
+      if (selosEl) {
+        selosEl.innerHTML = window.AlergenicosUtils.renderSelosHtml(combinados);
+      }
+    }
 
     const btn = document.getElementById('btn-cust-adicionar');
     if (btn) {
@@ -1503,6 +1536,19 @@
       try {
         const subtotalOnline = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
         const formaPagamentoOnline = document.querySelector('input[name="forma-pagamento-online"]:checked')?.value || 'pix';
+        const filtrosSalvosOnline = (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+          ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+          : [];
+        const textoFiltrosOnline = (window.AlergenicosUtils && typeof window.AlergenicosUtils.formatarAlergiasTexto === 'function')
+          ? window.AlergenicosUtils.formatarAlergiasTexto(filtrosSalvosOnline)
+          : filtrosSalvosOnline.join(', ');
+
+        let obsOnlineFinal = (obsInput?.value || '').trim();
+        if (filtrosSalvosOnline.length > 0) {
+          const prefixo = `ALERGIA: ${textoFiltrosOnline}`;
+          obsOnlineFinal = obsOnlineFinal ? `${prefixo} | ${obsOnlineFinal}` : prefixo;
+        }
+
         const res = await window.cafeteriaDB.clientePedido.criarOnline({
           cliente_nome: clienteNome,
           cliente_telefone: telVal,
@@ -1510,7 +1556,8 @@
           aceita_lgpd: true,
           modo_retirada: modoRetirada,
           retirada_em: retiradaEmIso,
-          observacoes: (obsInput?.value || '').trim(),
+          alergias_cliente: filtrosSalvosOnline,
+          observacoes: obsOnlineFinal,
           is_intervalo: Boolean(reservandoParaIntervalo),
           espetaculo_nome: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_nome : null,
           horario_retirada: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_horario_intervalo : null,
@@ -1580,9 +1627,23 @@
 
     try {
       const subtotalMesa = carrinho.reduce((sum, it) => sum + (it.quantidade * it.preco_unitario), 0);
+      const filtrosSalvosMesa = (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+        ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+        : [];
+      const textoFiltrosMesa = (window.AlergenicosUtils && typeof window.AlergenicosUtils.formatarAlergiasTexto === 'function')
+        ? window.AlergenicosUtils.formatarAlergiasTexto(filtrosSalvosMesa)
+        : filtrosSalvosMesa.join(', ');
+
+      let obsMesaFinal = (obsInput?.value || '').trim();
+      if (filtrosSalvosMesa.length > 0) {
+        const prefixo = `ALERGIA: ${textoFiltrosMesa}`;
+        obsMesaFinal = obsMesaFinal ? `${prefixo} | ${obsMesaFinal}` : prefixo;
+      }
+
       const res = await window.cafeteriaDB.clientePedido.criar(qrTokenParam, {
         cliente_nome: clienteNome,
-        observacoes: (obsInput?.value || '').trim(),
+        alergias_cliente: filtrosSalvosMesa,
+        observacoes: obsMesaFinal,
         is_intervalo: Boolean(reservandoParaIntervalo),
         espetaculo_nome: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_nome : null,
         horario_retirada: (reservandoParaIntervalo && espetaculoHojeConfig) ? espetaculoHojeConfig.espetaculo_horario_intervalo : null,

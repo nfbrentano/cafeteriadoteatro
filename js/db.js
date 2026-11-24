@@ -182,6 +182,32 @@
           db.logger.error('products.all', error);
           throw error;
         }
+        if (data && data.length > 0) {
+          try {
+            const { data: aData } = await window.cafeteriaSupabase
+              .from('v_produto_alergenicos')
+              .select('*');
+            if (aData && aData.length > 0) {
+              const mapa = new Map();
+              aData.forEach(row => {
+                const arr = mapa.get(row.produto_id) || [];
+                arr.push(row);
+                mapa.set(row.produto_id, arr);
+              });
+              data.forEach(p => {
+                p.alergenicos = mapa.get(p.id) || [];
+              });
+            } else {
+              data.forEach(p => {
+                p.alergenicos = p.alergenicos || [];
+              });
+            }
+          } catch (_) {
+            data.forEach(p => {
+              p.alergenicos = p.alergenicos || [];
+            });
+          }
+        }
         return data || [];
       },
       async upsert(product, imageBlob = null) {

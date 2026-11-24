@@ -263,10 +263,16 @@ export function registrarCatalogoPDV() {
         }
       }
 
+      let selosHtml = '';
+      if (window.AlergenicosUtils && p.alergenicos && p.alergenicos.length > 0) {
+        selosHtml = window.AlergenicosUtils.renderSelosHtml(p.alergenicos, { modoResumido: true, escapeFn: escapeHtml });
+      }
+
       card.innerHTML = `
         <div class="product-card__header">
           <h4>${escapeHtml(p.nome)}${promoBadgeHtml}</h4>
           ${descHtml}
+          ${selosHtml}
         </div>
         <div class="product-card__bottom">
           <span class="price">R$ ${Number(p.preco).toFixed(2).replace('.', ',')}</span>

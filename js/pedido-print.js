@@ -118,6 +118,17 @@
         `;
       }
 
+      // CAF-000152: Alergias em destaque
+      const alergiasLista = Array.isArray(pedido.alergias_cliente) ? [...pedido.alergias_cliente] : [];
+      if (alergiasLista.length === 0 && pedido.observacoes) {
+        const match = pedido.observacoes.match(/alergia[:\s\/]+([^\n\r|]+)/i);
+        if (match && match[1]) alergiasLista.push(match[1].trim());
+      }
+      const textoAlergias = (window.AlergenicosUtils && typeof window.AlergenicosUtils.formatarAlergiasTexto === 'function')
+        ? window.AlergenicosUtils.formatarAlergiasTexto(alergiasLista)
+        : alergiasLista.join(', ');
+      const temAlergia = Boolean(textoAlergias);
+
       let html = `
         <!DOCTYPE html>
         <html>
@@ -137,6 +148,8 @@
           <div><span class="bold">STATUS PAG.:</span> ${statusPag} ${pagamento ? '(' + pagamento + ')' : ''}</div>
           
           <div class="divider"></div>
+          
+          ${temAlergia ? `<div class="comanda-alergia-alerta" style="background: #000; color: #fff; padding: 4px; font-weight: bold; font-size: 13px; text-align: center; margin: 4px 0;">*** ALERGIA: ${window.escapeHtml(textoAlergias.toUpperCase())} ***</div><div class="divider"></div>` : ''}
           
           <table>
       `;
@@ -194,6 +207,14 @@
           html += `
             <tr>
               <td colspan="3" class="item-obs" style="${cancelStyle}">↳ Obs: ${window.escapeHtml(item.observacoes.trim())}</td>
+            </tr>
+          `;
+        }
+
+        if (temAlergia && !isCancelado) {
+          html += `
+            <tr>
+              <td colspan="3" class="item-obs" style="font-weight: bold; color: #000;">⚠️ ALERGIA: ${window.escapeHtml(textoAlergias.toUpperCase())}</td>
             </tr>
           `;
         }
@@ -744,6 +765,17 @@
       const numSenha = pedido.numero_pedido || pedido.id;
       const iconeViagem = pedido.para_viagem ? ' 🥡' : '';
 
+      // CAF-000152: Alergias em destaque
+      const alergiasLista = Array.isArray(pedido.alergias_cliente) ? [...pedido.alergias_cliente] : [];
+      if (alergiasLista.length === 0 && pedido.observacoes) {
+        const match = pedido.observacoes.match(/alergia[:\s\/]+([^\n\r|]+)/i);
+        if (match && match[1]) alergiasLista.push(match[1].trim());
+      }
+      const textoAlergias = (window.AlergenicosUtils && typeof window.AlergenicosUtils.formatarAlergiasTexto === 'function')
+        ? window.AlergenicosUtils.formatarAlergiasTexto(alergiasLista)
+        : alergiasLista.join(', ');
+      const temAlergia = Boolean(textoAlergias);
+
       // Expande itens em unidades individuais (ex: quantidade 3 => 3 etiquetas)
       const unidades = [];
       listaItens.forEach(item => {
@@ -778,6 +810,7 @@
               <span class="etq-counter">${indiceStr}</span>
             </div>
             <div class="etq-prod">${esc(un.nomeProduto)}</div>
+            ${temAlergia ? `<div class="etq-alergia" style="font-weight: bold; font-size: 11px; color: #000;">⚠️ ALERGIA: ${esc(textoAlergias.toUpperCase())}</div>` : ''}
             ${un.variacoes ? `<div class="etq-var">${esc(un.variacoes)}</div>` : ''}
             ${un.obs ? `<div class="etq-obs">Obs: ${esc(un.obs)}</div>` : ''}
           </div>
@@ -1048,5 +1081,9 @@
       executePrint(danfeHtml);
     }
   };
+
+  window.cafeteriaPrint.printEtiquetaCopo = window.cafeteriaPrint.printEtiquetas;
+
+  window.PedidoPrint = window.cafeteriaPrint;
 
 })();

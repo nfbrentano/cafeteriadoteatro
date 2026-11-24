@@ -481,6 +481,12 @@
       "arquivo": "migration_caf_000160_get_server_time.sql",
       "checksum": "212a8a9464e375cbb84fd194beadef10bd4d99929693dc4ebbc641536a3f41f5",
       "rollback": "rollback_caf_000160.sql"
+    },
+    {
+      "versao": "152",
+      "arquivo": "migration_caf_000152_alergenicos_restricoes.sql",
+      "checksum": "489bd618a085a7554187fbf6ee21037ee0edf328a6724335dff2eaae1ced3d58",
+      "rollback": "rollback_caf_000152.sql"
     }
   ]
 }

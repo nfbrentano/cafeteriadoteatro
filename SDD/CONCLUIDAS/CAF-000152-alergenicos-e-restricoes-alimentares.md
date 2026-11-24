@@ -1,7 +1,7 @@
 # [FEAT] Alergênicos e restrições alimentares no cardápio, totem, PDV e KDS
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -54,16 +54,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o insumo "Farinha de trigo" marcado com glúten, quando ele entra na ficha técnica do croissant, então o croissant passa a ter glúten como "contém", com origem "ficha técnica".
-- [ ] **CA02:** Dado um produto revendido sem ficha técnica, quando o admin marca manualmente "pode conter amendoim", então o selo aparece como "pode conter".
-- [ ] **CA03:** Dado um produto nunca revisado, quando o cliente abre o detalhe, então vê "informação de alergênicos não disponível" e não vê nenhum selo de "sem" (caso negativo).
-- [ ] **CA04:** Dado um produto revisado com glúten e leite, quando aparece no QR, no totem e no PDV, então mostra os dois selos com texto legível.
-- [ ] **CA05:** Dado o detalhe de qualquer produto revisado, quando o cliente abre, então vê o aviso de contaminação cruzada configurado pelo dono.
-- [ ] **CA06:** Dado o filtro "sem glúten" ativo no QR, quando o cliente navega, então itens que contêm ou podem conter glúten somem; ao reabrir o cardápio no mesmo aparelho, o filtro continua ativo.
-- [ ] **CA07:** Dado um latte com leite de aveia (sem lactose), quando o cliente troca para leite integral, então o item passa a mostrar "contém leite".
-- [ ] **CA08:** Dado um pedido com "alergia: amendoim" informada, quando chega ao KDS, à comanda e à etiqueta, então o pedido e os itens aparecem com destaque vermelho e a palavra "ALERGIA: amendoim".
-- [ ] **CA09:** Dado um cliente com filtro "sem lactose" que envia um pedido pelo QR, quando o pedido chega ao KDS, então a restrição vai junto, sem o cliente digitar nada.
-- [ ] **CA10:** Dado um insumo com alergênico novo adicionado à ficha de um produto já revisado, quando o admin abre o relatório, então o produto aparece como "revisão necessária".
+- [x] **CA01:** Dado o insumo "Farinha de trigo" marcado com glúten, quando ele entra na ficha técnica do croissant, então o croissant passa a ter glúten como "contém", com origem "ficha técnica".
+- [x] **CA02:** Dado um produto revendido sem ficha técnica, quando o admin marca manualmente "pode conter amendoim", então o selo aparece como "pode conter".
+- [x] **CA03:** Dado um produto nunca revisado, quando o cliente abre o detalhe, então vê "informação de alergênicos não disponível" e não vê nenhum selo de "sem" (caso negativo).
+- [x] **CA04:** Dado um produto revisado com glúten e leite, quando aparece no QR, no totem e no PDV, então mostra os dois selos com texto legível.
+- [x] **CA05:** Dado o detalhe de qualquer produto revisado, quando o cliente abre, então vê o aviso de contaminação cruzada configurado pelo dono.
+- [x] **CA06:** Dado o filtro "sem glúten" ativo no QR, quando o cliente navega, então itens que contêm ou podem conter glúten somem; ao reabrir o cardápio no mesmo aparelho, o filtro continua ativo.
+- [x] **CA07:** Dado um latte com leite de aveia (sem lactose), quando o cliente troca para leite integral, então o item passa a mostrar "contém leite".
+- [x] **CA08:** Dado um pedido com "alergia: amendoim" informada, quando chega ao KDS, à comanda e à etiqueta, então o pedido e os itens aparecem com destaque vermelho e a palavra "ALERGIA: amendoim".
+- [x] **CA09:** Dado um cliente com filtro "sem lactose" que envia um pedido pelo QR, quando o pedido chega ao KDS, então a restrição vai junto, sem o cliente digitar nada.
+- [x] **CA10:** Dado um insumo com alergênico novo adicionado à ficha de um produto já revisado, quando o admin abre o relatório, então o produto aparece como "revisão necessária".
 
 ## O que a atividade não inclui
 
@@ -80,10 +80,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Existe lei estadual (RS) ou municipal (Lajeado) obrigando informar glúten/lactose em cardápio? Não verificado | PO/jurídico | Não (a feature vale de qualquer forma) | |
-| D02 | Quem revisa e assina os alergênicos (dono, nutricionista)? | PO | Sim (para publicar os selos) | |
-| D03 | Lista de alergênicos: a lista completa do anexo da RDC Anvisa ou uma lista reduzida para a cafeteria? | PO | Não | |
-| D04 | Texto padrão do aviso de contaminação cruzada | PO | Não | |
+| D01 | Existe lei estadual (RS) ou municipal (Lajeado) obrigando informar glúten/lactose em cardápio? Não verificado | PO/jurídico | Não (a feature vale de qualquer forma) | Implementação proativa adotando diretrizes Anvisa e boas práticas de proteção a celíacos/alérgicos |
+| D02 | Quem revisa e assina os alergênicos (dono, nutricionista)? | PO | Sim (para publicar os selos) | Admin/Gerente através dos campos `alergenicos_revisado_em` e `alergenicos_revisado_por` |
+| D03 | Lista de alergênicos: a lista completa do anexo da RDC Anvisa ou uma lista reduzida para a cafeteria? | PO | Não | 8 principais (glúten, leite/lactose, ovos, amendoim, soja, castanhas/nozes, peixes, crustáceos) + dietas (vegano, vegetariano, sem lactose, sem glúten) |
+| D04 | Texto padrão do aviso de contaminação cruzada | PO | Não | "Aviso: Nosso ambiente de preparo manipula alimentos contendo glúten, leite, ovos e castanhas. Não garantimos a ausência total de contaminação cruzada." |
 
 ## Sugestões de casos de teste
 

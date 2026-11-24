@@ -1357,6 +1357,19 @@
       let itensHtml = '';
       let novosPendentesCount = 0;
 
+      // CAF-000152: Alergias e Restrições Alimentares do Cliente
+      const alergiasLista = Array.isArray(pedido.alergias_cliente) ? [...pedido.alergias_cliente] : [];
+      if (alergiasLista.length === 0 && pedido.observacoes) {
+        const match = pedido.observacoes.match(/alergia[:\s\/]+([^\n\r|]+)/i);
+        if (match && match[1]) {
+          alergiasLista.push(match[1].trim());
+        }
+      }
+      const textoAlergias = (window.AlergenicosUtils && typeof window.AlergenicosUtils.formatarAlergiasTexto === 'function')
+        ? window.AlergenicosUtils.formatarAlergiasTexto(alergiasLista)
+        : alergiasLista.join(', ');
+      const temAlergia = Boolean(textoAlergias);
+
       if (itensDaEstacao.length > 0) {
         itensDaEstacao.forEach(item => {
           const isCancelado = item.cancelado;
@@ -1404,6 +1417,10 @@
             ? `<button type="button" class="btn-item-etiqueta" data-action="kds-imprimir-etiqueta-item" data-pedido-id="${pedido.id}" data-item-id="${item.id}" title="Imprimir etiqueta deste item" aria-label="Imprimir etiqueta deste item">🏷</button>`
             : '';
 
+          const alergiaItemHtml = temAlergia
+            ? `<div class="item-alergia-badge" style="color:#d32f2f; font-weight:bold; font-size:12px; margin-left:24px; display:flex; align-items:center; gap:4px;">⚠️ ALERGIA: ${window.escapeHtml(textoAlergias.toUpperCase())}</div>`
+            : '';
+
           itensHtml += `
             <div class="item-row ${actionClass} ${prontoClass} ${lancadoDepoisClass}" ${dataActionAttr}>
               <div class="item-main" ${cancelClass} style="display:flex; align-items:center; gap:6px; width:100%;">
@@ -1413,6 +1430,7 @@
               </div>
               ${saboresHtml}
               ${adicHtml}
+              ${alergiaItemHtml}
               ${obsItemHtml}
             </div>
           `;
@@ -1446,7 +1464,7 @@
           }
         });
       }
-      card.className = `pedido-card ${estadoTempo.semaforo} ${estadoTempo.isPulsing ? 'pulso-alerta' : ''} ${isPrioritario ? 'pedido-card--prioritario' : ''} ${isCardFocado ? 'is-keyboard-focused' : ''}`;
+      card.className = `pedido-card ${estadoTempo.semaforo} ${estadoTempo.isPulsing ? 'pulso-alerta' : ''} ${isPrioritario ? 'pedido-card--prioritario' : ''} ${temAlergia ? 'pedido-card--com-alergia' : ''} ${isCardFocado ? 'is-keyboard-focused' : ''}`;
       card.setAttribute('data-pedido-id', pedido.id);
       card.setAttribute('data-created-at', pedido.created_at);
       card.setAttribute('data-alvo-min', estadoTempo.alvoMin);
@@ -1515,6 +1533,10 @@
         `;
       }
 
+      const alertaAlergiaHtml = temAlergia
+        ? `<div class="kds-alerta-alergia" role="alert" style="background:#d32f2f; color:#ffffff; padding:6px 10px; border-radius:4px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px;">⚠️ ALERGIA: ${window.escapeHtml(textoAlergias.toUpperCase())}</div>`
+        : '';
+
       const obsHtml = pedido.observacoes 
         ? `<div class="pedido-obs">📝 Obs Geral: ${window.escapeHtml(pedido.observacoes)}</div>` 
         : '';
@@ -1567,6 +1589,7 @@
           <div class="pedido-tempo ${estadoTempo.semaforo} ${atrasadoClass}">${tempoStr}</div>
         </div>
         ${estacaoStatusHtml}
+        ${alertaAlergiaHtml}
         ${nomeClienteHtml}
         <div class="pedido-operador">${operadorStr}</div>
         <div class="pedido-itens" ${pedido.status === 'entregue' ? 'style="opacity: 0.6;"' : ''}>

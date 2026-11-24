@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-24T20:42:45.427Z",
+  "gerado_em": "2026-11-24T21:45:39.497Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -722,6 +722,9 @@
     },
     "get_server_time": {
       "parameters": []
+    },
+    "fn_sync_pedidos_alergias": {
+      "parameters": []
     }
   },
   "tables": {
@@ -930,7 +933,8 @@
         "pedido_origem_id",
         "prioridade",
         "prioridade_motivo",
-        "pago_em"
+        "pago_em",
+        "alergias_cliente"
       ]
     },
     "perfis": {
@@ -1214,6 +1218,10 @@
         "csosn",
         "origem",
         "unidade_tributavel",
+        "alergenicos_revisado_em",
+        "alergenicos_revisado_por",
+        "contaminacao_cruzada_aviso",
+        "restricoes_alimentares",
         "id",
         "nome",
         "descricao",
@@ -1675,6 +1683,49 @@
         "executado_em",
         "executado_por"
       ]
+    },
+    "alergenicos": {
+      "columns": [
+        "id",
+        "nome",
+        "icone",
+        "descricao",
+        "ativo",
+        "created_at"
+      ]
+    },
+    "restricoes_alimentares": {
+      "columns": [
+        "id",
+        "nome",
+        "icone",
+        "descricao",
+        "ativo",
+        "created_at"
+      ]
+    },
+    "estoque_item_alergenicos": {
+      "columns": [
+        "id",
+        "estoque_item_id",
+        "alergenico_id",
+        "created_at"
+      ]
+    },
+    "produto_alergenicos": {
+      "columns": [
+        "id",
+        "produto_id",
+        "alergenico_id",
+        "tipo",
+        "created_at"
+      ]
+    },
+    "v_produto_alergenicos": {
+      "columns": []
+    },
+    "v_produtos_revisao_alergenicos": {
+      "columns": []
     },
     "site_settings": {
       "columns": [

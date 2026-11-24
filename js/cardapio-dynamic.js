@@ -84,13 +84,20 @@
       }
 
       renderNav(data.categorias, nav);
-      renderContent(data.categorias, data.produtos, root, promosHoje, promosSemana);
+      initFiltrosRestricoes();
+      aplicarFiltrosCardapio();
       setupScrollSpy();
       initBuscaCardapio();
     } catch (err) {
       console.error('Erro na carga dinâmica:', err);
       // Opcional: carregar do cache se falhar
     }
+  }
+
+  function aplicarFiltrosCardapio() {
+    const inputBusca = document.getElementById('input-busca-cardapio');
+    const termo = inputBusca ? inputBusca.value : '';
+    filtrarCardapio(termo);
   }
 
   function filtrarCardapio(termo) {
@@ -116,8 +123,18 @@
       }
     }
 
+    const filtrosAtivos = (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+      ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+      : [];
+
+    if (filtrosAtivos.length > 0 && window.AlergenicosUtils) {
+      prodsFiltrados = prodsFiltrados.filter(p => 
+        window.AlergenicosUtils.produtoAtendeFiltro(p, p.alergenicos, filtrosAtivos)
+      );
+    }
+
     let catsFiltradas = allCategorias;
-    if (termoClean) {
+    if (termoClean || filtrosAtivos.length > 0) {
       const catIdsComProdutos = new Set(prodsFiltrados.map(p => p.categoria_id || p.categoriaId));
       catsFiltradas = allCategorias.filter(c => catIdsComProdutos.has(c.id));
     }
@@ -127,8 +144,8 @@
       if (root) {
         root.innerHTML = `
           <div class="container text-center" style="padding:60px 0;">
-            <h3>Nenhum produto encontrado para "${window.escapeHtml ? window.escapeHtml(termoClean) : termoClean}".</h3>
-            <p style="color:var(--caramelo); opacity:0.8;">Tente buscar por outro termo ou limpe a busca.</p>
+            <h3>Nenhum produto encontrado com os filtros selecionados.</h3>
+            <p style="color:var(--caramelo); opacity:0.8;">Tente alterar os filtros ou o termo de busca.</p>
           </div>
         `;
       }
@@ -136,8 +153,66 @@
     }
 
     renderNav(catsFiltradas, nav);
-    renderContent(catsFiltradas, prodsFiltrados, root, termoClean ? [] : allPromosHoje, termoClean ? [] : allPromosSemana);
+    renderContent(catsFiltradas, prodsFiltrados, root, (termoClean || filtrosAtivos.length > 0) ? [] : allPromosHoje, (termoClean || filtrosAtivos.length > 0) ? [] : allPromosSemana);
     setupScrollSpy();
+  }
+
+  function initFiltrosRestricoes() {
+    const wrapBusca = document.querySelector('.cardapio-search-wrap');
+    const barContainer = wrapBusca ? wrapBusca.parentElement : null;
+    if (!barContainer) return;
+
+    let chipsWrap = document.getElementById('chips-filtro-restricoes');
+    if (!chipsWrap) {
+      chipsWrap = document.createElement('div');
+      chipsWrap.id = 'chips-filtro-restricoes';
+      chipsWrap.className = 'chips-filtro-restricoes';
+      chipsWrap.setAttribute('role', 'group');
+      chipsWrap.setAttribute('aria-label', 'Filtros de restrições alimentares');
+      barContainer.appendChild(chipsWrap);
+    }
+
+    const restricoes = [
+      { id: 'sem_gluten', label: '🚫🌾 Sem Glúten' },
+      { id: 'sem_lactose', label: '🚫🥛 Sem Lactose' },
+      { id: 'vegano', label: '🌱 Vegano' },
+      { id: 'vegetariano', label: '🥗 Vegetariano' }
+    ];
+
+    const filtrosSalvos = (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+      ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+      : [];
+
+    chipsWrap.innerHTML = restricoes.map(r => {
+      const isActive = filtrosSalvos.includes(r.id);
+      return `
+        <button type="button" class="chip-filtro-restricao ${isActive ? 'is-active' : ''}" data-restricao="${r.id}" aria-pressed="${isActive ? 'true' : 'false'}">
+          ${r.label}
+        </button>
+      `;
+    }).join('');
+
+    chipsWrap.querySelectorAll('.chip-filtro-restricao').forEach(btn => {
+      btn.onclick = () => {
+        const restId = btn.dataset.restricao;
+        let ativos = (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+          ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+          : [];
+        if (ativos.includes(restId)) {
+          ativos = ativos.filter(id => id !== restId);
+          btn.classList.remove('is-active');
+          btn.setAttribute('aria-pressed', 'false');
+        } else {
+          ativos.push(restId);
+          btn.classList.add('is-active');
+          btn.setAttribute('aria-pressed', 'true');
+        }
+        if (window.AlergenicosUtils) {
+          window.AlergenicosUtils.salvarFiltroAlergias(ativos);
+        }
+        aplicarFiltrosCardapio();
+      };
+    });
   }
 
   function initBuscaCardapio() {
@@ -340,6 +415,11 @@
     const statusA11y = p.disponivel === false ? ', esgotado' : '';
     const a11yLabel = `${p.nome}, R$ ${price}${statusA11y}`;
 
+    let selosHtml = '';
+    if (p.alergenicos && p.alergenicos.length > 0 && window.AlergenicosUtils) {
+      selosHtml = window.AlergenicosUtils.renderSelosHtml(p.alergenicos, { modoResumido: true });
+    }
+
     return `
       <article class="produto-card fade-in ${esgotadoClass}" tabindex="0" role="region" aria-label="${a11yLabel}">
         <div class="produto-card__image-wrap">
@@ -352,6 +432,7 @@
         <div class="produto-card__body">
           <h3 class="produto-card__name">${p.nome}</h3>
           <p class="produto-card__desc">${p.descricao || ''}</p>
+          ${selosHtml}
           <div class="produto-card__footer">
             <div class="produto-card__price"><span class="produto-card__price-label">R$</span>${price}</div>
           </div>

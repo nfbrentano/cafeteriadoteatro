@@ -688,6 +688,11 @@
         ? `${p.nome}, ${precoFmt}, esgotado`
         : `Escolher ${p.nome}, ${precoFmt}`;
 
+      let selosHtml = '';
+      if (window.AlergenicosUtils && p.alergenicos && p.alergenicos.length > 0) {
+        selosHtml = window.AlergenicosUtils.renderSelosHtml(p.alergenicos, { modoResumido: true, escapeFn: esc });
+      }
+
       return `
         <article class="totem-product-card ${isEsgotado ? 'is-esgotado' : ''}" data-prod-id="${esc(p.id)}" role="button" tabindex="0" aria-label="${esc(a11yLabel)}" ${isEsgotado ? 'aria-disabled="true"' : ''}>
           <div class="totem-product-card__img-wrap">
@@ -698,6 +703,7 @@
           <div class="totem-product-card__body">
             <h3 class="totem-product-card__title">${esc(p.nome)}</h3>
             <p class="totem-product-card__desc">${esc(p.descricao || '')}</p>
+            ${selosHtml}
             <div class="totem-product-card__footer">
               <span class="totem-product-card__price">${precoFmt}</span>
               <button type="button" class="totem-btn-add" ${isEsgotado ? 'disabled' : ''} aria-label="${esc(a11yLabel)}">
@@ -802,6 +808,24 @@
       `;
     }
 
+    let alergHtml = '';
+    const isRevisado = window.AlergenicosUtils ? window.AlergenicosUtils.isProdutoRevisado(prod) : true;
+    if (!isRevisado) {
+      alergHtml = `
+        <div class="alerg-aviso-nao-revisado" role="status" style="margin-bottom:14px;">
+          <span aria-hidden="true">⚠️</span>
+          <span>Informação de alergênicos não disponível. Pergunte ao atendente.</span>
+        </div>
+      `;
+    } else if (window.AlergenicosUtils) {
+      const selos = window.AlergenicosUtils.renderSelosHtml(prod.alergenicos || [], { escapeFn: esc });
+      const aviso = window.AlergenicosUtils.renderAvisoContaminacaoHtml(prod.contaminacao_cruzada_aviso, { escapeFn: esc });
+      alergHtml = `
+        <div id="totem-modal-selos" style="margin-bottom:8px;">${selos}</div>
+        <div id="totem-modal-aviso" style="margin-bottom:14px;">${aviso}</div>
+      `;
+    }
+
     itemModalBody.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; background:var(--totem-surface-alt); padding:16px; border-radius:16px; margin-bottom:18px;">
         <div>
@@ -814,6 +838,7 @@
           <button type="button" id="totem-item-qty-plus" class="totem-btn totem-btn--ghost totem-qty-btn" aria-label="Aumentar quantidade de ${esc(prod.nome)}">+</button>
         </div>
       </div>
+      ${alergHtml}
       ${saboresHtml}
       ${adicsHtml}
       <div>
