@@ -2211,6 +2211,53 @@
       }
     },
 
+    // --- Módulo: Direitos do Titular LGPD (CAF-000132) ---
+    titular: {
+      async solicitar(payload) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('solicitar_direito_titular', {
+            p_payload: payload
+          });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('titular.solicitar', err);
+          throw err;
+        }
+      },
+
+      async listar(status = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('listar_solicitacoes_titular', {
+            p_status: status
+          });
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          db.logger.error('titular.listar', err);
+          throw err;
+        }
+      },
+
+      async processar(id, acao, resposta = null) {
+        if (!window.cafeteriaSupabase) throw new Error('Supabase indisponível');
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('processar_solicitacao_titular', {
+            p_id: id,
+            p_acao: acao,
+            p_resposta: resposta
+          });
+          if (error) throw error;
+          return data;
+        } catch (err) {
+          db.logger.error('titular.processar', err);
+          throw err;
+        }
+      }
+    },
+
     // --- Realtime Subscription ---
     subscribeToChanges(onUpdate) {
       const channelId = `db-changes-${Math.random().toString(36).slice(2, 9)}`;

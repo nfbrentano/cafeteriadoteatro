@@ -1,0 +1,107 @@
+/* CAF-000132: Banner de Consentimento de Cookies e Privacidade (WCAG 2.1 AA) */
+.cookie-banner-container {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  max-width: 680px;
+  margin: 0 auto;
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  padding: 16px 20px;
+  z-index: 99999;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.cookie-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .cookie-banner-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+}
+
+.cookie-banner-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.cookie-banner-link {
+  color: #38bdf8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.cookie-banner-link:hover,
+.cookie-banner-link:focus-visible {
+  color: #7dd3fc;
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.cookie-banner-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.cookie-banner-btn {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+  min-height: 38px;
+  min-width: 85px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cookie-banner-btn:active {
+  transform: scale(0.98);
+}
+
+.cookie-banner-btn:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.cookie-banner-btn-secondary {
+  background-color: #334155;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.cookie-banner-btn-secondary:hover {
+  background-color: #475569;
+}
+
+.cookie-banner-btn-primary {
+  background-color: #d97706;
+  color: #ffffff;
+  border-color: #b45309;
+}
+
+.cookie-banner-btn-primary:hover {
+  background-color: #b45309;
+}

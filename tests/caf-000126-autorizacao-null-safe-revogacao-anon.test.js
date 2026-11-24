@@ -31,7 +31,8 @@ const PUBLIC_ALLOWLIST = [
   'get_user_role',
   'tem_permissao',
   'consolidar_contador_dia_anterior',
-  'criar_cobranca_pix'
+  'criar_cobranca_pix',
+  'solicitar_direito_titular'
 ];
 
 describe('CAF-000126: Autorização NULL-safe e revogação de anon nas RPCs SECURITY DEFINER', () => {

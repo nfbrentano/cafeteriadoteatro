@@ -1,5 +1,6 @@
 /**
- * CAF-000087 / CAF-000016 / CAF-000080: Utilitário para Geração e Exportação de CSV
+ * CAF-000087 / CAF-000016 / CAF-000080 / CAF-000132:
+ * Utilitário centralizado para Geração e Exportação de CSV com sanitização contra CSV Injection (OWASP)
  */
 
 import { formatarDataHoraSP } from './datas-sp.js';
@@ -7,10 +8,22 @@ import { formatarDataHoraSP } from './datas-sp.js';
 export function escapeCSV(val, separator = ';') {
   if (val === null || val === undefined) return '';
   const str = String(val);
-  if (str.includes(separator) || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-    return `"${str.replace(/"/g, '""')}"`;
+
+  // Neutralização de injeção de fórmulas CSV (OWASP / RF08 / CA11, CA12)
+  // Prefixa com ' valores que iniciam com =, +, -, @, tab ou CR que não sejam puramente numéricos
+  const DANGEROUS_PREFIXES = ['=', '+', '-', '@', '\t', '\r'];
+  const startsWithDangerous = DANGEROUS_PREFIXES.some(char => str.startsWith(char));
+  const isPureNumber = typeof val === 'number' || /^[+-]?\d+(?:[.,]\d+)?$/.test(str.trim());
+
+  let sanitized = str;
+  if (startsWithDangerous && !isPureNumber) {
+    sanitized = "'" + str;
   }
-  return str;
+
+  if (sanitized.includes(separator) || sanitized.includes('"') || sanitized.includes('\n') || sanitized.includes('\r')) {
+    return `"${sanitized.replace(/"/g, '""')}"`;
+  }
+  return sanitized;
 }
 
 export function gerarCSVPedidos(pedidos = [], options = {}) {
@@ -54,6 +67,15 @@ export function exportarParaCsv(colunas = [], dados = [], options = {}) {
   });
   const csvContent = [header, ...rows].join('\r\n');
   return includeBom ? '\uFEFF' + csvContent : csvContent;
+}
+
+if (typeof window !== 'undefined') {
+  window.escapeCSV = escapeCSV;
+  window.csvExportUtils = {
+    escapeCSV,
+    gerarCSVPedidos,
+    exportarParaCsv
+  };
 }
 
 export default {

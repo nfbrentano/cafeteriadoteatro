@@ -977,12 +977,16 @@
       ];
 
       const escapeCSV = (val) => {
+        if (window.escapeCSV) return window.escapeCSV(val, ';');
         if (val === null || val === undefined) return '';
         const str = String(val);
-        if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-          return `"${str.replace(/"/g, '""')}"`;
+        const starts = ['=', '+', '-', '@', '\t', '\r'].some(c => str.startsWith(c));
+        const num = typeof val === 'number' || /^[+-]?\d+(?:[.,]\d+)?$/.test(str.trim());
+        const clean = (starts && !num) ? "'" + str : str;
+        if (clean.includes(';') || clean.includes('"') || clean.includes('\n') || clean.includes('\r')) {
+          return `"${clean.replace(/"/g, '""')}"`;
         }
-        return str;
+        return clean;
       };
 
       const rows = [headers.map(escapeCSV).join(';')];

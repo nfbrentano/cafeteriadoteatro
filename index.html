@@ -68,6 +68,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/cookie-consent.css" />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Jost:wght@300;400;500;600;700&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Jost:wght@300;400;500;600;700&display=swap" />
   <noscript>
@@ -650,6 +651,8 @@
           © <span id="current-year"></span> Cafeteria do Teatro · Teatro da Univates · Lajeado, RS
         </p>
         <div style="display:flex;align-items:center;gap:16px">
+          <a href="/privacidade.html" class="footer__link" style="color:#94a3b8;font-size:12px;">Política de Privacidade</a>
+          <button type="button" id="btn-footer-cookies-home" class="btn-footer-cookie-pref" style="background:none;border:none;color:#94a3b8;font-size:12px;cursor:pointer;padding:0;text-decoration:underline;">Preferências de Cookies</button>
           <a
             href="https://www.instagram.com/cafeteriadoteatro/"
             target="_blank"
@@ -682,6 +685,7 @@
   <script defer src="js/curtain.js"></script>
   <script defer src="js/main.js"></script>
   <script defer src="js/analytics.js"></script>
+  <script defer src="js/cookie-consent.js"></script>
   <script defer src="js/sw-register.js"></script>
 </body>
 </html>

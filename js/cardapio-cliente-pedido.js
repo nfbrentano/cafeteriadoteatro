@@ -688,9 +688,13 @@
                 </div>
               </div>
 
+              <div class="pedido-online-aviso-privacidade" style="font-size:12px; color:#475569; margin-bottom:10px; line-height:1.4; background:#f1f5f9; padding:8px 10px; border-radius:6px;">
+                ℹ️ Seus dados (nome e WhatsApp) são usados exclusivamente para confirmação, histórico e entrega do seu pedido, conforme nossa <a href="/privacidade.html" target="_blank" rel="noopener" style="color:#0284c7; text-decoration:underline;">Política de Privacidade</a>.
+              </div>
+
               <label style="display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#475569; margin-bottom:12px; cursor:pointer;">
-                <input type="checkbox" id="check-lgpd-online" checked required style="margin-top:2px;" />
-                <span>Concordo com o uso do meu nome e WhatsApp para confirmação do pedido e histórico de atendimento (LGPD).</span>
+                <input type="checkbox" id="check-marketing-online" style="margin-top:2px;" />
+                <span>Quero receber novidades e promoções da Cafeteria do Teatro pelo WhatsApp (opcional).</span>
               </label>
             ` : ''}
 
@@ -1480,12 +1484,6 @@
       }
       localStorage.setItem('cafeteria_cliente_telefone', telVal);
 
-      const lgpdCheck = document.getElementById('check-lgpd-online');
-      if (lgpdCheck && !lgpdCheck.checked) {
-        cardapioShowToast('É necessário confirmar o consentimento LGPD para prosseguir com o pedido online.', 'warning');
-        return;
-      }
-
       const modoRetirada = document.querySelector('input[name="modo_retirada_radio"]:checked')?.value || 'imediato';
       let retiradaEmIso = null;
 
@@ -1508,6 +1506,7 @@
         const res = await window.cafeteriaDB.clientePedido.criarOnline({
           cliente_nome: clienteNome,
           cliente_telefone: telVal,
+          aceita_marketing: Boolean(document.getElementById('check-marketing-online')?.checked),
           aceita_lgpd: true,
           modo_retirada: modoRetirada,
           retirada_em: retiradaEmIso,

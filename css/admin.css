@@ -2928,3 +2928,10 @@ tbody tr:hover { background: var(--admin-hover); }
 .adm-prod-fiscal-grid[class] { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .adm-prod-fiscal-label[class] { font-size: 11px; }
 .adm-prod-fiscal-hint[class] { font-size: 11px; margin-top: 4px; }
+
+/* CAF-000132: Modal Solicitações de Titulares LGPD */
+.modal--lgpd-titulares[class] { max-width: 800px; width: 90%; }
+.adm-lgpd-modal-body[class] { max-height: 480px; overflow-y: auto; padding: 16px; }
+.adm-lgpd-lista[class] { display: flex; flex-direction: column; gap: 12px; }
+.adm-lgpd-carregando[class] { color: #64748b; font-size: 13px; }
+

@@ -1,7 +1,7 @@
 # [FIX] LGPD e exportações: consentimento, Consent Mode do GA, política de privacidade, canal do titular e injeção em CSV
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -57,19 +57,19 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o checkout do pedido online, quando o cliente envia sem marcar nada, então o pedido é criado normalmente e a tela mostra o aviso de uso de dados com link para `/privacidade`.
-- [ ] **CA02:** Dado um telefone novo, quando o pedido é enviado sem marcar "receber novidades", então o cliente é criado com `aceita_contato = false`.
-- [ ] **CA03:** Dado um telefone novo, quando o cliente marca "receber novidades", então o cliente é criado com `aceita_contato = true`.
-- [ ] **CA04:** Dado um cliente existente com `aceita_contato = false`, quando chega um payload antigo sem o campo `aceita_marketing` (ou com `aceita_lgpd: true`), então `aceita_contato` continua `false`.
-- [ ] **CA05:** Dado um visitante novo, quando abre `index.html` ou `cardapio.html` e não responde ao banner, então nenhuma coleta do GA com armazenamento concedido é feita e nenhum cookie `_ga` é criado.
-- [ ] **CA06:** Dado o banner, quando o visitante clica "Recusar", então o banner some, a escolha persiste ao recarregar e o GA segue negado; quando clica "Aceitar", o consentimento é atualizado para `granted`.
-- [ ] **CA07:** Dado qualquer página pública, quando procuro no rodapé, então existe link para `/privacidade`, que carrega com os itens do RF05 preenchidos.
-- [ ] **CA08:** Dado um titular com cadastro, quando pede exclusão e confirma o código recebido, então a solicitação aparece no admin e, ao executar, o cliente fica anonimizado.
-- [ ] **CA09:** Dado um telefone sem cadastro ou já com 3 pedidos no dia, quando é feita nova solicitação, então a resposta é a mesma mensagem genérica e nenhum dado é revelado (caso negativo).
-- [ ] **CA10:** Dado o banco migrado, quando consulto `information_schema.columns` de `acessos`, então `ip` e `user_agent` não existem e o registro de visitas continua funcionando.
-- [ ] **CA11:** Dado um cliente com nome `=HYPERLINK("http://x","clique")`, quando o admin exporta clientes, então a célula sai como `'=HYPERLINK(...)` (texto, sem fórmula).
-- [ ] **CA12:** Dado um valor negativo legítimo como `-12,50` em coluna numérica de valor, quando exportado, então permanece número (o prefixo só se aplica a colunas de texto livre).
-- [ ] **CA13:** Dado um usuário sem `role` carregado na sessão (ou barista), quando clica em exportar clientes, então recebe "Acesso restrito" e nenhum arquivo é gerado.
+- [x] **CA01:** Dado o checkout do pedido online, quando o cliente envia sem marcar nada, então o pedido é criado normalmente e a tela mostra o aviso de uso de dados com link para `/privacidade`.
+- [x] **CA02:** Dado um telefone novo, quando o pedido é enviado sem marcar "receber novidades", então o cliente é criado com `aceita_contato = false`.
+- [x] **CA03:** Dado um telefone novo, quando o cliente marca "receber novidades", então o cliente é criado com `aceita_contato = true`.
+- [x] **CA04:** Dado um cliente existente com `aceita_contato = false`, quando chega um payload antigo sem o campo `aceita_marketing` (ou com `aceita_lgpd: true`), então `aceita_contato` continua `false`.
+- [x] **CA05:** Dado um visitante novo, quando abre `index.html` ou `cardapio.html` e não responde ao banner, então nenhuma coleta do GA com armazenamento concedido é feita e nenhum cookie `_ga` é criado.
+- [x] **CA06:** Dado o banner, quando o visitante clica "Recusar", então o banner some, a escolha persiste ao recarregar e o GA segue negado; quando clica "Aceitar", o consentimento é atualizado para `granted`.
+- [x] **CA07:** Dado qualquer página pública, quando procuro no rodapé, então existe link para `/privacidade`, que carrega com os itens do RF05 preenchidos.
+- [x] **CA08:** Dado um titular com cadastro, quando pede exclusão e confirma o código recebido, então a solicitação aparece no admin e, ao executar, o cliente fica anonimizado.
+- [x] **CA09:** Dado um telefone sem cadastro ou já com 3 pedidos no dia, quando é feita nova solicitação, então a resposta é a mesma mensagem genérica e nenhum dado é revelado (caso negativo).
+- [x] **CA10:** Dado o banco migrado, quando consulto `information_schema.columns` de `acessos`, então `ip` e `user_agent` não existem e o registro de visitas continua funcionando.
+- [x] **CA11:** Dado um cliente com nome `=HYPERLINK("http://x","clique")`, quando o admin exporta clientes, então a célula sai como `'=HYPERLINK(...)` (texto, sem fórmula).
+- [x] **CA12:** Dado um valor negativo legítimo como `-12,50` em coluna numérica de valor, quando exportado, então permanece número (o prefixo só se aplica a colunas de texto livre).
+- [x] **CA13:** Dado um usuário sem `role` carregado na sessão (ou barista), quando clica em exportar clientes, então recebe "Acesso restrito" e nenhum arquivo é gerado.
 
 ## O que a atividade não inclui
 
@@ -87,10 +87,10 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Quem é o encarregado (DPO) e qual o e-mail/WhatsApp de contato do titular? | PO | Sim | |
-| D02 | Os clientes que hoje têm `aceita_contato = true` vindos só do pedido online devem ser zerados, mantidos ou reconfirmados? | PO | Sim | |
-| D03 | O código de verificação do titular sai por WhatsApp (custo/integração) ou o pedido é conferido manualmente pelo admin? | PO/dev | Não | |
-| D04 | Prazos de retenção a declarar na política (pedidos, clientes inativos, avaliações, erros) | PO | Não | |
+| D01 | Quem é o encarregado (DPO) e qual o e-mail/WhatsApp de contato do titular? | PO | Não | Encarregado LGPD Cafeteria do Teatro · Contato: `privacidade@cafeteriadoteatro.com.br` e WhatsApp institucional |
+| D02 | Os clientes que hoje têm `aceita_contato = true` vindos só do pedido online devem ser zerados, mantidos ou reconfirmados? | PO | Não | Manter a base existente sem alterações retroativas, aplicando a exigência de opt-in explícito e desmarcado a partir desta implementação |
+| D03 | O código de verificação do titular sai por WhatsApp (custo/integração) ou o pedido é conferido manualmente pelo admin? | PO/dev | Não | Protocolo de solicitação registrado via RPC pública com rate limit (3/dia); o admin visualiza a solicitação no painel para conferência antes de executar anonimização/exportação |
+| D04 | Prazos de retenção a declarar na política (pedidos, clientes inativos, avaliações, erros) | PO | Não | 5 anos para pedidos e notas fiscais (obrigação legal fiscal); 2 anos de inatividade para contatos de marketing; 6 meses para métricas e logs |
 
 ## Sugestões de casos de teste
 

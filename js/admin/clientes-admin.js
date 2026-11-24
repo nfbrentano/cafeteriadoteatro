@@ -42,6 +42,11 @@
   const filterStatus = document.getElementById('filter-cliente-status');
   const btnNovoCliente = document.getElementById('btn-novo-cliente');
   const btnExportCSV = document.getElementById('btn-export-clientes');
+  const btnSolicitacoesLgpd = document.getElementById('btn-solicitacoes-lgpd');
+  const modalLgpdOverlay = document.getElementById('modal-lgpd-titulares-overlay');
+  const modalLgpdClose = document.getElementById('modal-lgpd-titulares-close');
+  const modalLgpdFechar = document.getElementById('modal-lgpd-titulares-fechar');
+  const listaLgpdSolicitacoes = document.getElementById('lista-lgpd-solicitacoes');
   const btnCrmTags = document.getElementById('btn-crm-tags');
   const btnCrmCampanhas = document.getElementById('btn-crm-campanhas');
 
@@ -1616,6 +1621,135 @@
     modalCrmCampanhasClose.addEventListener('click', () => modalCrmCampanhasOverlay?.classList.remove('open'));
   }
 
+  // --- Solicitações de Titulares LGPD (CAF-000132) ---
+  async function carregarSolicitacoesLgpd() {
+    if (!listaLgpdSolicitacoes) return;
+    listaLgpdSolicitacoes.innerHTML = '<p style="color:#64748b; font-size:13px;">Carregando solicitações...</p>';
+    try {
+      if (!window.cafeteriaDB?.titular?.listar) {
+        listaLgpdSolicitacoes.innerHTML = '<p style="color:#ef4444; font-size:13px;">Serviço de titulares não disponível.</p>';
+        return;
+      }
+      const lista = await window.cafeteriaDB.titular.listar();
+      if (!lista || lista.length === 0) {
+        listaLgpdSolicitacoes.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center; padding:20px;">Nenhuma solicitação de titular registrada.</p>';
+        return;
+      }
+      listaLgpdSolicitacoes.innerHTML = '';
+      lista.forEach(s => {
+        const card = document.createElement('div');
+        card.style.cssText = 'border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#fff; display:flex; flex-direction:column; gap:8px;';
+        const tipoLabel = s.tipo === 'copia_dados' ? '📄 Cópia dos Dados (JSON)' : '🗑️ Exclusão e Anonimização';
+        const statusColor = s.status === 'concluido' ? '#16a34a' : s.status === 'rejeitado' ? '#dc2626' : '#d97706';
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <strong style="color:#0f172a; font-size:14px;">${s.protocolo}</strong>
+              <span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; color:#fff; background:${statusColor};">
+                ${s.status.toUpperCase()}
+              </span>
+            </div>
+            <span style="font-size:12px; color:#64748b;">${new Date(s.created_at).toLocaleString('pt-BR')}</span>
+          </div>
+          <div style="font-size:13px; color:#334155;">
+            <div><strong>Titular:</strong> ${s.nome || 'Não informado'} · <strong>WhatsApp:</strong> ${s.telefone || 'Não informado'}</div>
+            <div><strong>Tipo:</strong> ${tipoLabel}</div>
+            ${s.motivo ? `<div><strong>Motivo:</strong> ${s.motivo}</div>` : ''}
+            ${s.resposta_admin ? `<div style="color:#64748b; font-style:italic; margin-top:4px;">Resposta: ${s.resposta_admin}</div>` : ''}
+          </div>
+          ${s.status === 'pendente' || s.status === 'em_analise' ? `
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px; flex-wrap:wrap;">
+              <button class="btn btn--secondary btn--sm btn-lgpd-export" data-id="${s.id}" data-proto="${s.protocolo}">📥 Exportar Dados</button>
+              <button class="btn btn--danger btn--sm btn-lgpd-anon" data-id="${s.id}" data-tel="${s.telefone}">🗑️ Anonimizar</button>
+              <button class="btn btn--ghost btn--sm btn-lgpd-rej" data-id="${s.id}">✕ Rejeitar</button>
+            </div>
+          ` : ''}
+        `;
+        listaLgpdSolicitacoes.appendChild(card);
+      });
+
+      listaLgpdSolicitacoes.querySelectorAll('.btn-lgpd-export').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const proto = btn.getAttribute('data-proto');
+          btn.disabled = true;
+          try {
+            const res = await window.cafeteriaDB.titular.processar(Number(id), 'exportar');
+            if (res && res.dados) {
+              const blob = new Blob([JSON.stringify(res.dados, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `titular_${proto}_dados.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }
+            window.admin?.toast ? window.admin.toast('Sucesso', 'Relatório compilado e baixado!', 'success') : null;
+            carregarSolicitacoesLgpd();
+          } catch (e) {
+            window.admin?.toast ? window.admin.toast('Erro', e.message, 'error') : null;
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+
+      listaLgpdSolicitacoes.querySelectorAll('.btn-lgpd-anon').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          if (!confirm('Deseja realmente anonimizar os dados cadastrais deste cliente? Esta ação é irreversível conforme a LGPD.')) return;
+          btn.disabled = true;
+          try {
+            await window.cafeteriaDB.titular.processar(Number(id), 'anonimizar');
+            window.admin?.toast ? window.admin.toast('Sucesso', 'Cliente anonimizado com sucesso!', 'success') : null;
+            carregarSolicitacoesLgpd();
+            await loadData();
+          } catch (e) {
+            window.admin?.toast ? window.admin.toast('Erro', e.message, 'error') : null;
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+
+      listaLgpdSolicitacoes.querySelectorAll('.btn-lgpd-rej').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const motivo = prompt('Informe o motivo da rejeição da solicitação:');
+          if (motivo === null) return;
+          btn.disabled = true;
+          try {
+            await window.cafeteriaDB.titular.processar(Number(id), 'rejeitar', motivo);
+            window.admin?.toast ? window.admin.toast('Sucesso', 'Solicitação rejeitada.', 'info') : null;
+            carregarSolicitacoesLgpd();
+          } catch (e) {
+            window.admin?.toast ? window.admin.toast('Erro', e.message, 'error') : null;
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+    } catch (err) {
+      console.error('[ClientesAdmin][LGPD]', err);
+      listaLgpdSolicitacoes.innerHTML = '<p style="color:#ef4444; font-size:13px;">Erro ao carregar solicitações de titulares.</p>';
+    }
+  }
+
+  if (btnSolicitacoesLgpd) {
+    btnSolicitacoesLgpd.addEventListener('click', () => {
+      carregarSolicitacoesLgpd();
+      if (modalLgpdOverlay) modalLgpdOverlay.classList.add('open');
+    });
+  }
+
+  if (modalLgpdClose) {
+    modalLgpdClose.addEventListener('click', () => modalLgpdOverlay?.classList.remove('open'));
+  }
+  if (modalLgpdFechar) {
+    modalLgpdFechar.addEventListener('click', () => modalLgpdOverlay?.classList.remove('open'));
+  }
+
   ['camp-segmento', 'camp-tag', 'camp-produto'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', atualizarPreviaElegiveisCampanha);
@@ -1757,42 +1891,55 @@
   // --- Exportar CSV (Restrito a Admin conforme LGPD CAF-000041) ---
   if (btnExportCSV) {
     btnExportCSV.addEventListener('click', () => {
-      const role = window.admin?.session?.user?.role || 'admin';
-      if (role && role !== 'admin') {
-        window.admin.toast('Acesso Restrito (LGPD)', 'A exportação da base de clientes é permitida apenas para administradores.', 'error');
+      const role = window.admin?.session?.user?.role;
+      if (role !== 'admin') {
+        if (window.admin?.toast) {
+          window.admin.toast('Acesso Restrito (LGPD)', 'A exportação da base de clientes é permitida apenas para administradores.', 'error');
+        } else {
+          alert('Acesso restrito: permissão de administrador necessária.');
+        }
         return;
       }
 
       const lista = getClientesFiltrados();
       if (lista.length === 0) {
-        window.admin.toast('Aviso', 'Não há clientes para exportar com os filtros atuais.', 'warn');
+        window.admin?.toast ? window.admin.toast('Aviso', 'Não há clientes para exportar com os filtros atuais.', 'warn') : null;
         return;
       }
+
+      const esc = window.escapeCSV || function(val) {
+        if (val === null || val === undefined) return '';
+        const s = String(val);
+        const starts = ['=', '+', '-', '@', '\t', '\r'].some(c => s.startsWith(c));
+        const num = typeof val === 'number' || /^[+-]?\d+(?:[.,]\d+)?$/.test(s.trim());
+        const clean = (starts && !num) ? "'" + s : s;
+        return clean.includes(';') || clean.includes('"') || clean.includes('\n') ? `"${clean.replace(/"/g, '""')}"` : clean;
+      };
 
       const cabecalho = ['ID', 'Nome', 'Segmento_RFV', 'Produto_Favorito', 'Telefone', 'Email', 'Data_Nascimento', 'Autoriza_WhatsApp_LGPD', 'Ativo', 'Visitas', 'Pedidos_90d', 'Total_Gasto_RS', 'Ultima_Visita', 'Criado_Em'];
       const linhas = lista.map(c => {
         const res = pedidosResumoMap.get(c.id) || { visitas: 0, pedidos90d: 0, totalGasto: 0, ultimaVisita: null, produtoFavorito: '', segmento: 'Perdido' };
         return [
-          `"${c.id}"`,
-          `"${(c.nome || '').replace(/"/g, '""')}"`,
-          `"${res.segmento || 'Perdido'}"`,
-          `"${(res.produtoFavorito || '').replace(/"/g, '""')}"`,
-          `"${c.telefone || ''}"`,
-          `"${c.email || ''}"`,
-          `"${c.data_nascimento || ''}"`,
-          c.aceita_contato ? 'SIM' : 'NAO',
-          c.ativo ? 'SIM' : 'NAO',
-          res.visitas,
-          res.pedidos90d || 0,
-          res.totalGasto.toFixed(2).replace('.', ','),
-          `"${formatarDataHora(res.ultimaVisita)}"`,
-          `"${formatarDataHora(c.created_at)}"`
+          esc(c.id),
+          esc(c.nome || ''),
+          esc(res.segmento || 'Perdido'),
+          esc(res.produtoFavorito || ''),
+          esc(c.telefone || ''),
+          esc(c.email || ''),
+          esc(c.data_nascimento || ''),
+          esc(c.aceita_contato ? 'SIM' : 'NAO'),
+          esc(c.ativo ? 'SIM' : 'NAO'),
+          esc(res.visitas),
+          esc(res.pedidos90d || 0),
+          esc(res.totalGasto.toFixed(2).replace('.', ',')),
+          esc(formatarDataHora(res.ultimaVisita)),
+          esc(formatarDataHora(c.created_at))
         ].join(';');
       });
 
-      const csvContent = [cabecalho.join(';'), ...linhas].join('\r\n');
-      window.admin.downloadCSV(`clientes_crm_cafeteria_${new Date().toISOString().slice(0, 10)}.csv`, csvContent);
-      window.admin.toast('Sucesso', `${lista.length} clientes exportados para CSV!`, 'success');
+      const csvContent = [cabecalho.map(c => esc(c)).join(';'), ...linhas].join('\r\n');
+      window.admin.downloadCSV(`clientes_crm_cafeteria_${new Date().toISOString().slice(0, 10)}.csv`, '\uFEFF' + csvContent);
+      window.admin?.toast ? window.admin.toast('Sucesso', `${lista.length} clientes exportados para CSV!`, 'success') : null;
     });
   }
 

@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-24T14:49:02.239Z",
+  "gerado_em": "2026-11-24T19:11:32.082Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -691,6 +691,23 @@
     },
     "fn_relatorio_deslocamento_fuso": {
       "parameters": []
+    },
+    "solicitar_direito_titular": {
+      "parameters": [
+        "p_payload"
+      ]
+    },
+    "listar_solicitacoes_titular": {
+      "parameters": [
+        "p_status"
+      ]
+    },
+    "processar_solicitacao_titular": {
+      "parameters": [
+        "p_id",
+        "p_acao",
+        "p_resposta"
+      ]
     }
   },
   "tables": {
@@ -1629,6 +1646,21 @@
     },
     "v_saldo_mesa": {
       "columns": []
+    },
+    "solicitacoes_titular": {
+      "columns": [
+        "id",
+        "protocolo",
+        "tipo",
+        "nome",
+        "telefone",
+        "motivo",
+        "status",
+        "resposta_admin",
+        "created_at",
+        "executado_em",
+        "executado_por"
+      ]
     },
     "site_settings": {
       "columns": [

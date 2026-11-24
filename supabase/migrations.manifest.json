@@ -457,6 +457,12 @@
       "arquivo": "migration_caf_000131_pedidos_publicos_cupom_horario.sql",
       "checksum": "b546facbd1dbbaa2cf0f60e0996009fe1e3971396611de78bd0674863912d6e2",
       "rollback": "rollback_caf_000131.sql"
+    },
+    {
+      "versao": "132",
+      "arquivo": "migration_caf_000132_lgpd_consentimento_privacidade.sql",
+      "checksum": "78631ab52963c9519039cedec3be9173f031d03909fb374394a6e130640610de",
+      "rollback": "rollback_caf_000132.sql"
     }
   ]
 }
