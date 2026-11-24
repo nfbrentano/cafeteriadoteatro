@@ -325,7 +325,7 @@ export function registrarCarrinhoPDV() {
         ];
       }
 
-      estadoPDV.activeMontagemItem.observacoes = escapeHtml((modalMontagemObs?.value || '').trim());
+      estadoPDV.activeMontagemItem.observacoes = (modalMontagemObs?.value || '').trim();
 
       addToCartFromMontagem(estadoPDV.activeMontagemItem);
       closeMontagemModal();
@@ -423,7 +423,7 @@ export function registrarCarrinhoPDV() {
   if (modalObsSave) {
     modalObsSave.addEventListener('click', () => {
       if (estadoPDV.activeObsCartIndex !== null && estadoPDV.cart[estadoPDV.activeObsCartIndex]) {
-        estadoPDV.cart[estadoPDV.activeObsCartIndex].observacoes = escapeHtml((modalObsInput?.value || '').trim());
+        estadoPDV.cart[estadoPDV.activeObsCartIndex].observacoes = (modalObsInput?.value || '').trim();
         renderCart();
       }
       closeItemObsModal();
@@ -534,6 +534,92 @@ export function registrarCarrinhoPDV() {
     const canSend = (hasMesa || isParaViagem || hasNome) && hasItems;
     btnEnviarPedido.disabled = !canSend;
     estadoPDV.fn.atualizarModoConexaoCarrinho?.();
+  }
+
+  function calcularTotalCarrinho(cart = estadoPDV.cart, allProducts = estadoPDV.allProducts || [], activePromos = estadoPDV.activePromos || []) {
+    if (!cart || cart.length === 0) return 0;
+    let total = 0;
+    const groupedProduct = {};
+    const groupedCategory = {};
+
+    cart.forEach((item, idx) => {
+      const pId = item.produto?.id;
+      const cId = item.produto?.categoria_id;
+
+      let precoBase = Number(item.produto?.preco || 0);
+      if (item.produto?.tipo_montagem === 'meio_a_meio' && item.sabores && item.sabores.length === 2) {
+        const pd = Number(allProducts.find(p => p.id === item.sabores[0].produto_id)?.preco || 0);
+        const ps = Number(allProducts.find(p => p.id === item.sabores[1].produto_id)?.preco || 0);
+        if (pd > 0 || ps > 0) {
+          precoBase = (pd * 0.5) + (ps * 0.5);
+        }
+      }
+
+      if (pId) {
+        if (!groupedProduct[pId]) groupedProduct[pId] = { qtd: 0, precoBase, indices: [] };
+        groupedProduct[pId].qtd += item.quantidade;
+        groupedProduct[pId].indices.push(idx);
+      }
+
+      if (cId) {
+        if (!groupedCategory[cId]) groupedCategory[cId] = { qtd: 0, precoBase, indices: [] };
+        groupedCategory[cId].qtd += item.quantidade;
+        groupedCategory[cId].indices.push(idx);
+      }
+    });
+
+    const promoDiscounts = {};
+    (activePromos || []).forEach(promo => {
+      let g = null;
+      if (promo.produto_id && groupedProduct[promo.produto_id]) {
+        g = groupedProduct[promo.produto_id];
+      } else if (promo.categoria_id && groupedCategory[promo.categoria_id]) {
+        g = groupedCategory[promo.categoria_id];
+      }
+      if (g) {
+        let desc = 0;
+        if (promo.tipo === 'percentual') {
+          desc = (g.qtd * g.precoBase) * (promo.percentual / 100.0);
+        } else if (promo.tipo === 'compre_leve') {
+          const gratis = Math.floor(g.qtd / promo.qtd_leva) * (promo.qtd_leva - promo.qtd_compra);
+          desc = gratis * g.precoBase;
+        } else if (promo.tipo === 'segunda_unidade') {
+          desc = Math.floor(g.qtd / 2) * g.precoBase * (promo.percentual / 100.0);
+        }
+        if (desc > 0) {
+          const targetIdx = g.indices[0];
+          if (!promoDiscounts[targetIdx] || desc > promoDiscounts[targetIdx]) {
+            promoDiscounts[targetIdx] = desc;
+          }
+        }
+      }
+    });
+
+    cart.forEach((item, index) => {
+      let adicTotal = 0;
+      if (item.adicionaisSelecionados && item.adicionaisSelecionados.length > 0) {
+        item.adicionaisSelecionados.forEach(ad => {
+          adicTotal += Number(ad.preco || 0);
+        });
+      }
+
+      let precoBase = Number(item.produto?.preco || 0);
+      if (item.produto?.tipo_montagem === 'meio_a_meio' && item.sabores && item.sabores.length === 2) {
+        const precoDoce = Number(allProducts.find(p => p.id === item.sabores[0].produto_id)?.preco || 0);
+        const precoSalgado = Number(allProducts.find(p => p.id === item.sabores[1].produto_id)?.preco || 0);
+        if (precoDoce > 0 || precoSalgado > 0) {
+          precoBase = (precoDoce * 0.5) + (precoSalgado * 0.5);
+        }
+      }
+
+      const precoUnitario = precoBase + adicTotal;
+      total += precoUnitario * item.quantidade;
+      if (promoDiscounts[index]) {
+        total -= promoDiscounts[index];
+      }
+    });
+
+    return Math.max(0, total);
   }
 
   function renderCart() {
@@ -729,8 +815,10 @@ export function registrarCarrinhoPDV() {
     btnEnviarPedido.addEventListener('click', () => {
       if (btnEnviarPedido.dataset.sending === 'true') return;
 
-      const mesaCodigo = mesaSelect.value;
-      const obsGeral = pedidoObs.value.trim();
+      btnEnviarPedido._promessaEnvio = (async () => {
+        try {
+          const mesaCodigo = mesaSelect.value;
+          const obsGeral = pedidoObs.value.trim();
       const clienteNome = pedidoClienteNome.value.trim();
       const paraViagem = pedidoParaViagem.checked;
       const checkIntervalo = document.getElementById('check-pedido-intervalo');
@@ -767,7 +855,9 @@ export function registrarCarrinhoPDV() {
         }
       }
 
-      const total = estadoPDV.cart.reduce((acc, item) => acc + (item.produto.preco * item.quantidade), 0);
+      const total = (estadoPDV.ultimoTotalCarrinhoCalculado !== undefined && estadoPDV.ultimoTotalCarrinhoCalculado !== null && estadoPDV.ultimoTotalCarrinhoCalculado > 0)
+        ? estadoPDV.ultimoTotalCarrinhoCalculado
+        : calcularTotalCarrinho();
 
       const clientId = (window.crypto && crypto.randomUUID)
         ? crypto.randomUUID()
@@ -851,7 +941,21 @@ export function registrarCarrinhoPDV() {
         statusPag
       };
 
-      // 1. OTIMISMO TOTAL: FECHA E LIBERA CARRINHO IMEDIATAMENTE
+      // 1. GRAVAÇÃO PRÉVIA LOCAL OBRIGATÓRIA (CA01 / CA04)
+      let salvoOffline = false;
+      try {
+        salvoOffline = await estadoPDV.fn.dbSalvarPedidoOffline?.(offlineOrderData);
+      } catch (err) {
+        console.error('[PDV finalizarPedido] Falha ao gravar localmente na fila:', err);
+        salvoOffline = false;
+      }
+
+      if (!salvoOffline) {
+        showToast('Erro crítico ao gravar pedido localmente. O pedido NÃO foi enviado nem descartado. Verifique o armazenamento do navegador.', 'error');
+        return;
+      }
+
+      // 2. SÓ LIMPA E FECHA O CARRINHO APÓS SUCESSO NA GRAVAÇÃO LOCAL
       closeCartDrawer();
 
       estadoPDV.cart = [];
@@ -877,73 +981,86 @@ export function registrarCarrinhoPDV() {
 
       if (navigator.vibrate) navigator.vibrate(20);
       showToast(`Enviando pedido da ${mesaIdentificador}...`, 'info');
+      await estadoPDV.fn.atualizarContadorFilaOffline?.();
 
-      // 2. DISPARO EM SEGUNDO PLANO
-      (async () => {
-        if (!navigator.onLine || !estadoPDV.isPdvOnline) {
-          await estadoPDV.fn.dbSalvarPedidoOffline?.(offlineOrderData);
-          await estadoPDV.fn.atualizarContadorFilaOffline?.();
-          showToast(`⚡ Pedido da ${mesaIdentificador} guardado na fila offline! Será enviado automaticamente.`, 'info');
-          return;
-        }
+      // 3. ENVIO EM SEGUNDO PLANO COM ABORTCONTROLLER (10s) (CA02 / CA03 / CA05)
+      if (!navigator.onLine || !estadoPDV.isPdvOnline) {
+        showToast(`⚡ Pedido da ${mesaIdentificador} guardado na fila offline! Será enviado automaticamente.`, 'info');
+        return;
+      }
 
+        let timeoutId = null;
         try {
+          const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          if (controller) {
+            timeoutId = setTimeout(() => {
+              try { controller.abort(); } catch (_) {}
+            }, 10000);
+          }
+
           const { error: pedidoError } = await window.cafeteriaSupabase.rpc('criar_pedido', {
             p_payload: payload
-          });
+          }, controller ? { signal: controller.signal } : undefined);
+
+          if (timeoutId) clearTimeout(timeoutId);
 
           if (pedidoError) {
-            const isNetError = !navigator.onLine || (pedidoError.message && (
-              pedidoError.message.includes('fetch') ||
-              pedidoError.message.includes('network') ||
-              pedidoError.message.includes('Failed') ||
-              pedidoError.message.includes('timeout')
-            ));
+            const msg = pedidoError.message || '';
+            const isNetError = !navigator.onLine ||
+              pedidoError.name === 'AbortError' ||
+              msg.includes('AbortError') ||
+              msg.includes('fetch') ||
+              msg.includes('network') ||
+              msg.includes('Failed') ||
+              msg.includes('timeout') ||
+              msg.includes('aborted');
 
             if (isNetError) {
-              await estadoPDV.fn.dbSalvarPedidoOffline?.(offlineOrderData);
+              await estadoPDV.fn.atualizarStatusPedidoOffline?.(clientId, 'aguardando_envio', 'Timeout ou oscilação de rede');
               await estadoPDV.fn.atualizarContadorFilaOffline?.();
-              showToast(`⚠️ Conexão oscilou. Pedido da ${mesaIdentificador} guardado na fila offline!`, 'warning');
+              showToast(`⚠️ Conexão oscilou. Pedido da ${mesaIdentificador} mantido na fila offline!`, 'warning');
               return;
             }
 
-            showToast(`Erro ao registrar pedido da ${mesaIdentificador}: ${pedidoError.message}`, {
-              tipo: 'error',
-              acaoTexto: 'Restaurar',
-              acaoCallback: () => {
-                estadoPDV.cart = cartSnapshot;
-                mesaSelect.value = formSnapshot.mesaCodigo || '';
-                pedidoObs.value = formSnapshot.obsGeral || '';
-                pedidoClienteNome.value = formSnapshot.clienteNome || '';
-                if (formSnapshot.clienteId && pedidoClienteId) {
-                  pedidoClienteId.value = formSnapshot.clienteId;
-                  if (clienteBadge && clienteBadgeNome) {
-                    clienteBadgeNome.textContent = formSnapshot.clienteNome;
-                    if (clienteBadgeTel) clienteBadgeTel.textContent = formSnapshot.clienteTel || '';
-                    clienteBadge.style.display = 'flex';
-                    pedidoClienteNome.style.display = 'none';
-                  }
-                } else {
-                  if (pedidoClienteId) pedidoClienteId.value = '';
-                  if (clienteBadge) clienteBadge.style.display = 'none';
-                  pedidoClienteNome.style.display = '';
-                }
-                pedidoParaViagem.checked = !!formSnapshot.paraViagem;
-                if (pedidoPrioritario) pedidoPrioritario.checked = formSnapshot.prioridade === 1;
-                if (boxMotivoPrioridade) boxMotivoPrioridade.style.display = formSnapshot.prioridade === 1 ? 'block' : 'none';
-                if (pedidoPrioridadeMotivo) pedidoPrioridadeMotivo.value = formSnapshot.prioridadeMotivo || 'Espetáculo';
-                pedidoPagamento.value = formSnapshot.formaPag || '';
-                pedidoPago.checked = formSnapshot.statusPag === 'pago';
-                renderCart();
-                checkFormValidity();
-                estadoPDV.fn.atualizarModoConexaoCarrinho?.();
-                openCartDrawer();
-                showToast('Carrinho restaurado para ajustes!', { tipo: 'info' });
-              },
-              duracaoMs: 8000
-            });
+            // Erro de negócio do servidor (CA05): remove da fila offline e auto-restaura o carrinho
+            await estadoPDV.fn.dbRemoverPedidoOffline?.(clientId);
+            await estadoPDV.fn.atualizarContadorFilaOffline?.();
+
+            estadoPDV.cart = cartSnapshot;
+            mesaSelect.value = formSnapshot.mesaCodigo || '';
+            pedidoObs.value = formSnapshot.obsGeral || '';
+            pedidoClienteNome.value = formSnapshot.clienteNome || '';
+            if (formSnapshot.clienteId && pedidoClienteId) {
+              pedidoClienteId.value = formSnapshot.clienteId;
+              if (clienteBadge && clienteBadgeNome) {
+                clienteBadgeNome.textContent = formSnapshot.clienteNome;
+                if (clienteBadgeTel) clienteBadgeTel.textContent = formSnapshot.clienteTel || '';
+                clienteBadge.style.display = 'flex';
+                pedidoClienteNome.style.display = 'none';
+              }
+            } else {
+              if (pedidoClienteId) pedidoClienteId.value = '';
+              if (clienteBadge) clienteBadge.style.display = 'none';
+              pedidoClienteNome.style.display = '';
+            }
+            pedidoParaViagem.checked = !!formSnapshot.paraViagem;
+            if (pedidoPrioritario) pedidoPrioritario.checked = formSnapshot.prioridade === 1;
+            if (boxMotivoPrioridade) boxMotivoPrioridade.style.display = formSnapshot.prioridade === 1 ? 'block' : 'none';
+            if (pedidoPrioridadeMotivo) pedidoPrioridadeMotivo.value = formSnapshot.prioridadeMotivo || 'Espetáculo';
+            pedidoPagamento.value = formSnapshot.formaPag || '';
+            pedidoPago.checked = formSnapshot.statusPag === 'pago';
+            renderCart();
+            checkFormValidity();
+            estadoPDV.fn.atualizarModoConexaoCarrinho?.();
+            openCartDrawer();
+
+            showToast(`Erro ao registrar pedido da ${mesaIdentificador}: ${pedidoError.message}`, 'error');
             return;
           }
+
+          // Sucesso na criação do pedido no servidor (CA02): remove da fila offline
+          await estadoPDV.fn.dbRemoverPedidoOffline?.(clientId);
+          await estadoPDV.fn.atualizarContadorFilaOffline?.();
 
           if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
           showToast(`✓ Pedido da ${mesaIdentificador} enviado à cozinha com sucesso!`, 'success');
@@ -952,14 +1069,21 @@ export function registrarCarrinhoPDV() {
             estadoPDV.fn.loadMesas?.()
           ]);
         } catch (err) {
+          if (timeoutId) clearTimeout(timeoutId);
           console.error('[PDV Enviar Otimista] Exceção:', err);
-          await estadoPDV.fn.dbSalvarPedidoOffline?.(offlineOrderData);
+          const isAbort = err.name === 'AbortError' || (err.message && err.message.includes('abort'));
+          await estadoPDV.fn.atualizarStatusPedidoOffline?.(clientId, 'aguardando_envio', isAbort ? 'Tempo limite (10s) esgotado' : err.message);
           await estadoPDV.fn.atualizarContadorFilaOffline?.();
           showToast(`⚠️ Falha de comunicação. Pedido da ${mesaIdentificador} guardado na fila offline!`, 'warning');
         }
-      })();
-    });
-  }
+      } catch (errGlobal) {
+        console.error('[PDV finalizarPedido] Erro não tratado:', errGlobal);
+      } finally {
+        btnEnviarPedido._promessaEnvio = null;
+      }
+    })();
+  });
+}
 
   definirGlobalPDV('baristaUpdateQty', updateQuantity);
   definirGlobalPDV('baristaOpenObs', openItemObsModal);
@@ -981,6 +1105,7 @@ export function registrarCarrinhoPDV() {
   estadoPDV.fn.openCartDrawer = openCartDrawer;
   estadoPDV.fn.closeCartDrawer = closeCartDrawer;
   estadoPDV.fn.renderCart = renderCart;
+  estadoPDV.fn.calcularTotalCarrinho = calcularTotalCarrinho;
   estadoPDV.fn.atualizarPreviewPixCarrinho = atualizarPreviewPixCarrinho;
   estadoPDV.fn.checkFormValidity = checkFormValidity;
 }

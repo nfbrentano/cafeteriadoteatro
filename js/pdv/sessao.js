@@ -18,10 +18,21 @@ export function registrarSessaoPDV() {
       tipo = optionsOrActionText.tipo || 'info';
       acaoTexto = optionsOrActionText.acaoTexto || null;
       acaoCb = optionsOrActionText.acaoCallback || null;
-      duracao = optionsOrActionText.duracaoMs || duracao;
+      duracao = optionsOrActionText.duracaoMs !== undefined ? optionsOrActionText.duracaoMs : duracao;
     } else if (typeof optionsOrActionText === 'string') {
-      acaoTexto = optionsOrActionText;
-      acaoCb = actionCallback;
+      const lower = optionsOrActionText.trim().toLowerCase();
+      if (['error', 'success', 'warning', 'info'].includes(lower)) {
+        tipo = lower;
+        acaoTexto = null;
+        acaoCb = null;
+      } else {
+        acaoTexto = optionsOrActionText;
+        acaoCb = actionCallback;
+      }
+    }
+
+    if (tipo === 'error' && (optionsOrActionText === null || typeof optionsOrActionText === 'string' || (optionsOrActionText && optionsOrActionText.duracaoMs === undefined))) {
+      duracao = 0;
     }
 
     const toast = document.createElement('div');
@@ -90,7 +101,9 @@ export function registrarSessaoPDV() {
     toast.appendChild(closeBtn);
 
     container.appendChild(toast);
-    timeoutId = setTimeout(removeToast, duracao);
+    if (duracao > 0) {
+      timeoutId = setTimeout(removeToast, duracao);
+    }
   }
 
   function showConfirmBottomSheet(opts) {

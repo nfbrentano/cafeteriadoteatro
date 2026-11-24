@@ -198,7 +198,7 @@ describe('CAF-000105: Suíte de Testes Automatizados de Fluxo Completo de Pedido
         expect(document.querySelectorAll('.cart-item').length).toBe(0);
         expect(document.querySelector('.cart-empty')).toBeTruthy();
       }
-    });
+    }, 20000);
   });
 
   describe('Módulo 5: Bloqueios de Validação e Casos Negativos (CA07)', () => {

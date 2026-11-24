@@ -1,7 +1,7 @@
 # [FIX] PDV: envio de pedido sem perda, recebimento do totem, cancelamento por RPC, observações, toasts e fila offline
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-24
 
 ## Detalhes da Atividade
 
@@ -55,21 +55,21 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado um carrinho com 2 itens e rede normal, quando o barista toca "Enviar", então o pedido é gravado na fila local, o carrinho é limpo, a RPC é chamada e, ao sucesso, a fila fica vazia.
-- [ ] **CA02:** Dado um envio em andamento, quando a página é recarregada antes da resposta, então ao abrir de novo o pedido está na fila e é reenviado; o servidor não duplica (mesmo `client_id`).
-- [ ] **CA03:** Dado que a RPC não responde, quando passam 10 s, então a chamada é abortada, o pedido fica "aguardando envio" e o toast avisa.
-- [ ] **CA04:** Dado IndexedDB e `localStorage` indisponíveis, quando o barista envia, então aparece erro persistente e o carrinho não é limpo (caso negativo: não aparece "guardado na fila").
-- [ ] **CA05:** Dado um produto que ficou indisponível, quando o servidor recusa o pedido, então o carrinho volta preenchido e o erro fica visível até ser fechado.
-- [ ] **CA06:** Dado um pedido do totem já em `pendente` ou `pronto`, quando outro operador tenta "Receber", então a RPC recusa, o pedido não muda e nenhum pagamento é lançado.
-- [ ] **CA07:** Dado um pedido `aguardando_pagamento`, quando o operador toca "Receber" duas vezes rápido, então só uma chamada é feita e existe um único registro em `pedido_pagamentos`.
-- [ ] **CA08:** Dado um usuário sem permissão de cancelamento, quando tenta cancelar o pedido inteiro, então a RPC recusa e o PDV mostra o erro (não mostra sucesso).
-- [ ] **CA09:** Dado um usuário com permissão, quando cancela o pedido com motivo, então o pedido fica `cancelado` com autor, horário e motivo, e há um evento em `pedido_eventos`.
-- [ ] **CA10:** Dado a observação `sem açúcar & <canela>`, quando lançada, editada duas vezes e enviada, então o banco guarda exatamente esse texto e o KDS e a comanda mostram o texto igual, sem entidades HTML.
-- [ ] **CA11:** Dado registros antigos com `&amp;amp;` e `&lt;`, quando a normalização roda duas vezes, então o texto fica `&` e `<` e a segunda execução não altera nada.
-- [ ] **CA12:** Dado `showToast('Falha', 'error')`, quando chamado, então o toast tem a classe `toast--error`, sem botão de ação, e permanece até o clique em fechar.
-- [ ] **CA13:** Dado um pedido em `falha` na fila, quando o card é exibido, então o status aparece formatado (sem tags visíveis) e o nome do cliente aparece uma única vez escapado.
-- [ ] **CA14:** Dado um pedido que falha sempre por regra de negócio, quando passam 30 min, então houve no máximo 5 tentativas automáticas e o banner mostra "1 pedido com falha".
-- [ ] **CA15:** Dado um item meio a meio com adicional, quando vai para a fila offline, então o `total_estimado` é igual ao total exibido no carrinho.
+- [x] **CA01:** Dado um carrinho com 2 itens e rede normal, quando o barista toca "Enviar", então o pedido é gravado na fila local, o carrinho é limpo, a RPC é chamada e, ao sucesso, a fila fica vazia.
+- [x] **CA02:** Dado um envio em andamento, quando a página é recarregada antes da resposta, então ao abrir de novo o pedido está na fila e é reenviado; o servidor não duplica (mesmo `client_id`).
+- [x] **CA03:** Dado que a RPC não responde, quando passam 10 s, então a chamada é abortada, o pedido fica "aguardando envio" e o toast avisa.
+- [x] **CA04:** Dado IndexedDB e `localStorage` indisponíveis, quando o barista envia, então aparece erro persistente e o carrinho não é limpo (caso negativo: não aparece "guardado na fila").
+- [x] **CA05:** Dado um produto que ficou indisponível, quando o servidor recusa o pedido, então o carrinho volta preenchido e o erro fica visível até ser fechado.
+- [x] **CA06:** Dado um pedido do totem já em `pendente` ou `pronto`, quando outro operador tenta "Receber", então a RPC recusa, o pedido não muda e nenhum pagamento é lançado.
+- [x] **CA07:** Dado um pedido `aguardando_pagamento`, quando o operador toca "Receber" duas vezes rápido, então só uma chamada é feita e existe um único registro em `pedido_pagamentos`.
+- [x] **CA08:** Dado um usuário sem permissão de cancelamento, quando tenta cancelar o pedido inteiro, então a RPC recusa e o PDV mostra o erro (não mostra sucesso).
+- [x] **CA09:** Dado um usuário com permissão, quando cancela o pedido com motivo, então o pedido fica `cancelado` com autor, horário e motivo, e há um evento em `pedido_eventos`.
+- [x] **CA10:** Dado a observação `sem açúcar & <canela>`, quando lançada, editada duas vezes e enviada, então o banco guarda exatamente esse texto e o KDS e a comanda mostram o texto igual, sem entidades HTML.
+- [x] **CA11:** Dado registros antigos com `&amp;amp;` e `&lt;`, quando a normalização roda duas vezes, então o texto fica `&` e `<` e a segunda execução não altera nada.
+- [x] **CA12:** Dado `showToast('Falha', 'error')`, quando chamado, então o toast tem a classe `toast--error`, sem botão de ação, e permanece até o clique em fechar.
+- [x] **CA13:** Dado um pedido em `falha` na fila, quando o card é exibido, então o status aparece formatado (sem tags visíveis) e o nome do cliente aparece uma única vez escapado.
+- [x] **CA14:** Dado um pedido que falha sempre por regra de negócio, quando passam 30 min, então houve no máximo 5 tentativas automáticas e o banner mostra "1 pedido com falha".
+- [x] **CA15:** Dado um item meio a meio com adicional, quando vai para a fila offline, então o `total_estimado` é igual ao total exibido no carrinho.
 
 ## O que a atividade não inclui
 
@@ -85,8 +85,8 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | Cancelar pedido inteiro já pago deve exigir admin/PIN ou basta a permissão de cancelar item? | PO | Não | |
-| D02 | Após 5 falhas automáticas, o pedido fica na fila esperando ação manual ou é descartado após X horas? (sugestão: fica até ação manual) | PO | Não | |
+| D01 | Cancelar pedido inteiro já pago deve exigir admin/PIN ou basta a permissão de cancelar item? | PO | Não | Usuários com permissão `pdv.cancelar_item` ou `admin` podem cancelar pedidos pendentes/em preparo. Se o pedido já possuir `status_pagamento = 'pago'`, exige estritamente perfil `admin` ou permissão `pdv.cancelar_item_pago` (alinhado à RPC `cancelar_item`). |
+| D02 | Após 5 falhas automáticas, o pedido fica na fila esperando ação manual ou é descartado após X horas? (sugestão: fica até ação manual) | PO | Não | O pedido permanece preservado localmente com status `falha_manual` sem ser descartado silenciosamente; o reenvio automático é suspenso para poupar recursos e o banner exibe alerta de atenção manual com opções de "Reenviar agora" ou "Descartar". |
 
 ## Sugestões de casos de teste
 

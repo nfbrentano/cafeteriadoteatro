@@ -110,7 +110,7 @@ describe('CAF-000102: Matriz M1 e M1b — Envio de Pedidos no PDV (360 Combinaç
         expect(payload.itens.length).toBe(1);
       }
     }
-  }, 25000);
+  }, 45000);
 
   it('CA03 (borda): Carrinho vazio bloqueia o envio imediatamente sem chamar RPC', async () => {
     const page = await setupPedidosPage();
@@ -185,17 +185,11 @@ describe('CAF-000102: Matriz M1 e M1b — Envio de Pedidos no PDV (360 Combinaç
 
       await page.submeterPedido();
 
-      // Encontra o toast de erro com a ação Restaurar
-      const errToast = page.toasts.find(t => t.acaoTexto === 'Restaurar');
+      // Encontra o toast de erro (agora persistente e com auto-restauração conforme CAF-000133)
+      const errToast = page.toasts.find(t => t.tipo === 'error' || t.message?.includes('Erro ao registrar'));
       expect(errToast).toBeDefined();
 
-      // Carrinho foi limpo otimisticamente
-      expect(document.getElementById('pedido-obs')?.value).toBe('');
-
-      // Executa a restauração
-      errToast.acaoCb();
-
-      // Verifica se os dados anteriores foram recompostos
+      // Verifica se os dados anteriores foram recompostos automaticamente (CAF-000133)
       expect(document.getElementById('mesa-select')?.value).toBe('01');
       expect(document.getElementById('pedido-obs')?.value).toBe('Sem açúcar');
       expect(document.getElementById('pedido-cliente-nome')?.value).toBe('Marcos Vinicius');

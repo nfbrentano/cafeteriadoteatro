@@ -113,7 +113,7 @@ describe('CAF-000101: Resolução de Alertas CodeQL #14 e #19 de DOM XSS em pedi
       const cartItems = harness.document.getElementById('cart-items');
       expect(cartItems).toBeTruthy();
       expect(cartItems.querySelectorAll('script').length).toBe(0);
-      expect(cartItems.textContent).toContain('&lt;script&gt;alert(&quot;hack-obs&quot;)&lt;/script&gt;Sem açúcar');
+      expect(cartItems.textContent).toContain('<script>alert("hack-obs")</script>Sem açúcar');
 
       harness.cleanup();
     });
@@ -162,7 +162,7 @@ describe('CAF-000101: Resolução de Alertas CodeQL #14 e #19 de DOM XSS em pedi
 
       const cartItems = harness.document.getElementById('cart-items');
       expect(cartItems.querySelectorAll('img[src="x"]').length).toBe(0);
-      expect(cartItems.textContent).toContain('&lt;img src=x onerror=alert(&quot;hack-montagem&quot;)&gt;Muito quente');
+      expect(cartItems.textContent).toContain('<img src=x onerror=alert("hack-montagem")>Muito quente');
 
       harness.cleanup();
     });

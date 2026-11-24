@@ -463,6 +463,12 @@
       "arquivo": "migration_caf_000132_lgpd_consentimento_privacidade.sql",
       "checksum": "78631ab52963c9519039cedec3be9173f031d03909fb374394a6e130640610de",
       "rollback": "rollback_caf_000132.sql"
+    },
+    {
+      "versao": "133",
+      "arquivo": "migration_caf_000133_pdv_envio_seguro_totem_cancelamento.sql",
+      "checksum": "b874629214ab784bfcea8f10b153e331efbf2f1f9937ff142b6531f76ef0d5a2",
+      "rollback": "rollback_caf_000133.sql"
     }
   ]
 }

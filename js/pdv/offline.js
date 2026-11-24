@@ -12,7 +12,10 @@ export function registrarOfflinePDV() {
   const showToast = (...args) => (window.showToast || estadoPDV.fn.showToast)?.(...args);
   const confirmAction = (...args) => (window.showConfirm || estadoPDV.fn.showConfirm)?.(...args);
 
+  let cachedDb = null;
+
   function openOfflineDB() {
+    if (cachedDb) return Promise.resolve(cachedDb);
     return new Promise((resolve) => {
       if (!window.indexedDB) {
         console.warn('[OfflineDB] IndexedDB não suportado.');
@@ -27,7 +30,11 @@ export function registrarOfflinePDV() {
             store.createIndex('created_at', 'created_at', { unique: false });
           }
         };
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => {
+          cachedDb = request.result;
+          cachedDb.onclose = () => { cachedDb = null; };
+          resolve(cachedDb);
+        };
         request.onerror = (e) => {
           console.error('[OfflineDB] Erro ao abrir IndexedDB:', e);
           resolve(null);
@@ -39,6 +46,13 @@ export function registrarOfflinePDV() {
     });
   }
 
+  function getBackoffMs(tentativas) {
+    if (tentativas === 1) return 30 * 1000;
+    if (tentativas === 2) return 60 * 1000;
+    if (tentativas === 3) return 120 * 1000;
+    return 300 * 1000;
+  }
+
   async function dbSalvarPedidoOffline(pedidoData) {
     const db = await openOfflineDB();
     if (!db) {
@@ -48,12 +62,13 @@ export function registrarOfflinePDV() {
         if (idx >= 0) list[idx] = pedidoData;
         else list.push(pedidoData);
         localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(list));
+        return true;
       } catch (e) {
         console.error('Fallback localStorage falhou:', e);
+        return false;
       }
-      return true;
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       try {
         const tx = db.transaction(IDB_STORE, 'readwrite');
         const store = tx.objectStore(IDB_STORE);
@@ -61,10 +76,11 @@ export function registrarOfflinePDV() {
         tx.oncomplete = () => resolve(true);
         tx.onerror = (e) => {
           console.error('[OfflineDB] Erro ao gravar pedido:', e);
-          reject(e);
+          resolve(false);
         };
       } catch (err) {
-        reject(err);
+        console.error('[OfflineDB] Exceção ao gravar pedido:', err);
+        resolve(false);
       }
     });
   }
@@ -98,15 +114,16 @@ export function registrarOfflinePDV() {
   }
 
   async function dbRemoverPedidoOffline(clientId) {
+    try {
+      let list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
+      const filtered = list.filter(item => item.client_id !== clientId);
+      if (filtered.length !== list.length) {
+        localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(filtered));
+      }
+    } catch {}
+
     const db = await openOfflineDB();
-    if (!db) {
-      try {
-        let list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
-        list = list.filter(item => item.client_id !== clientId);
-        localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(list));
-      } catch {}
-      return true;
-    }
+    if (!db) return true;
     return new Promise((resolve) => {
       try {
         const tx = db.transaction(IDB_STORE, 'readwrite');
@@ -121,8 +138,28 @@ export function registrarOfflinePDV() {
   }
 
   async function dbAtualizarStatusPedidoOffline(clientId, status, ultimoErro = null) {
+    // Atualiza fallback localStorage
+    try {
+      const list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
+      const itemFb = list.find(p => p.client_id === clientId);
+      if (itemFb) {
+        itemFb.status = status;
+        if (ultimoErro !== null) itemFb.ultimo_erro = ultimoErro;
+        if (status === 'falha') {
+          itemFb.tentativas = (itemFb.tentativas || 0) + 1;
+          if (itemFb.tentativas >= 5) {
+            itemFb.status = 'falha_manual';
+            itemFb.proxima_tentativa_em = null;
+          } else {
+            itemFb.proxima_tentativa_em = Date.now() + getBackoffMs(itemFb.tentativas);
+          }
+        }
+        localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(list));
+      }
+    } catch {}
+
     const db = await openOfflineDB();
-    if (!db) return;
+    if (!db) return true;
     return new Promise((resolve) => {
       try {
         const tx = db.transaction(IDB_STORE, 'readwrite');
@@ -133,7 +170,17 @@ export function registrarOfflinePDV() {
             const item = req.result;
             item.status = status;
             if (ultimoErro !== null) item.ultimo_erro = ultimoErro;
-            item.tentativas = (item.tentativas || 0) + 1;
+            if (status === 'falha') {
+              item.tentativas = (item.tentativas || 0) + 1;
+              if (item.tentativas >= 5) {
+                item.status = 'falha_manual';
+                item.proxima_tentativa_em = null;
+              } else {
+                item.proxima_tentativa_em = Date.now() + getBackoffMs(item.tentativas);
+              }
+            } else if (status === 'aguardando_envio') {
+              item.proxima_tentativa_em = null;
+            }
             store.put(item);
           }
         };
@@ -163,14 +210,24 @@ export function registrarOfflinePDV() {
   }
 
   async function atualizarContadorFilaOffline() {
-    const { offlineQueueCount, btnOfflineQueue } = estadoPDV.refs;
-    const fila = await dbObterFilaOffline();
+    const offlineQueueCount = estadoPDV.refs.offlineQueueCount || document.getElementById('offline-queue-count');
+    const btnOfflineQueue = estadoPDV.refs.btnOfflineQueue || document.getElementById('btn-offline-queue');
+    const getFila = estadoPDV.fn.dbObterFilaOffline || dbObterFilaOffline;
+    const fila = await getFila();
     const count = fila.length;
+    const countFalhas = fila.filter(p => p.status === 'falha' || p.status === 'falha_manual').length;
     if (offlineQueueCount) offlineQueueCount.textContent = count;
 
     if (btnOfflineQueue) {
       if (count > 0) {
-        btnOfflineQueue.textContent = `⏳ ${count} Pendente${count > 1 ? 's' : ''}`;
+        if (countFalhas > 0) {
+          const textoFalha = countFalhas === 1 ? '1 pedido com falha' : `${countFalhas} pedidos com falha`;
+          btnOfflineQueue.textContent = `⚠️ ${textoFalha}`;
+          btnOfflineQueue.title = `${textoFalha} na fila offline`;
+        } else {
+          btnOfflineQueue.textContent = `⏳ ${count} Pendente${count > 1 ? 's' : ''}`;
+          btnOfflineQueue.title = `${count} pedido(s) pendentes na fila offline`;
+        }
         btnOfflineQueue.classList.remove('hidden');
         btnOfflineQueue.classList.add('pulse-queue');
       } else {
@@ -182,14 +239,17 @@ export function registrarOfflinePDV() {
   }
 
   async function processarFilaOffline() {
-    const { btnSyncOfflineNow, btnOfflineQueue, modalOfflineQueue } = estadoPDV.refs;
+    const btnSyncOfflineNow = estadoPDV.refs.btnSyncOfflineNow || document.getElementById('btn-sync-offline-now');
+    const btnOfflineQueue = estadoPDV.refs.btnOfflineQueue || document.getElementById('btn-offline-queue');
+    const modalOfflineQueue = estadoPDV.refs.modalOfflineQueue || document.getElementById('modal-offline-queue');
     if (estadoPDV.isSyncingQueue) return;
     if (!navigator.onLine) {
       await atualizarContadorFilaOffline();
       return;
     }
 
-    const fila = await dbObterFilaOffline();
+    const getFila = estadoPDV.fn.dbObterFilaOffline || dbObterFilaOffline;
+    const fila = await getFila();
     if (fila.length === 0) {
       await atualizarContadorFilaOffline();
       return;
@@ -209,6 +269,10 @@ export function registrarOfflinePDV() {
     for (const pedido of fila) {
       if (!navigator.onLine) break;
 
+      // Se atingiu falha_manual (máx 5 tentativas) ou ainda está no intervalo de backoff, pula no loop automático (CA14)
+      if (pedido.status === 'falha_manual') continue;
+      if (pedido.proxima_tentativa_em && Date.now() < pedido.proxima_tentativa_em) continue;
+
       try {
         await dbAtualizarStatusPedidoOffline(pedido.client_id, 'enviando');
 
@@ -218,7 +282,12 @@ export function registrarOfflinePDV() {
 
         if (pedidoError) {
           console.error('[OfflineQueue] Erro ao sincronizar pedido:', pedido.client_id, pedidoError);
-          if (pedidoError.message && (pedidoError.message.includes('fetch') || pedidoError.message.includes('network') || pedidoError.message.includes('Failed'))) {
+          const isNetError = !navigator.onLine || (pedidoError.message && (
+            pedidoError.message.includes('fetch') ||
+            pedidoError.message.includes('network') ||
+            pedidoError.message.includes('Failed')
+          ));
+          if (isNetError) {
             await dbAtualizarStatusPedidoOffline(pedido.client_id, 'aguardando_envio', 'Erro de conexão');
             break;
           } else {
@@ -228,7 +297,7 @@ export function registrarOfflinePDV() {
           await dbRemoverPedidoOffline(pedido.client_id);
           enviadosComSucesso++;
           const mesaStr = pedido.mesa_codigo ? (pedido.mesa_codigo === 'BALCAO' ? 'Balcão' : `Mesa ${pedido.mesa_codigo}`) : 'Balcão';
-          showToast(`✅ Pedido (${mesaStr}) sincronizado com a cozinha!`);
+          showToast(`✅ Pedido (${mesaStr}) sincronizado com a cozinha!`, 'success');
         }
       } catch (err) {
         console.error('[OfflineQueue] Exceção durante envio:', err);
@@ -255,8 +324,10 @@ export function registrarOfflinePDV() {
   }
 
   async function renderOfflineQueueModal() {
-    const { offlineQueueCount, offlineQueueList } = estadoPDV.refs;
-    const fila = await dbObterFilaOffline();
+    const offlineQueueCount = estadoPDV.refs.offlineQueueCount || document.getElementById('offline-queue-count');
+    const offlineQueueList = estadoPDV.refs.offlineQueueList || document.getElementById('offline-queue-list');
+    const getFila = estadoPDV.fn.dbObterFilaOffline || dbObterFilaOffline;
+    const fila = await getFila();
     if (offlineQueueCount) offlineQueueCount.textContent = fila.length;
     if (!offlineQueueList) return;
 
@@ -272,24 +343,24 @@ export function registrarOfflinePDV() {
 
       const horaStr = p.created_at ? new Date(p.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
       const mesaNome = p.mesa_codigo ? (p.mesa_codigo === 'BALCAO' ? '🥡 Balcão / Viagem' : `Mesa ${p.mesa_codigo}`) : 'Balcão';
-      const clienteStr = p.cliente_nome ? ` · Cliente: ${window.escapeHtml(p.cliente_nome)}` : '';
+      const safeClienteNome = p.cliente_nome ? window.escapeHtml(p.cliente_nome) : '';
+      const safeClienteStr = safeClienteNome ? ` · Cliente: ${safeClienteNome}` : '';
       const totalStr = (p.total_estimado || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
       let statusHtml = '';
       if (p.status === 'enviando') {
         statusHtml = '<span style="color: #1976d2; font-size: 11px; font-weight: bold;">🔄 Enviando...</span>';
-      } else if (p.status === 'falha') {
-        statusHtml = `<span style="color: #d32f2f; font-size: 11px; font-weight: bold;" title="${window.escapeHtml(p.ultimo_erro || '')}">⚠️ Falha: ${window.escapeHtml(p.ultimo_erro || '')}</span>`;
+      } else if (p.status === 'falha_manual' || p.status === 'falha') {
+        const prefixo = p.status === 'falha_manual' ? '❌ Falha permanente' : '⚠️ Falha';
+        statusHtml = `<span style="color: #d32f2f; font-size: 11px; font-weight: bold;" title="${window.escapeHtml(p.ultimo_erro || '')}">${prefixo}: ${window.escapeHtml(p.ultimo_erro || '')}</span>`;
       } else {
         statusHtml = '<span style="color: #f57c00; font-size: 11px; font-weight: bold;">⏳ Aguardando conexão</span>';
       }
 
       const safeMesaNome = window.escapeHtml(mesaNome || '');
-      const safeClienteStr = window.escapeHtml(clienteStr || '');
       const safeHoraStr = window.escapeHtml(horaStr || '--:--');
       const safeItensResumo = window.escapeHtml(p.itens_resumo || 'Itens do pedido');
       const safeTotalStr = window.escapeHtml(totalStr || '');
-      const safeStatusText = window.escapeHtml(statusHtml || '');
       const safeClientId = window.escapeHtml((p.client_id || '').toString());
 
       card.innerHTML = `
@@ -303,7 +374,7 @@ export function registrarOfflinePDV() {
         <div class="offline-card__footer">
           <div>
             <span class="offline-card__total">Estimado: ${safeTotalStr}</span>
-            <div style="margin-top: 2px;">${safeStatusText}</div>
+            <div style="margin-top: 2px;">${statusHtml}</div>
           </div>
           <div class="offline-card__actions">
             <button class="btn-queue-action btn-queue-action--retry" data-action="barista-retry-offline" data-client-id="${safeClientId}">Reenviar</button>
@@ -315,10 +386,39 @@ export function registrarOfflinePDV() {
     });
   }
 
-  async function baristaReenviarPedidoOffline(_clientId) {
+  async function baristaReenviarPedidoOffline(clientId) {
     if (!navigator.onLine) {
-      showToast('Aparelho ainda sem internet. O envio ocorrerá automaticamente na reconexão.');
+      showToast('Aparelho ainda sem internet. O envio ocorrerá automaticamente na reconexão.', 'warning');
       return;
+    }
+    if (clientId) {
+      const db = await openOfflineDB();
+      if (db) {
+        try {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          const store = tx.objectStore(IDB_STORE);
+          const req = store.get(clientId);
+          req.onsuccess = () => {
+            if (req.result) {
+              const item = req.result;
+              item.status = 'aguardando_envio';
+              item.tentativas = 0;
+              item.proxima_tentativa_em = null;
+              store.put(item);
+            }
+          };
+        } catch (_) {}
+      }
+      try {
+        const list = JSON.parse(localStorage.getItem('cafeteria_pedidos_offline_fallback') || '[]');
+        const itemFb = list.find(p => p.client_id === clientId);
+        if (itemFb) {
+          itemFb.status = 'aguardando_envio';
+          itemFb.tentativas = 0;
+          itemFb.proxima_tentativa_em = null;
+          localStorage.setItem('cafeteria_pedidos_offline_fallback', JSON.stringify(list));
+        }
+      } catch (_) {}
     }
     await processarFilaOffline();
   }
@@ -327,7 +427,7 @@ export function registrarOfflinePDV() {
     const confirmed = await confirmAction('Descartar Pedido?', 'Deseja realmente descartar este pedido da fila offline? Ele NÃO será enviado à cozinha.');
     if (!confirmed) return;
     await dbRemoverPedidoOffline(clientId);
-    showToast('Pedido descartado da fila.');
+    showToast('Pedido descartado da fila.', 'info');
     await atualizarContadorFilaOffline();
     renderOfflineQueueModal();
   }
@@ -372,6 +472,7 @@ export function registrarOfflinePDV() {
   estadoPDV.fn.dbSalvarPedidoOffline = dbSalvarPedidoOffline;
   estadoPDV.fn.dbObterFilaOffline = dbObterFilaOffline;
   estadoPDV.fn.dbRemoverPedidoOffline = dbRemoverPedidoOffline;
+  estadoPDV.fn.atualizarStatusPedidoOffline = dbAtualizarStatusPedidoOffline;
   estadoPDV.fn.atualizarModoConexaoCarrinho = atualizarModoConexaoCarrinho;
   estadoPDV.fn.atualizarContadorFilaOffline = atualizarContadorFilaOffline;
   estadoPDV.fn.processarFilaOffline = processarFilaOffline;

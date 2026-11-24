@@ -1593,6 +1593,7 @@
 
   // --- Cronômetro de Alta Performance (1s) e Semáforo (CAF-000025) ---
   function updateTimers() {
+    if (typeof document === 'undefined') return;
     if (!currentUser) return;
     const agora = getNowAdjusted();
     const cards = document.querySelectorAll('.pedido-card[data-tipo="pendente"], .pedido-card[data-tipo="em_preparo"]');

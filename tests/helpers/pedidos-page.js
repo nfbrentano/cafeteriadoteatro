@@ -481,7 +481,12 @@ export async function setupPedidosPage(options = {}) {
           btn.disabled = true;
           btn.setAttribute('disabled', '');
         }
-        await new Promise(r => setTimeout(r, 8));
+        if (btn._promessaEnvio) {
+          try {
+            await btn._promessaEnvio;
+          } catch (_) {}
+        }
+        await new Promise(r => setTimeout(r, 10));
       }
     },
 
@@ -594,6 +599,7 @@ export async function setupPedidosPage(options = {}) {
 
     limparChamadasRpc: () => {
       harness.rpcCalls.length = 0;
+      if (mockSupabase?.rpcHistory) mockSupabase.rpcHistory.length = 0;
     }
   };
 

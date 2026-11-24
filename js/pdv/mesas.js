@@ -1095,18 +1095,12 @@ export function registrarMesasPDV() {
           perigoso: true
         });
         if (confirmarCancelarPedido) {
-          await window.cafeteriaSupabase
-            .from('pedidos')
-            .update({
-              status: 'cancelado',
-              motivo_cancelamento: 'Todos os itens foram cancelados',
-              cancelado_por: estadoPDV.currentUser ? estadoPDV.currentUser.id : null,
-              cancelado_por_nome: estadoPDV.currentUser ? (estadoPDV.currentUser.nome || 'Barista') : 'Barista',
-              cancelado_em: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', pedidoId);
-          showToast('Pedido cancelado com sucesso!', { tipo: 'success' });
+          const { error: cancelErr } = await window.cafeteriaSupabase.rpc('cancelar_pedido', {
+            p_pedido_id: pedidoId,
+            p_motivo: 'Todos os itens foram cancelados'
+          });
+          if (cancelErr) throw cancelErr;
+          showToast('Pedido cancelado com sucesso!', 'success');
         }
       }
 
@@ -1179,66 +1173,58 @@ export function registrarMesasPDV() {
   });
 
   definirGlobalPDV('baristaReceberPedidoTotem', async function (pedidoId) {
+    if (estadoPDV._recebendoTotemId === pedidoId) return;
     const pedido = estadoPDV.activePedidos.find(p => p.id === pedidoId);
     if (!pedido) return;
-    const numPed = pedido.numero_pedido || pedido.id;
-    const valorNum = Number(pedido.total || 0);
-    const forma = await window.showSelecionarPagamentoTotemSheet({
-      numeroPedido: numPed,
-      clienteNome: pedido.cliente_nome || 'Totem',
-      valor: valorNum,
-      formaSugerida: pedido.forma_pagamento || 'pix'
-    });
-    if (!forma) return;
-    const formaInput = forma.trim().toLowerCase();
-    const mapaFormas = {
-      pix: 'pix',
-      dinheiro: 'dinheiro',
-      cartao_debito: 'cartao_debito',
-      debito: 'cartao_debito',
-      cartao_credito: 'cartao_credito',
-      credito: 'cartao_credito',
-      outros: 'outros'
-    };
-    const formaNorm = mapaFormas[formaInput] || 'pix';
 
-    if (formaNorm === 'pix' && window.cafeteriaPix) {
-      let exibirPix = true;
-      if (typeof window.showConfirmBottomSheet === 'function') {
-        exibirPix = await window.showConfirmBottomSheet({
-          titulo: 'Exibir QR Code Pix?',
-          mensagem: 'Deseja exibir o QR Code Pix na tela para o cliente pagar antes de liberar?',
-          textoConfirmar: 'Exibir Pix',
-          textoCancelar: 'Não, liberar direto'
-        });
-      }
-      if (exibirPix) {
-        window.cafeteriaPix.abrirModalClienteTelaCheia({
-          valor: valorNum,
-          txid: `CAFTOTEM${numPed}`,
-          subtitulo: `Totem Senha #${numPed} · ${pedido.cliente_nome || 'Balcão'}`
-        });
-      }
-    }
-
+    estadoPDV._recebendoTotemId = pedidoId;
     try {
+      const numPed = pedido.numero_pedido || pedido.id;
+      const valorNum = Number(pedido.total || 0);
+      const forma = await window.showSelecionarPagamentoTotemSheet({
+        numeroPedido: numPed,
+        clienteNome: pedido.cliente_nome || 'Totem',
+        valor: valorNum,
+        formaSugerida: pedido.forma_pagamento || 'pix'
+      });
+      if (!forma) return;
+      const formaInput = forma.trim().toLowerCase();
+      const mapaFormas = {
+        pix: 'pix',
+        dinheiro: 'dinheiro',
+        cartao_debito: 'cartao_debito',
+        debito: 'cartao_debito',
+        cartao_credito: 'cartao_credito',
+        credito: 'cartao_credito',
+        outros: 'outros'
+      };
+      const formaNorm = mapaFormas[formaInput] || 'pix';
+
+      if (formaNorm === 'pix' && window.cafeteriaPix) {
+        let exibirPix = true;
+        if (typeof window.showConfirmBottomSheet === 'function') {
+          exibirPix = await window.showConfirmBottomSheet({
+            titulo: 'Exibir QR Code Pix?',
+            mensagem: 'Deseja exibir o QR Code Pix na tela para o cliente pagar antes de liberar?',
+            textoConfirmar: 'Exibir Pix',
+            textoCancelar: 'Não, liberar direto'
+          });
+        }
+        if (exibirPix) {
+          window.cafeteriaPix.abrirModalClienteTelaCheia({
+            valor: valorNum,
+            txid: `CAFTOTEM${numPed}`,
+            subtitulo: `Totem Senha #${numPed} · ${pedido.cliente_nome || 'Balcão'}`
+          });
+        }
+      }
+
       const { error: rpcErr } = await window.cafeteriaSupabase.rpc('receber_pedido_totem', {
         p_pedido_id: pedidoId,
         p_forma_pagamento: formaNorm
       });
 
-      if (rpcErr) {
-        const { error } = await window.cafeteriaSupabase
-          .from('pedidos')
-          .update({
-            status: 'pendente',
-            forma_pagamento: formaNorm,
-            status_pagamento: 'pago',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', pedidoId);
-        if (error) throw error;
-      }
+      if (rpcErr) throw rpcErr;
 
       showToast(`Pagamento recebido! Pedido #${numPed} liberado para a cozinha.`, 'success');
       if (window.imprimirCupomPedido) {
@@ -1248,6 +1234,8 @@ export function registrarMesasPDV() {
     } catch (err) {
       console.error('Erro ao receber pedido do totem:', err);
       showToast('Erro ao liberar pedido: ' + err.message, 'error');
+    } finally {
+      estadoPDV._recebendoTotemId = null;
     }
   });
 

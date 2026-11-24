@@ -141,7 +141,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000130** | [FIX] Regressões em produção: avaliação pós-pedido quebrada, anti-spam do QR e fuso horário | Concluída | `migration_caf_000130_regressoes_fuso_avaliacao_qr.sql` | `caf-000130-regressoes-avaliacao-fuso.test.js` | — |
 | **CAF-000131** | [FIX] Pedidos públicos: cupom aplicado no servidor, horário de funcionamento e proteção contra abuso | Concluída | `migration_caf_000131_pedidos_publicos_cupom_horario.sql` | `caf-000131-pedidos-publicos-cupom-horario.test.js` | — |
 | **CAF-000132** | [FIX] LGPD e exportações: consentimento, Consent Mode do GA, política de privacidade, canal do titular e injeção em CSV | Concluída | `migration_caf_000132_lgpd_consentimento_privacidade.sql` | `caf-000132-lgpd-privacidade-exportacoes.test.js` | — |
-| **CAF-000133** | [FIX] PDV: envio de pedido sem perda, recebimento do totem, cancelamento por RPC, observações, toasts e fila offline | Rascunho | — | — | — |
+| **CAF-000133** | [FIX] PDV: envio de pedido sem perda, recebimento do totem, cancelamento por RPC, observações, toasts e fila offline | Concluída | `migration_caf_000133_pdv_envio_seguro_totem_cancelamento.sql` | `caf-000133-pdv-envio-sem-perda.test.js` | — |
 | **CAF-000134** | [FIX] KDS e impressão: fila de impressão, trava por estação, ressincronização no reconnect, SLA de agendados e voz | Rascunho | — | — | — |
 | **CAF-000135** | [FIX] Pedido do intervalo e "adicionar itens" descartados pelo servidor; repetir rodada; promoção por categoria | Rascunho | — | — | — |
 | **CAF-000136** | [FIX] Estoque: trigger de combos quebrado, PEPS no estorno e saldo incremental com lock | Rascunho | — | — | — |
