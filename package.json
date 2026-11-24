@@ -22,7 +22,7 @@
     "db:migrate": "node scripts/db-migrate.mjs"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.16",
+    "@electric-sql/pglite": "^0.5.17",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
     "@vitest/coverage-v8": "^5.1.0",
