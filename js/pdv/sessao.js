@@ -521,7 +521,8 @@ export function registrarSessaoPDV() {
       estadoPDV.fn.loadProdutos?.(),
       estadoPDV.fn.loadAdicionais?.(),
       estadoPDV.fn.loadActivePedidos?.(),
-      estadoPDV.fn.loadPromocoes?.()
+      estadoPDV.fn.loadPromocoes?.(),
+      estadoPDV.fn.loadSugestoesRegras?.()
     ]);
     estadoPDV.fn.restaurarRascunhoCarrinho?.();
   }

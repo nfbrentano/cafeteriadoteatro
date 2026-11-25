@@ -56,7 +56,7 @@
       });
 
       window.cafeteriaPromosHoje = promosHoje;
-      
+
       const categoriasAtivas = cats.filter(c => c.ativo).sort((a, b) => a.ordem - b.ordem);
 
       if (promosHoje.length > 0 || promosSemana.length > 0) {
@@ -73,9 +73,9 @@
       allPromosHoje = promosHoje;
       allPromosSemana = promosSemana;
 
-      const data = { 
-        categorias: categoriasAtivas, 
-        produtos: allProdutos 
+      const data = {
+        categorias: categoriasAtivas,
+        produtos: allProdutos
       };
 
       if (data.categorias.length === 0) {
@@ -116,8 +116,8 @@
         prodsFiltrados = window.SmartSearch.filterProducts(allProdutos, termoClean);
       } else {
         const queryLower = termoClean.toLowerCase();
-        prodsFiltrados = allProdutos.filter(p => 
-          p.nome.toLowerCase().includes(queryLower) || 
+        prodsFiltrados = allProdutos.filter(p =>
+          p.nome.toLowerCase().includes(queryLower) ||
           (p.descricao && p.descricao.toLowerCase().includes(queryLower))
         );
       }
@@ -128,7 +128,7 @@
       : [];
 
     if (filtrosAtivos.length > 0 && window.AlergenicosUtils) {
-      prodsFiltrados = prodsFiltrados.filter(p => 
+      prodsFiltrados = prodsFiltrados.filter(p =>
         window.AlergenicosUtils.produtoAtendeFiltro(p, p.alergenicos, filtrosAtivos)
       );
     }
@@ -264,7 +264,7 @@
 
   function renderContent(cats, products, container, promosHoje, promosSemana) {
     if (!container) return;
-    
+
     container.innerHTML = cats.map(cat => {
       if (cat.id === 'promos') {
         return renderPromosSection(promosHoje, promosSemana);
@@ -275,7 +275,7 @@
 
       const isCombo = cat.id === 'combos' || cat.nome.toLowerCase().includes('combo');
       const isEspecial = cat.id === 'especiais' || cat.nome.toLowerCase().includes('especial');
-      
+
       const gridClass = isCombo ? 'combo-grid' : 'produto-grid';
       const sectionClass = isCombo ? 'cat-section section--dark' : 'cat-section';
 
@@ -293,9 +293,9 @@
             </div>
             <div class="${gridClass}">
               ${catProducts.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)).map(p => {
-                if (isCombo) return renderComboCard(p);
-                return renderProductCard(p, cat.icone);
-              }).join('')}
+        if (isCombo) return renderComboCard(p);
+        return renderProductCard(p, cat.icone);
+      }).join('')}
             </div>
           </div>
         </section>
@@ -336,14 +336,14 @@
       if (p.tipo === 'percentual') detalhes = `${p.percentual}% OFF`;
       else if (p.tipo === 'segunda_unidade') detalhes = `2ª unid. com ${p.percentual}% OFF`;
       else if (p.tipo === 'compre_leve') detalhes = `Compre ${p.qtd_compra}, Leve ${p.qtd_leva}`;
-      
+
       return `
         <article class="produto-card fade-in" aria-label="${p.nome}">
           <div class="produto-card__image-wrap">
-            ${p.imagem_url 
-              ? `<img src="${p.imagem_url}" alt="${p.nome}" class="produto-card__image" loading="lazy">`
-              : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">🔥</span></div>`
-            }
+            ${p.imagem_url
+          ? `<img src="${p.imagem_url}" alt="${p.nome}" class="produto-card__image" loading="lazy">`
+          : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">🔥</span></div>`
+        }
           </div>
           <div class="produto-card__body">
             <h3 class="produto-card__name">${p.nome}</h3>
@@ -386,12 +386,12 @@
   function renderProductCard(p, catIcone) {
     const price = Number(p.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const imgUrl = p.imagem_url || p.imagemUrl;
-    
+
     let badgeHTML = '';
 
     const isPromoHoje = (window.cafeteriaPromosHoje || []).some(promo => {
       if (!promo.promocao_itens) return false;
-      return promo.promocao_itens.some(item => 
+      return promo.promocao_itens.some(item =>
         item.produto_id === p.id || item.categoria_id === (p.categoria_id || p.categoriaId)
       );
     });
@@ -404,13 +404,13 @@
       badgeHTML += '<span class="badge" style="background:#6c757d;">Indisponível hoje</span>';
     }
     if (p.badges && Array.isArray(p.badges)) {
-        badgeHTML += p.badges.map(b => {
-            if (b === 'popular') return '<span class="badge badge--popular">🔥 Mais Pedido</span>';
-            if (b === 'novo') return '<span class="badge badge--novo">🆕 Novidade</span>';
-            return '';
-        }).join('');
+      badgeHTML += p.badges.map(b => {
+        if (b === 'popular') return '<span class="badge badge--popular">🔥 Mais Pedido</span>';
+        if (b === 'novo') return '<span class="badge badge--novo">🆕 Novidade</span>';
+        return '';
+      }).join('');
     }
-    
+
     const esgotadoClass = p.disponivel === false ? 'produto-esgotado' : '';
     const statusA11y = p.disponivel === false ? ', esgotado' : '';
     const a11yLabel = `${p.nome}, R$ ${price}${statusA11y}`;
@@ -423,10 +423,10 @@
     return `
       <article class="produto-card fade-in ${esgotadoClass}" tabindex="0" role="region" aria-label="${a11yLabel}">
         <div class="produto-card__image-wrap">
-          ${imgUrl 
-            ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy" decoding="async">`
-            : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">${catIcone || '☕'}</span><span>Foto em breve</span></div>`
-          }
+          ${imgUrl
+        ? `<img src="${imgUrl}" alt="${p.nome}" class="produto-card__image" width="400" height="400" loading="lazy" decoding="async">`
+        : `<div class="produto-card__image-placeholder"><span class="placeholder-icon">${catIcone || '☕'}</span><span>Foto em breve</span></div>`
+      }
           <div class="produto-card__badges">${badgeHTML}</div>
         </div>
         <div class="produto-card__body">
@@ -448,7 +448,7 @@
 
     const isPromoHoje = (window.cafeteriaPromosHoje || []).some(promo => {
       if (!promo.promocao_itens) return false;
-      return promo.promocao_itens.some(item => 
+      return promo.promocao_itens.some(item =>
         item.produto_id === p.id || item.categoria_id === (p.categoria_id || p.categoriaId)
       );
     });

@@ -366,9 +366,26 @@ export function registrarCatalogoPDV() {
     });
   }
 
+  async function loadSugestoesRegras() {
+    try {
+      if (!window.cafeteriaSupabase) return;
+      const { data } = await window.cafeteriaSupabase
+        .from('sugestoes_regras')
+        .select('*')
+        .eq('ativo', true)
+        .order('ordem');
+      if (data) {
+        estadoPDV.sugestoesRegras = data;
+      }
+    } catch (e) {
+      console.warn('[PDV] Erro ao carregar sugestões:', e);
+    }
+  }
+
   estadoPDV.fn.loadPromocoes = loadPromocoes;
   estadoPDV.fn.loadAdicionais = loadAdicionais;
   estadoPDV.fn.loadProdutos = loadProdutos;
+  estadoPDV.fn.loadSugestoesRegras = loadSugestoesRegras;
   estadoPDV.fn.renderCategories = renderCategories;
   estadoPDV.fn.setCategory = setCategory;
   estadoPDV.fn.showEsgotadoMenu = showEsgotadoMenu;

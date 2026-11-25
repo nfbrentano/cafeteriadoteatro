@@ -113,7 +113,7 @@
   let mapaImpressoes = new Map(); // pedido_id -> array de logs de impressão
   let somHabilitado = true;
   let audioDesbloqueado = false;
-  
+
   // Consulta de pedido completo compartilhada entre busca inicial e realtime
   const PEDIDO_SELECT_COMPLETO = `
     *,
@@ -123,7 +123,7 @@
       pedido_item_sabores (*)
     )
   `;
-  
+
   // Cache de estacoes e tempos alvo (CAF-000025)
   let produtosCache = {}; // { produto_id: estacao }
   let produtosInfo = {}; // { produto_id: { estacao, tempo_alvo_min, categoria_id } }
@@ -208,7 +208,7 @@
 
   let estacaoSelecionada = localStorage.getItem('kds_estacao') || 'todas';
   const filtroEstacao = document.getElementById('filtro-estacao');
-  
+
   if (filtroEstacao) {
     filtroEstacao.value = estacaoSelecionada;
     filtroEstacao.addEventListener('change', (e) => {
@@ -289,7 +289,7 @@
     const isEtqAtivo = cfgAutoEtiqueta?.checked;
     const est = cfgPrintEstacao?.value || 'todas';
     const rawDev = cfgDeviceName?.value.trim() || 'Dispositivo sem nome';
-    const safeEscape = window.escapeHtml || function(s) {
+    const safeEscape = window.escapeHtml || function (s) {
       if (s === null || s === undefined) return '';
       return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     };
@@ -655,10 +655,10 @@
 
     currentUser = { ...user, perfil };
     document.getElementById('user-name').textContent = perfil.nome;
-    
+
     loginScreen.classList.add('hidden');
     app.classList.remove('hidden');
-    
+
     testAudioAutoplay();
     await syncServerClock();
     await loadProdutosECategorias();
@@ -673,7 +673,7 @@
         window.cafeteriaSupabase.from('produtos').select('id, categoria_id, tempo_alvo_min'),
         window.cafeteriaSupabase.from('site_settings').select('key, value').eq('key', 'tempo_alvo_padrao_min').maybeSingle()
       ]);
-      
+
       if (settings && settings.value) {
         const val = parseInt(settings.value, 10);
         if (!isNaN(val) && val > 0) tempoAlvoPadraoMin = val;
@@ -689,7 +689,7 @@
           };
         });
       }
-      
+
       produtosCache = {};
       produtosInfo = {};
       if (prods) {
@@ -716,7 +716,7 @@
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-pass').value;
     const btn = document.getElementById('login-btn');
-    
+
     btn.disabled = true;
     btn.textContent = 'Autenticando...';
     loginError.textContent = '';
@@ -788,7 +788,7 @@
     try {
       audioAlert.currentTime = 0;
       audioAlert.play().catch(e => console.warn('Autoplay impedido', e));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function chamarPedidoVoz(numeroPedido, mesaCodigo, clienteNome, paraViagem) {
@@ -831,7 +831,7 @@
     }
   }
 
-  window.cozinhaChamarPedido = function(numeroOuId, mesaCodigo, clienteNome, paraViagem) {
+  window.cozinhaChamarPedido = function (numeroOuId, mesaCodigo, clienteNome, paraViagem) {
     if (typeof numeroOuId === 'number' && !mesaCodigo && !clienteNome) {
       const pedido = pedidos.find(p => p.id === numeroOuId);
       if (pedido) {
@@ -1274,7 +1274,7 @@
     });
 
     let currentDomIndex = 0;
-    
+
     list.forEach(pedido => {
       const estadoTempo = calcularEstadoTempoPedido(pedido, agora);
       const atrasadoClass = estadoTempo.isAtrasado ? 'atrasado' : '';
@@ -1286,11 +1286,11 @@
       // Filtrar itens pela estação selecionada (se não for "todas")
       let itensDaEstacao = [];
       let itensOutraEstacaoCount = 0;
-      
+
       if (pedido.pedido_itens && pedido.pedido_itens.length > 0) {
         pedido.pedido_itens.forEach(item => {
           const itemEstacao = getItemEstacao(item);
-          
+
           if (estacaoSelecionada === 'todas' || estacaoSelecionada === itemEstacao) {
             itensDaEstacao.push(item);
           } else {
@@ -1380,7 +1380,7 @@
           if (isNovoNaoPronto) {
             novosPendentesCount++;
           }
-          
+
           let cancelClass = isCancelado ? 'style="text-decoration: line-through; color: #a0a0a0;"' : '';
           let cancelLabel = isCancelado ? '<span style="color: #e74c3c; font-size:10px; font-weight:bold; margin-left:6px;">CANCELADO</span>' : '';
           let cortesiaLabel = isCortesia && !isCancelado ? '<span style="background: #e74c3c; color: white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">CORTESIA</span>' : '';
@@ -1389,22 +1389,22 @@
           let prontoClass = item.pronto_em ? 'is-pronto' : '';
           let lancadoDepoisClass = isNovoNaoPronto ? 'is-lancado-depois' : '';
           let checkHtml = item.pronto_em ? '<span class="check-icon">✓</span>' : '';
-          
+
           const isClickable = !isCancelado && (tipo !== 'concluido' || aguardandoOutraEstacao);
           let actionClass = isClickable ? 'is-clickable' : '';
           let dataActionAttr = isClickable ? `data-action="kds-toggle-item" data-pedido-id="${pedido.id}" data-item-id="${item.id}" data-pronto="${item.pronto_em ? 'true' : 'false'}"` : '';
 
-          const obsItemHtml = item.observacoes 
-            ? `<div class="item-obs-badge">⚠️ Obs: ${window.escapeHtml(item.observacoes)}</div>` 
+          const obsItemHtml = item.observacoes
+            ? `<div class="item-obs-badge">⚠️ Obs: ${window.escapeHtml(item.observacoes)}</div>`
             : '';
 
           let adicHtml = '';
           if (item.pedido_item_adicionais && item.pedido_item_adicionais.length > 0) {
-            adicHtml = item.pedido_item_adicionais.map(ad => 
+            adicHtml = item.pedido_item_adicionais.map(ad =>
               `<div style="font-size:12px; color:#666; margin-left:24px; ${isCancelado ? 'text-decoration: line-through;' : ''}">+ ${window.escapeHtml(ad.nome_adicional)}</div>`
             ).join('');
           }
-          
+
           let saboresHtml = '';
           if (item.pedido_item_sabores && item.pedido_item_sabores.length === 2) {
             saboresHtml = `<div style="font-size:13px; color:#555; margin-left:24px; ${isCancelado ? 'text-decoration: line-through;' : ''}">
@@ -1435,7 +1435,7 @@
             </div>
           `;
         });
-        
+
         if (itensOutraEstacaoCount > 0) {
           itensHtml += `<div style="color:#aaa; font-style:italic; font-size:12px; margin-top:8px;">+ ${itensOutraEstacaoCount} item(s) de outra estação</div>`;
         }
@@ -1474,7 +1474,7 @@
       card.tabIndex = 0;
       card.setAttribute('role', 'region');
       card.setAttribute('aria-label', `Pedido ${pedido.numero_pedido || pedido.id} da mesa ${pedido.mesa_codigo}`);
-      
+
       let botoesHtml = '';
       if (tipo === 'pendente') {
         botoesHtml = `
@@ -1490,8 +1490,8 @@
           </div>
         `;
       } else if (tipo === 'em_preparo') {
-        const btnLabel = estacaoSelecionada === 'todas' 
-          ? 'Pronto! (Concluir)' 
+        const btnLabel = estacaoSelecionada === 'todas'
+          ? 'Pronto! (Concluir)'
           : (isBar ? 'Pronto! (Bar)' : 'Pronto! (Cozinha)');
         botoesHtml = `
           <div class="card-tools" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
@@ -1537,17 +1537,17 @@
         ? `<div class="kds-alerta-alergia" role="alert" style="background:#d32f2f; color:#ffffff; padding:6px 10px; border-radius:4px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px;">⚠️ ALERGIA: ${window.escapeHtml(textoAlergias.toUpperCase())}</div>`
         : '';
 
-      const obsHtml = pedido.observacoes 
-        ? `<div class="pedido-obs">📝 Obs Geral: ${window.escapeHtml(pedido.observacoes)}</div>` 
+      const obsHtml = pedido.observacoes
+        ? `<div class="pedido-obs">📝 Obs Geral: ${window.escapeHtml(pedido.observacoes)}</div>`
         : '';
 
       const operadorStr = pedido.criado_por_nome ? `Atendente: ${pedido.criado_por_nome}` : 'Atendimento';
-      
+
       const badgeEntregue = pedido.status === 'entregue' ? '<span style="background:#ddd; color:#555; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">ENTREGUE NA MESA</span>' : '';
-      
+
       const viagemTag = pedido.para_viagem ? `<span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">🥡 VIAGEM</span>` : '';
       const nomeClienteHtml = pedido.cliente_nome ? `<div style="font-size:15px; font-weight:bold; color:var(--marrom-escuro); margin-bottom: 6px;">${window.escapeHtml(pedido.cliente_nome)}</div>` : '';
-      
+
       const seloAguardando = aguardandoOutraEstacao
         ? `<span class="badge-aguardando-estacao">⏳ Aguardando ${isBar ? 'Cozinha' : 'Bar'}</span>`
         : '';
@@ -1709,7 +1709,7 @@
     gruposProducaoAtivos.clear();
 
     // 1. Filtrar pedidos em aberto (pendente e em_preparo)
-    const pedidosAbertos = pedidos.filter(p => 
+    const pedidosAbertos = pedidos.filter(p =>
       p.status === 'pendente' || p.status === 'em_preparo'
     );
 
@@ -1863,7 +1863,7 @@
 
       // Chips de pedidos de origem
       const chipsHtml = Array.from(group.pedidosOrigemMap.values()).map(orig => {
-        let desc = orig.paraViagem 
+        let desc = orig.paraViagem
           ? `🥡 ${orig.clienteNome ? window.escapeHtml(orig.clienteNome) + ' ' : ''}#${orig.numeroPedido}`
           : `${orig.mesaCodigo} #${orig.numeroPedido}`;
         if (orig.quantidade > 1) {
@@ -1899,7 +1899,7 @@
     });
   }
 
-  window.focarPedidoDoChip = function(pedidoId) {
+  window.focarPedidoDoChip = function (pedidoId) {
     const p = pedidos.find(item => item.id === pedidoId);
     if (!p) return;
 
@@ -1922,7 +1922,7 @@
     }, 60);
   };
 
-  window.marcarGrupoPronto = async function(encodedKey) {
+  window.marcarGrupoPronto = async function (encodedKey) {
     const groupKey = decodeURIComponent(encodedKey);
     const group = gruposProducaoAtivos.get(groupKey);
     if (!group || !group.itemIds || group.itemIds.length === 0) return;
@@ -2058,15 +2058,15 @@
   // 5. AÇÕES (Atualizar Status e Reimpressão)
   // -----------------------------------------------------
 
-  window.toggleItemPronto = async function(pedidoId, itemId, isProntoAtualmente) {
+  window.toggleItemPronto = async function (pedidoId, itemId, isProntoAtualmente) {
     const pedido = pedidos.find(p => p.id === pedidoId);
     if (!pedido) return;
-    
+
     const nowIso = new Date().toISOString();
     const item = (pedido.pedido_itens || []).find(i => i.id === itemId);
     if (item) {
       item.pronto_em = isProntoAtualmente ? null : nowIso;
-      
+
       const info = getPedidoEstacaoInfo(pedido);
       if (info.totalItens > 0 && info.totalProntos === info.totalItens) {
         pedido.status = 'concluido';
@@ -2079,15 +2079,15 @@
       }
       renderPedidos();
     }
-    
+
     const { error } = await window.cafeteriaSupabase
       .from('pedido_itens')
-      .update({ 
+      .update({
         pronto_em: isProntoAtualmente ? null : nowIso,
         pronto_por: isProntoAtualmente ? null : currentUser.id
       })
       .eq('id', itemId);
-      
+
     if (error) {
       showKdsToast('Erro ao atualizar item: ' + error.message, 'error');
       if (item) {
@@ -2101,10 +2101,10 @@
   // Pilha de histórico para desfazer via Backspace no Bump Bar (CAF-000029)
   const historicoAcoes = [];
 
-  window.iniciarPreparoEstacao = async function(pedidoId) {
+  window.iniciarPreparoEstacao = async function (pedidoId) {
     const estacao = estacaoSelecionada === 'todas' ? null : estacaoSelecionada;
     const nowIso = new Date().toISOString();
-    
+
     // Otimista
     const p = pedidos.find(item => item.id === pedidoId);
     if (p) {
@@ -2142,7 +2142,7 @@
     }
   };
 
-  window.concluirPreparoEstacao = async function(pedidoId) {
+  window.concluirPreparoEstacao = async function (pedidoId) {
     const estacao = estacaoSelecionada === 'todas' ? null : estacaoSelecionada;
     const nowIso = new Date().toISOString();
 
@@ -2180,7 +2180,7 @@
     }
   };
 
-  window.desfazerPreparo = async function(pedidoId) {
+  window.desfazerPreparo = async function (pedidoId) {
     const estacao = estacaoSelecionada === 'todas' ? null : estacaoSelecionada;
 
     // Otimista
@@ -2223,7 +2223,7 @@
     if (novoStatus === 'concluido') {
       return window.concluirPreparoEstacao(pedidoId);
     }
-    
+
     const payload = {
       status: novoStatus,
       updated_at: new Date().toISOString()
@@ -2344,7 +2344,7 @@
     if (idx === -1) idx = 0;
     idx = (idx + direcao + colunas.length) % colunas.length;
     colunaFocada = colunas[idx];
-    
+
     // Sincronizar aba mobile se visível
     const colTabMap = { 'pendente': 'pendentes', 'em_preparo': 'preparo', 'concluido': 'concluidos' };
     const tabMobile = document.querySelector(`.kds-tab-btn[data-col="${colTabMap[colunaFocada]}"]`);
@@ -2418,7 +2418,7 @@
         .from('pedidos')
         .update({ status: 'pendente', iniciado_em: null, updated_at: new Date().toISOString() })
         .eq('id', ultima.pedidoId);
-      
+
       const ped = pedidos.find(p => p.id === ultima.pedidoId);
       if (ped) {
         ped.status = 'pendente';
@@ -2618,7 +2618,7 @@
     }
   });
 
-  window.desfazerRecallPreparo = async function(pedidoId) {
+  window.desfazerRecallPreparo = async function (pedidoId) {
     await window.desfazerPreparo(pedidoId);
     showNovoItemToast(`↩️ Pedido #${pedidoId} retornado para a coluna Em Preparo!`);
     fecharModalHistorico();
@@ -2652,8 +2652,8 @@
 
     // 3. Se algum modal estiver visível, não processar ações da fila
     const algumModalAberto = (modalAtalhos && !modalAtalhos.classList.contains('hidden')) ||
-                             (modalHistoricoKds && !modalHistoricoKds.classList.contains('hidden')) ||
-                             (modalConfigTela && !modalConfigTela.classList.contains('hidden'));
+      (modalHistoricoKds && !modalHistoricoKds.classList.contains('hidden')) ||
+      (modalConfigTela && !modalConfigTela.classList.contains('hidden'));
     if (algumModalAberto) {
       return;
     }
@@ -2924,15 +2924,15 @@
   function agendarImpressaoComplementar(pedidoId) {
     if (!pedidoId || !window.cafeteriaPrint) return;
     pendingAdicionaisPedidos.add(pedidoId);
-    
+
     if (debouncePrintAdicionaisTimer) {
       clearTimeout(debouncePrintAdicionaisTimer);
     }
-    
+
     debouncePrintAdicionaisTimer = setTimeout(async () => {
       const pedidosParaProcessar = Array.from(pendingAdicionaisPedidos);
       pendingAdicionaisPedidos.clear();
-      
+
       for (const pId of pedidosParaProcessar) {
         await processarImpressaoComplementar(pId);
       }
@@ -2947,12 +2947,12 @@
         .select(PEDIDO_SELECT_COMPLETO)
         .eq('id', pedidoId)
         .single();
-        
+
       if (errPed || !pedidoData) return;
 
       const todosItens = pedidoData.pedido_itens || [];
       // Filtrar itens lançados depois que ainda não foram impressos e não estão cancelados
-      const itensNovosNaoImpressos = todosItens.filter(i => 
+      const itensNovosNaoImpressos = todosItens.filter(i =>
         i.lancado_depois === true && !i.impresso_em && !i.cancelado
       );
 
@@ -2997,14 +2997,14 @@
             return;
           }
           playAlert();
-          
+
           // Buscar pedido completo com itens para auto-impressão
           const { data: newPedido } = await window.cafeteriaSupabase
             .from('pedidos')
             .select(PEDIDO_SELECT_COMPLETO)
             .eq('id', payload.new.id)
             .single();
-            
+
           if (newPedido) {
             // Auto-impressão da comanda com trava atômica e filtro por estação da tela
             await tentarTravarEImprimir(newPedido, 'comanda');
@@ -3058,7 +3058,7 @@
             agendarImpressaoComplementar(payload.new.pedido_id);
           }
         }
-        
+
         const pedidoId = (payload.new && payload.new.pedido_id) || (payload.old && payload.old.pedido_id);
         if (pedidoId) {
           scheduleIncrementalFetch(pedidoId);

@@ -487,6 +487,12 @@
       "arquivo": "migration_caf_000152_alergenicos_restricoes.sql",
       "checksum": "489bd618a085a7554187fbf6ee21037ee0edf328a6724335dff2eaae1ced3d58",
       "rollback": "rollback_caf_000152.sql"
+    },
+    {
+      "versao": "150",
+      "arquivo": "migration_caf_000150_sugestoes_upsell.sql",
+      "checksum": "94ab6bc145023a349452ef3c631fc2c08dd17cd43597acb0311cb357ff9aee26",
+      "rollback": "rollback_caf_000150.sql"
     }
   ]
 }

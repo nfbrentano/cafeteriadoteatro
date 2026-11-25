@@ -2935,3 +2935,15 @@ tbody tr:hover { background: var(--admin-hover); }
 .adm-lgpd-lista[class] { display: flex; flex-direction: column; gap: 12px; }
 .adm-lgpd-carregando[class] { color: #64748b; font-size: 13px; }
 
+/* CAF-000150: Métricas de Sugestões / Upsell */
+.adm-box-metricas-sugestoes[class] { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; }
+.adm-box-metricas-sugestoes-header[class] { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.adm-box-metricas-sugestoes-title[class] { font-size: 13px; color: #1e293b; }
+.adm-box-metricas-sugestoes-content[class] { font-size: 12px; color: #475569; }
+.adm-metricas-sug-grid[class] { display: flex; flex-wrap: wrap; gap: 10px; }
+.adm-metricas-sug-card[class] { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; min-width: 180px; }
+.adm-metricas-sug-card-name[class] { font-weight: 700; color: #1e293b; font-size: 12px; }
+.adm-metricas-sug-card-stats[class] { font-size: 11px; color: #64748b; margin-top: 2px; }
+.adm-metricas-sug-card-taxa[class] { font-size: 13px; font-weight: 800; color: #16a34a; margin-top: 4px; }
+
+

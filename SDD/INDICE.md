@@ -158,7 +158,7 @@ Este documento é o inventário oficial de todas as Especificações e Demandas 
 | **CAF-000147** | [FEAT] Aviso de "pedido pronto" por Web Push (PWA) no aparelho do cliente | Rascunho | — | — | — |
 | **CAF-000148** | [FEAT] Vale-presente digital sobre a carteira de créditos | Rascunho | — | — | — |
 | **CAF-000149** | [FEAT] Fidelidade com níveis sobre o cashback | Rascunho | — | — | — |
-| **CAF-000150** | [FEAT] Sugestão de itens (upsell) no QR, pedido online e PDV | Rascunho | — | — | — |
+| **CAF-000150** | [FEAT] Sugestão de itens (upsell) no QR, pedido online e PDV | Concluída | `migration_caf_000150_sugestoes_upsell.sql` | `caf-000150-sugestoes-upsell.test.js` | — |
 | **CAF-000151** | [FEAT] Cardápio e preço por horário (dayparting) e cardápio expresso do intervalo | Rascunho | — | — | — |
 | **CAF-000152** | [FEAT] Alergênicos e restrições alimentares no cardápio, totem, PDV e KDS | Concluída | `migration_caf_000152_alergenicos_restricoes.sql` | `caf-000152-alergenicos-restricoes.test.js` | — |
 | **CAF-000153** | [FEAT] Voucher "ingresso + consumo" com a bilheteria do teatro | Rascunho | — | — | — |

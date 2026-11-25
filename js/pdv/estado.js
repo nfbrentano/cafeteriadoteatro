@@ -69,6 +69,7 @@ export const estadoPDV = {
   currentUser: null,
   pedidoEmEdicaoId: null,
   allProducts: [],
+  sugestoesRegras: [],
   allAdicionais: [],
   allVinculosProduto: [],
   currentCategory: '__rapidos__',

@@ -31,6 +31,8 @@
   let allAdicionais = [];
   let allVinculosProduto = [];
   let allProdutos = [];
+  let allSugestoesRegras = [];
+  let allCombos = [];
   let carrinho = [];
   let cupomAplicado = null;
   let espetaculoHojeConfig = null;
@@ -123,7 +125,7 @@
         if (window.cafeteriaDB?.hours?.get) {
           try {
             bhData = await window.cafeteriaDB.hours.get();
-          } catch (_) {}
+          } catch (_) { }
         }
         if (!bhData && window.cafeteriaSupabase) {
           const { data: bhRow } = await window.cafeteriaSupabase
@@ -168,7 +170,7 @@
             onlineConfig.cupomAtivo = cupomSetting.value === true || cupomSetting.value === 'true';
           }
         }
-      } catch (_) {}
+      } catch (_) { }
     }
 
     await carregarDadosApoio();
@@ -329,7 +331,7 @@
     if (modalEl._triggerEl && typeof modalEl._triggerEl.focus === 'function') {
       try {
         modalEl._triggerEl.focus();
-      } catch (_) {}
+      } catch (_) { }
     }
     modalEl._triggerEl = null;
   }
@@ -376,7 +378,7 @@
         gerenciarFechamentoModal(modal);
         modal.style.display = 'none';
         if (triggerEl && typeof triggerEl.focus === 'function') {
-          try { triggerEl.focus(); } catch (_) {}
+          try { triggerEl.focus(); } catch (_) { }
         }
         resolve(val);
       };
@@ -407,14 +409,22 @@
 
   async function carregarDadosApoio() {
     try {
-      const [{ data: adic }, { data: vinc }, { data: prods }] = await Promise.all([
+      const [{ data: adic }, { data: vinc }, { data: prods }, { data: sugs }, { data: cGrupos }] = await Promise.all([
         window.cafeteriaSupabase.from('adicionais').select('*').eq('ativo', true).order('ordem'),
         window.cafeteriaSupabase.from('v_adicionais_produto').select('*'),
-        window.cafeteriaSupabase.from('produtos').select('*').eq('ativo', true)
+        window.cafeteriaSupabase.from('produtos').select('*').eq('ativo', true),
+        window.cafeteriaSupabase.from('sugestoes_regras').select('*').eq('ativo', true).order('ordem'),
+        window.cafeteriaSupabase.from('combo_grupos').select('*, opcoes:combo_grupo_opcoes(*)')
       ]);
       allAdicionais = adic || [];
       allVinculosProduto = vinc || [];
       allProdutos = prods || [];
+      allSugestoesRegras = sugs || [];
+      const combosProds = (prods || []).filter(p => p.tipo_montagem === 'combo');
+      allCombos = combosProds.map(cp => ({
+        ...cp,
+        grupos: (cGrupos || []).filter(g => g.produto_combo_id === cp.id)
+      }));
     } catch (err) {
       console.warn('Erro ao carregar dados de apoio para pedidos:', err);
     }
@@ -432,7 +442,7 @@
   function salvarCarrinhoCache() {
     try {
       localStorage.setItem(getCacheKeyCarrinho(), JSON.stringify(carrinho));
-    } catch (e) {}
+    } catch (e) { }
     atualizarBarraCarrinho();
   }
 
@@ -508,7 +518,7 @@
     if (hDia.fechado) return false;
     const [abH, abM] = hDia.abertura.split(':').map(Number);
     const [feH, feM] = hDia.fechamento.split(':').map(Number);
-    
+
     let minAtual;
     if (window.datasSP?.formatarHoraSP) {
       const [hSP, mSP] = window.datasSP.formatarHoraSP(agora, false).split(':').map(Number);
@@ -629,6 +639,7 @@
         </div>
         <div class="modal-cliente-body">
           <div id="carrinho-itens-lista"></div>
+          <div id="bloco-sugestoes-carrinho"></div>
           
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid #cbd5e1;">
             <label style="display:block; font-size:13px; font-weight:700; color:#1e293b; margin-bottom:4px;">
@@ -1465,6 +1476,8 @@
       });
     });
 
+    renderizarSugestoesCarrinhoModal();
+
     if (isModoOnline) {
       atualizarModoRetiradaUI();
     }
@@ -1475,6 +1488,161 @@
   function fecharModalCarrinho() {
     const modal = document.getElementById('modal-carrinho-cliente');
     if (modal) gerenciarFechamentoModal(modal);
+  }
+
+  function renderizarSugestoesCarrinhoModal() {
+    const bloco = document.getElementById('bloco-sugestoes-carrinho');
+    if (!bloco) return;
+
+    if (!carrinho || carrinho.length === 0 || !window.SugestoesUtils) {
+      bloco.innerHTML = '';
+      return;
+    }
+
+    if (window.SugestoesUtils.isSugestoesDismissed && window.SugestoesUtils.isSugestoesDismissed()) {
+      bloco.innerHTML = '';
+      return;
+    }
+
+    const canal = isModoMesa ? 'mesa' : (isModoOnline ? 'retirada' : 'vitrine');
+    const filtrosAlergias = (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+      ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+      : [];
+
+    const res = window.SugestoesUtils.obterSugestoesCarrinho({
+      carrinho,
+      regras: allSugestoesRegras,
+      produtos: allProdutos,
+      combos: allCombos,
+      canal,
+      limite: 3,
+      filtrosAlergias
+    });
+
+    let upgradeHtml = '';
+    if (res.upgradeCombo) {
+      upgradeHtml = `
+        <div class="banner-upgrade-combo" id="banner-upgrade-combo">
+          <div class="banner-upgrade-combo__text">
+            🎁 <strong>Economize R$ ${res.upgradeCombo.economia.toFixed(2).replace('.', ',')}!</strong> Transforme seus itens no combo <em>${escapeHtml(res.upgradeCombo.combo.nome)}</em> por R$ ${Number(res.upgradeCombo.combo.preco || 0).toFixed(2).replace('.', ',')}.
+          </div>
+          <button type="button" class="banner-upgrade-combo__btn" id="btn-aceitar-upgrade-combo">
+            Transformar em Combo
+          </button>
+        </div>
+      `;
+    }
+
+    let itensHtml = '';
+    if (res.itens && res.itens.length > 0) {
+      itensHtml = `
+        <div class="bloco-sugestoes-carrinho" id="bloco-sugestoes-carrinho-inner">
+          <div class="bloco-sugestoes-carrinho__header">
+            <h4 class="bloco-sugestoes-carrinho__title">✨ ${escapeHtml(res.frase || 'Combina com seu pedido')}</h4>
+            <button type="button" class="bloco-sugestoes-carrinho__close" id="btn-fechar-sugestoes" aria-label="Fechar sugestões">✕</button>
+          </div>
+          <div class="bloco-sugestoes-carrinho__lista">
+            ${res.itens.map(p => {
+              const imgUrl = p.imagem_data || p.imagem;
+              const precoFmt = `R$ ${Number(p.preco || 0).toFixed(2).replace('.', ',')}`;
+              return `
+                <div class="sugestao-carrinho-item">
+                  <div class="sugestao-carrinho-item__info">
+                    ${imgUrl 
+                      ? `<img src="${escapeHtml(imgUrl)}" alt="" class="sugestao-carrinho-item__img" />`
+                      : `<div class="sugestao-carrinho-item__img-placeholder">☕</div>`
+                    }
+                    <div class="sugestao-carrinho-item__text">
+                      <div class="sugestao-carrinho-item__name">${escapeHtml(p.nome)}</div>
+                      <div class="sugestao-carrinho-item__price">${precoFmt}</div>
+                    </div>
+                  </div>
+                  <button type="button" class="sugestao-carrinho-item__btn btn-add-sugestao-carrinho" data-prod-id="${escapeHtml(p.id)}" data-regra-id="${escapeHtml(String(p._regraId || ''))}" aria-label="Adicionar ${escapeHtml(p.nome)} por ${precoFmt}">
+                    + Adicionar
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    bloco.innerHTML = upgradeHtml + itensHtml;
+
+    // Ações de Upgrade para Combo (CA10)
+    const btnUpgrade = document.getElementById('btn-aceitar-upgrade-combo');
+    if (btnUpgrade && res.upgradeCombo) {
+      btnUpgrade.addEventListener('click', () => {
+        const combo = res.upgradeCombo.combo;
+        const substituidos = res.upgradeCombo.itensSubstituidos || [];
+        const substituidosIds = substituidos.map(s => String(s.id));
+
+        substituidosIds.forEach(subId => {
+          const idx = carrinho.findIndex(it => String(it.produto_id) === subId);
+          if (idx !== -1) {
+            if (carrinho[idx].quantidade > 1) {
+              carrinho[idx].quantidade--;
+            } else {
+              carrinho.splice(idx, 1);
+            }
+          }
+        });
+
+        carrinho.push({
+          produto_id: combo.id,
+          nome: combo.nome,
+          preco_unitario: Number(combo.preco || 0),
+          quantidade: 1,
+          adicionais: [],
+          observacoes: 'Upgrade para combo'
+        });
+
+        salvarCarrinhoCache();
+        anunciarCardapioA11y(`Itens transformados no combo ${combo.nome}.`);
+        cardapioShowToast(`Combo "${combo.nome}" adicionado com sucesso!`, 'success');
+        abrirModalCarrinho();
+      });
+    }
+
+    // Ação de fechar bloco de sugestões na sessão (CA06)
+    const btnFechar = document.getElementById('btn-fechar-sugestoes');
+    if (btnFechar) {
+      btnFechar.addEventListener('click', () => {
+        window.SugestoesUtils?.dismissSugestoes?.();
+        const inner = document.getElementById('bloco-sugestoes-carrinho-inner');
+        if (inner) inner.remove();
+        anunciarCardapioA11y('Sugestões fechadas.');
+      });
+    }
+
+    // Ação de adicionar produto sugerido (CA05)
+    bloco.querySelectorAll('.btn-add-sugestao-carrinho').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pId = btn.getAttribute('data-prod-id');
+        const rId = btn.getAttribute('data-regra-id');
+        const prod = allProdutos.find(p => String(p.id) === String(pId));
+        if (prod) {
+          carrinho.push({
+            produto_id: prod.id,
+            nome: prod.nome,
+            preco_unitario: Number(prod.preco || 0),
+            quantidade: 1,
+            adicionais: [],
+            observacoes: ''
+          });
+          salvarCarrinhoCache();
+          window.SugestoesUtils?.registrarEventoAceite?.(canal, prod.id, rId || null);
+          anunciarCardapioA11y(`${prod.nome} adicionado ao pedido.`);
+          cardapioShowToast(`${prod.nome} adicionado ao seu pedido!`, 'success');
+          abrirModalCarrinho();
+        }
+      });
+    });
+
+    if (res.itens && res.itens.length > 0) {
+      window.SugestoesUtils?.registrarEventoExibicao?.(canal, res.itens, res.regraId);
+    }
   }
 
   async function enviarPedidoFinal() {

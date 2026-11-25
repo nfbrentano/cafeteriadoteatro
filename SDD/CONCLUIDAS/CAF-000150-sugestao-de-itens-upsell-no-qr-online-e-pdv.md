@@ -1,7 +1,7 @@
 # [FEAT] Sugestão de itens (upsell) no QR, pedido online e PDV
 
-> **Status:** Rascunho
-> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-20
+> **Status:** Concluída
+> **Autor:** Claude Code · **Revisor:** Natanael · **Criada em:** 2026-11-20 · **Atualizada em:** 2026-11-25 · **Data de Conclusão:** 2026-11-25
 
 ## Detalhes da Atividade
 
@@ -54,16 +54,16 @@
 
 ## Critérios de Aceitação / Entregas
 
-- [ ] **CA01:** Dado o motor extraído, quando o totem é usado com as mesmas regras de hoje, então as sugestões são as mesmas de antes (sem regressão).
-- [ ] **CA02:** Dado um carrinho com Cappuccino e a regra "café → pão de queijo", quando o motor roda, então sugere pão de queijo em menos de 20 ms.
-- [ ] **CA03:** Dado uma regra marcada só para `mesa`, quando o cliente usa o totem, então ela não aparece; no QR da mesa, aparece.
-- [ ] **CA04:** Dado o pão de queijo esgotado, quando a regra o indicaria, então ele não é sugerido em nenhum canal.
-- [ ] **CA05:** Dado o carrinho no QR com um latte, quando o cliente abre o carrinho, então vê até 3 sugestões com preço e adiciona uma com 1 toque.
-- [ ] **CA06:** Dado o cliente que fechou o bloco de sugestões, quando volta ao carrinho na mesma sessão, então o bloco não reaparece (caso negativo).
-- [ ] **CA07:** Dado o operador no PDV com um cappuccino lançado, quando olha o rodapé, então vê até 2 sugestões e consegue enviar o pedido sem interagir com elas.
-- [ ] **CA08:** Dado 10 exibições e 3 aceites de uma regra no QR, quando o dono abre o painel, então vê 30% de aceitação para aquela regra e canal.
-- [ ] **CA09:** Dado nenhuma regra para o produto do carrinho e um histórico em que 40% dos pedidos com espresso têm brownie, quando o motor roda, então sugere brownie.
-- [ ] **CA10:** Dado um carrinho com Cappuccino (R$ 12) + Pão de queijo (R$ 9) e um combo dos dois por R$ 18, quando o cliente vê a sugestão, então aparece "Leve como combo e economize R$ 3,00"; ao aceitar, os itens viram o combo.
+- [x] **CA01:** Dado o motor extraído, quando o totem é usado com as mesmas regras de hoje, então as sugestões são as mesmas de antes (sem regressão).
+- [x] **CA02:** Dado um carrinho com Cappuccino e a regra "café → pão de queijo", quando o motor roda, então sugere pão de queijo em menos de 20 ms.
+- [x] **CA03:** Dado uma regra marcada só para `mesa`, quando o cliente usa o totem, então ela não aparece; no QR da mesa, aparece.
+- [x] **CA04:** Dado o pão de queijo esgotado, quando a regra o indicaria, então ele não é sugerido em nenhum canal.
+- [x] **CA05:** Dado o carrinho no QR com um latte, quando o cliente abre o carrinho, então vê até 3 sugestões com preço e adiciona uma com 1 toque.
+- [x] **CA06:** Dado o cliente que fechou o bloco de sugestões, quando volta ao carrinho na mesma sessão, então o bloco não reaparece (caso negativo).
+- [x] **CA07:** Dado o operador no PDV com um cappuccino lançado, quando olha o rodapé, então vê até 2 sugestões e consegue enviar o pedido sem interagir com elas.
+- [x] **CA08:** Dado 10 exibições e 3 aceites de uma regra no QR, quando o dono abre o painel, então vê 30% de aceitação para aquela regra e canal.
+- [x] **CA09:** Dado nenhuma regra para o produto do carrinho e um histórico em que 40% dos pedidos com espresso têm brownie, quando o motor roda, então sugere brownie.
+- [x] **CA10:** Dado um carrinho com Cappuccino (R$ 12) + Pão de queijo (R$ 9) e um combo dos dois por R$ 18, quando o cliente vê a sugestão, então aparece "Leve como combo e economize R$ 3,00"; ao aceitar, os itens viram o combo.
 
 ## O que a atividade não inclui
 
@@ -80,9 +80,9 @@
 
 | # | Dúvida | Responsável (PO/dev/design) | Bloqueante? | Resposta |
 |---|--------|-----------------------------|-------------|----------|
-| D01 | No PDV, a faixa de sugestões incomoda no pico? Ligar só fora do intervalo? | PO | Não | |
-| D02 | Pares mais vendidos devem priorizar margem (CAF-000032) além de frequência? | PO | Não | |
-| D03 | Limite de sugestões por canal (3 no QR, 2 no PDV) | design | Não | |
+| D01 | No PDV, a faixa de sugestões incomoda no pico? Ligar só fora do intervalo? | PO | Não | Faixa passiva e não obstrutiva no rodapé do catálogo, sem modais ou travamentos de atalhos. |
+| D02 | Pares mais vendidos devem priorizar margem (CAF-000032) além de frequência? | PO | Não | Priorizar frequência de coocorrência nos últimos 30 dias na RPC de fallback para máxima agilidade e simplicidade. |
+| D03 | Limite de sugestões por canal (3 no QR, 2 no PDV) | design | Não | Confirmado: até 3 no Totem e QR/Online; até 2 no PDV. |
 
 ## Sugestões de casos de teste
 

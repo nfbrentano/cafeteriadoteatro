@@ -529,8 +529,19 @@
           </div>
 
           <div class="adm-s-114">
-            <strong class="adm-s-115">🥐 Sugestões de Complemento ("Que tal um acompanhamento?")</strong>
-            <p class="hint adm-s-116">Sugere até 3 produtos antes de finalizar o pedido no totem quando o carrinho tiver itens da categoria gatilho.</p>
+            <strong class="adm-s-115">🥐 Sugestões de Complemento (Upsell Multi-Canal)</strong>
+            <p class="hint adm-s-116">Configura sugestões de produtos para o Totem, Cardápio do QR / Mesa, Retirada Online e PDV (Balcão).</p>
+
+            <div id="box-metricas-sugestoes" class="adm-box-metricas-sugestoes">
+              <div class="adm-box-metricas-sugestoes-header">
+                <strong class="adm-box-metricas-sugestoes-title">📊 Métricas de Conversão de Sugestões (Últimos 30 dias)</strong>
+                <button type="button" class="btn btn--sm btn--secondary" id="btn-recarregar-metricas-sug">Atualizar</button>
+              </div>
+              <div id="metricas-sugestoes-conteudo" class="adm-box-metricas-sugestoes-content">
+                Carregando métricas...
+              </div>
+            </div>
+
             <div class="adm-s-117">
               <div class="field adm-s-118">
                 <label class="field__label" for="totem-sug-categoria">Quando tiver a Categoria</label>
@@ -545,6 +556,16 @@
                 </select>
               </div>
               <div class="field adm-s-119">
+                <label class="field__label" for="totem-sug-canal">Canal</label>
+                <select class="field__select" id="totem-sug-canal">
+                  <option value="todos">Todos os Canais</option>
+                  <option value="totem">Apenas Totem</option>
+                  <option value="mesa">Apenas Mesa (QR)</option>
+                  <option value="retirada">Apenas Retirada Online</option>
+                  <option value="pdv">Apenas PDV (Balcão)</option>
+                </select>
+              </div>
+              <div class="field adm-s-119">
                 <label class="field__label" for="totem-sug-frase">Frase de convite</label>
                 <input class="field__input" type="text" id="totem-sug-frase" value="Que tal acompanhar seu pedido?" maxlength="80" />
               </div>
@@ -556,12 +577,13 @@
                   <tr>
                     <th>Quando o carrinho tiver</th>
                     <th>Sugerir Produto</th>
+                    <th>Canal</th>
                     <th>Frase</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody id="totem-sugestoes-tbody">
-                  <tr><td colspan="4" class="text-center">Carregando sugestões...</td></tr>
+                  <tr><td colspan="5" class="text-center">Carregando sugestões...</td></tr>
                 </tbody>
               </table>
             </div>

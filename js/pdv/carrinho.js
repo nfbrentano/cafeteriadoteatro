@@ -632,6 +632,7 @@ export function registrarCarrinhoPDV() {
       cartTotalValue.textContent = 'R$ 0,00';
       estadoPDV.ultimoTotalCarrinhoCalculado = 0;
       document.getElementById('pix-cart-preview')?.classList.add('hidden');
+      document.getElementById('pdv-sugestoes-upsell')?.classList.add('hidden');
       if (mobileCartBar) mobileCartBar.classList.add('hidden');
       closeCartDrawer();
       checkFormValidity();
@@ -781,6 +782,62 @@ export function registrarCarrinhoPDV() {
     checkFormValidity();
     salvarRascunhoCarrinho();
     estadoPDV.fn.syncProductCardsWithCart?.();
+    atualizarSugestoesPDV();
+  }
+
+  function atualizarSugestoesPDV() {
+    const container = document.getElementById('pdv-sugestoes-upsell');
+    if (!container) return;
+
+    if (!estadoPDV.cart || estadoPDV.cart.length === 0 || !window.SugestoesUtils) {
+      container.classList.add('hidden');
+      container.innerHTML = '';
+      return;
+    }
+
+    const res = window.SugestoesUtils.obterSugestoesCarrinho({
+      carrinho: estadoPDV.cart,
+      regras: estadoPDV.sugestoesRegras || [],
+      produtos: estadoPDV.allProducts || [],
+      canal: 'pdv',
+      limite: 2
+    });
+
+    if (!res.itens || res.itens.length === 0) {
+      container.classList.add('hidden');
+      container.innerHTML = '';
+      return;
+    }
+
+    container.classList.remove('hidden');
+    container.innerHTML = `
+      <span class="pdv-sugestoes-upsell__label">💡 Sugestão:</span>
+      ${res.itens.map(p => `
+        <button type="button" class="pdv-sugestao-btn btn-add-sugestao-pdv" data-prod-id="${escapeHtml(p.id)}" data-regra-id="${escapeHtml(String(p._regraId || ''))}" title="Adicionar ${escapeHtml(p.nome)} ao pedido">
+          + ${escapeHtml(p.nome)} (R$ ${Number(p.preco || 0).toFixed(2).replace('.', ',')})
+        </button>
+      `).join('')}
+    `;
+
+    container.querySelectorAll('.btn-add-sugestao-pdv').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const pId = btn.getAttribute('data-prod-id');
+        const rId = btn.getAttribute('data-regra-id');
+        const prod = (estadoPDV.allProducts || []).find(x => String(x.id) === String(pId));
+        if (prod) {
+          estadoPDV.fn.addToCartFromMontagem?.({
+            produto: prod,
+            adicionaisSelecionados: [],
+            sabores: null,
+            observacoes: ''
+          });
+          window.SugestoesUtils?.registrarEventoAceite?.('pdv', prod.id, rId || null);
+        }
+      });
+    });
+
+    window.SugestoesUtils?.registrarEventoExibicao?.('pdv', res.itens, res.regraId);
   }
 
   document.getElementById('btn-pix-cart-copiar')?.addEventListener('click', function () {

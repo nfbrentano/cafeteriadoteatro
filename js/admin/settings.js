@@ -1252,9 +1252,12 @@
       const btnSalvarConfigTotem = document.getElementById('btn-salvar-config-totem');
       const selTotemSugCategoria = document.getElementById('totem-sug-categoria');
       const selTotemSugProduto = document.getElementById('totem-sug-produto');
+      const selTotemSugCanal = document.getElementById('totem-sug-canal');
       const inputTotemSugFrase = document.getElementById('totem-sug-frase');
       const btnAddTotemSugestao = document.getElementById('btn-add-totem-sugestao');
       const tbodyTotemSugestoes = document.getElementById('totem-sugestoes-tbody');
+      const btnRecarregarMetricasSug = document.getElementById('btn-recarregar-metricas-sug');
+      const boxMetricasSugConteudo = document.getElementById('metricas-sugestoes-conteudo');
 
       let totemAnimacaoConfigAtual = { tipo: 'catalogo', id: 'nenhuma' };
 
@@ -1447,23 +1450,25 @@
         if (!tbodyTotemSugestoes || !window.cafeteriaSupabase) return;
         try {
           const { data, error } = await window.cafeteriaSupabase
-            .from('totem_sugestoes')
-            .select('id, gatilho_categoria_id, produto_sugerido_id, frase_destaque, categorias(nome), produtos!totem_sugestoes_produto_sugerido_id_fkey(nome, preco)')
+            .from('sugestoes_regras')
+            .select('id, gatilho_categoria_id, produto_sugerido_id, frase_destaque, canal, prioridade, categorias(nome), produtos!sugestoes_regras_produto_sugerido_id_fkey(nome, preco)')
             .eq('ativo', true)
             .order('ordem');
           if (error) throw error;
           if (!data || data.length === 0) {
-            tbodyTotemSugestoes.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Nenhuma sugestão personalizada cadastrada (o totem usará sugestões automáticas).</td></tr>';
+            tbodyTotemSugestoes.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-sec);">Nenhuma sugestão personalizada cadastrada.</td></tr>';
             return;
           }
           tbodyTotemSugestoes.innerHTML = data.map((s) => {
             const catNome = s.categorias?.nome || 'Qualquer item no carrinho';
             const prodNome = s.produtos?.nome || s.produto_sugerido_id;
             const prodPreco = s.produtos?.preco ? ` (R$ ${Number(s.produtos.preco).toFixed(2).replace('.', ',')})` : '';
+            const canalNome = s.canal ? s.canal.toUpperCase() : 'TODOS';
             return `
               <tr>
                 <td>${window.escapeHtml ? window.escapeHtml(catNome) : catNome}</td>
                 <td><strong>${window.escapeHtml ? window.escapeHtml(prodNome) : prodNome}</strong>${prodPreco}</td>
+                <td><span style="font-size:11px; font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${canalNome}</span></td>
                 <td>${window.escapeHtml ? window.escapeHtml(s.frase_destaque || '') : (s.frase_destaque || '')}</td>
                 <td>
                   <button type="button" class="btn btn--danger btn--sm btn-del-totem-sug" data-id="${s.id}">Excluir</button>
@@ -1475,16 +1480,48 @@
           tbodyTotemSugestoes.querySelectorAll('.btn-del-totem-sug').forEach((btn) => {
             btn.addEventListener('click', async () => {
               const id = btn.getAttribute('data-id');
-              await window.cafeteriaSupabase.from('totem_sugestoes').delete().eq('id', id);
+              await window.cafeteriaSupabase.from('sugestoes_regras').delete().eq('id', id);
               carregarSugestoesTotem();
             });
           });
         } catch (e) {
-          tbodyTotemSugestoes.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Execute a migration CAF-000040 para configurar sugestões.</td></tr>';
+          tbodyTotemSugestoes.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Execute a migration CAF-000150 para configurar sugestões.</td></tr>';
         }
       }
+
+      async function carregarMetricasSugestoes() {
+        if (!boxMetricasSugConteudo || !window.cafeteriaSupabase) return;
+        try {
+          const { data, error } = await window.cafeteriaSupabase.rpc('get_metricas_sugestoes');
+          if (error) throw error;
+          if (!data || data.length === 0) {
+            boxMetricasSugConteudo.innerHTML = '<em>Nenhuma exibição ou aceite registrado nos últimos 30 dias.</em>';
+            return;
+          }
+          boxMetricasSugConteudo.innerHTML = `
+            <div class="adm-metricas-sug-grid">
+              ${data.map(m => `
+                <div class="adm-metricas-sug-card">
+                  <div class="adm-metricas-sug-card-name">${window.escapeHtml ? window.escapeHtml(m.produto_nome) : m.produto_nome} (${(m.canal || 'geral').toUpperCase()})</div>
+                  <div class="adm-metricas-sug-card-stats">
+                    ${m.total_exibicoes} exibidas · ${m.total_aceites} aceitas
+                  </div>
+                  <div class="adm-metricas-sug-card-taxa">
+                    ${m.taxa_aceitacao}% aceitação
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } catch (err) {
+          boxMetricasSugConteudo.innerHTML = '<em>Sem dados ou métricas ainda.</em>';
+        }
+      }
+
       carregarSelectsSugestoesTotem();
       carregarSugestoesTotem();
+      carregarMetricasSugestoes();
+      btnRecarregarMetricasSug?.addEventListener('click', carregarMetricasSugestoes);
 
       btnAddTotemSugestao?.addEventListener('click', async () => {
         const prodId = selTotemSugProduto?.value;
@@ -1493,11 +1530,13 @@
           return;
         }
         const catId = selTotemSugCategoria?.value || null;
+        const canal = selTotemSugCanal?.value || 'todos';
         const frase = (inputTotemSugFrase?.value || 'Que tal acompanhar seu pedido?').trim();
         try {
-          const { error } = await window.cafeteriaSupabase.from('totem_sugestoes').insert([{
+          const { error } = await window.cafeteriaSupabase.from('sugestoes_regras').insert([{
             gatilho_categoria_id: catId,
             produto_sugerido_id: prodId,
+            canal: canal,
             frase_destaque: frase,
             ativo: true
           }]);

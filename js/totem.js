@@ -500,7 +500,7 @@
         window.cafeteriaSupabase.from('adicionais').select('*').eq('ativo', true).order('nome'),
         window.cafeteriaSupabase.from('v_adicionais_produto').select('produto_id, adicional_id'),
         window.cafeteriaSupabase.from('promocoes').select('*').eq('ativo', true),
-        window.cafeteriaSupabase.from('totem_sugestoes').select('*').eq('ativo', true).order('ordem')
+        window.cafeteriaSupabase.from('sugestoes_regras').select('*').eq('ativo', true).order('ordem')
       ]);
 
       categorias = (cats || []).filter((c) => c.id !== 'todos');
@@ -975,15 +975,30 @@
 
   // ── 8. SUGESTÕES DE COMPLEMENTO (ATÉ 3 POR PEDIDO) ──
   function obterSugestoesParaCarrinho() {
+    if (window.SugestoesUtils && typeof window.SugestoesUtils.obterSugestoesCarrinho === 'function') {
+      const res = window.SugestoesUtils.obterSugestoesCarrinho({
+        carrinho,
+        regras: sugestoesConfig,
+        produtos,
+        canal: 'totem',
+        limite: 3,
+        filtrosAlergias: (window.AlergenicosUtils && typeof window.AlergenicosUtils.getFiltroAlergiasSalvo === 'function')
+          ? window.AlergenicosUtils.getFiltroAlergiasSalvo()
+          : []
+      });
+      return { itens: res.itens, frase: res.frase, regraId: res.regraId };
+    }
+
     const idsNoCarrinho = new Set(carrinho.map((i) => i.produto.id));
     const catsNoCarrinho = new Set(carrinho.map((i) => i.produto.categoria_id));
 
     const sugeridos = [];
     let fraseCustom = 'Separamos algumas sugestões deliciosas que combinam com sua escolha:';
 
-    // 1. Sugestões configuradas no Admin (totem_sugestoes)
+    // 1. Sugestões configuradas no Admin (sugestoes_regras)
     for (const regra of sugestoesConfig) {
       if (sugeridos.length >= 3) break;
+      if (regra.canal && regra.canal !== 'todos' && regra.canal !== 'totem') continue;
       const bateCategoria = !regra.gatilho_categoria_id || catsNoCarrinho.has(regra.gatilho_categoria_id);
       const bateProduto = !regra.gatilho_produto_id || idsNoCarrinho.has(regra.gatilho_produto_id);
       if (bateCategoria && bateProduto && !idsNoCarrinho.has(regra.produto_sugerido_id)) {
@@ -1028,6 +1043,7 @@
   btnVerSacola?.addEventListener('click', avancarFluxoPedido);
 
   function abrirModalSugestoes(itensSugeridos, frase, triggerEl = null) {
+    window.SugestoesUtils?.registrarEventoExibicao?.('totem', itensSugeridos);
     if (sugestoesFrase) sugestoesFrase.textContent = frase;
     sugestoesList.innerHTML = itensSugeridos.map((p) => {
       const img = p.imagem_data || p.imagem || 'assets/images/logo-cafeteria-do-teatro.webp';
@@ -1063,6 +1079,7 @@
             precoUnitario: Number(prod.preco || 0)
           });
           atualizarBarraCarrinho();
+          window.SugestoesUtils?.registrarEventoAceite?.('totem', prod.id, prod._regraId);
           btn.textContent = '✓ Adicionado';
           btn.setAttribute('aria-label', `${prod.nome} adicionado`);
           btn.disabled = true;

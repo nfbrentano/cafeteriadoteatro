@@ -1,6 +1,6 @@
 {
   "origem": "producao_real",
-  "gerado_em": "2026-11-24T21:45:39.497Z",
+  "gerado_em": "2026-11-25T12:25:22.253Z",
   "rpcs": {
     "adicionar_itens_pedido": {
       "parameters": [
@@ -134,7 +134,8 @@
         "p_canal",
         "p_tipo_evento",
         "p_produto_id",
-        "p_data"
+        "p_data",
+        "p_regra_id"
       ]
     },
     "handle_new_user": {
@@ -725,6 +726,18 @@
     },
     "fn_sync_pedidos_alergias": {
       "parameters": []
+    },
+    "obter_pares_mais_vendidos": {
+      "parameters": [
+        "p_produto_ids",
+        "p_limite"
+      ]
+    },
+    "get_metricas_sugestoes": {
+      "parameters": [
+        "p_data_inicio",
+        "p_data_fim"
+      ]
     }
   },
   "tables": {
@@ -1110,7 +1123,8 @@
         "produto_id",
         "total_eventos",
         "created_at",
-        "updated_at"
+        "updated_at",
+        "regra_id"
       ]
     },
     "mesas": {
@@ -1726,6 +1740,20 @@
     },
     "v_produtos_revisao_alergenicos": {
       "columns": []
+    },
+    "sugestoes_regras": {
+      "columns": [
+        "id",
+        "gatilho_categoria_id",
+        "gatilho_produto_id",
+        "produto_sugerido_id",
+        "frase_destaque",
+        "ordem",
+        "prioridade",
+        "canal",
+        "ativo",
+        "created_at"
+      ]
     },
     "site_settings": {
       "columns": [
